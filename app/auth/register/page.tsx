@@ -99,7 +99,7 @@ export default function RegisterPage() {
 
         {/* Grid responsivo - máximo 4 columnas */}
         <div className="flex-1 px-2 flex items-center justify-center">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 max-w-6xl w-full">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 max-w-6xl w-full">
             {roles.map((role, index) => {
               const Icon = role.icon;
               return (
@@ -113,17 +113,17 @@ export default function RegisterPage() {
                 >
                   <Link href={`/auth/register/${role.id}`} className="block h-full">
                     <Card className="h-full border-2 hover:border-blue-400 hover:shadow-xl transition-all duration-300 cursor-pointer group bg-white/80 backdrop-blur-sm">
-                      <CardContent className="p-5 sm:p-6 flex flex-col items-center justify-center h-full text-center gap-3">
-                        <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-linear-to-br ${role.gradient} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                          <Icon className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+                      <CardContent className="p-4 sm:p-5 flex flex-col items-center justify-center h-full text-center gap-2 sm:gap-3">
+                        <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-linear-to-br ${role.gradient} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                          <Icon className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                         </div>
-                        <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                        <h3 className="text-sm sm:text-base font-bold text-gray-900">
                           {role.name}
                         </h3>
-                        <p className="text-sm text-gray-600 line-clamp-3 hidden sm:block">
+                        <p className="text-xs text-gray-600 line-clamp-2 hidden sm:block">
                           {role.description}
                         </p>
-                        <div className="mt-auto pt-2 text-blue-600 text-sm font-medium group-hover:translate-x-1 transition-transform">
+                        <div className="mt-auto pt-1 text-blue-600 text-xs font-medium group-hover:translate-x-1 transition-transform">
                           Continuar →
                         </div>
                       </CardContent>

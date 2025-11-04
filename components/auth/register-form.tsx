@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Loader2 } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Loader2, Stethoscope, Building2, Pill, Microscope, Ambulance, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,18 +16,31 @@ import { fadeInUp, staggerContainer } from "@/lib/animations";
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth";
 import { signUp, signInWithOAuth, type UserRole } from "@/lib/supabase/auth";
 
+// Mapeo de íconos
+const iconMap = {
+  paciente: User,
+  medico: Stethoscope,
+  clinica: Building2,
+  farmacia: Pill,
+  laboratorio: Microscope,
+  ambulancia: Ambulance,
+  seguro: Shield,
+};
+
 interface RegisterFormProps {
   role: UserRole;
   roleLabel: string;
-  roleIcon: React.ComponentType<{ className?: string }>;
   roleGradient: string;
 }
 
-export function RegisterForm({ role, roleLabel, roleIcon: Icon, roleGradient }: RegisterFormProps) {
+export function RegisterForm({ role, roleLabel, roleGradient }: RegisterFormProps) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Obtener el ícono correcto según el rol
+  const Icon = iconMap[role] || User;
 
   const {
     register,
