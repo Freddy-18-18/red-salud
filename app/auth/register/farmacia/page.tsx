@@ -5,7 +5,6 @@ export default function RegisterFarmaciaPage() {
     <RegisterForm
       role="farmacia"
       roleLabel="Farmacia"
-      roleGradient="from-green-500 to-green-600"
     />
   );
 }

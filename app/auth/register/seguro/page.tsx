@@ -5,7 +5,6 @@ export default function RegisterSeguroPage() {
     <RegisterForm
       role="seguro"
       roleLabel="Seguro"
-      roleGradient="from-indigo-500 to-indigo-600"
     />
   );
 }

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Loader2, Stethoscope, Building2, Pill, Microscope, Ambulance, Shield } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,31 +16,16 @@ import { fadeInUp, staggerContainer } from "@/lib/animations";
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth";
 import { signUp, signInWithOAuth, type UserRole } from "@/lib/supabase/auth";
 
-// Mapeo de íconos
-const iconMap = {
-  paciente: User,
-  medico: Stethoscope,
-  clinica: Building2,
-  farmacia: Pill,
-  laboratorio: Microscope,
-  ambulancia: Ambulance,
-  seguro: Shield,
-};
-
 interface RegisterFormProps {
   role: UserRole;
   roleLabel: string;
-  roleGradient: string;
 }
 
-export function RegisterForm({ role, roleLabel, roleGradient }: RegisterFormProps) {
+export function RegisterForm({ role, roleLabel }: RegisterFormProps) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Obtener el ícono correcto según el rol
-  const Icon = iconMap[role] || User;
 
   const {
     register,
@@ -80,47 +65,46 @@ export function RegisterForm({ role, roleLabel, roleGradient }: RegisterFormProp
   };
 
   return (
-    <div className="h-screen flex items-center justify-center px-4 overflow-hidden bg-linear-to-br from-gray-50 to-blue-50">
-      <motion.div
-        className="w-full max-w-md"
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-      >
-        {/* Header horizontal: Cambiar tipo de cuenta (izq) y Logo (der) */}
-        <motion.div variants={fadeInUp} className="flex items-center justify-between mb-6">
-          <Link
-            href="/auth/register"
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors font-medium"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Cambiar tipo de cuenta
-          </Link>
-          
-          <Link href={ROUTES.HOME} className="inline-flex items-center gap-2">
-            <div className="bg-linear-to-br from-blue-600 to-teal-600 text-white px-3 py-2 rounded-lg font-bold text-xl">
-              RS
-            </div>
-            <span className="font-bold text-xl text-gray-900">{APP_NAME}</span>
-          </Link>
-        </motion.div>
-
-        {/* Centro: Ícono y título */}
-        <motion.div variants={fadeInUp} className="text-center mb-6">
-          <div className={`w-16 h-16 rounded-xl bg-linear-to-br ${roleGradient} flex items-center justify-center mx-auto mb-3`}>
-            <Icon className="h-8 w-8 text-white" />
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-teal-50">
+      {/* Header horizontal FUERA del contenedor principal */}
+      <motion.div variants={fadeInUp} className="flex items-center justify-between px-4 py-6">
+        <Link
+          href="/auth/register"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors font-medium"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Cambiar tipo de cuenta
+        </Link>
+        
+        <Link href={ROUTES.HOME} className="inline-flex items-center gap-2">
+          <div className="bg-linear-to-br from-blue-600 to-teal-600 text-white px-3 py-2 rounded-lg font-bold text-xl">
+            RS
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            Registro de {roleLabel}
-          </h1>
-          <p className="text-sm text-gray-600">
-            Crea tu cuenta en pocos segundos
-          </p>
-        </motion.div>
+          <span className="font-bold text-xl text-gray-900">{APP_NAME}</span>
+        </Link>
+      </motion.div>
 
-        {/* Card limpio solo con formulario */}
-        <Card className="border-2 shadow-xl bg-white">
-          <CardContent className="px-6 py-6">
+      {/* Contenedor principal centrado */}
+      <div className="h-screen flex items-center justify-center px-4 overflow-hidden bg-linear-to-br from-gray-50 to-blue-50">
+        <motion.div
+          className="w-full max-w-md"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
+          {/* Título centrado (sin ícono) */}
+          <motion.div variants={fadeInUp} className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              Registro de {roleLabel}
+            </h1>
+            <p className="text-sm text-gray-600">
+              Crea tu cuenta en pocos segundos
+            </p>
+          </motion.div>
+
+          {/* Card limpio solo con formulario */}
+          <Card className="border-2 shadow-xl bg-white">
+            <CardContent className="px-6 py-6">
             {/* Error Message con AnimatePresence */}
             <AnimatePresence mode="wait">
               {error && (
@@ -317,6 +301,7 @@ export function RegisterForm({ role, roleLabel, roleGradient }: RegisterFormProp
           </CardContent>
         </Card>
       </motion.div>
+    </div>
     </div>
   );
 }

@@ -5,7 +5,6 @@ export default function RegisterClinicaPage() {
     <RegisterForm
       role="clinica"
       roleLabel="Clínica"
-      roleGradient="from-purple-500 to-purple-600"
     />
   );
 }

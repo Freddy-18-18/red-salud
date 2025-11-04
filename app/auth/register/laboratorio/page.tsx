@@ -5,7 +5,6 @@ export default function RegisterLaboratorioPage() {
     <RegisterForm
       role="laboratorio"
       roleLabel="Laboratorio"
-      roleGradient="from-orange-500 to-orange-600"
     />
   );
 }

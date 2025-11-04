@@ -5,7 +5,6 @@ export default function RegisterMedicoPage() {
     <RegisterForm
       role="medico"
       roleLabel="Médico"
-      roleGradient="from-teal-500 to-teal-600"
     />
   );
 }

@@ -5,7 +5,6 @@ export default function RegisterAmbulanciaPage() {
     <RegisterForm
       role="ambulancia"
       roleLabel="Ambulancia"
-      roleGradient="from-red-500 to-red-600"
     />
   );
 }

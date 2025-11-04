@@ -5,7 +5,6 @@ export default function RegisterPacientePage() {
     <RegisterForm
       role="paciente"
       roleLabel="Paciente"
-      roleGradient="from-blue-500 to-blue-600"
     />
   );
 }
