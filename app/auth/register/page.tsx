@@ -68,81 +68,83 @@ const roles = [
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <div className="h-screen flex items-center justify-center px-4 py-6 overflow-hidden">
       <motion.div
-        className="w-full max-w-6xl"
+        className="w-full max-w-7xl h-full flex flex-col"
         variants={staggerContainer}
         initial="initial"
         animate="animate"
       >
-        <motion.div variants={fadeInUp} className="mb-6">
+        {/* Header compacto */}
+        <motion.div variants={fadeInUp} className="flex items-center justify-between mb-4">
           <Link
             href={ROUTES.HOME}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al inicio
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Volver
           </Link>
-        </motion.div>
-
-        <motion.div variants={fadeInUp} className="text-center mb-12">
-          <Link href={ROUTES.HOME} className="inline-flex items-center justify-center gap-2 mb-6">
-            <div className="bg-linear-to-br from-blue-600 to-teal-600 text-white px-3 py-2 rounded-lg font-bold text-xl">
+          
+          <Link href={ROUTES.HOME} className="inline-flex items-center gap-2">
+            <div className="bg-linear-to-br from-blue-600 to-teal-600 text-white px-2.5 py-1.5 rounded-lg font-bold text-lg">
               RS
             </div>
-            <span className="font-bold text-2xl text-gray-900">{APP_NAME}</span>
+            <span className="font-bold text-xl text-gray-900 hidden sm:inline">{APP_NAME}</span>
           </Link>
+          
+          <div className="w-16" /> {/* Spacer para centrar */}
+        </motion.div>
 
-          <h1 className="text-4xl font-bold text-gray-900 mb-3 font-(family-name:--font-poppins)">
+        {/* Título compacto */}
+        <motion.div variants={fadeInUp} className="text-center mb-6">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
             Únete a Red-Salud
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Selecciona el tipo de cuenta que mejor se adapte a tus necesidades
+          <p className="text-sm sm:text-base text-gray-600">
+            Selecciona tu tipo de cuenta
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {roles.map((role, index) => {
-            const Icon = role.icon;
-            return (
-              <motion.div
-                key={role.id}
-                variants={fadeInUp}
-                custom={index}
-                whileHover={{ scale: 1.03, y: -5 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Link href={`/auth/register/${role.id}`}>
-                  <Card className="h-full border-2 hover:border-blue-400 transition-all duration-300 cursor-pointer group overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className={`w-16 h-16 rounded-xl bg-linear-to-br ${role.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                        <Icon className="h-8 w-8 text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">
-                        {role.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {role.description}
-                      </p>
-                      <div className="mt-4 flex items-center text-blue-600 text-sm font-medium group-hover:gap-2 transition-all">
-                        Registrarse
-                        <motion.span
-                          className="ml-1"
-                          animate={{ x: [0, 4, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        >
+        {/* Grid responsivo - se ajusta al espacio disponible */}
+        <div className="flex-1 overflow-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4 max-h-full pb-4">
+            {roles.map((role, index) => {
+              const Icon = role.icon;
+              return (
+                <motion.div
+                  key={role.id}
+                  variants={fadeInUp}
+                  custom={index}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="h-full"
+                >
+                  <Link href={`/auth/register/${role.id}`} className="block h-full">
+                    <Card className="h-full border-2 hover:border-blue-400 hover:shadow-lg transition-all duration-300 cursor-pointer group">
+                      <CardContent className="p-3 sm:p-4 flex flex-col items-center justify-center h-full text-center">
+                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-linear-to-br ${role.gradient} flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                          <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                        </div>
+                        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1">
+                          {role.name}
+                        </h3>
+                        <p className="text-xs text-gray-600 line-clamp-2 hidden sm:block">
+                          {role.description}
+                        </p>
+                        <div className="mt-2 text-blue-600 text-xs font-medium group-hover:translate-x-1 transition-transform">
                           →
-                        </motion.span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </motion.div>
-            );
-          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
-        <motion.p variants={fadeInUp} className="mt-8 text-center text-gray-600">
+        {/* Footer compacto */}
+        <motion.p variants={fadeInUp} className="mt-4 text-center text-xs sm:text-sm text-gray-600">
           ¿Ya tienes cuenta?{" "}
           <Link
             href="/auth/login"
