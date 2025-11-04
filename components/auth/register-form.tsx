@@ -80,74 +80,76 @@ export function RegisterForm({ role, roleLabel, roleGradient }: RegisterFormProp
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <div className="h-screen flex items-center justify-center px-4 overflow-hidden bg-linear-to-br from-gray-50 to-blue-50">
       <motion.div
         className="w-full max-w-md"
         variants={staggerContainer}
         initial="initial"
         animate="animate"
       >
-        <motion.div variants={fadeInUp} className="mb-6">
+        {/* Header compacto con botón volver */}
+        <motion.div variants={fadeInUp} className="mb-4">
           <Link
             href="/auth/register"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Cambiar tipo de cuenta
           </Link>
         </motion.div>
 
-        <Card className="border-2 shadow-xl">
-          <CardHeader className="text-center pb-6 pt-8">
+        <Card className="border-2 shadow-xl bg-white">
+          <CardHeader className="text-center pb-4 pt-6">
+            {/* Logo y título compactos */}
             <motion.div variants={fadeInUp}>
-              <Link href={ROUTES.HOME} className="inline-flex items-center justify-center gap-2 mb-6">
+              <Link href={ROUTES.HOME} className="inline-flex items-center justify-center gap-2 mb-4">
                 <div className="bg-linear-to-br from-blue-600 to-teal-600 text-white px-3 py-2 rounded-lg font-bold text-xl">
                   RS
                 </div>
-                <span className="font-bold text-2xl text-gray-900">{APP_NAME}</span>
+                <span className="font-bold text-xl text-gray-900">{APP_NAME}</span>
               </Link>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="mb-4">
-              <div className={`w-16 h-16 rounded-xl bg-linear-to-br ${roleGradient} flex items-center justify-center mx-auto`}>
-                <Icon className="h-8 w-8 text-white" />
+            {/* Ícono del rol más pequeño */}
+            <motion.div variants={fadeInUp} className="mb-3">
+              <div className={`w-14 h-14 rounded-xl bg-linear-to-br ${roleGradient} flex items-center justify-center mx-auto`}>
+                <Icon className="h-7 w-7 text-white" />
               </div>
             </motion.div>
 
             <motion.h1
               variants={fadeInUp}
-              className="text-3xl font-bold text-gray-900 mb-2 font-(family-name:--font-poppins)"
+              className="text-2xl font-bold text-gray-900 mb-1"
             >
               Registro de {roleLabel}
             </motion.h1>
-            <motion.p variants={fadeInUp} className="text-gray-600">
+            <motion.p variants={fadeInUp} className="text-sm text-gray-600">
               Crea tu cuenta en pocos segundos
             </motion.p>
           </CardHeader>
 
-          <CardContent className="px-8 pb-8">
+          <CardContent className="px-6 pb-6">
             {/* Error Message */}
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm"
+                className="mb-3 p-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs"
               >
                 {error}
               </motion.div>
             )}
 
             {/* OAuth Google */}
-            <motion.div variants={fadeInUp} className="mb-6">
+            <motion.div variants={fadeInUp} className="mb-4">
               <Button
                 type="button"
                 variant="outline"
                 className="w-full"
-                size="lg"
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
               >
-                <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
+                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -165,66 +167,66 @@ export function RegisterForm({ role, roleLabel, roleGradient }: RegisterFormProp
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Continuar con Google
+                <span className="text-sm">Continuar con Google</span>
               </Button>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="relative mb-6">
+            <motion.div variants={fadeInUp} className="relative mb-4">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300" />
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-4 text-gray-500">O con tu email</span>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-white px-3 text-gray-500">O con tu email</span>
               </div>
             </motion.div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Form compacto */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
               <motion.div variants={fadeInUp}>
-                <Label htmlFor="fullName">Nombre completo</Label>
-                <div className="relative mt-2">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Label htmlFor="fullName" className="text-sm">Nombre completo</Label>
+                <div className="relative mt-1">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="fullName"
                     type="text"
                     placeholder="Juan Pérez"
-                    className="pl-10"
+                    className="pl-9 h-9 text-sm"
                     {...register("fullName")}
                     disabled={isLoading}
                   />
                 </div>
                 {errors.fullName && (
-                  <p className="text-xs text-red-600 mt-1">{errors.fullName.message}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{errors.fullName.message}</p>
                 )}
               </motion.div>
 
               <motion.div variants={fadeInUp}>
-                <Label htmlFor="email">Correo electrónico</Label>
-                <div className="relative mt-2">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Label htmlFor="email" className="text-sm">Correo electrónico</Label>
+                <div className="relative mt-1">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="tu@email.com"
-                    className="pl-10"
+                    className="pl-9 h-9 text-sm"
                     {...register("email")}
                     disabled={isLoading}
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{errors.email.message}</p>
                 )}
               </motion.div>
 
               <motion.div variants={fadeInUp}>
-                <Label htmlFor="password">Contraseña</Label>
-                <div className="relative mt-2">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Label htmlFor="password" className="text-sm">Contraseña</Label>
+                <div className="relative mt-1">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="pl-10 pr-10"
+                    className="pl-9 pr-9 h-9 text-sm"
                     {...register("password")}
                     disabled={isLoading}
                   />
@@ -234,52 +236,51 @@ export function RegisterForm({ role, roleLabel, roleGradient }: RegisterFormProp
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     disabled={isLoading}
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{errors.password.message}</p>
                 )}
               </motion.div>
 
               <motion.div variants={fadeInUp}>
-                <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-                <div className="relative mt-2">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Label htmlFor="confirmPassword" className="text-sm">Confirmar contraseña</Label>
+                <div className="relative mt-1">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="confirmPassword"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="pl-10"
+                    className="pl-9 h-9 text-sm"
                     {...register("confirmPassword")}
                     disabled={isLoading}
                   />
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-xs text-red-600 mt-1">{errors.confirmPassword.message}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{errors.confirmPassword.message}</p>
                 )}
               </motion.div>
 
-              <motion.div variants={fadeInUp}>
+              <motion.div variants={fadeInUp} className="pt-2">
                 <Button
                   type="submit"
-                  size="lg"
-                  className="w-full bg-linear-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700"
+                  className="w-full bg-linear-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 h-10"
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Creando cuenta...
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <span className="text-sm">Creando cuenta...</span>
                     </>
                   ) : (
-                    "Crear Cuenta"
+                    <span className="text-sm font-medium">Crear Cuenta</span>
                   )}
                 </Button>
               </motion.div>
             </form>
 
-            <motion.p variants={fadeInUp} className="mt-6 text-center text-sm text-gray-600">
+            <motion.p variants={fadeInUp} className="mt-3 text-center text-xs text-gray-600">
               Al registrarte, aceptas nuestros{" "}
               <Link href={ROUTES.TERMINOS} className="text-blue-600 hover:text-blue-700">
                 Términos y Condiciones
@@ -290,7 +291,7 @@ export function RegisterForm({ role, roleLabel, roleGradient }: RegisterFormProp
               </Link>
             </motion.p>
 
-            <motion.p variants={fadeInUp} className="mt-4 text-center text-gray-600">
+            <motion.p variants={fadeInUp} className="mt-3 text-center text-sm text-gray-600">
               ¿Ya tienes cuenta?{" "}
               <Link
                 href="/auth/login"
