@@ -2,11 +2,12 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VideoBackground } from "@/components/video/video-background";
-import { ROUTES } from "@/lib/constants";
+import { AUTH_ROUTES } from "@/lib/constants";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
+import { DashboardStats } from "./dashboard-stats";
 
 const features = [
   "Atención médica 24/7",
@@ -16,14 +17,20 @@ const features = [
 ];
 
 export function HeroSection() {
+  const handleScrollDown = () => {
+    const nextSection = document.querySelector('#next-section');
+    if (nextSection) {
+      nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Video Background */}
       <VideoBackground
         src="/videos/doctors-bg.mp4"
         overlay
         overlayOpacity={0.7}
-        enableParallax
       />
 
       {/* Content */}
@@ -91,10 +98,11 @@ export function HeroSection() {
             <Button
               asChild
               size="lg"
-              className="bg-linear-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white shadow-2xl hover:shadow-teal-500/50 transition-all duration-300 text-lg px-8 py-6 group"
+              className="bg-linear-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white shadow-2xl hover:shadow-teal-500/50 transition-all duration-300 text-lg px-8 py-6 group min-w-[200px]"
             >
-              <Link href={ROUTES.CONTACTO}>
-                Comenzar Ahora
+              <Link href={AUTH_ROUTES.REGISTER}>
+                <UserPlus className="mr-2 h-5 w-5" />
+                Registrarse
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
@@ -102,49 +110,32 @@ export function HeroSection() {
               asChild
               size="lg"
               variant="outline"
-              className="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm text-lg px-8 py-6"
+              className="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm text-lg px-8 py-6 min-w-[200px]"
             >
-              <Link href={ROUTES.SERVICIOS}>Ver Servicios</Link>
+              <Link href={AUTH_ROUTES.LOGIN}>
+                <LogIn className="mr-2 h-5 w-5" />
+                Iniciar Sesión
+              </Link>
             </Button>
           </motion.div>
 
-          {/* Stats */}
-          <motion.div
-            variants={fadeInUp}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 max-w-3xl mx-auto"
-          >
-            {[
-              { value: "10K+", label: "Pacientes Atendidos" },
-              { value: "500+", label: "Profesionales" },
-              { value: "50+", label: "Especialidades" },
-              { value: "98%", label: "Satisfacción" },
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                className="text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
-              >
-                <div className="text-3xl sm:text-4xl font-bold text-white mb-2 font-(family-name:--font-poppins)">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-gray-300">{stat.label}</div>
-              </motion.div>
-            ))}
+          {/* Stats - Ahora dinámicos desde Supabase */}
+          <motion.div variants={fadeInUp}>
+            <DashboardStats />
           </motion.div>
         </motion.div>
       </div>
 
       {/* Scroll Indicator */}
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 cursor-pointer"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5 }}
+        onClick={handleScrollDown}
       >
         <motion.div
-          className="flex flex-col items-center gap-2 text-white/80"
+          className="flex flex-col items-center gap-2 text-white/80 hover:text-white transition-colors"
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >

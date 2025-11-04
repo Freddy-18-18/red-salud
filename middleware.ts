@@ -1,53 +1,56 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
 /**
  * Middleware de Next.js para protección de rutas
  * 
  * Este middleware se ejecutará en rutas que coincidan con el matcher.
- * Actualmente configurado para rutas públicas, pero preparado para
- * futuras rutas privadas/protegidas cuando se implemente autenticación.
+ * Verifica autenticación con Supabase y protege rutas del dashboard.
  */
 
-export function middleware(request: NextRequest) {
-  // Rutas protegidas (para futuro uso con autenticación)
-  const protectedRoutes = [
-    "/dashboard",
-    "/perfil",
-    "/citas",
-    "/historial",
-  ];
+export async function middleware(request: NextRequest) {
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient({ req: request, res });
+
+  // Refresh session si existe
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const { pathname } = request.nextUrl;
+
+  // Rutas protegidas que requieren autenticación
+  const protectedRoutes = ["/dashboard"];
 
   // Verificar si la ruta está protegida
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
 
-  if (isProtectedRoute) {
-    // TODO: Implementar lógica de autenticación
-    // Por ahora, permitir acceso (cuando implementes auth, verifica el token aquí)
-    
-    // Ejemplo de redirección (descomentar cuando implementes auth):
-    // const token = request.cookies.get('auth-token');
-    // if (!token) {
-    //   return NextResponse.redirect(new URL('/login', request.url));
-    // }
+  // Si es una ruta protegida y no hay sesión, redirigir a login
+  if (isProtectedRoute && !session) {
+    const redirectUrl = new URL("/auth/login", request.url);
+    redirectUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Si hay sesión y el usuario intenta acceder a auth, redirigir a su dashboard
+  if (session && pathname.startsWith("/auth")) {
+    const role = session.user.user_metadata?.role || "paciente";
+    return NextResponse.redirect(new URL(`/dashboard/${role}`, request.url));
   }
 
   // Agregar headers de seguridad
-  const response = NextResponse.next();
-  
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  response.headers.set(
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set(
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=()"
   );
 
-  return response;
+  return res;
 }
 
 // Configurar qué rutas ejecutarán el middleware

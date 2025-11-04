@@ -8,7 +8,6 @@ interface VideoBackgroundProps {
   overlay?: boolean;
   overlayOpacity?: number;
   className?: string;
-  enableParallax?: boolean;
 }
 
 /**
@@ -17,14 +16,12 @@ interface VideoBackgroundProps {
  * @param overlay - Mostrar capa de overlay oscuro
  * @param overlayOpacity - Opacidad del overlay (0-1)
  * @param className - Clases CSS adicionales
- * @param enableParallax - Habilitar efecto parallax
  */
 export function VideoBackground({
   src,
   overlay = true,
   overlayOpacity = 0.6,
   className = "",
-  enableParallax = false,
 }: VideoBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -52,26 +49,15 @@ export function VideoBackground({
       {/* Video */}
       <motion.video
         ref={videoRef}
-        className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto object-cover"
-        style={{
-          transform: "translate(-50%, -50%)",
-        }}
-        initial={{ opacity: 0, scale: 1.1 }}
+        className="absolute inset-0 w-full h-full object-cover"
+        initial={{ opacity: 0, scale: 1.05 }}
         animate={{
           opacity: isLoaded ? 1 : 0,
-          scale: isLoaded ? 1 : 1.1,
-          y: enableParallax ? [0, -20, 0] : 0,
+          scale: isLoaded ? 1 : 1.05,
         }}
         transition={{
           opacity: { duration: 1 },
           scale: { duration: 1.2 },
-          y: enableParallax
-            ? {
-                duration: 30,
-                repeat: Infinity,
-                ease: "linear",
-              }
-            : {},
         }}
         autoPlay
         loop
@@ -86,24 +72,15 @@ export function VideoBackground({
       {/* Overlay */}
       {overlay && (
         <motion.div
-          className="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-blue-800/80 to-teal-900/90"
+          className="absolute inset-0 bg-linear-to-br from-blue-900/90 via-blue-800/80 to-teal-900/90 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: overlayOpacity }}
           transition={{ duration: 1, delay: 0.3 }}
-          style={{
-            backdropFilter: "blur(2px)",
-          }}
         />
       )}
 
       {/* Patrón de puntos decorativo */}
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-          backgroundSize: "40px 40px",
-        }}
-      />
+      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-size-[40px_40px]" />
     </div>
   );
 }

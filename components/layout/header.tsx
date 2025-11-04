@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ROUTES, APP_NAME } from "@/lib/constants";
+import { ROUTES, APP_NAME, AUTH_ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -99,19 +99,30 @@ export function Header() {
             ))}
           </motion.div>
 
-          {/* CTA Button Desktop */}
+          {/* Auth Buttons Desktop */}
           <motion.div
-            className="hidden lg:block"
+            className="hidden lg:flex items-center gap-3"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
             <Button
               asChild
-              size="lg"
+              variant="outline"
+              className={cn(
+                "border-2 transition-all duration-300",
+                isScrolled
+                  ? "border-gray-300 text-gray-700 hover:bg-gray-50"
+                  : "border-white/30 text-white hover:bg-white/10"
+              )}
+            >
+              <Link href={AUTH_ROUTES.LOGIN}>Iniciar Sesión</Link>
+            </Button>
+            <Button
+              asChild
               className="bg-linear-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              <Link href={ROUTES.CONTACTO}>Comenzar Ahora</Link>
+              <Link href={AUTH_ROUTES.REGISTER}>Registrarse</Link>
             </Button>
           </motion.div>
 
@@ -176,18 +187,31 @@ export function Header() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
-                className="pt-4"
+                className="pt-4 flex flex-col gap-3"
               >
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                >
+                  <Link
+                    href={AUTH_ROUTES.LOGIN}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Iniciar Sesión
+                  </Link>
+                </Button>
                 <Button
                   asChild
                   size="lg"
                   className="w-full bg-linear-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white"
                 >
                   <Link
-                    href={ROUTES.CONTACTO}
+                    href={AUTH_ROUTES.REGISTER}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Comenzar Ahora
+                    Registrarse
                   </Link>
                 </Button>
               </motion.div>
