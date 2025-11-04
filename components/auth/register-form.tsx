@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Loader2, Stethoscope, Building2, Pill, Microscope, Ambulance, Shield } from "lucide-react";
@@ -121,16 +121,21 @@ export function RegisterForm({ role, roleLabel, roleGradient }: RegisterFormProp
         {/* Card limpio solo con formulario */}
         <Card className="border-2 shadow-xl bg-white">
           <CardContent className="px-6 py-6">
-            {/* Error Message */}
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-3 p-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs"
-              >
-                {error}
-              </motion.div>
-            )}
+            {/* Error Message con AnimatePresence */}
+            <AnimatePresence mode="wait">
+              {error && (
+                <motion.div
+                  key="error-message"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="mb-3 p-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs"
+                >
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* OAuth Google - más estrecho */}
             <motion.div variants={fadeInUp} className="mb-4 flex justify-center">
