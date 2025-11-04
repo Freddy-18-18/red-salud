@@ -106,8 +106,8 @@ export default function RegisterPage() {
         </motion.div>
 
         {/* Grid responsivo - máximo 4 columnas */}
-        <div className="flex-1 overflow-auto px-2">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto pb-6">
+        <div className="flex-1 px-2 flex items-center justify-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 max-w-6xl w-full">
             {roles.map((role, index) => {
               const Icon = role.icon;
               return (
