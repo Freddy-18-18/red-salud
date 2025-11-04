@@ -76,7 +76,7 @@ export default function RegisterPage() {
         animate="animate"
       >
         {/* Header */}
-        <motion.div variants={fadeInUp} className="flex items-center justify-between mb-6 sm:mb-8">
+        <motion.div variants={fadeInUp} className="flex items-center justify-between mb-4">
           <Link
             href={ROUTES.HOME}
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
@@ -85,24 +85,16 @@ export default function RegisterPage() {
             Volver
           </Link>
           
+          <p className="text-base sm:text-lg text-gray-600">
+            Selecciona tu tipo de cuenta
+          </p>
+          
           <Link href={ROUTES.HOME} className="inline-flex items-center gap-2">
             <div className="bg-linear-to-br from-blue-600 to-teal-600 text-white px-3 py-2 rounded-lg font-bold text-xl">
               RS
             </div>
             <span className="font-bold text-2xl text-gray-900 hidden sm:inline">{APP_NAME}</span>
           </Link>
-          
-          <div className="w-20" /> {/* Spacer para centrar */}
-        </motion.div>
-
-        {/* Título */}
-        <motion.div variants={fadeInUp} className="text-center mb-8 sm:mb-10">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
-            Únete a Red-Salud
-          </h1>
-          <p className="text-base sm:text-lg text-gray-600">
-            Selecciona tu tipo de cuenta
-          </p>
         </motion.div>
 
         {/* Grid responsivo - máximo 4 columnas */}
