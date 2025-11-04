@@ -46,28 +46,6 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // ============================================================================
-  // RUTAS PÚBLICAS (no requieren autenticación)
-  // ============================================================================
-  const publicRoutes = [
-    '/',
-    '/nosotros',
-    '/servicios',
-    '/precios',
-    '/blog',
-    '/soporte',
-    '/auth/login',
-    '/auth/register',
-  ]
-
-  const isPublicRoute =
-    publicRoutes.some((route) => pathname === route) ||
-    pathname.startsWith('/auth/login/') ||
-    pathname.startsWith('/auth/register/') ||
-    pathname.startsWith('/servicios/') ||
-    pathname.startsWith('/soporte/') ||
-    pathname.startsWith('/blog/')
-
-  // ============================================================================
   // SI NO HAY USUARIO Y INTENTA ACCEDER A DASHBOARD → LOGIN
   // ============================================================================
   if (!user && pathname.startsWith('/dashboard/')) {
@@ -95,7 +73,7 @@ export async function middleware(request: NextRequest) {
     // ============================================================================
     // PROTECCIÓN POR ROL: Redirigir al dashboard correcto
     // ============================================================================
-    if (profile?.role && pathname === '/dashboard') {
+    if (profile && pathname === '/dashboard') {
       // Redirigir a dashboard específico del rol
       return NextResponse.redirect(
         new URL(`/dashboard/${profile.role}`, request.url)
@@ -103,11 +81,11 @@ export async function middleware(request: NextRequest) {
     }
 
     // Verificar que el usuario accede a su dashboard correcto
-    if (pathname.startsWith('/dashboard/')) {
+    if (pathname.startsWith('/dashboard/') && profile) {
       const dashboardRole = pathname.split('/')[2] // /dashboard/[role]/...
       
       // Si intenta acceder a dashboard de otro rol → redirigir al suyo
-      if (dashboardRole && dashboardRole !== profile?.role && dashboardRole !== 'shared') {
+      if (dashboardRole && dashboardRole !== profile.role && dashboardRole !== 'shared') {
         return NextResponse.redirect(
           new URL(`/dashboard/${profile.role}`, request.url)
         )
@@ -115,12 +93,10 @@ export async function middleware(request: NextRequest) {
     }
 
     // Si usuario autenticado intenta ir a login/register → redirigir a su dashboard
-    if (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register')) {
-      if (profile?.role) {
-        return NextResponse.redirect(
-          new URL(`/dashboard/${profile.role}`, request.url)
-        )
-      }
+    if ((pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register')) && profile) {
+      return NextResponse.redirect(
+        new URL(`/dashboard/${profile.role}`, request.url)
+      )
     }
   }
 
