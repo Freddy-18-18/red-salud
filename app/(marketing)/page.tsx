@@ -2,7 +2,7 @@ import { HeroSection } from "@/components/sections/hero-section";
 import { InfiniteSpecialtiesScroll } from "@/components/sections/infinite-specialties-scroll";
 import { FeaturesSection } from "@/components/sections/features-section";
 
-export default function PublicHomePage() {
+export default function HomePage() {
   return (
     <>
       <HeroSection />

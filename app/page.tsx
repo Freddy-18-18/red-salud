@@ -4,7 +4,13 @@ import { FeaturesSection } from "@/components/sections/features-section";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 
-export default function HomePage() {
+/**
+ * Landing Page Principal
+ * 
+ * Esta página muestra el contenido principal del sitio.
+ * Incluye Hero, especialidades y características.
+ */
+export default function RootPage() {
   return (
     <>
       <Header />

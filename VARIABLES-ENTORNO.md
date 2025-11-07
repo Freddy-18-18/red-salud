@@ -20,6 +20,7 @@
 - **Proyecto**: red-salud
 - **Team**: firf1818-8965's projects
 - **Estado**: Proyecto creado, sin deployments aún
+- **Estado**: Proyecto creado, sin deployments aún
 - **Node Version**: 22.x
 
 ---
