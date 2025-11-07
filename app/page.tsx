@@ -1,14 +1,19 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { HeroSection } from "@/components/sections/hero-section";
+import { InfiniteSpecialtiesScroll } from "@/components/sections/infinite-specialties-scroll";
+import { FeaturesSection } from "@/components/sections/features-section";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 export default function HomePage() {
-  const router = useRouter();
-  
-  useEffect(() => {
-    router.replace("/public");
-  }, [router]);
-  
-  return null;
+  return (
+    <>
+      <Header />
+      <main className="min-h-screen">
+        <HeroSection />
+        <InfiniteSpecialtiesScroll />
+        <FeaturesSection />
+      </main>
+      <Footer />
+    </>
+  );
 }

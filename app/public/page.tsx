@@ -1,13 +1,5 @@
-import { HeroSection } from "@/components/sections/hero-section";
-import { InfiniteSpecialtiesScroll } from "@/components/sections/infinite-specialties-scroll";
-import { FeaturesSection } from "@/components/sections/features-section";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return (
-    <>
-      <HeroSection />
-      <InfiniteSpecialtiesScroll />
-      <FeaturesSection />
-    </>
-  );
+export default function PublicPage() {
+  redirect("/");
 }
