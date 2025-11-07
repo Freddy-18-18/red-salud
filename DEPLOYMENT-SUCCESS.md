@@ -11,7 +11,9 @@ Fecha: 7 de noviembre de 2025
 ## 🌐 URLs de Acceso
 
 ### Producción
-- **Aplicación**: https://red-salud-6atodwotu-firf1818-8965s-projects.vercel.app
+- **Dominio Principal**: https://red-salud.org ⭐
+- **Dominio Alternativo**: https://www.red-salud.org
+- **URL Vercel**: https://red-salud-6atodwotu-firf1818-8965s-projects.vercel.app
 - **Inspector Vercel**: https://vercel.com/firf1818-8965s-projects/red-salud/EeUn1rd5u2gbGzijZQaDSGFQALy8
 
 ### Repositorio
@@ -71,9 +73,8 @@ Fecha: 7 de noviembre de 2025
 ## 📝 Próximos Pasos Recomendados
 
 ### Configuración de Dominio
-1. Ir a Vercel Dashboard
-2. Configurar dominio personalizado
-3. Actualizar DNS
+- ✅ **Completado**: Dominios `red-salud.org` y `www.red-salud.org` ya configurados
+- Los dominios apuntan correctamente a la aplicación en producción
 
 ### Monitoreo
 1. Configurar alertas en Vercel
@@ -123,7 +124,7 @@ La aplicación soporta los siguientes roles:
 - [x] Build exitoso sin errores
 - [x] Despliegue en producción completado
 - [x] URL de producción accesible
-- [ ] Dominio personalizado configurado (opcional)
+- [x] Dominio personalizado configurado (red-salud.org)
 - [ ] Testing en producción completado
 - [ ] Monitoreo configurado
 
