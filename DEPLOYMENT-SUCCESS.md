@@ -27,10 +27,10 @@ Fecha: 7 de noviembre de 2025
 
 ## 📊 Estadísticas del Build
 
-- **Páginas generadas**: 66
-- **Rutas estáticas**: 54
+- **Páginas generadas**: 67 (incluyendo página raíz)
+- **Rutas estáticas**: 55
 - **Rutas dinámicas**: 12
-- **Tiempo de build**: ~46 segundos
+- **Tiempo de build**: ~29 segundos
 - **Estado**: READY ✅
 
 ---
@@ -67,6 +67,7 @@ Fecha: 7 de noviembre de 2025
 
 ### 4. Páginas Faltantes
 - Creado contenido para `/dashboard/paciente/telemedicina/recetas`
+- **Creada página raíz** (`app/page.tsx`) que redirecciona a `/public`
 
 ---
 
