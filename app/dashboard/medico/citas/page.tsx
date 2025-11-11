@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarIcon, Clock, User, Video, MapPin, Phone, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { VerificationGuard } from "@/components/dashboard/medico/verification-guard";
 
 interface Appointment {
   id: string;
@@ -85,7 +86,8 @@ export default function DoctorCitasPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <VerificationGuard>
+      <div className="container mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Agenda de Citas</h1>
@@ -164,5 +166,6 @@ export default function DoctorCitasPage() {
         </Card>
       )}
     </div>
+    </VerificationGuard>
   );
 }

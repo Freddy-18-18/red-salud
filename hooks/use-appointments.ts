@@ -86,21 +86,31 @@ export function useDoctorAppointments(doctorId: string | undefined) {
 }
 
 // Hook para especialidades médicas
-export function useMedicalSpecialties() {
+export function useMedicalSpecialties(onlyWithDoctors: boolean = false) {
   const [specialties, setSpecialties] = useState<MedicalSpecialty[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🎣 useMedicalSpecialties hook called with onlyWithDoctors:', onlyWithDoctors);
+    
     const loadSpecialties = async () => {
-      const result = await getMedicalSpecialties();
+      console.log('⏳ Loading specialties...');
+      const result = await getMedicalSpecialties(onlyWithDoctors);
+      console.log('📦 Result from getMedicalSpecialties:', result);
+      
       if (result.success) {
+        console.log('✅ Setting specialties:', result.data.length);
         setSpecialties(result.data);
+      } else {
+        console.error('❌ Failed to load specialties:', result.error);
       }
       setLoading(false);
     };
 
     loadSpecialties();
-  }, []);
+  }, [onlyWithDoctors]);
+
+  console.log('🎣 Hook returning:', { specialties: specialties.length, loading });
 
   return { specialties, loading };
 }

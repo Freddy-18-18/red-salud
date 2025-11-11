@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "module": "ESNext",
+    "target": "ES2021",
+    "moduleResolution": "Node",
+    "strict": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"]
+}

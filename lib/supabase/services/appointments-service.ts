@@ -8,60 +8,229 @@ import type {
   DoctorSchedule,
 } from "../types/appointments";
 
-// Obtener todas las especialidades
-export async function getMedicalSpecialties() {
+// Obtener todas las especialidades (con opción de filtrar solo las que tienen médicos)
+export async function getMedicalSpecialties(onlyWithDoctors: boolean = false) {
+  console.log('🚀 getMedicalSpecialties called with onlyWithDoctors:', onlyWithDoctors);
+  
   try {
-    const { data, error } = await supabase
-      .from("specialties")
-      .select("*")
-      .eq("active", true)
-      .order("name");
+    if (onlyWithDoctors) {
+      console.log('📡 Fetching doctors from Supabase...');
+      
+      // Obtener médicos verificados en SACS
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select(`
+          id,
+          sacs_especialidad,
+          doctor_details:doctor_details!doctor_details_profile_id_fkey(
+            especialidad_id,
+            specialty:specialties!doctor_details_especialidad_id_fkey(
+              id,
+              name,
+              description,
+              icon,
+              created_at
+            )
+          )
+        `)
+        .eq("role", "medico")
+        .eq("sacs_verificado", true);
 
-    if (error) throw error;
-    return { success: true, data: data as MedicalSpecialty[] };
+      console.log('📊 Supabase response:', { 
+        profiles: profiles?.length, 
+        error: profilesError,
+        data: profiles 
+      });
+
+      if (profilesError) {
+        console.error('❌ Supabase error:', profilesError);
+        throw profilesError;
+      }
+
+      if (!profiles || profiles.length === 0) {
+        console.warn('⚠️ No profiles found');
+        return { success: true, data: [] };
+      }
+
+      // Recopilar especialidades únicas de médicos verificados
+      const specialtyMap = new Map<string, MedicalSpecialty>();
+
+      console.log('👥 Processing', profiles.length, 'profiles');
+
+      profiles.forEach((profile: any) => {
+        const doctorDetail = profile.doctor_details?.[0];
+        
+        console.log('🔍 Profile:', {
+          id: profile.id,
+          sacs_especialidad: profile.sacs_especialidad,
+          has_doctor_details: !!doctorDetail,
+          specialty: doctorDetail?.specialty
+        });
+        
+        if (doctorDetail?.specialty) {
+          // Si tiene doctor_details con especialidad asignada
+          const spec = doctorDetail.specialty;
+          if (!specialtyMap.has(spec.id)) {
+            console.log('➕ Adding specialty from doctor_details:', spec.name);
+            specialtyMap.set(spec.id, {
+              id: spec.id,
+              name: spec.name,
+              description: spec.description || '',
+              icon: spec.icon || 'stethoscope',
+              created_at: spec.created_at,
+            });
+          }
+        } else if (profile.sacs_especialidad) {
+          // Si solo tiene sacs_especialidad (sin doctor_details)
+          const tempId = `sacs-${profile.sacs_especialidad.toLowerCase().replace(/\s+/g, '-')}`;
+          if (!specialtyMap.has(tempId)) {
+            console.log('➕ Adding specialty from SACS:', profile.sacs_especialidad);
+            specialtyMap.set(tempId, {
+              id: tempId,
+              name: profile.sacs_especialidad,
+              description: 'Especialidad verificada en SACS',
+              icon: 'stethoscope',
+              created_at: new Date().toISOString(),
+            });
+          }
+        }
+      });
+
+      const specialtiesWithDoctors = Array.from(specialtyMap.values()).sort((a, b) => 
+        a.name.localeCompare(b.name)
+      );
+
+      console.log('✅ Final specialties:', specialtiesWithDoctors.length, specialtiesWithDoctors);
+
+      return { success: true, data: specialtiesWithDoctors };
+    } else {
+      // Obtener todas las especialidades activas
+      const { data, error } = await supabase
+        .from("specialties")
+        .select("*")
+        .eq("active", true)
+        .order("name");
+
+      if (error) throw error;
+      return { success: true, data: data as MedicalSpecialty[] };
+    }
   } catch (error) {
-    console.error("Error fetching specialties:", error);
+    console.error("❌ Error fetching specialties:", error);
     return { success: false, error, data: [] };
   }
 }
 
 // Obtener doctores disponibles (con filtros opcionales)
+// Busca médicos verificados en SACS (profiles.sacs_verificado = true)
 export async function getAvailableDoctors(specialtyId?: string) {
   try {
+    console.log('🔍 getAvailableDoctors called with specialtyId:', specialtyId);
+    
+    // Buscar directamente en profiles con sacs_verificado = true
     let query = supabase
-      .from("doctor_details")
+      .from("profiles")
       .select(`
-        *,
-        specialty:specialties!doctor_details_especialidad_id_fkey(id, name, description),
-        profile:profiles!doctor_details_profile_id_fkey(id, nombre_completo, email, avatar_url, role)
+        id,
+        nombre_completo,
+        email,
+        avatar_url,
+        telefono,
+        direccion,
+        ciudad,
+        estado,
+        sacs_verificado,
+        sacs_especialidad,
+        sacs_matricula,
+        doctor_details:doctor_details!doctor_details_profile_id_fkey(
+          id,
+          especialidad_id,
+          licencia_medica,
+          anos_experiencia,
+          biografia,
+          tarifa_consulta,
+          horario_atencion,
+          direccion_consultorio,
+          telefono_consultorio,
+          acepta_seguro,
+          verified,
+          sacs_verified,
+          is_active,
+          professional_phone,
+          professional_email,
+          clinic_address,
+          consultation_duration,
+          consultation_price,
+          schedule,
+          created_at,
+          updated_at,
+          specialty:specialties!doctor_details_especialidad_id_fkey(id, name, description, icon)
+        )
       `)
-      .eq("verified", true);
-
-    if (specialtyId) {
-      query = query.eq("especialidad_id", specialtyId);
-    }
+      .eq("role", "medico")
+      .eq("sacs_verificado", true);
 
     const { data, error } = await query.order("created_at");
 
+    console.log('📊 Query result:', { data, error, count: data?.length });
+
     if (error) throw error;
 
-    // Transformar datos para incluir información del perfil
-    const doctors = data?.map((doc: any) => ({
-      id: doc.profile_id,
-      specialty_id: doc.especialidad_id,
-      license_number: doc.licencia_medica,
-      years_experience: doc.anos_experiencia,
-      bio: doc.biografia,
-      consultation_price: doc.tarifa_consulta ? parseFloat(doc.tarifa_consulta) : undefined,
-      consultation_duration: 30, // Por defecto 30 minutos
-      is_available: doc.verified,
-      created_at: doc.created_at,
-      updated_at: doc.updated_at,
-      nombre_completo: doc.profile?.nombre_completo,
-      email: doc.profile?.email,
-      avatar_url: doc.profile?.avatar_url,
-      specialty: doc.specialty,
-    })) || [];
+    // Transformar y filtrar datos
+    let doctors = data?.map((profile: any) => {
+      const doctorDetail = profile.doctor_details?.[0]; // Puede ser null si no tiene doctor_details
+      
+      return {
+        id: profile.id,
+        specialty_id: doctorDetail?.especialidad_id || null,
+        license_number: profile.sacs_matricula || doctorDetail?.licencia_medica,
+        anos_experiencia: doctorDetail?.anos_experiencia || 0,
+        biografia: doctorDetail?.biografia || null,
+        tarifa_consulta: doctorDetail?.tarifa_consulta 
+          ? parseFloat(doctorDetail.tarifa_consulta) 
+          : (doctorDetail?.consultation_price ? parseFloat(doctorDetail.consultation_price) : undefined),
+        consultation_duration: doctorDetail?.consultation_duration || 30,
+        verified: true, // Ya está verificado en SACS
+        is_active: doctorDetail?.is_active !== false,
+        // Información de contacto y ubicación
+        telefono: profile.telefono || doctorDetail?.professional_phone,
+        direccion: profile.direccion || doctorDetail?.clinic_address,
+        ciudad: profile.ciudad,
+        estado: profile.estado,
+        horario: doctorDetail?.schedule || doctorDetail?.horario_atencion,
+        acepta_seguro: doctorDetail?.acepta_seguro || doctorDetail?.accepts_insurance || false,
+        created_at: doctorDetail?.created_at || profile.created_at || new Date().toISOString(),
+        updated_at: doctorDetail?.updated_at || profile.updated_at || new Date().toISOString(),
+        profile: {
+          id: profile.id,
+          nombre_completo: profile.nombre_completo,
+          email: profile.email,
+          avatar_url: profile.avatar_url,
+        },
+        specialty: doctorDetail?.specialty || {
+          id: '',
+          name: profile.sacs_especialidad || 'Medicina General',
+          description: '',
+          icon: 'stethoscope',
+          created_at: new Date().toISOString(),
+        },
+      };
+    }) || [];
+
+    // Filtrar por especialidad si se especifica
+    if (specialtyId) {
+      console.log('🔍 Filtering by specialty:', specialtyId);
+      doctors = doctors.filter(doc => {
+        // Si tiene specialty_id en doctor_details, comparar con ese
+        if (doc.specialty_id) {
+          return doc.specialty_id === specialtyId;
+        }
+        // Si no, comparar con el ID temporal generado desde sacs_especialidad
+        const tempId = `sacs-${doc.specialty.name.toLowerCase().replace(/\s+/g, '-')}`;
+        return tempId === specialtyId;
+      });
+    }
+
+    console.log('✅ Transformed doctors:', doctors.length, doctors);
 
     return { success: true, data: doctors as DoctorProfile[] };
   } catch (error) {
@@ -77,7 +246,7 @@ export async function getDoctorProfile(doctorId: string) {
       .from("doctor_details")
       .select(`
         *,
-        specialty:specialties!doctor_details_especialidad_id_fkey(id, name, description),
+        specialty:specialties!doctor_details_especialidad_id_fkey(id, name, description, icon),
         profile:profiles!doctor_details_profile_id_fkey(id, nombre_completo, email, avatar_url)
       `)
       .eq("profile_id", doctorId)
@@ -89,16 +258,19 @@ export async function getDoctorProfile(doctorId: string) {
       id: data.profile_id,
       specialty_id: data.especialidad_id,
       license_number: data.licencia_medica,
-      years_experience: data.anos_experiencia,
-      bio: data.biografia,
-      consultation_price: data.tarifa_consulta ? parseFloat(data.tarifa_consulta) : undefined,
+      anos_experiencia: data.anos_experiencia,
+      biografia: data.biografia,
+      tarifa_consulta: data.tarifa_consulta ? parseFloat(data.tarifa_consulta) : undefined,
       consultation_duration: 30,
-      is_available: data.verified,
+      verified: data.verified && data.sacs_verified,
       created_at: data.created_at,
       updated_at: data.updated_at,
-      nombre_completo: data.profile?.nombre_completo,
-      email: data.profile?.email,
-      avatar_url: data.profile?.avatar_url,
+      profile: {
+        id: data.profile?.id,
+        nombre_completo: data.profile?.nombre_completo,
+        email: data.profile?.email,
+        avatar_url: data.profile?.avatar_url,
+      },
       specialty: data.specialty,
     };
 
@@ -275,7 +447,7 @@ export async function createAppointment(
       status: data.status === 'pendiente' ? 'pending' : data.status === 'confirmada' ? 'confirmed' : data.status === 'completada' ? 'completed' : 'cancelled',
       consultation_type: appointmentData.consultation_type,
       reason: data.motivo,
-      price: doctor?.consultation_price,
+      price: doctor?.tarifa_consulta,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };
@@ -323,9 +495,19 @@ export async function getPatientAppointments(patientId: string) {
         updated_at: apt.updated_at,
         doctor: {
           id: apt.doctor?.id,
-          nombre_completo: apt.doctor?.nombre_completo,
-          avatar_url: apt.doctor?.avatar_url,
-          specialty: { name: 'Medicina General' }, // Por ahora sin especialidad
+          verified: true,
+          created_at: apt.created_at,
+          updated_at: apt.updated_at,
+          profile: {
+            id: apt.doctor?.id,
+            nombre_completo: apt.doctor?.nombre_completo,
+            avatar_url: apt.doctor?.avatar_url,
+          },
+          specialty: { 
+            id: '',
+            name: 'Medicina General',
+            created_at: apt.created_at,
+          },
         },
       };
     }) || [];

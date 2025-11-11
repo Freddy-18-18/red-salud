@@ -22,7 +22,7 @@ import {
   useCreateAppointment,
 } from "@/hooks/use-appointments";
 import { Calendar } from "@/components/ui/calendar";
-import { ArrowLeft, Video, MapPin, Phone, Check, Search, User } from "lucide-react";
+import { ArrowLeft, Video, MapPin, Phone, Check, Search, User, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { es } from "date-fns/locale";
@@ -40,7 +40,7 @@ export default function NuevaCitaPage() {
   const [reason, setReason] = useState("");
 
   const router = useRouter();
-  const { specialties } = useMedicalSpecialties();
+  const { specialties } = useMedicalSpecialties(true); // Solo especialidades con médicos
   const { doctors } = useAvailableDoctors(selectedSpecialty || undefined);
   const { timeSlots, loading: timeSlotsLoading } = useAvailableTimeSlots(
     selectedDoctor || undefined,
@@ -77,10 +77,16 @@ export default function NuevaCitaPage() {
     }
 
     const query = searchQuery.toLowerCase();
-    const filtered = specialties.filter((specialty) =>
-      specialty.name.toLowerCase().includes(query) ||
-      specialty.description?.toLowerCase().includes(query)
-    );
+    const filtered = specialties.filter((specialty) => {
+      const nameMatch = specialty.name?.toLowerCase().includes(query);
+      const descMatch = specialty.description?.toLowerCase().includes(query);
+      return nameMatch || descMatch;
+    });
+    
+    console.log('🔍 Search query:', query);
+    console.log('📋 All specialties:', specialties.length, specialties);
+    console.log('✅ Filtered specialties:', filtered.length, filtered);
+    
     setFilteredSpecialties(filtered);
   }, [searchQuery, specialties]);
 
@@ -242,7 +248,7 @@ export default function NuevaCitaPage() {
             {doctors.length > 0 ? (
               <>
                 <div className="space-y-3">
-                  {doctors.map((doctor) => (
+                  {doctors.map((doctor: any) => (
                     <button
                       key={doctor.id}
                       onClick={() => setSelectedDoctor(doctor.id)}
@@ -283,14 +289,34 @@ export default function NuevaCitaPage() {
                             )}
                           </div>
                           <div className="mt-2 space-y-1">
-                            {doctor.anos_experiencia && (
+                            {doctor.anos_experiencia > 0 && (
                               <p className="text-sm text-gray-600">
                                 ⭐ {doctor.anos_experiencia} años de experiencia
                               </p>
                             )}
                             {doctor.tarifa_consulta && (
                               <p className="text-sm font-medium text-green-600">
-                                💵 ${doctor.tarifa_consulta} por consulta
+                                💵 ${doctor.tarifa_consulta.toFixed(2)} por consulta
+                              </p>
+                            )}
+                            {(doctor.direccion || doctor.ciudad) && (
+                              <p className="text-sm text-gray-600 flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {doctor.ciudad && doctor.estado 
+                                  ? `${doctor.ciudad}, ${doctor.estado}`
+                                  : doctor.direccion || doctor.ciudad || doctor.estado}
+                              </p>
+                            )}
+                            {doctor.telefono && (
+                              <p className="text-sm text-gray-600 flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                {doctor.telefono}
+                              </p>
+                            )}
+                            {doctor.horario && (
+                              <p className="text-sm text-gray-600 flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                Horarios disponibles
                               </p>
                             )}
                             {doctor.biografia && (
@@ -469,7 +495,7 @@ export default function NuevaCitaPage() {
               <div className="text-sm space-y-1">
                 <p>
                   <span className="text-muted-foreground">Doctor:</span>{" "}
-                  {selectedDoctorData?.nombre_completo}
+                  {selectedDoctorData?.profile?.nombre_completo}
                 </p>
                 <p>
                   <span className="text-muted-foreground">Fecha:</span>{" "}
@@ -487,9 +513,9 @@ export default function NuevaCitaPage() {
                     ? "Presencial"
                     : "Teléfono"}
                 </p>
-                {selectedDoctorData?.consultation_price && (
+                {selectedDoctorData?.tarifa_consulta && (
                   <p className="font-semibold mt-2">
-                    Total: ${selectedDoctorData.consultation_price.toFixed(2)}
+                    Total: ${selectedDoctorData.tarifa_consulta.toFixed(2)}
                   </p>
                 )}
               </div>

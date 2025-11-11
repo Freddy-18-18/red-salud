@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Calendar, TrendingUp, DollarSign, Star, Clock } from "lucide-react";
+import { VerificationGuard } from "@/components/dashboard/medico/verification-guard";
 
 export default function DoctorEstadisticasPage() {
   const router = useRouter();
@@ -103,8 +104,9 @@ export default function DoctorEstadisticasPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Estadísticas</h1>
+    <VerificationGuard>
+      <div className="container mx-auto px-4 py-8 space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900">Estadísticas</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {statsCards.map((stat) => {
@@ -149,5 +151,6 @@ export default function DoctorEstadisticasPage() {
         </CardContent>
       </Card>
     </div>
+    </VerificationGuard>
   );
 }

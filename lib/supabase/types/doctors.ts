@@ -40,7 +40,7 @@ export interface TimeSlot {
 
 export interface DoctorProfile {
   id: string;
-  profile_id: string;
+  profile_id?: string;
   specialty_id: string | null;
   specialty?: MedicalSpecialty;
   license_number: string | null;
@@ -60,9 +60,20 @@ export interface DoctorProfile {
   sacs_data: any | null;
   average_rating: number;
   total_reviews: number;
-  schedule: DoctorSchedule;
+  schedule?: DoctorSchedule;
   created_at: string;
   updated_at: string;
+  // Campos adicionales del perfil base
+  nombre_completo?: string;
+  email?: string;
+  telefono?: string;
+  cedula?: string;
+  cedula_verificada?: boolean;
+  sacs_verificado?: boolean;
+  sacs_nombre?: string;
+  sacs_matricula?: string;
+  sacs_especialidad?: string;
+  universidad?: string;
 }
 
 export interface DoctorProfileFormData {

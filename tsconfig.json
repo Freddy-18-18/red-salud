@@ -31,5 +31,11 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "scripts", "sacs-verification-service", "supabase/functions"]
+  "exclude": [
+    "node_modules",
+    "scripts",
+    "sacs-verification-service",
+    "supabase/functions",
+    "mobile/**"
+  ]
 }

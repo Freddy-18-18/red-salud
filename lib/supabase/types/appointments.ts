@@ -4,6 +4,7 @@ export interface MedicalSpecialty {
   id: string;
   name: string;
   description?: string;
+  icon?: string;
   created_at: string;
 }
 
@@ -11,19 +12,22 @@ export interface DoctorProfile {
   id: string;
   specialty_id?: string;
   license_number?: string;
-  years_experience?: number;
-  bio?: string;
-  consultation_price?: number;
+  anos_experiencia?: number;
+  biografia?: string;
+  tarifa_consulta?: number;
   consultation_duration?: number;
-  is_available: boolean;
+  verified: boolean;
   created_at: string;
   updated_at: string;
   // Datos del perfil base
-  nombre_completo?: string;
-  email?: string;
-  avatar_url?: string;
+  profile?: {
+    id: string;
+    nombre_completo?: string;
+    email?: string;
+    avatar_url?: string;
+  };
   // Especialidad
-  specialty?: MedicalSpecialty;
+  specialty?: MedicalSpecialty & { icon?: string };
 }
 
 export interface DoctorSchedule {

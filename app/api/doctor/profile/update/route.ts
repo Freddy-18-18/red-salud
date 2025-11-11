@@ -27,9 +27,11 @@ export async function POST(request: Request) {
     }
 
     const cookieStore = await cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ 
+      cookies: async () => cookieStore 
+    });
 
-    // Actualizar perfil básico
+    // Actualizar perfil básico en profiles
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
@@ -47,29 +49,30 @@ export async function POST(request: Request) {
       );
     }
 
-    // Actualizar o insertar datos del médico
+    // Preparar arrays para idiomas
+    const idiomasArray = idiomas
+      ? idiomas.split(",").map((i: string) => i.trim()).filter(Boolean)
+      : [];
+
+    // Actualizar o insertar en doctor_details (usando nombres actuales de la BD)
     const { error: doctorError } = await supabase
-      .from("doctors")
+      .from("doctor_details")
       .upsert(
         {
-          user_id: userId,
-          mpps,
-          especialidad,
-          universidad,
-          anos_experiencia,
-          bio,
-          subespecialidades,
-          certificaciones,
-          idiomas,
+          profile_id: userId,
+          anos_experiencia: parseInt(String(anos_experiencia)) || 0,
+          biografia: bio || null,
+          professional_phone: telefono || null,
+          idiomas: idiomasArray.length > 0 ? idiomasArray : ['es'],
           updated_at: new Date().toISOString(),
         },
         {
-          onConflict: "user_id",
+          onConflict: "profile_id",
         }
       );
 
     if (doctorError) {
-      console.error("Error updating doctor:", doctorError);
+      console.error("Error updating doctor_details:", doctorError);
       return NextResponse.json(
         { error: "Error al actualizar información del médico" },
         { status: 500 }

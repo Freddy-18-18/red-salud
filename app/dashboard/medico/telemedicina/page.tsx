@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Video, Clock, User, Calendar } from "lucide-react";
+import { VerificationGuard } from "@/components/dashboard/medico/verification-guard";
 
 export default function DoctorTelemedicineaPage() {
   const router = useRouter();
@@ -59,8 +60,9 @@ export default function DoctorTelemedicineaPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Telemedicina</h1>
+    <VerificationGuard>
+      <div className="container mx-auto px-4 py-8 space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900">Telemedicina</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sessions.length > 0 ? (
@@ -110,5 +112,6 @@ export default function DoctorTelemedicineaPage() {
         )}
       </div>
     </div>
+    </VerificationGuard>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/lib/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import {
   User,
   Settings,
@@ -12,6 +12,7 @@ import {
   CreditCard,
   Loader2,
 } from "lucide-react";
+import { VerificationGuard } from "@/components/dashboard/medico/verification-guard";
 import { PreferencesTab } from "@/components/dashboard/profile/tabs/preferences-tab";
 import { SecurityTabNew as SecurityTab } from "@/components/dashboard/profile/tabs/security-tab-new";
 import { PrivacyTab } from "@/components/dashboard/profile/tabs/privacy-tab";
@@ -55,15 +56,16 @@ export default function ConfiguracionMedicoPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-          Configuración
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">
-          Administra tu perfil profesional y preferencias
-        </p>
-      </div>
+    <VerificationGuard>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Configuración
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            Administra tu perfil profesional y preferencias
+          </p>
+        </div>
 
       {/* Tab Navigation */}
       <nav className="border-b border-gray-200 dark:border-gray-700">
@@ -139,5 +141,6 @@ export default function ConfiguracionMedicoPage() {
         </AnimatePresence>
       </div>
     </div>
+    </VerificationGuard>
   );
 }

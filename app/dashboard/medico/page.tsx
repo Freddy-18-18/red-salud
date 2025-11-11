@@ -146,6 +146,14 @@ export default function DoctorDashboardPage() {
     return true;
   });
 
+  // Función para obtener saludo según la hora
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Buenos días";
+    if (hour >= 12 && hour < 19) return "Buenas tardes";
+    return "Buenas noches";
+  };
+
   // Renderizar dashboard con overlay si necesita setup
   const renderDashboard = () => (
     <div className="container mx-auto px-4 py-8">
@@ -158,11 +166,11 @@ export default function DoctorDashboardPage() {
         {/* Header */}
         <motion.div variants={fadeInUp}>
           <h1 className="text-3xl font-bold text-gray-900">
-            Bienvenido, Doctor
+            {getGreeting()}, Dr. {profile?.nombre_completo?.split(' ')[0] || "Doctor"}
           </h1>
           <p className="text-gray-600 mt-2">
-            {profile?.specialty?.name || "Médico"} •{" "}
-            {profile?.is_verified ? "Verificado ✓" : "Pendiente de verificación"}
+            {profile?.specialty?.name || profile?.sacs_especialidad || "Médico"} •{" "}
+            {profile?.is_verified || profile?.sacs_verified ? "Verificado ✓" : "Pendiente de verificación"}
           </p>
         </motion.div>
 

@@ -32,16 +32,125 @@ export function useDoctorProfile(userId?: string) {
     setError(null);
 
     try {
-      const result = await getDoctorProfile(userId);
+      console.log('Loading profile for userId:', userId);
 
-      if (result.success && result.data) {
-        setProfile(result.data);
-      } else if (result.error === 'Profile not found') {
-        // No es un error, simplemente no tiene perfil aún
-        setProfile(null);
-      } else {
-        setError(result.error || 'Error al cargar perfil');
+      // Primero obtener el perfil base
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) {
+        console.error('Error loading profile:', profileError);
+        setError(profileError.message || 'Error al cargar perfil');
+        setLoading(false);
+        return;
       }
+
+      if (!profileData) {
+        console.log('No profile found for user:', userId);
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      // Luego obtener doctor_details (solo columnas que existen)
+      const { data: doctorDetailsData, error: doctorDetailsError } = await supabase
+        .from('doctor_details')
+        .select(`
+          id,
+          licencia_medica,
+          especialidad_id,
+          anos_experiencia,
+          certificaciones,
+          idiomas,
+          horario_atencion,
+          tarifa_consulta,
+          acepta_seguros,
+          verified,
+          biografia,
+          sacs_verified,
+          sacs_data,
+          created_at,
+          updated_at
+        `)
+        .eq('profile_id', userId)
+        .maybeSingle();
+
+      if (doctorDetailsError) {
+        console.error('Error loading doctor_details:', doctorDetailsError);
+        setError(doctorDetailsError.message || 'Error al cargar detalles del médico');
+        setLoading(false);
+        return;
+      }
+
+      if (!doctorDetailsData) {
+        // No tiene perfil de médico aún
+        console.log('No doctor_details found for user:', userId);
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      // Obtener especialidad si existe
+      let specialtyData = null;
+      if (doctorDetailsData.especialidad_id) {
+        const { data: specialty, error: specialtyError } = await supabase
+          .from('specialties')
+          .select('*')
+          .eq('id', doctorDetailsData.especialidad_id)
+          .single();
+
+        if (!specialtyError && specialty) {
+          specialtyData = specialty;
+        }
+      }
+
+      console.log('Doctor details loaded:', {
+        userId,
+        hasDetails: !!doctorDetailsData,
+        verified: doctorDetailsData?.verified,
+        sacsVerified: doctorDetailsData?.sacs_verified,
+        hasSpecialty: !!specialtyData,
+      });
+
+      // Transformar datos al formato esperado
+      const transformedProfile: DoctorProfile = {
+        id: profileData.id,
+        nombre_completo: profileData.nombre_completo,
+        email: profileData.email,
+        telefono: profileData.telefono,
+        cedula: profileData.cedula,
+        cedula_verificada: profileData.cedula_verificada,
+        sacs_verificado: profileData.sacs_verificado,
+        sacs_nombre: profileData.sacs_nombre,
+        sacs_matricula: profileData.sacs_matricula,
+        sacs_especialidad: profileData.sacs_especialidad,
+        // Usar nombres de campos actuales de la BD
+        license_number: doctorDetailsData.licencia_medica,
+        specialty: specialtyData,
+        years_experience: doctorDetailsData.anos_experiencia || 0,
+        professional_phone: null, // No existe en BD actual
+        professional_email: null, // No existe en BD actual
+        bio: doctorDetailsData.biografia,
+        languages: doctorDetailsData.idiomas || ['es'],
+        is_verified: doctorDetailsData.verified,
+        sacs_verified: doctorDetailsData.sacs_verified,
+        sacs_data: doctorDetailsData.sacs_data,
+        universidad: '',
+        average_rating: 0, // No existe en BD actual
+        total_reviews: 0, // No existe en BD actual
+      } as any;
+
+      console.log('Profile transformed successfully:', {
+        id: transformedProfile.id,
+        nombre: transformedProfile.nombre_completo,
+        verified: transformedProfile.is_verified,
+        sacsVerified: transformedProfile.sacs_verified,
+      });
+
+      setProfile(transformedProfile);
     } catch (err: any) {
       console.error('Error loading profile:', err);
       setError(err.message || 'Error al cargar perfil');

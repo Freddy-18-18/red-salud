@@ -1,164 +1,124 @@
-# 🏥 Red-Salud
+# 🩺 Red-Salud
 
-Plataforma integral de servicios de salud que conecta pacientes, médicos, clínicas, farmacias, laboratorios y seguros en un ecosistema digital completo.
+Plataforma de telemedicina que conecta pacientes con profesionales médicos para consultas online y gestión de salud.
 
-## 🚀 Stack Tecnológico
+## 🚀 Inicio Rápido
+
+### 1. Instalar Dependencias
+
+```bash
+npm install
+```
+
+### 2. Configurar Variables de Entorno
+
+Copia `.env.example` a `.env.local` y configura:
+
+```bash
+# Supabase (Obligatorio)
+NEXT_PUBLIC_SUPABASE_URL=tu_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_key
+
+# Google Gemini AI (Obligatorio para asistente médico)
+GEMINI_API_KEY=tu_api_key  # Obtén gratis en: https://aistudio.google.com/app/apikey
+
+# ICD-11 API (Opcional)
+ICD_API_CLIENT_ID=tu_client_id
+ICD_API_CLIENT_SECRET=tu_secret
+```
+
+### 3. Ejecutar en Desarrollo
+
+```bash
+npm run dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000)
+
+## 📚 Documentación
+
+Toda la documentación está en la carpeta `/docs`:
+
+- **[docs/EMPEZAR_AQUI.md](docs/EMPEZAR_AQUI.md)** - Guía de inicio rápido
+- **[docs/CONFIGURACION_GEMINI_AI.md](docs/CONFIGURACION_GEMINI_AI.md)** - Configurar asistente IA
+- **[docs/WORKSPACE_MEDICO_NUEVO.md](docs/WORKSPACE_MEDICO_NUEVO.md)** - Workspace médico
+
+## 🏗️ Stack Tecnológico
 
 - **Framework:** Next.js 16 (App Router)
-- **Runtime:** React 19.2
-- **Lenguaje:** TypeScript 5
-- **Backend:** Supabase (Auth, Database, Storage)
-- **Estilos:** Tailwind CSS 4
+- **UI:** React 19.2 + Tailwind CSS 4
+- **Base de datos:** Supabase
+- **IA:** Google Gemini 1.5 Flash
 - **Componentes:** shadcn/ui + Radix UI
-- **Animaciones:** Framer Motion
-- **Validación:** Zod + React Hook Form
+
+## 🎯 Características Principales
+
+### Para Pacientes
+- 📋 Perfil médico completo
+- 💬 Mensajería con doctores
+- 📅 Gestión de citas
+- 📄 Historial médico
+
+### Para Médicos
+- 🤖 Asistente IA para notas médicas
+- 🔍 Búsqueda de códigos ICD-11
+- 👥 Gestión de pacientes
+- 📝 Generación de recetas
+
+### Para Administradores
+- 📊 Dashboard de métricas
+- 👨‍⚕️ Verificación de médicos
+- 💳 Gestión de pagos
+
+## 🔧 Scripts Disponibles
+
+```bash
+npm run dev          # Desarrollo
+npm run build        # Build para producción
+npm run start        # Servidor de producción
+npm run lint         # Linter
+npm run verify-workspace  # Verificar configuración del workspace médico
+```
 
 ## 📁 Estructura del Proyecto
 
 ```
 red-salud/
-├── app/                  # Next.js App Router
-│   ├── (public)/         # Páginas públicas (landing, blog, servicios)
-│   ├── (auth)/           # Autenticación (login, register)
-│   ├── dashboard/        # Dashboards por rol (paciente, médico, etc.)
-│   ├── api/              # API routes
-│   └── layout.tsx        # Root layout
-├── components/           # Componentes React reutilizables
-│   ├── auth/             # Componentes de autenticación
-│   ├── dashboard/        # Componentes de dashboard
-│   ├── layout/           # Header, Footer, etc.
-│   ├── providers/        # Context providers
-│   ├── sections/         # Secciones de landing
-│   ├── ui/               # shadcn/ui components
-│   └── video/            # Componentes de video
-├── hooks/                # Custom React hooks
-├── lib/                  # Utilidades y configuración
-│   ├── supabase/         # Cliente y funciones de Supabase
-│   ├── validations/      # Esquemas de validación Zod
-│   └── utils.ts          # Funciones utilitarias
-├── public/               # Assets estáticos
-├── supabase/             # Configuración y migraciones
-├── scripts/              # Scripts de utilidad
-├── docs/                 # Documentación completa
-│   ├── deployment/       # Guías de despliegue
-│   ├── architecture/     # Arquitectura del sistema
-│   ├── guides/           # Guías de uso
-│   └── checklists/       # Checklists de implementación
-└── sacs-verification-service/  # Servicio de verificación
-
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   ├── dashboard/         # Dashboards por rol
+│   └── auth/              # Autenticación
+├── components/            # Componentes React
+│   ├── ui/               # Componentes base (shadcn)
+│   └── dashboard/        # Componentes específicos
+├── lib/                   # Utilidades y servicios
+│   ├── supabase/         # Cliente Supabase
+│   └── services/         # Servicios (Gemini, ICD-11)
+├── docs/                  # Documentación completa
+└── public/               # Assets estáticos
 ```
 
-## 🏗️ Arquitectura
+## 🐛 Solución de Problemas
 
-### Route Groups de Next.js
+### Error: "GEMINI_API_KEY no está configurada"
 
-El proyecto utiliza Route Groups para organizar las rutas sin afectar las URLs:
+1. Obtén tu API key gratis en: https://aistudio.google.com/app/apikey
+2. Agrégala al archivo `.env.local`
+3. Reinicia el servidor
 
-- **`(public)/`**: Páginas públicas accesibles sin autenticación
-  - Landing page, blog, servicios, precios, etc.
-  - Layout con Header y Footer
+### La búsqueda ICD-11 no funciona
 
-- **`(auth)/`**: Páginas de autenticación
-  - Login, registro, recuperación de contraseña
-  - Layout minimalista sin header/footer
+Es opcional. Configura las credenciales en `.env.local` o usa las sugerencias del asistente IA.
 
-- **`dashboard/`**: Dashboards protegidos por rol
-  - Paciente, Médico, Clínica, Farmacia, etc.
-  - Layout con sidebar y navegación específica
+## 📄 Licencia
 
-### Roles de Usuario
+Privado - Red-Salud © 2025
 
-- **Paciente**: Consultas, citas, historial médico
-- **Médico**: Atención de pacientes, telemedicina
-- **Clínica**: Gestión de servicios médicos
-- **Farmacia**: Gestión de medicamentos y recetas
-- **Laboratorio**: Resultados de análisis
-- **Ambulancia**: Servicios de emergencia
-- **Seguro**: Gestión de pólizas y coberturas
+## 🤝 Equipo
 
-## 🚀 Inicio Rápido
-
-### Prerrequisitos
-
-- Node.js 22.x o superior
-- npm, yarn, pnpm o bun
-- Cuenta de Supabase
-
-### Instalación
-
-```bash
-# Clonar el repositorio
-git clone https://github.com/firf18/red-salud.git
-cd red-salud
-
-# Instalar dependencias
-npm install
-
-# Configurar variables de entorno
-cp .env.example .env.local
-# Edita .env.local con tus credenciales de Supabase
-
-# Ejecutar en desarrollo
-npm run dev
-```
-
-### Variables de Entorno
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=tu-url-de-supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key
-```
-
-Ver `docs/deployment/VARIABLES-ENTORNO.md` para más detalles.
-
-## 📚 Documentación
-
-- **[Guía de Despliegue](docs/deployment/)**: Instrucciones para deploy en Vercel y Cloudflare
-- **[Arquitectura](docs/architecture/)**: Diseño del sistema y decisiones técnicas
-- **[Guías](docs/guides/)**: Solución de problemas y tutoriales
-- **[Checklists](docs/checklists/)**: Listas de verificación para implementación
-
-## 🛠️ Comandos Disponibles
-
-```bash
-# Desarrollo
-npm run dev          # Inicia servidor de desarrollo
-
-# Producción
-npm run build        # Construye para producción
-npm start            # Inicia servidor de producción
-
-# Calidad de código
-npm run lint         # Ejecuta ESLint
-```
-
-## 🌐 Despliegue
-
-El proyecto está configurado para desplegarse en:
-
-- **Frontend**: Vercel
-- **Backend**: Supabase
-- **CDN**: Cloudflare
-
-Ver `docs/deployment/` para guías detalladas.
-
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📝 Licencia
-
-Este proyecto es privado y confidencial.
-
-## 👥 Equipo
-
-Desarrollado por el equipo de Red-Salud.
+Desarrollado por el equipo de Red-Salud
 
 ---
 
-**Versión:** 0.1.0  
+**Versión:** 2.0.0  
 **Última actualización:** Noviembre 2025

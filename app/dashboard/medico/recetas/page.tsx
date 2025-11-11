@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Plus, Calendar, User } from "lucide-react";
+import { VerificationGuard } from "@/components/dashboard/medico/verification-guard";
 
 export default function DoctorRecetasPage() {
   const router = useRouter();
@@ -59,9 +60,10 @@ export default function DoctorRecetasPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Recetas Médicas</h1>
+    <VerificationGuard>
+      <div className="container mx-auto px-4 py-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900">Recetas Médicas</h1>
         <Button onClick={() => router.push("/dashboard/medico/recetas/nueva")}>
           <Plus className="h-4 w-4 mr-2" />
           Nueva Receta
@@ -117,5 +119,6 @@ export default function DoctorRecetasPage() {
         </Card>
       )}
     </div>
+    </VerificationGuard>
   );
 }

@@ -180,7 +180,7 @@ export default function DoctorSetupPage() {
     setLoading(true);
 
     try {
-      // Crear perfil de médico
+      // Crear perfil de médico (usando nombres actuales de la BD)
       const { data: doctorData, error: profileError } = await supabase
         .from("doctor_details")
         .insert({
@@ -200,7 +200,7 @@ export default function DoctorSetupPage() {
         throw new Error(profileError.message || "Error al crear perfil de médico");
       }
 
-      // Actualizar perfil base
+      // Actualizar perfil base con datos SACS
       const { error: updateError } = await supabase
         .from("profiles")
         .update({

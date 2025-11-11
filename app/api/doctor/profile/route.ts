@@ -15,12 +15,29 @@ export async function GET(request: Request) {
     }
 
     const cookieStore = await cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ 
+      cookies: async () => cookieStore 
+    });
 
-    // Obtener datos del perfil
+    // Obtener datos del perfil con doctor_details y specialty
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("*")
+      .select(`
+        *,
+        doctor_details!inner (
+          id,
+          anos_experiencia,
+          biografia,
+          licencia_medica,
+          professional_phone,
+          professional_email,
+          idiomas,
+          especialidad_id,
+          verified,
+          sacs_verified,
+          sacs_data
+        )
+      `)
       .eq("id", userId)
       .single();
 
@@ -32,31 +49,39 @@ export async function GET(request: Request) {
       );
     }
 
-    // Obtener datos del médico
-    const { data: doctor, error: doctorError } = await supabase
-      .from("doctors")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
-
-    if (doctorError && doctorError.code !== "PGRST116") {
-      console.error("Error fetching doctor:", doctorError);
+    // Obtener especialidad si existe
+    let especialidadNombre = profile.sacs_especialidad || "";
+    if (profile.doctor_details?.especialidad_id) {
+      const { data: specialty } = await supabase
+        .from("specialties")
+        .select("name")
+        .eq("id", profile.doctor_details.especialidad_id)
+        .single();
+      
+      if (specialty) {
+        especialidadNombre = specialty.name;
+      }
     }
+
+    // Extraer datos SACS si existen
+    const sacsData = profile.doctor_details?.sacs_data || {};
 
     // Combinar datos
     const combinedData = {
-      nombre_completo: profile.nombre_completo,
+      nombre_completo: profile.nombre_completo || sacsData.nombre_completo || "",
       email: profile.email,
-      telefono: profile.telefono,
-      cedula: profile.cedula,
-      mpps: doctor?.mpps || "",
-      especialidad: doctor?.especialidad || "",
-      universidad: doctor?.universidad || "",
-      anos_experiencia: doctor?.anos_experiencia || 0,
-      bio: doctor?.bio || "",
-      subespecialidades: doctor?.subespecialidades || "",
-      certificaciones: doctor?.certificaciones || "",
-      idiomas: doctor?.idiomas || "",
+      telefono: profile.telefono || profile.doctor_details?.professional_phone || "",
+      cedula: profile.cedula || sacsData.cedula || "",
+      mpps: profile.doctor_details?.licencia_medica || sacsData.matricula_principal || profile.sacs_matricula || "",
+      especialidad: especialidadNombre || sacsData.especialidad_display || "",
+      universidad: "",
+      anos_experiencia: profile.doctor_details?.anos_experiencia || 0,
+      bio: profile.doctor_details?.biografia || "",
+      subespecialidades: "",
+      certificaciones: "",
+      idiomas: Array.isArray(profile.doctor_details?.idiomas)
+        ? profile.doctor_details.idiomas.join(", ")
+        : "",
     };
 
     return NextResponse.json(combinedData);

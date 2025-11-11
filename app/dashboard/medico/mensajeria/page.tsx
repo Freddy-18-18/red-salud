@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageSquare, Send, Search } from "lucide-react";
+import { VerificationGuard } from "@/components/dashboard/medico/verification-guard";
 
 export default function DoctorMensajeriaPage() {
   const router = useRouter();
@@ -96,8 +97,9 @@ export default function DoctorMensajeriaPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Mensajería</h1>
+    <VerificationGuard>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Mensajería</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
         {/* Lista de conversaciones */}
@@ -231,5 +233,6 @@ export default function DoctorMensajeriaPage() {
         </Card>
       </div>
     </div>
+    </VerificationGuard>
   );
 }
