@@ -1,147 +1,160 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { fadeInUp, staggerContainer } from "@/lib/animations";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { HelpCircle } from 'lucide-react';
 
 const faqs = [
   {
-    question: "¿Cómo funciona Red-Salud?",
-    answer: "Red-Salud es una plataforma integral que conecta pacientes con profesionales de la salud, farmacias, laboratorios, aseguradoras y más. Puedes agendar citas, realizar teleconsultas, gestionar tu historial médico, comprar medicamentos y acceder a resultados de laboratorio, todo en un solo lugar.",
+    category: 'Cómo Funciona',
+    items: [
+      {
+        question: '¿Cómo funciona una videoconsulta?',
+        answer: 'Una videoconsulta es una cita médica virtual a través de videollamada HD. Simplemente accedes a tu cuenta, entras a la videosala a la hora acordada, y conectas con tu médico. El proceso es exactamente igual que una consulta presencial: describes tus síntomas, el médico te examina usando herramientas disponibles, y recibes diagnóstico y tratamiento. Toda la consulta queda registrada en tu historial digital.',
+      },
+      {
+        question: '¿Qué necesito para una videoconsulta?',
+        answer: 'Solo necesitas un dispositivo con cámara y micrófono (computadora, tablet o smartphone), conexión a internet estable (mínimo 2Mbps), y la app de Red Salud o acceso web. No necesitas descargar programas adicionales. Recomendamos hacer la consulta en un lugar privado y tranquilo.',
+      },
+      {
+        question: '¿Cuánto tiempo dura una consulta?',
+        answer: 'Nuestras videoconsultas tienen una duración promedio de 15-20 minutos para consultas generales y 20-30 minutos para especialidades. El tiempo es flexible según la complejidad de tu caso. Si necesitas más tiempo, el médico puede extender la consulta.',
+      },
+    ],
   },
   {
-    question: "¿Es segura mi información médica?",
-    answer: "Absolutamente. Usamos encriptación de extremo a extremo y cumplimos con los estándares internacionales de protección de datos médicos. Tu información está protegida con tecnología de nivel bancario y solo tú decides quién puede acceder a ella.",
+    category: 'Precios y Pagos',
+    items: [
+      {
+        question: '¿Cuánto cuesta una consulta?',
+        answer: 'Los precios varían según la especialidad y el médico. En promedio, una consulta de medicina general cuesta entre $10-$20 USD, mientras que especialistas pueden costar entre $20-$50 USD. Todos los precios están claramente indicados en la plataforma antes de que agendes tu cita. Además, ofrecemos planes de suscripción con descuentos de hasta 40%.',
+      },
+      {
+        question: '¿Qué métodos de pago aceptan?',
+        answer: 'Aceptamos múltiples métodos: tarjetas de crédito/débito (Visa, Mastercard), transferencias bancarias, y billeteras digitales. Todos los pagos son procesados de forma segura con encriptación de nivel bancario. Recibiendo un recibo digital automáticamente.',
+      },
+      {
+        question: '¿Puedo usar mi seguro médico?',
+        answer: 'Sí, trabajamos con varias aseguradoras en Venezuela. Si tienes póliza con alguna de nuestras aseguradoras aliadas, puedes usar tu cobertura. Verifica con tu aseguradora qué coberturas tienes en telemedicina y confirma con nosotros antes de agendar.',
+      },
+    ],
   },
   {
-    question: "¿Cuánto cuesta usar Red-Salud?",
-    answer: "Registrarte y usar las funciones básicas de la plataforma es completamente gratis. Los costos están asociados a los servicios específicos que contrates (consultas, medicamentos, exámenes), que son establecidos por cada profesional o proveedor.",
+    category: 'Seguridad y Privacidad',
+    items: [
+      {
+        question: '¿Mis datos médicos están seguros?',
+        answer: 'Absolutamente. Utilizamos encriptación AES-256 de grado militar, cumplimos con estándares HIPAA, ISO 27001 y regulaciones locales de protección de datos. Tu historial está protegido por múltiples capas de seguridad y acceso controlado. Solo los médicos que tratas pueden ver tu información con tu consentimiento.',
+      },
+      {
+        question: '¿Quién puede ver mi historial médico?',
+        answer: 'Solo tú y los médicos con los que consultas pueden acceder a tu historial. Tú tienes control total sobre qué información compartir. Puedes permitir que especialistas vean información anterior, pero siempre bajo tu consentimiento explícito. Hay un registro de auditoría de quién accedió a tus datos.',
+      },
+      {
+        question: '¿Qué pasa con mis datos después de cerrar mi cuenta?',
+        answer: 'Tu historial médico se mantiene almacenado según requisitos legales de retención. Puedes solicitar la exportación de tus datos en cualquier momento. Si deseas eliminación completa de tu cuenta, procederemos con la eliminación segura de tus datos personales mientras mantenemos registros históricos según la ley.',
+      },
+    ],
   },
   {
-    question: "¿Qué roles puedo tener en la plataforma?",
-    answer: "Ofrecemos 8 roles diferentes: Paciente, Médico, Farmacia, Laboratorio, Aseguradora, Secretaria, Clínica y Turismo Médico. Cada rol tiene funcionalidades específicas diseñadas para optimizar el flujo de trabajo de ese sector.",
-  },
-  {
-    question: "¿Puedo acceder desde cualquier dispositivo?",
-    answer: "Sí, Red-Salud funciona en computadoras, tablets y smartphones. Tu información se sincroniza automáticamente entre todos tus dispositivos para que siempre tengas acceso cuando lo necesites.",
-  },
-  {
-    question: "¿Cómo se verifican los profesionales?",
-    answer: "Todos los médicos y profesionales de la salud pasan por un proceso riguroso de verificación que incluye validación de credenciales, licencias profesionales y antecedentes. Solo profesionales certificados pueden ofrecer servicios en nuestra plataforma.",
+    category: 'Atención Médica',
+    items: [
+      {
+        question: '¿Las recetas digitales son válidas?',
+        answer: 'Sí, completamente válidas. Nuestras recetas médicas digitales tienen firma electrónica certificada y son reconocidas por todas las farmacias afiliadas a nuestra red. Puedes descargarlas en PDF, guardarlas en tu teléfono o enviarlas directamente a tu farmacia de confianza.',
+      },
+      {
+        question: '¿Qué hago si necesito exámenes de laboratorio?',
+        answer: 'Si el médico lo indica, puedes agendar los exámenes directamente desde la plataforma con nuestros laboratorios afiliados. Recibes un voucher digital, acudes al laboratorio (o solicitamos toma domiciliaria), y los resultados se suben automáticamente a tu historial en 24-48 horas.',
+      },
+      {
+        question: '¿Puedo obtener una segunda opinión?',
+        answer: 'Claro, es tu derecho. Puedes consultar con otros médicos para obtener una segunda opinión. Todos tus archivos anteriores están disponibles para compartir. Algunos especialistas incluso ofrecen paquetes específicos de segunda opinión.',
+      },
+    ],
   },
 ];
 
 export function FAQSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-
   return (
-    <section className="py-20 lg:py-32 bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-background relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-5 dark:opacity-10">
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
-        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000" />
-      </div>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div
-          className="text-center max-w-4xl mx-auto mb-16"
-          variants={staggerContainer}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          <motion.div
-            variants={fadeInUp}
-            className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-teal-100 dark:from-blue-900/30 dark:to-teal-900/30 text-blue-700 dark:text-blue-300 text-sm font-semibold mb-6 border border-blue-200 dark:border-blue-800"
-          >
-            Preguntas frecuentes
-          </motion.div>
-          <motion.h2
-            variants={fadeInUp}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-foreground mb-6 leading-tight"
-          >
-            ¿Tienes dudas?
-          </motion.h2>
-          <motion.p
-            variants={fadeInUp}
-            className="text-xl text-gray-600 dark:text-muted-foreground leading-relaxed"
-          >
-            Encuentra respuestas a las preguntas más comunes sobre nuestra plataforma
-          </motion.p>
-        </motion.div>
-
-        <motion.div
-          className="max-w-4xl mx-auto space-y-4"
-          variants={staggerContainer}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          {faqs.map((faq, index) => (
-            <motion.div
-              key={index}
-              variants={fadeInUp}
-              className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg"
-            >
-              <button
-                onClick={() => toggleFAQ(index)}
-                className="w-full px-8 py-6 flex items-center justify-between gap-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-card/80"
-              >
-                <span className="text-lg font-semibold text-gray-900 dark:text-foreground pr-4">
-                  {faq.question}
-                </span>
-                <div className="flex-shrink-0">
-                  {openIndex === index ? (
-                    <ChevronUp className="h-6 w-6 text-blue-600 dark:text-blue-400 transition-transform" />
-                  ) : (
-                    <ChevronDown className="h-6 w-6 text-gray-400 dark:text-gray-600 transition-transform" />
-                  )}
-                </div>
-              </button>
-
-              <motion.div
-                initial={false}
-                animate={{
-                  height: openIndex === index ? "auto" : 0,
-                  opacity: openIndex === index ? 1 : 0,
-                }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="overflow-hidden"
-              >
-                <div className="px-8 pb-6 pt-2">
-                  <p className="text-gray-600 dark:text-muted-foreground leading-relaxed">
-                    {faq.answer}
-                  </p>
-                </div>
-              </motion.div>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Contact CTA */}
-        <motion.div
-          variants={fadeInUp}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
-          className="mt-16 text-center"
-        >
-          <p className="text-gray-600 dark:text-muted-foreground mb-4">
-            ¿No encuentras la respuesta que buscas?
+    <section className="py-20 bg-gradient-to-b from-white to-gray-50 dark:from-slate-900 dark:to-slate-900/50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800 mb-6">
+            <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              Preguntas Frecuentes
+            </span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            Respondemos tus dudas
+          </h2>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Encuentra respuestas rápidas a las preguntas más comunes sobre nuestro servicio
           </p>
-          <a
-            href="mailto:soporte@red-salud.com"
-            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold hover:underline transition-all"
-          >
-            Contáctanos directamente
-            <span aria-hidden="true">→</span>
-          </a>
-        </motion.div>
+        </div>
+
+        {/* FAQ by Category */}
+        <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {faqs.map((category) => (
+            <div key={category.category}>
+              {/* Category Title */}
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-teal-500 rounded-full" />
+                {category.category}
+              </h3>
+
+              {/* Accordion */}
+              <Accordion type="single" collapsible className="w-full">
+                {category.items.map((item, index) => (
+                  <AccordionItem
+                    key={`${category.category}-${index}`}
+                    value={`${category.category}-${index}`}
+                    className="border border-gray-200 dark:border-slate-700 rounded-lg mb-3 overflow-hidden hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
+                  >
+                    <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors data-[state=open]:bg-blue-50 dark:data-[state=open]:bg-blue-900/20">
+                      <span className="text-left font-semibold text-gray-900 dark:text-white">
+                        {item.question}
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 py-4 bg-gray-50 dark:bg-slate-800/50 text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {item.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          ))}
+        </div>
+
+        {/* Still have questions */}
+        <div className="mt-16 bg-gradient-to-r from-blue-100 to-teal-100 dark:from-blue-900/20 dark:to-teal-900/20 border border-blue-200 dark:border-blue-800/50 rounded-2xl p-8 text-center">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            ¿Aún tienes dudas?
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Nuestro equipo de soporte está disponible 24/7 para ayudarte
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="#"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+            >
+              Contactar Soporte
+            </a>
+            <a
+              href="#"
+              className="px-6 py-3 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              Ver Centro de Ayuda
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   );

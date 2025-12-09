@@ -9,6 +9,10 @@ import { UserProfileModal } from "../profile";
 import { UserProfileModalDoctor } from "../profile/doctor";
 import { DiditSidebar } from "./didit-sidebar";
 import { DiditMobileSidebar } from "./didit-mobile-sidebar";
+import { useSessionSetup, useSessionValidation } from "@/hooks/auth";
+import { SessionTimer } from "@/components/auth";
+import { TourTriggerButton } from "../tour-guide/tour-trigger-button";
+import { ChatWidget } from "@/components/chatbot/chat-widget";
 
 interface DashboardLayoutClientProps {
   children: React.ReactNode;
@@ -29,6 +33,10 @@ export function DashboardLayoutClient({
 }: DashboardLayoutClientProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+
+  // Configurar y validar sesión automáticamente
+  useSessionSetup();
+  useSessionValidation();
 
   // Configurar menú según el rol
   const menuGroups = userRole === "secretaria"
@@ -149,9 +157,12 @@ export function DashboardLayoutClient({
             <span className="font-bold text-lg">Red-Salud</span>
           </div>
 
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <SessionTimer className="hidden sm:flex" />
+            <Button variant="ghost" size="icon">
+              <Bell className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -202,6 +213,26 @@ export function DashboardLayoutClient({
           userName={userName}
           userEmail={userEmail}
           userId={userId}
+        />
+      )}
+
+      {/* Tour Trigger Button - Solo para médicos */}
+      {userRole === "medico" && <TourTriggerButton />}
+
+      {/* Session Timer - Por encima del chatbot (z-index mayor) */}
+      <SessionTimer 
+        className="hidden md:flex fixed bottom-20 right-6 z-50 shadow-lg" 
+        showWarning={true}
+      />
+
+      {/* Chatbot - Esquina inferior derecha (debajo del timer) */}
+      {userRole === "medico" && (
+        <ChatWidget 
+          persona="doctor"
+          context={{
+            role: "medico",
+            userId,
+          }}
         />
       )}
     </div>

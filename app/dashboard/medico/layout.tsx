@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardLayoutClient } from "@/components/dashboard/layout/dashboard-layout-client";
 import { AppProviders } from "@/components/providers/app-providers";
+import { TourGuideProvider } from "@/components/dashboard/tour-guide/tour-guide-provider";
 
 export default async function MedicoLayout({
   children,
@@ -57,14 +58,16 @@ export default async function MedicoLayout({
 
   return (
     <AppProviders>
-      <DashboardLayoutClient
-        userName={profile?.nombre_completo || user.email?.split("@")[0]}
-        userEmail={user.email}
-        userRole="medico"
-        userId={user.id}
-      >
-        {children}
-      </DashboardLayoutClient>
+      <TourGuideProvider>
+        <DashboardLayoutClient
+          userName={profile?.nombre_completo || user.email?.split("@")[0]}
+          userEmail={user.email}
+          userRole="medico"
+          userId={user.id}
+        >
+          {children}
+        </DashboardLayoutClient>
+      </TourGuideProvider>
     </AppProviders>
   );
 }

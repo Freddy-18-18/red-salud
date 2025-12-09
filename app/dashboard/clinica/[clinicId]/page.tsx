@@ -18,7 +18,7 @@ export default function ClinicOverviewPage() {
   const params = useParams();
   const clinicId = params?.clinicId as string;
   const { selectedLocationIds } = useClinicScope();
-  
+
   const {
     currentClinic,
     locations,
@@ -124,8 +124,8 @@ export default function ClinicOverviewPage() {
 
       {/* Accesos Rápidos */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="hover:shadow-md transition-shadow cursor-pointer" asChild>
-          <Link href={`/dashboard/clinica/${clinicId}/operaciones`}>
+        <Link href={`/dashboard/clinica/${clinicId}/operaciones`}>
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader>
               <CardTitle>Operaciones</CardTitle>
               <CardDescription>
@@ -137,11 +137,11 @@ export default function ClinicOverviewPage() {
                 {stats.available_resources} recursos disponibles
               </div>
             </CardContent>
-          </Link>
-        </Card>
+          </Card>
+        </Link>
 
-        <Card className="hover:shadow-md transition-shadow cursor-pointer" asChild>
-          <Link href={`/dashboard/clinica/${clinicId}/rcm`}>
+        <Link href={`/dashboard/clinica/${clinicId}/rcm`}>
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader>
               <CardTitle>RCM & Finanzas</CardTitle>
               <CardDescription>
@@ -153,11 +153,11 @@ export default function ClinicOverviewPage() {
                 {stats.active_claims} claims activos
               </div>
             </CardContent>
-          </Link>
-        </Card>
+          </Card>
+        </Link>
 
-        <Card className="hover:shadow-md transition-shadow cursor-pointer" asChild>
-          <Link href={`/dashboard/clinica/${clinicId}/pacientes`}>
+        <Link href={`/dashboard/clinica/${clinicId}/pacientes`}>
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader>
               <CardTitle>Pacientes Internacionales</CardTitle>
               <CardDescription>
@@ -169,8 +169,8 @@ export default function ClinicOverviewPage() {
                 {stats.international_patients} en tratamiento
               </div>
             </CardContent>
-          </Link>
-        </Card>
+          </Card>
+        </Link>
       </div>
 
       {/* Avisos / Alertas de Advertencia */}

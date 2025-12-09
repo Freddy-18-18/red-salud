@@ -34,6 +34,7 @@ function RegisterFormContent({ role, roleLabel }: RegisterFormProps) {
     role,
     mode: "register",
     onError: setError,
+    rememberMe: true, // Por defecto true en registro
   });
   useOAuthErrors(setError);
 

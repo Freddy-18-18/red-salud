@@ -5,16 +5,17 @@ interface UseOAuthSignInProps {
   role: UserRole;
   mode: "login" | "register";
   onError: (error: string) => void;
+  rememberMe?: boolean;
 }
 
-export function useOAuthSignIn({ role, mode, onError }: UseOAuthSignInProps) {
+export function useOAuthSignIn({ role, mode, onError, rememberMe = false }: UseOAuthSignInProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const signInWithGoogle = async () => {
     setIsLoading(true);
     onError("");
 
-    const result = await signInWithOAuth("google", role, mode);
+    const result = await signInWithOAuth("google", role, mode, rememberMe);
 
     if (!result.success) {
       const errorMessage = mode === "login" 

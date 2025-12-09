@@ -9,6 +9,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { VerificationGuard } from "@/components/dashboard/medico/features/verification-guard";
 import { searchConsultationReasons } from "@/lib/data/consultation-reasons";
 
+// React Hook Form & Zod
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { appointmentSchema, AppointmentFormValues } from "@/lib/validations/appointment";
+
 // Components
 import { PatientSelector } from "@/components/citas/nueva/patient-selector";
 import { AppointmentForm } from "@/components/citas/nueva/appointment-form";
@@ -21,24 +26,34 @@ function NuevaCitaContent() {
   const [error, setError] = useState<string | null>(null);
   const [patients, setPatients] = useState<any[]>([]);
   const [loadingPatients, setLoadingPatients] = useState(true);
+  const [checkingConflict, setCheckingConflict] = useState(false);
+  const [conflictingAppointments, setConflictingAppointments] = useState<any[]>([]);
 
   // Obtener fecha, hora y paciente de los parámetros URL
   const dateParam = searchParams.get("date");
   const hourParam = searchParams.get("hour");
   const pacienteParam = searchParams.get("paciente");
 
-  const [formData, setFormData] = useState({
-    paciente_id: pacienteParam || "",
-    fecha: dateParam ? format(new Date(dateParam), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
-    hora: hourParam ? `${hourParam.padStart(2, "0")}:00` : "09:00",
-    duracion_minutos: "30",
-    tipo_cita: "presencial",
-    motivo: "",
-    notas_internas: "",
-    precio: "",
-    metodo_pago: "efectivo",
-    enviar_recordatorio: true,
+  const form = useForm<AppointmentFormValues>({
+    resolver: zodResolver(appointmentSchema),
+    defaultValues: {
+      paciente_id: pacienteParam || "",
+      fecha: dateParam ? format(new Date(dateParam), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+      hora: hourParam ? `${hourParam.padStart(2, "0")}:00` : "09:00",
+      duracion_minutos: 30,
+      tipo_cita: "presencial",
+      motivo: "",
+      notas_internas: "",
+      precio: "",
+      metodo_pago: "efectivo",
+      enviar_recordatorio: true,
+    },
   });
+
+  const { watch, handleSubmit } = form;
+  const fecha = watch("fecha");
+  const hora = watch("hora");
+  const motivo = watch("motivo");
 
   // Validar que la fecha no sea pasada
   const getMinDate = () => {
@@ -47,11 +62,10 @@ function NuevaCitaContent() {
 
   const getMinTime = () => {
     const now = new Date();
-    const selectedDate = formData.fecha;
     const today = format(now, "yyyy-MM-dd");
 
     // Si es hoy, la hora mínima es la actual + 15 minutos
-    if (selectedDate === today) {
+    if (fecha === today) {
       const minTime = new Date(now.getTime() + 15 * 60000); // +15 minutos
       return format(minTime, "HH:mm");
     }
@@ -60,9 +74,9 @@ function NuevaCitaContent() {
 
   // Validar que la hora seleccionada no sea pasada
   const isTimeValid = () => {
-    if (!formData.fecha || !formData.hora) return true;
+    if (!fecha || !hora) return true;
 
-    const selectedDateTime = new Date(`${formData.fecha}T${formData.hora}:00`);
+    const selectedDateTime = new Date(`${fecha}T${hora}:00`);
     const now = new Date();
 
     return selectedDateTime > now;
@@ -82,14 +96,18 @@ function NuevaCitaContent() {
 
   // Actualizar sugerencias cuando cambia el motivo
   useEffect(() => {
-    const currentTerm = getCurrentMotivo(formData.motivo);
+    if (!motivo) {
+        setMotivoSuggestions([]);
+        return;
+    }
+    const currentTerm = getCurrentMotivo(motivo);
     if (currentTerm.length >= 2) {
       const suggestions = searchConsultationReasons(currentTerm);
       setMotivoSuggestions(suggestions);
     } else {
       setMotivoSuggestions([]);
     }
-  }, [formData.motivo]);
+  }, [motivo]);
 
   useEffect(() => {
     loadPatients();
@@ -145,8 +163,95 @@ function NuevaCitaContent() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Verificar conflictos de horario
+  const checkTimeConflicts = async (fecha: string, hora: string, duracion: number) => {
+    if (!fecha || !hora) return;
+
+    setCheckingConflict(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const startDateTime = new Date(`${fecha}T${hora}:00`);
+      const endDateTime = new Date(startDateTime.getTime() + duracion * 60000);
+
+      // Buscar citas que se solapen con el horario seleccionado
+      const { data: conflicts } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          fecha_hora,
+          duracion_minutos,
+          motivo,
+          paciente:profiles!appointments_paciente_id_fkey(nombre_completo),
+          offline_patient:offline_patients!appointments_offline_patient_id_fkey(nombre_completo)
+        `)
+        .eq('medico_id', user.id)
+        .gte('fecha_hora', startDateTime.toISOString())
+        .lt('fecha_hora', endDateTime.toISOString())
+        .neq('status', 'cancelada');
+
+      // También verificar citas que empiezan antes pero terminan durante el horario seleccionado
+      const { data: conflictsOverlapping } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          fecha_hora,
+          duracion_minutos,
+          motivo,
+          paciente:profiles!appointments_paciente_id_fkey(nombre_completo),
+          offline_patient:offline_patients!appointments_offline_patient_id_fkey(nombre_completo)
+        `)
+        .eq('medico_id', user.id)
+        .lt('fecha_hora', startDateTime.toISOString())
+        .neq('status', 'cancelada');
+
+      // Filtrar las que realmente se solapan
+      const overlapping = conflictsOverlapping?.filter(apt => {
+        const aptStart = new Date(apt.fecha_hora);
+        const aptEnd = new Date(aptStart.getTime() + apt.duracion_minutos * 60000);
+        return aptEnd > startDateTime;
+      }) || [];
+
+      const allConflicts = [...(conflicts || []), ...overlapping];
+      setConflictingAppointments(allConflicts);
+
+      if (allConflicts.length > 0) {
+        const conflictList = allConflicts.map(apt => {
+          const patientName = apt.paciente?.nombre_completo || apt.offline_patient?.nombre_completo || 'Paciente';
+          const time = format(new Date(apt.fecha_hora), 'HH:mm');
+          return `${time} - ${patientName}`;
+        }).join(', ');
+        
+        setError(
+          `⚠️ Conflicto de horario: Ya tienes ${allConflicts.length} cita(s) programada(s): ${conflictList}. ` +
+          `Por favor, elige otro horario.`
+        );
+      } else {
+        setError(null);
+      }
+    } catch (err) {
+      console.error('Error checking conflicts:', err);
+    } finally {
+      setCheckingConflict(false);
+    }
+  };
+
+  // Verificar conflictos cuando cambian fecha, hora o duración
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      const duracion = value.duracion_minutos;
+      if (fecha && hora && duracion) {
+        const timeoutId = setTimeout(() => {
+          checkTimeConflicts(fecha, hora, duracion);
+        }, 500);
+        return () => clearTimeout(timeoutId);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [fecha, hora]);
+
+  const onSubmit = async (data: AppointmentFormValues) => {
     setLoading(true);
     setError(null);
 
@@ -157,25 +262,46 @@ function NuevaCitaContent() {
         return;
       }
 
-      if (!formData.paciente_id) {
-        setError("Debes seleccionar un paciente");
-        setLoading(false);
-        return;
-      }
-
-      // Validar que la hora no sea pasada
+      // Validar que la hora no sea pasada (aunque zod ya lo hace)
       if (!isTimeValid()) {
         setError("La fecha y hora seleccionadas ya pasaron. Por favor, elige una hora futura.");
         setLoading(false);
         return;
       }
 
+      // VALIDACIÓN CRÍTICA: Verificar conflictos una última vez antes de guardar
+      const startDateTime = new Date(`${data.fecha}T${data.hora}:00`);
+      const endDateTime = new Date(startDateTime.getTime() + data.duracion_minutos * 60000);
+
+      const { data: finalConflictCheck } = await supabase
+        .from('appointments')
+        .select('id, fecha_hora, duracion_minutos')
+        .eq('medico_id', user.id)
+        .neq('status', 'cancelada');
+
+      // Verificar solapamiento
+      const hasConflict = finalConflictCheck?.some(apt => {
+        const aptStart = new Date(apt.fecha_hora);
+        const aptEnd = new Date(aptStart.getTime() + apt.duracion_minutos * 60000);
+        return (
+          (startDateTime >= aptStart && startDateTime < aptEnd) ||
+          (endDateTime > aptStart && endDateTime <= aptEnd) ||
+          (startDateTime <= aptStart && endDateTime >= aptEnd)
+        );
+      });
+
+      if (hasConflict) {
+        setError('⛔ No se puede crear la cita: Ya existe una cita programada en este horario. Por favor, elige otro horario.');
+        setLoading(false);
+        return;
+      }
+
       // Verificar si el paciente es offline o registrado
-      const selectedPatient = patients.find(p => p.id === formData.paciente_id);
+      const selectedPatient = patients.find(p => p.id === data.paciente_id);
       const isOfflinePatient = selectedPatient?.type === "offline";
 
       // Combinar fecha y hora
-      const fechaHora = new Date(`${formData.fecha}T${formData.hora}:00`);
+      const fechaHora = new Date(`${data.fecha}T${data.hora}:00`);
 
       // Determinar color según tipo de cita
       const colors: Record<string, string> = {
@@ -188,7 +314,7 @@ function NuevaCitaContent() {
 
       // Generar URL de videollamada si es telemedicina (solo para pacientes registrados)
       const appointmentId = crypto.randomUUID();
-      const meetingUrl = formData.tipo_cita === "telemedicina" && !isOfflinePatient
+      const meetingUrl = data.tipo_cita === "telemedicina" && !isOfflinePatient
         ? `https://meet.jit.si/cita-${appointmentId.substring(0, 8)}`
         : null;
 
@@ -197,22 +323,22 @@ function NuevaCitaContent() {
         id: appointmentId,
         medico_id: user.id,
         fecha_hora: fechaHora.toISOString(),
-        duracion_minutos: parseInt(formData.duracion_minutos),
-        tipo_cita: formData.tipo_cita,
-        motivo: formData.motivo,
-        notas_internas: formData.notas_internas || null,
+        duracion_minutos: data.duracion_minutos,
+        tipo_cita: data.tipo_cita,
+        motivo: data.motivo,
+        notas_internas: data.notas_internas || null,
         status: "pendiente",
-        color: colors[formData.tipo_cita] || colors.presencial,
-        price: formData.precio ? parseFloat(formData.precio) : null,
+        color: colors[data.tipo_cita] || colors.presencial,
+        price: data.precio ? parseFloat(data.precio) : null,
         meeting_url: meetingUrl,
       };
 
       // Asignar el ID correcto según el tipo de paciente
       if (isOfflinePatient) {
-        appointmentData.offline_patient_id = formData.paciente_id;
+        appointmentData.offline_patient_id = data.paciente_id;
         appointmentData.paciente_id = null;
       } else {
-        appointmentData.paciente_id = formData.paciente_id;
+        appointmentData.paciente_id = data.paciente_id;
         appointmentData.offline_patient_id = null;
       }
 
@@ -259,40 +385,63 @@ function NuevaCitaContent() {
         </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-6 border-red-300 bg-red-50">
+            <AlertCircle className="h-5 w-5 text-red-600" />
+            <AlertDescription className="text-red-800 font-medium">{error}</AlertDescription>
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Form */}
-            <div className="lg:col-span-2 space-y-6">
-              <PatientSelector
-                patients={patients}
-                loadingPatients={loadingPatients}
-                selectedPatientId={formData.paciente_id}
-                onPatientSelect={(value) =>
-                  setFormData({ ...formData, paciente_id: value })
-                }
-              />
-
-              <AppointmentForm
-                formData={formData}
-                setFormData={setFormData}
-                getMinDate={getMinDate}
-                getMinTime={getMinTime}
-                isTimeValid={isTimeValid}
-                motivoSuggestions={motivoSuggestions}
-                patients={patients}
-              />
-            </div>
-
-            {/* Sidebar - Resumen compacto */}
-            <SummaryView formData={formData} loading={loading} />
+        {/* Conflictos detectados */}
+        {checkingConflict && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
+            <span className="text-blue-800 font-medium">Verificando disponibilidad...</span>
           </div>
-        </form>
+        )}
+
+        {conflictingAppointments.length > 0 && !error && (
+          <Alert className="mb-6 border-yellow-300 bg-yellow-50">
+            <AlertCircle className="h-5 w-5 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              <div className="font-semibold mb-2">⚠️ Citas existentes en este horario:</div>
+              <ul className="list-disc list-inside space-y-1">
+                {conflictingAppointments.map((apt) => {
+                  const patientName = apt.paciente?.nombre_completo || apt.offline_patient?.nombre_completo || 'Paciente';
+                  return (
+                    <li key={apt.id} className="text-sm">
+                      {format(new Date(apt.fecha_hora), "HH:mm")} - {patientName} ({apt.motivo || 'Sin motivo'})
+                    </li>
+                  );
+                })}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <FormProvider {...form}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Form */}
+              <div className="lg:col-span-2 space-y-6">
+                <PatientSelector
+                  patients={patients}
+                  loadingPatients={loadingPatients}
+                />
+
+                <AppointmentForm
+                  getMinDate={getMinDate}
+                  getMinTime={getMinTime}
+                  isTimeValid={isTimeValid}
+                  motivoSuggestions={motivoSuggestions}
+                  patients={patients}
+                />
+              </div>
+
+              {/* Sidebar - Resumen compacto */}
+              <SummaryView loading={loading} />
+            </div>
+          </form>
+        </FormProvider>
       </div>
     </VerificationGuard>
   );

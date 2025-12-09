@@ -1,14 +1,13 @@
-"use client";
-
 import { Card, CardContent } from "@/components/ui/card";
 import {
     Users,
     CalendarClock,
-    Activity,
     TrendingUp,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    UserPlus
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface StatsCardsProps {
     todayCount: number;
@@ -17,11 +16,12 @@ interface StatsCardsProps {
     totalPatients: number;
     registeredCount: number;
     offlineCount: number;
-    inProgress: number;
+    newPatientsThisMonth: number;
     avgConsultationTime: number;
     expandedSection: string | null;
     onToggleSection: (section: string) => void;
     onShowMetrics: () => void;
+    loading?: boolean;
 }
 
 export function StatsCards({
@@ -31,11 +31,12 @@ export function StatsCards({
     totalPatients,
     registeredCount,
     offlineCount,
-    inProgress,
+    newPatientsThisMonth,
     avgConsultationTime,
     expandedSection,
     onToggleSection,
     onShowMetrics,
+    loading = false,
 }: StatsCardsProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -55,9 +56,17 @@ export function StatsCards({
                                     <ChevronDown className="h-4 w-4 text-gray-400" />
                                 )}
                             </div>
-                            <p className="text-3xl font-bold text-gray-900">{todayCount}</p>
+                            {loading ? (
+                                <Skeleton className="h-9 w-16 mb-2" />
+                            ) : (
+                                <p className="text-3xl font-bold text-gray-900">{todayCount}</p>
+                            )}
                             <p className="text-xs text-gray-500 mt-1">
-                                {completedToday} completadas • {waiting} esperando
+                                {loading ? (
+                                    <Skeleton className="h-4 w-32" />
+                                ) : (
+                                    `${completedToday} completadas • ${waiting} esperando`
+                                )}
                             </p>
                         </div>
                         <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
@@ -83,11 +92,19 @@ export function StatsCards({
                                     <ChevronDown className="h-4 w-4 text-gray-400" />
                                 )}
                             </div>
-                            <p className="text-3xl font-bold text-gray-900">
-                                {totalPatients}
-                            </p>
+                            {loading ? (
+                                <Skeleton className="h-9 w-16 mb-2" />
+                            ) : (
+                                <p className="text-3xl font-bold text-gray-900">
+                                    {totalPatients}
+                                </p>
+                            )}
                             <p className="text-xs text-gray-500 mt-1">
-                                {registeredCount} registrados • {offlineCount} sin registrar
+                                {loading ? (
+                                    <Skeleton className="h-4 w-32" />
+                                ) : (
+                                    "Pacientes activos"
+                                )}
                             </p>
                         </div>
                         <div className="h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center">
@@ -97,17 +114,21 @@ export function StatsCards({
                 </CardContent>
             </Card>
 
-            {/* En Consulta */}
+            {/* Nuevos este Mes */}
             <Card className="border-l-4 border-l-indigo-500">
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-gray-600">En Consulta</p>
-                            <p className="text-3xl font-bold text-gray-900 mt-2">{inProgress}</p>
-                            <p className="text-xs text-gray-500 mt-1">Activas ahora</p>
+                            <p className="text-sm font-medium text-gray-600">Nuevos este Mes</p>
+                            {loading ? (
+                                <Skeleton className="h-9 w-16 mt-2 mb-2" />
+                            ) : (
+                                <p className="text-3xl font-bold text-gray-900 mt-2">{newPatientsThisMonth}</p>
+                            )}
+                            <p className="text-xs text-gray-500 mt-1">Crecimiento mensual</p>
                         </div>
                         <div className="h-14 w-14 rounded-full bg-indigo-100 flex items-center justify-center">
-                            <Activity className="h-7 w-7 text-indigo-600" />
+                            <UserPlus className="h-7 w-7 text-indigo-600" />
                         </div>
                     </div>
                 </CardContent>
@@ -125,9 +146,13 @@ export function StatsCards({
                                 <p className="text-sm font-medium text-gray-600">Tiempo Promedio</p>
                                 <ChevronDown className="h-4 w-4 text-gray-400" />
                             </div>
-                            <p className="text-3xl font-bold text-gray-900">
-                                {avgConsultationTime > 0 ? `${avgConsultationTime}min` : "--"}
-                            </p>
+                            {loading ? (
+                                <Skeleton className="h-9 w-24 mb-2" />
+                            ) : (
+                                <p className="text-3xl font-bold text-gray-900">
+                                    {avgConsultationTime > 0 ? `${avgConsultationTime}min` : "--"}
+                                </p>
+                            )}
                             <p className="text-xs text-gray-500 mt-1">
                                 Click para ver detalles por motivo
                             </p>

@@ -30,24 +30,27 @@ export async function createPrescription(prescriptionData: CreatePrescriptionDat
 
     if (prescriptionError) throw prescriptionError;
 
-    // Agregar medicamentos
-    const medicationsToInsert = prescriptionData.medications.map((med) => ({
-      prescription_id: prescription.id,
-      medication_id: med.medication_id,
-      nombre_medicamento: med.nombre_medicamento,
-      dosis: med.dosis,
-      frecuencia: med.frecuencia,
-      via_administracion: med.via_administracion,
-      duracion_dias: med.duracion_dias,
-      cantidad_total: med.cantidad_total,
-      instrucciones_especiales: med.instrucciones_especiales,
-    }));
+    // Agregar medicamentos (support both 'medications' and 'medicamentos' keys)
+    const meds = prescriptionData.medications || prescriptionData.medicamentos || [];
+    if (meds.length > 0) {
+      const medicationsToInsert = meds.map((med) => ({
+        prescription_id: prescription.id,
+        medication_id: med.medication_id,
+        nombre_medicamento: med.nombre_medicamento,
+        dosis: med.dosis,
+        frecuencia: med.frecuencia,
+        via_administracion: med.via_administracion,
+        duracion_dias: med.duracion_dias,
+        cantidad_total: med.cantidad_total,
+        instrucciones_especiales: med.instrucciones_especiales,
+      }));
 
-    const { error: medicationsError } = await supabase
-      .from("prescription_medications")
-      .insert(medicationsToInsert);
+      const { error: medicationsError } = await supabase
+        .from("prescription_medications")
+        .insert(medicationsToInsert);
 
-    if (medicationsError) throw medicationsError;
+      if (medicationsError) throw medicationsError;
+    }
 
     // Log activity
     await supabase.from("user_activity_log").insert({
@@ -129,7 +132,7 @@ async function generateIntakeSchedule(reminderId: string, reminderData: CreateRe
 
   for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
     const dayOfWeek = date.getDay();
-    
+
     // Si hay días específicos, verificar si este día aplica
     if (reminderData.dias_semana && !reminderData.dias_semana.includes(dayOfWeek)) {
       continue;

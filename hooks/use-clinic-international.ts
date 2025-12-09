@@ -229,13 +229,13 @@ export function useInternationalPatientDetails(patientId?: string) {
 
   // Helpers
   const requiredDocs = countryReqs?.required_documents || [];
-  const uploadedDocTypes = new Set(documents?.map((d) => d.document_type) || []);
-  const missingDocs = requiredDocs.filter((docType) => !uploadedDocTypes.has(docType));
+  const uploadedDocTypes = new Set<string>(documents?.map((d) => d.document_type) || []);
+  const missingDocs = requiredDocs.filter((docType) => !uploadedDocTypes.has(docType as string));
   const verifiedDocs = documents?.filter((d) => d.verified) || [];
   const unverifiedDocs = documents?.filter((d) => !d.verified) || [];
 
   const isDocumentationComplete = missingDocs.length === 0;
-  const isAllVerified = documents?.length > 0 && unverifiedDocs.length === 0;
+  const isAllVerified = (documents?.length || 0) > 0 && unverifiedDocs.length === 0;
 
   return {
     // Data

@@ -9,10 +9,12 @@ import type { ViewMode } from "./hooks/usePatientsList";
 interface FiltersBarProps {
   searchQuery: string;
   onSearchChange: (v: string) => void;
-  filterType: string;
-  onFilterTypeChange: (v: string) => void;
   filterGender: string;
   onFilterGenderChange: (v: string) => void;
+  filterAgeRange: string;
+  onFilterAgeRangeChange: (v: string) => void;
+  filterLastVisit: string;
+  onFilterLastVisitChange: (v: string) => void;
   sortBy: string;
   onSortByChange: (v: string) => void;
   viewMode: ViewMode;
@@ -22,10 +24,12 @@ interface FiltersBarProps {
 export function FiltersBar({
   searchQuery,
   onSearchChange,
-  filterType,
-  onFilterTypeChange,
   filterGender,
   onFilterGenderChange,
+  filterAgeRange,
+  onFilterAgeRangeChange,
+  filterLastVisit,
+  onFilterLastVisitChange,
   sortBy,
   onSortByChange,
   viewMode,
@@ -43,18 +47,8 @@ export function FiltersBar({
         />
       </div>
       <div className="flex gap-2 flex-wrap">
-        <Select value={filterType} onValueChange={onFilterTypeChange}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Tipo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="registered">Registrados</SelectItem>
-            <SelectItem value="offline">Sin registrar</SelectItem>
-          </SelectContent>
-        </Select>
         <Select value={filterGender} onValueChange={onFilterGenderChange}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[130px]">
             <SelectValue placeholder="Género" />
           </SelectTrigger>
           <SelectContent>
@@ -63,8 +57,33 @@ export function FiltersBar({
             <SelectItem value="F">Femenino</SelectItem>
           </SelectContent>
         </Select>
+
+        <Select value={filterAgeRange} onValueChange={onFilterAgeRangeChange}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Edad" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas</SelectItem>
+            <SelectItem value="0-18">0 - 18 años</SelectItem>
+            <SelectItem value="19-60">19 - 60 años</SelectItem>
+            <SelectItem value="60+">60+ años</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={filterLastVisit} onValueChange={onFilterLastVisitChange}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Última Consulta" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Cualquier fecha</SelectItem>
+            <SelectItem value="recent">Menos de 1 mes</SelectItem>
+            <SelectItem value="medium">1 - 6 meses</SelectItem>
+            <SelectItem value="long">Más de 6 meses</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Select value={sortBy} onValueChange={onSortByChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Ordenar por" />
           </SelectTrigger>
           <SelectContent>

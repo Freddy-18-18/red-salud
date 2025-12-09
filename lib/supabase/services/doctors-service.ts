@@ -37,7 +37,7 @@ export async function getSpecialties() {
 
 export async function getSpecialtyById(id: string) {
   const { data, error } = await supabase
-    .from('medical_specialties')
+    .from('specialties')
     .select('*')
     .eq('id', id)
     .single();

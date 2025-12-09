@@ -35,7 +35,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-[hsl(230,25%,9%)] text-[hsl(220,15%,70%)]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12"
@@ -47,12 +47,12 @@ export function Footer() {
           {/* Brand Section */}
           <motion.div variants={fadeInUp} className="lg:col-span-2">
             <Link href={ROUTES.HOME} className="inline-flex items-center space-x-2 mb-4">
-              <div className="bg-linear-to-br from-blue-600 to-teal-600 text-white px-3 py-2 rounded-lg font-bold text-xl">
+              <div className="bg-gradient-to-br from-primary to-secondary text-white px-3 py-2 rounded-lg font-bold text-xl">
                 RS
               </div>
               <span className="font-bold text-2xl text-white">{APP_NAME}</span>
             </Link>
-            <p className="text-gray-400 mb-6 max-w-md">
+            <p className="text-[hsl(220,15%,60%)] mb-6 max-w-md">
               Transformamos la atención médica con tecnología innovadora, 
               conectando pacientes y profesionales de la salud de manera eficiente y segura.
             </p>
@@ -60,19 +60,19 @@ export function Footer() {
             {/* Contact Info */}
             <div className="space-y-3">
               <div className="flex items-center space-x-3 text-sm">
-                <Mail className="h-5 w-5 text-blue-400" />
+                <Mail className="h-5 w-5 text-primary" />
                 <a href={`mailto:${CONTACT_INFO.EMAIL}`} className="hover:text-white transition-colors">
                   {CONTACT_INFO.EMAIL}
                 </a>
               </div>
               <div className="flex items-center space-x-3 text-sm">
-                <Phone className="h-5 w-5 text-blue-400" />
+                <Phone className="h-5 w-5 text-primary" />
                 <a href={`tel:${CONTACT_INFO.PHONE}`} className="hover:text-white transition-colors">
                   {CONTACT_INFO.PHONE}
                 </a>
               </div>
               <div className="flex items-center space-x-3 text-sm">
-                <MapPin className="h-5 w-5 text-blue-400" />
+                <MapPin className="h-5 w-5 text-primary" />
                 <span>{CONTACT_INFO.ADDRESS}</span>
               </div>
             </div>
@@ -132,7 +132,7 @@ export function Footer() {
 
         {/* Divider */}
         <motion.div
-          className="border-t border-gray-800 my-8"
+          className="border-t border-[hsl(230,20%,15%)] my-8"
           initial={{ scaleX: 0 }}
           whileInView={{ scaleX: 1 }}
           viewport={{ once: true }}
@@ -147,7 +147,7 @@ export function Footer() {
           whileInView="animate"
           viewport={{ once: true }}
         >
-          <motion.p variants={fadeInUp} className="text-sm text-gray-400">
+          <motion.p variants={fadeInUp} className="text-sm text-[hsl(220,15%,55%)]">
             © {currentYear} {APP_NAME}. Todos los derechos reservados.
           </motion.p>
 
@@ -158,7 +158,7 @@ export function Footer() {
                 key={label}
                 href={href}
                 aria-label={label}
-                className="p-2 rounded-full bg-gray-800 hover:bg-blue-600 transition-colors duration-300"
+                className="p-2 rounded-full bg-[hsl(230,20%,15%)] hover:bg-primary transition-colors duration-300"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
               >

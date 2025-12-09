@@ -26,6 +26,7 @@ export type RegisteredPatient = {
   last_consultation_date: string | null;
   total_consultations: number;
   status: string;
+  created_at?: string;
   patient: {
     id: string;
     nombre_completo: string;

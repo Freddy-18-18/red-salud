@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, isToday } from "date-fns";
 import { es } from "date-fns/locale";
 import type { CalendarAppointment } from "./types";
+import { Calendar, ChevronRight } from "lucide-react";
 
 interface MonthViewProps {
   date: Date;
@@ -47,50 +48,84 @@ export function MonthView({
     );
   };
 
+  const monthStats = useMemo(() => {
+    const monthAppointments = appointments.filter(apt => 
+      isSameMonth(new Date(apt.fecha_hora), date)
+    );
+    return {
+      total: monthAppointments.length,
+      pendientes: monthAppointments.filter(a => a.status === "pendiente").length,
+      confirmadas: monthAppointments.filter(a => a.status === "confirmada").length,
+      completadas: monthAppointments.filter(a => a.status === "completada").length,
+    };
+  }, [appointments, date]);
+
   const weekDays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Header */}
-      <div className="border-b p-4">
-        <h2 className="text-2xl font-bold text-gray-900">
-          {format(date, "MMMM yyyy", { locale: es })}
-        </h2>
+    <div className="flex flex-col h-full bg-white rounded-lg shadow-sm overflow-hidden">
+      {/* Header - Sticky */}
+      <div className="border-b-2 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 sticky top-0 z-20 shadow-md">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Calendar className="h-6 w-6 text-blue-600" />
+            <h2 className="text-3xl font-bold text-gray-900">
+              {format(date, "MMMM yyyy", { locale: es })}
+            </h2>
+          </div>
+
+          {/* Stats compactos */}
+          <div className="flex gap-3">
+            <div className="px-4 py-2 rounded-lg bg-white shadow-sm">
+              <div className="text-xs font-medium text-gray-600">Total</div>
+              <div className="text-2xl font-bold text-gray-900">{monthStats.total}</div>
+            </div>
+            <div className="px-4 py-2 rounded-lg bg-white shadow-sm">
+              <div className="text-xs font-medium text-gray-600">Pendientes</div>
+              <div className="text-2xl font-bold text-yellow-600">{monthStats.pendientes}</div>
+            </div>
+            <div className="px-4 py-2 rounded-lg bg-white shadow-sm">
+              <div className="text-xs font-medium text-gray-600">Confirmadas</div>
+              <div className="text-2xl font-bold text-blue-600">{monthStats.confirmadas}</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Weekday Headers */}
-      <div className="grid grid-cols-7 border-b">
+      {/* Weekday Headers - Sticky */}
+      <div className="grid grid-cols-7 border-b-2 bg-gray-50 sticky top-[120px] z-10">
         {weekDays.map((day) => (
           <div
             key={day}
-            className="p-2 text-center text-sm font-semibold text-gray-600 border-r last:border-r-0"
+            className="p-3 text-center text-sm font-bold text-gray-700 border-r last:border-r-0 uppercase tracking-wide"
           >
             {day}
           </div>
         ))}
       </div>
 
-      {/* Calendar Grid */}
-      <div className="flex-1 overflow-auto">
+      {/* Calendar Grid - Scrollable */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         {weeks.map((week, weekIndex) => (
           <div key={weekIndex} className="grid grid-cols-7 border-b last:border-b-0">
             {week.map((day) => {
               const dayAppointments = getAppointmentsForDay(day);
               const isCurrentMonth = isSameMonth(day, date);
               const isDayToday = isToday(day);
+              const isPast = day < new Date(new Date().setHours(0, 0, 0, 0));
 
               return (
                 <div
                   key={day.toISOString()}
-                  className={`min-h-[120px] p-2 border-r last:border-r-0 transition-colors ${
-                    !isCurrentMonth ? "bg-gray-50" : ""
-                  } ${isDayToday ? "bg-blue-50" : ""} ${
-                    day < new Date(new Date().setHours(0, 0, 0, 0))
-                      ? "bg-gray-100 cursor-not-allowed opacity-50"
-                      : "cursor-pointer hover:bg-gray-50"
+                  className={`h-32 p-2 border-r last:border-r-0 transition-all duration-200 ${
+                    !isCurrentMonth ? "bg-gray-50/70" : ""
+                  } ${isDayToday ? "bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} ${
+                    isPast
+                      ? "bg-gray-100/50 cursor-not-allowed opacity-60"
+                      : "cursor-pointer hover:bg-blue-50 hover:shadow-inner"
                   }`}
                   onClick={() => {
-                    if (day >= new Date(new Date().setHours(0, 0, 0, 0))) {
+                    if (!isPast) {
                       onDayClick?.(day);
                     }
                   }}
@@ -98,43 +133,59 @@ export function MonthView({
                   {/* Day Number */}
                   <div className="flex items-center justify-between mb-1">
                     <span
-                      className={`text-sm font-semibold ${
+                      className={`text-sm font-bold transition-all ${
                         !isCurrentMonth
                           ? "text-gray-400"
                           : isDayToday
-                          ? "text-blue-600 bg-blue-100 rounded-full w-6 h-6 flex items-center justify-center"
+                          ? "text-white bg-blue-600 rounded-full w-7 h-7 flex items-center justify-center shadow-md"
                           : "text-gray-900"
                       }`}
                     >
                       {format(day, "d")}
                     </span>
                     {dayAppointments.length > 0 && (
-                      <span className="text-xs font-medium text-gray-600 bg-gray-200 rounded-full px-2 py-0.5">
+                      <span className="text-[10px] font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full px-2 py-0.5 shadow-sm">
                         {dayAppointments.length}
                       </span>
                     )}
                   </div>
 
                   {/* Appointments */}
-                  <div className="space-y-1">
-                    {dayAppointments.slice(0, 3).map((apt) => (
-                      <div
-                        key={apt.id}
-                        className="text-xs p-1 rounded border-l-2 bg-white hover:shadow-sm transition-shadow truncate"
-                        style={{ borderLeftColor: apt.color }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAppointmentClick?.(apt);
-                        }}
-                      >
-                        <div className="font-medium truncate">
-                          {format(new Date(apt.fecha_hora), "HH:mm")} {apt.paciente_nombre}
+                  <div className="space-y-1 h-[calc(100%-28px)] overflow-y-auto scrollbar-none">
+                    {dayAppointments.slice(0, 2).map((apt) => {
+                      const statusColors = {
+                        pendiente: "bg-yellow-50 border-yellow-400 hover:bg-yellow-100",
+                        confirmada: "bg-blue-50 border-blue-400 hover:bg-blue-100",
+                        completada: "bg-green-50 border-green-400 hover:bg-green-100",
+                        cancelada: "bg-red-50 border-red-400 hover:bg-red-100",
+                      };
+
+                      return (
+                        <div
+                          key={apt.id}
+                          className={`text-xs p-1.5 rounded border-l-2 transition-all duration-150 cursor-pointer ${
+                            statusColors[apt.status] || "bg-white border-gray-400 hover:bg-gray-100"
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAppointmentClick?.(apt);
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="font-semibold text-gray-900">
+                              {format(new Date(apt.fecha_hora), "HH:mm")}
+                            </div>
+                            <ChevronRight className="h-3 w-3 text-gray-400" />
+                          </div>
+                          <div className="truncate text-gray-700 mt-0.5">
+                            {apt.paciente_nombre}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    {dayAppointments.length > 3 && (
-                      <div className="text-xs text-gray-500 text-center">
-                        +{dayAppointments.length - 3} más
+                      );
+                    })}
+                    {dayAppointments.length > 2 && (
+                      <div className="text-[10px] font-medium text-blue-600 text-center bg-blue-50 rounded px-1 py-0.5">
+                        +{dayAppointments.length - 2} más
                       </div>
                     )}
                   </div>

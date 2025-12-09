@@ -45,11 +45,15 @@ const features = [
 
 export function TechnologySection() {
   return (
-    <section className="py-20 lg:py-32 bg-white dark:bg-background relative overflow-hidden">
+    <section className="py-20 lg:py-32 bg-background relative overflow-hidden">
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5 dark:opacity-10">
-        <div className="absolute inset-0 bg-grid-gray-900/[0.04] dark:bg-grid-white/[0.02] bg-[size:32px_32px]" />
-      </div>
+      <div 
+        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+          backgroundSize: '32px 32px'
+        }}
+      />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
@@ -61,22 +65,22 @@ export function TechnologySection() {
         >
           <motion.div
             variants={fadeInUp}
-            className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-teal-100 dark:from-blue-900/30 dark:to-teal-900/30 text-blue-700 dark:text-blue-300 text-sm font-semibold mb-6 border border-blue-200 dark:border-blue-800"
+            className="inline-block px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-primary text-sm font-semibold mb-6 border border-primary/20 dark:border-primary/30"
           >
             Tecnología de vanguardia
           </motion.div>
           <motion.h2
             variants={fadeInUp}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-foreground mb-6 leading-tight"
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight"
           >
             Construido con{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-teal-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="gradient-text">
               tecnología moderna
             </span>
           </motion.h2>
           <motion.p
             variants={fadeInUp}
-            className="text-xl text-gray-600 dark:text-muted-foreground leading-relaxed"
+            className="text-xl text-muted-foreground leading-relaxed"
           >
             Nuestra plataforma está diseñada desde cero con las mejores prácticas de
             seguridad, escalabilidad y experiencia de usuario.
@@ -98,26 +102,26 @@ export function TechnologySection() {
                 variants={fadeInUp}
                 className="group relative"
               >
-                <div className="h-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl p-8 transition-all duration-500 hover:shadow-2xl hover:scale-105 hover:border-blue-400 dark:hover:border-blue-600">
+                <div className="h-full bg-card border border-border rounded-2xl p-8 transition-all duration-300 hover:shadow-xl hover:border-primary/30 dark:hover:border-primary/50 overflow-hidden relative">
                   {/* Icon */}
                   <div className="mb-6">
-                    <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${feature.gradient} shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6`}>
+                    <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${feature.gradient} shadow-lg transition-transform duration-300 group-hover:scale-105`}>
                       <Icon className="h-7 w-7 text-white" />
                     </div>
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-foreground mb-3">
+                  <h3 className="text-xl font-bold text-foreground mb-3">
                     {feature.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-600 dark:text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed">
                     {feature.description}
                   </p>
 
-                  {/* Decorative gradient line */}
-                  <div className={`absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r ${feature.gradient} transition-all duration-500 group-hover:w-full rounded-b-2xl`} />
+                  {/* Decorative gradient line - con scale transform */}
+                  <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${feature.gradient} transform origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100`} />
                 </div>
               </motion.div>
             );
@@ -132,9 +136,9 @@ export function TechnologySection() {
           viewport={{ once: true }}
           className="mt-20 text-center"
         >
-          <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 rounded-full border border-blue-200 dark:border-blue-800">
-            <Shield className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            <p className="text-gray-900 dark:text-foreground font-semibold">
+          <div className="inline-flex items-center gap-3 px-8 py-4 glass-card rounded-full">
+            <Shield className="h-6 w-6 text-primary" />
+            <p className="text-foreground font-semibold">
               Certificados en seguridad y protección de datos médicos
             </p>
           </div>

@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AutocompleteTextarea } from "@/components/ui/autocomplete-textarea";
 import { format } from "date-fns";
+import { useFormContext } from "react-hook-form";
+import { AppointmentFormValues } from "@/lib/validations/appointment";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 interface AppointmentFormProps {
-    formData: any;
-    setFormData: (data: any) => void;
     getMinDate: () => string;
     getMinTime: () => string;
     isTimeValid: () => boolean;
@@ -20,14 +21,18 @@ interface AppointmentFormProps {
 }
 
 export function AppointmentForm({
-    formData,
-    setFormData,
     getMinDate,
     getMinTime,
     isTimeValid,
     motivoSuggestions,
     patients,
 }: AppointmentFormProps) {
+    const { register, control, watch, setValue, formState: { errors } } = useFormContext<AppointmentFormValues>();
+    const fecha = watch("fecha");
+    const tipoCita = watch("tipo_cita");
+    const enviarRecordatorio = watch("enviar_recordatorio");
+    const pacienteId = watch("paciente_id");
+
     return (
         <div className="space-y-6">
             <Card>
@@ -42,13 +47,12 @@ export function AppointmentForm({
                                     id="fecha"
                                     type="date"
                                     min={getMinDate()}
-                                    value={formData.fecha}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, fecha: e.target.value })
-                                    }
-                                    className="h-10"
-                                    required
+                                    className={`h-10 ${errors.fecha ? "border-red-500" : ""}`}
+                                    {...register("fecha")}
                                 />
+                                {errors.fecha && (
+                                    <p className="text-xs text-red-600">{errors.fecha.message}</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="hora" className="text-sm font-medium">
@@ -58,14 +62,13 @@ export function AppointmentForm({
                                     id="hora"
                                     type="time"
                                     min={getMinTime()}
-                                    value={formData.hora}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, hora: e.target.value })
-                                    }
-                                    className={`h-10 ${!isTimeValid() ? "border-red-500" : ""}`}
-                                    required
+                                    className={`h-10 ${errors.hora ? "border-red-500" : ""}`}
+                                    {...register("hora")}
                                 />
-                                {!isTimeValid() && (
+                                {errors.hora && (
+                                    <p className="text-xs text-red-600">{errors.hora.message}</p>
+                                )}
+                                {!errors.hora && !isTimeValid() && (
                                     <p className="text-xs text-red-600">
                                         ⚠️ La hora debe ser mayor a la actual
                                     </p>
@@ -76,26 +79,32 @@ export function AppointmentForm({
                             <Label htmlFor="duracion" className="text-sm font-medium">
                                 Duración Aproximada
                             </Label>
-                            <Select
-                                value={formData.duracion_minutos}
-                                onValueChange={(value) =>
-                                    setFormData({ ...formData, duracion_minutos: value })
-                                }
-                            >
-                                <SelectTrigger className="h-10">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="15">15 minutos</SelectItem>
-                                    <SelectItem value="30">30 minutos</SelectItem>
-                                    <SelectItem value="45">45 minutos</SelectItem>
-                                    <SelectItem value="60">1 hora</SelectItem>
-                                    <SelectItem value="90">1.5 horas</SelectItem>
-                                    <SelectItem value="120">2 horas</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <FormField
+                                control={control}
+                                name="duracion_minutos"
+                                render={({ field }) => (
+                                    <Select
+                                        onValueChange={(value) => field.onChange(value)} // El transform en zod maneja el string -> number
+                                        defaultValue={field.value?.toString()}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger className="h-10">
+                                                <SelectValue placeholder="Selecciona duración" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="15">15 minutos</SelectItem>
+                                            <SelectItem value="30">30 minutos</SelectItem>
+                                            <SelectItem value="45">45 minutos</SelectItem>
+                                            <SelectItem value="60">1 hora</SelectItem>
+                                            <SelectItem value="90">1.5 horas</SelectItem>
+                                            <SelectItem value="120">2 horas</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
                         </div>
-                        {formData.fecha === format(new Date(), "yyyy-MM-dd") && (
+                        {fecha === format(new Date(), "yyyy-MM-dd") && (
                             <p className="text-xs text-blue-600 flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
                                 Hora mínima hoy: {getMinTime()} (15 min adelante)
@@ -114,76 +123,82 @@ export function AppointmentForm({
                         <Label htmlFor="tipo_cita" className="text-sm font-medium">
                             Tipo de Cita
                         </Label>
-                        <Select
-                            value={formData.tipo_cita}
-                            onValueChange={(value) =>
-                                setFormData({ ...formData, tipo_cita: value })
-                            }
-                        >
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="presencial">
-                                    <div className="flex flex-col items-start py-1">
-                                        <div className="flex items-center gap-2 font-medium">
-                                            <MapPin className="h-4 w-4 text-blue-600" />
-                                            Presencial
-                                        </div>
-                                        <span className="text-xs text-gray-500 ml-6">
-                                            Consulta en el consultorio médico
-                                        </span>
-                                    </div>
-                                </SelectItem>
-                                <SelectItem value="telemedicina">
-                                    <div className="flex flex-col items-start py-1">
-                                        <div className="flex items-center gap-2 font-medium">
-                                            <Video className="h-4 w-4 text-green-600" />
-                                            Telemedicina
-                                        </div>
-                                        <span className="text-xs text-gray-500 ml-6">
-                                            Consulta por videollamada (solo pacientes registrados)
-                                        </span>
-                                    </div>
-                                </SelectItem>
-                                <SelectItem value="urgencia">
-                                    <div className="flex flex-col items-start py-1">
-                                        <div className="flex items-center gap-2 font-medium">
-                                            <AlertCircle className="h-4 w-4 text-red-600" />
-                                            Urgencia
-                                        </div>
-                                        <span className="text-xs text-gray-500 ml-6">
-                                            Atención prioritaria inmediata
-                                        </span>
-                                    </div>
-                                </SelectItem>
-                                <SelectItem value="seguimiento">
-                                    <div className="flex flex-col items-start py-1">
-                                        <div className="flex items-center gap-2 font-medium">
-                                            <Clock className="h-4 w-4 text-purple-600" />
-                                            Seguimiento
-                                        </div>
-                                        <span className="text-xs text-gray-500 ml-6">
-                                            Control de tratamiento o evolución
-                                        </span>
-                                    </div>
-                                </SelectItem>
-                                <SelectItem value="primera_vez">
-                                    <div className="flex flex-col items-start py-1">
-                                        <div className="flex items-center gap-2 font-medium">
-                                            <User className="h-4 w-4 text-amber-600" />
-                                            Primera Vez
-                                        </div>
-                                        <span className="text-xs text-gray-500 ml-6">
-                                            Primera consulta con el paciente
-                                        </span>
-                                    </div>
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {formData.tipo_cita === "telemedicina" && (
+                        <FormField
+                            control={control}
+                            name="tipo_cita"
+                            render={({ field }) => (
+                                <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger className="h-10">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="presencial">
+                                            <div className="flex flex-col items-start py-1">
+                                                <div className="flex items-center gap-2 font-medium">
+                                                    <MapPin className="h-4 w-4 text-blue-600" />
+                                                    Presencial
+                                                </div>
+                                                <span className="text-xs text-gray-500 ml-6">
+                                                    Consulta en el consultorio médico
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem value="telemedicina">
+                                            <div className="flex flex-col items-start py-1">
+                                                <div className="flex items-center gap-2 font-medium">
+                                                    <Video className="h-4 w-4 text-green-600" />
+                                                    Telemedicina
+                                                </div>
+                                                <span className="text-xs text-gray-500 ml-6">
+                                                    Consulta por videollamada (solo pacientes registrados)
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem value="urgencia">
+                                            <div className="flex flex-col items-start py-1">
+                                                <div className="flex items-center gap-2 font-medium">
+                                                    <AlertCircle className="h-4 w-4 text-red-600" />
+                                                    Urgencia
+                                                </div>
+                                                <span className="text-xs text-gray-500 ml-6">
+                                                    Atención prioritaria inmediata
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem value="seguimiento">
+                                            <div className="flex flex-col items-start py-1">
+                                                <div className="flex items-center gap-2 font-medium">
+                                                    <Clock className="h-4 w-4 text-purple-600" />
+                                                    Seguimiento
+                                                </div>
+                                                <span className="text-xs text-gray-500 ml-6">
+                                                    Control de tratamiento o evolución
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem value="primera_vez">
+                                            <div className="flex flex-col items-start py-1">
+                                                <div className="flex items-center gap-2 font-medium">
+                                                    <User className="h-4 w-4 text-amber-600" />
+                                                    Primera Vez
+                                                </div>
+                                                <span className="text-xs text-gray-500 ml-6">
+                                                    Primera consulta con el paciente
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
+                        {tipoCita === "telemedicina" && (
                             <>
-                                {patients.find(p => p.id === formData.paciente_id)?.type === "offline" ? (
+                                {patients.find(p => p.id === pacienteId)?.type === "offline" ? (
                                     <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
                                         <AlertCircle className="h-3 w-3" />
                                         Los pacientes sin cuenta no pueden usar telemedicina
@@ -209,11 +224,8 @@ export function AppointmentForm({
                                 step="0.01"
                                 min="0"
                                 placeholder="0.00"
-                                value={formData.precio}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, precio: e.target.value })
-                                }
                                 className="h-10"
+                                {...register("precio")}
                             />
                             <p className="text-xs text-gray-500">
                                 Puedes configurar precios por servicio en tu perfil
@@ -224,24 +236,30 @@ export function AppointmentForm({
                             <Label htmlFor="metodo_pago" className="text-sm font-medium">
                                 Método de Pago
                             </Label>
-                            <Select
-                                value={formData.metodo_pago}
-                                onValueChange={(value) =>
-                                    setFormData({ ...formData, metodo_pago: value })
-                                }
-                            >
-                                <SelectTrigger className="h-10">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="efectivo">💵 Efectivo</SelectItem>
-                                    <SelectItem value="tarjeta">💳 Tarjeta de Crédito/Débito</SelectItem>
-                                    <SelectItem value="transferencia">🏦 Transferencia Bancaria</SelectItem>
-                                    <SelectItem value="pago_movil">📱 Pago Móvil</SelectItem>
-                                    <SelectItem value="seguro">🏥 Seguro Médico</SelectItem>
-                                    <SelectItem value="pendiente">⏳ Pendiente</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <FormField
+                                control={control}
+                                name="metodo_pago"
+                                render={({ field }) => (
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger className="h-10">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="efectivo">💵 Efectivo</SelectItem>
+                                            <SelectItem value="tarjeta">💳 Tarjeta de Crédito/Débito</SelectItem>
+                                            <SelectItem value="transferencia">🏦 Transferencia Bancaria</SelectItem>
+                                            <SelectItem value="pago_movil">📱 Pago Móvil</SelectItem>
+                                            <SelectItem value="seguro">🏥 Seguro Médico</SelectItem>
+                                            <SelectItem value="pendiente">⏳ Pendiente</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
                         </div>
                     </div>
 
@@ -249,20 +267,27 @@ export function AppointmentForm({
                         <Label htmlFor="motivo" className="text-sm font-medium">
                             Motivo de Consulta <span className="text-red-500">*</span>
                         </Label>
-                        <AutocompleteTextarea
-                            id="motivo"
-                            placeholder="Ej: Dolor de cabeza, fiebre, control de rutina"
-                            value={formData.motivo}
-                            onChange={(value) =>
-                                setFormData({ ...formData, motivo: value })
-                            }
-                            suggestions={motivoSuggestions}
-                            required
-                            rows={3}
+                        <FormField
+                            control={control}
+                            name="motivo"
+                            render={({ field }) => (
+                                <AutocompleteTextarea
+                                    id="motivo"
+                                    placeholder="Ej: Dolor de cabeza, fiebre, control de rutina"
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    suggestions={motivoSuggestions}
+                                    required
+                                    rows={3}
+                                />
+                            )}
                         />
                         <p className="text-xs text-gray-500">
                             💡 Usa Tab/Enter para autocompletar. Separa múltiples motivos con comas
                         </p>
+                        {errors.motivo && (
+                             <p className="text-xs text-red-600">{errors.motivo.message}</p>
+                        )}
                     </div>
 
                     <div className="space-y-2">
@@ -272,12 +297,9 @@ export function AppointmentForm({
                         <Textarea
                             id="notas_internas"
                             placeholder="Notas privadas que solo tú verás"
-                            value={formData.notas_internas}
-                            onChange={(e) =>
-                                setFormData({ ...formData, notas_internas: e.target.value })
-                            }
                             rows={2}
                             className="resize-none"
+                            {...register("notas_internas")}
                         />
                         <p className="text-xs text-gray-500">
                             Estas notas no serán visibles para el paciente
@@ -289,17 +311,14 @@ export function AppointmentForm({
                             <input
                                 type="checkbox"
                                 id="enviar_recordatorio"
-                                checked={formData.enviar_recordatorio}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, enviar_recordatorio: e.target.checked })
-                                }
                                 className="h-4 w-4 rounded border-gray-300"
+                                {...register("enviar_recordatorio")}
                             />
                             <Label htmlFor="enviar_recordatorio" className="text-sm font-normal cursor-pointer">
                                 Activar recordatorios inteligentes
                             </Label>
                         </div>
-                        {formData.enviar_recordatorio && (
+                        {enviarRecordatorio && (
                             <div className="ml-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                 <p className="text-xs text-gray-700">
                                     📱 El paciente recibirá:

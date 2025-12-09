@@ -6,14 +6,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useFormContext } from "react-hook-form";
+import { AppointmentFormValues } from "@/lib/validations/appointment";
 
 interface SummaryViewProps {
-    formData: any;
     loading: boolean;
 }
 
-export function SummaryView({ formData, loading }: SummaryViewProps) {
+export function SummaryView({ loading }: SummaryViewProps) {
     const router = useRouter();
+    const { watch } = useFormContext<AppointmentFormValues>();
+    const formData = watch();
+
+    // Helper function to display payment method
+    const getPaymentMethodLabel = (method: string) => {
+        const labels: Record<string, string> = {
+            efectivo: "Efectivo",
+            transferencia: "Transferencia",
+            tarjeta: "Tarjeta",
+            seguro: "Seguro Médico",
+        };
+        return labels[method] || method.replace("_", " ");
+    };
 
     return (
         <div className="space-y-4">
@@ -57,11 +71,7 @@ export function SummaryView({ formData, loading }: SummaryViewProps) {
                     <div className="space-y-1">
                         <p className="text-xs text-gray-500">Método de Pago</p>
                         <p className="text-sm font-medium capitalize">
-                            {formData.metodo_pago === "tarjeta"
-                                ? "Tarjeta"
-                                : formData.metodo_pago === "pago_movil"
-                                    ? "Pago Móvil"
-                                    : formData.metodo_pago.replace("_", " ")}
+                            {getPaymentMethodLabel(formData.metodo_pago)}
                         </p>
                     </div>
                     {formData.enviar_recordatorio && (

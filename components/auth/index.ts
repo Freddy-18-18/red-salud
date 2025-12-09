@@ -9,3 +9,4 @@ export { LoginForm } from "./login-form";
 export { RegisterForm } from "./register-form";
 export { RememberMeCheckbox } from "./remember-me-checkbox";
 export { GoogleSignInButton } from "./google-signin-button";
+export { SessionTimer } from "./session-timer";

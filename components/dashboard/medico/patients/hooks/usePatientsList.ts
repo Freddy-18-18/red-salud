@@ -15,10 +15,12 @@ export function usePatientsList(doctorId: string | null) {
   const [filteredPatients, setFilteredPatients] = useState<(RegisteredPatient | OfflinePatient)[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterGender, setFilterGender] = useState<string>("all");
-  const [filterType, setFilterType] = useState<string>("all");
+  const [filterAgeRange, setFilterAgeRange] = useState<string>("all");
+  const [filterLastVisit, setFilterLastVisit] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("recent");
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [todayAppointments, setTodayAppointments] = useState<number>(0);
+  const [newPatientsThisMonth, setNewPatientsThisMonth] = useState<number>(0);
 
   useEffect(() => {
     if (!doctorId) return;
@@ -31,11 +33,23 @@ export function usePatientsList(doctorId: string | null) {
       ...offlinePatients.map((p) => ({ ...p, type: "offline" as const })),
     ];
     setAllPatients(combined);
+
+    // Calculate new patients this month
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const newCount = combined.filter(p => {
+      const createdAtStr = "patient" in p ? (p as RegisteredPatient).created_at : (p as OfflinePatient).created_at;
+      if (!createdAtStr) return false;
+      const createdDate = new Date(createdAtStr);
+      return createdDate >= startOfMonth;
+    }).length;
+    setNewPatientsThisMonth(newCount);
+
   }, [patients, offlinePatients]);
 
   useEffect(() => {
     filterAndSortPatients();
-  }, [searchQuery, filterGender, filterType, sortBy, allPatients]);
+  }, [searchQuery, filterGender, filterAgeRange, filterLastVisit, sortBy, allPatients]);
 
   const loadData = async (id: string) => {
     try {
@@ -90,11 +104,32 @@ export function usePatientsList(doctorId: string | null) {
   const filterAndSortPatients = () => {
     let filtered = allPatients.filter((p) => {
       const isRegistered = "patient" in p;
-      const name = isRegistered ? p.patient.nombre_completo : (p as OfflinePatient).nombre_completo;
-      const email = isRegistered ? p.patient.email : (p as OfflinePatient).email || "";
-      const phone = isRegistered ? p.patient.telefono : (p as OfflinePatient).telefono;
+      const pData = isRegistered ? (p as RegisteredPatient).patient : (p as OfflinePatient);
+      const name = pData.nombre_completo;
+      const email = pData.email || "";
+      const phone = pData.telefono;
       const cedula = !isRegistered ? (p as OfflinePatient).cedula : "";
-      const gender = isRegistered ? p.patient.genero : (p as OfflinePatient).genero;
+      const gender = pData.genero;
+
+      // Calculate Age
+      let age = 0;
+      if (pData.fecha_nacimiento) {
+        const birthDate = new Date(pData.fecha_nacimiento);
+        const today = new Date();
+        age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+      }
+
+      // Calculate Last Visit
+      const lastVisitDate = isRegistered && (p as RegisteredPatient).last_consultation_date
+        ? new Date((p as RegisteredPatient).last_consultation_date!)
+        : new Date((p as OfflinePatient).created_at); // Fallback to created_at for offline or if no consultation
+
+      const now = new Date();
+      const monthsSinceLastVisit = (now.getFullYear() - lastVisitDate.getFullYear()) * 12 + (now.getMonth() - lastVisitDate.getMonth());
 
       const q = searchQuery.trim().toLowerCase();
       const matchesSearch = !q ||
@@ -104,9 +139,18 @@ export function usePatientsList(doctorId: string | null) {
         cedula.toLowerCase().includes(q);
 
       const matchesGender = filterGender === "all" || gender === filterGender;
-      const matchesType = filterType === "all" || (filterType === "registered" && isRegistered) || (filterType === "offline" && !isRegistered);
 
-      return matchesSearch && matchesGender && matchesType;
+      const matchesAge = filterAgeRange === "all" ||
+        (filterAgeRange === "0-18" && age <= 18) ||
+        (filterAgeRange === "19-60" && age > 18 && age <= 60) ||
+        (filterAgeRange === "60+" && age > 60);
+
+      const matchesLastVisit = filterLastVisit === "all" ||
+        (filterLastVisit === "recent" && monthsSinceLastVisit < 1) ||
+        (filterLastVisit === "medium" && monthsSinceLastVisit >= 1 && monthsSinceLastVisit <= 6) ||
+        (filterLastVisit === "long" && monthsSinceLastVisit > 6);
+
+      return matchesSearch && matchesGender && matchesAge && matchesLastVisit;
     });
 
     if (sortBy === "recent") {
@@ -116,13 +160,13 @@ export function usePatientsList(doctorId: string | null) {
         const dateA = isARegistered && (a as RegisteredPatient).last_consultation_date
           ? new Date((a as RegisteredPatient).last_consultation_date!).getTime()
           : !isARegistered
-          ? new Date((a as OfflinePatient).created_at).getTime()
-          : 0;
+            ? new Date((a as OfflinePatient).created_at).getTime()
+            : 0;
         const dateB = isBRegistered && (b as RegisteredPatient).last_consultation_date
           ? new Date((b as RegisteredPatient).last_consultation_date!).getTime()
           : !isBRegistered
-          ? new Date((b as OfflinePatient).created_at).getTime()
-          : 0;
+            ? new Date((b as OfflinePatient).created_at).getTime()
+            : 0;
         return dateB - dateA;
       });
     } else if (sortBy === "name") {
@@ -150,15 +194,18 @@ export function usePatientsList(doctorId: string | null) {
       filteredPatients,
       searchQuery,
       filterGender,
-      filterType,
+      filterAgeRange,
+      filterLastVisit,
       sortBy,
       viewMode,
       todayAppointments,
+      newPatientsThisMonth,
     },
     actions: {
       setSearchQuery,
       setFilterGender,
-      setFilterType,
+      setFilterAgeRange,
+      setFilterLastVisit,
       setSortBy,
       setViewMode,
     },

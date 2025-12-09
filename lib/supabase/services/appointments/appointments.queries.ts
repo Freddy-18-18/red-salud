@@ -129,10 +129,10 @@ export async function getAvailableDoctors(specialtyId?: string) {
 export async function getDoctorProfile(doctorId: string) {
   try {
     const { data, error } = await supabase
-      .from("doctor_profiles")
+      .from("doctor_details")
       .select(`
         *,
-        specialty:medical_specialties(id, name, description, icon),
+        specialty:specialties(id, name, description, icon),
         profile:profiles!inner(id, nombre_completo, email, avatar_url)
       `)
       .eq("id", doctorId)
@@ -142,13 +142,13 @@ export async function getDoctorProfile(doctorId: string) {
 
     const doctor = {
       id: data.id,
-      specialty_id: data.specialty_id,
-      license_number: data.license_number,
-      anos_experiencia: data.years_experience,
-      biografia: data.bio,
-      tarifa_consulta: data.consultation_price ? parseFloat(data.consultation_price) : undefined,
-      consultation_duration: data.consultation_duration || 30,
-      verified: data.is_verified,
+      specialty_id: data.especialidad_id,
+      license_number: data.licencia_medica,
+      anos_experiencia: data.anos_experiencia,
+      biografia: data.biografia,
+      tarifa_consulta: data.tarifa_consulta ? parseFloat(data.tarifa_consulta) : undefined,
+      consultation_duration: 30,
+      verified: data.verified,
       created_at: data.created_at,
       updated_at: data.updated_at,
       profile: {
@@ -220,11 +220,8 @@ export async function getAvailableTimeSlots(
         .eq("doctor_id", doctorId)
         .eq("dia_semana", dayOfWeek)
         .eq("activo", true),
-      supabase
-        .from("doctor_profiles")
-        .select("consultation_duration")
-        .eq("id", doctorId)
-        .single(),
+      // Default duration as it's not in DB yet
+      Promise.resolve({ data: { consultation_duration: 30 }, error: null }),
     ]);
 
     if (availabilityResult.error) throw availabilityResult.error;

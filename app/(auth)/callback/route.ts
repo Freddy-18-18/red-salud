@@ -15,6 +15,7 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get("code");
   const action = requestUrl.searchParams.get("action"); // "login" o "register"
   const pendingRole = requestUrl.searchParams.get("role");
+  const rememberMe = requestUrl.searchParams.get("rememberMe") === "true"; // Obtener rememberMe
 
   if (code) {
     const cookieStore = await cookies();
@@ -94,7 +95,7 @@ export async function GET(request: Request) {
         }
         
         // Usuario existe → Redirigir a su dashboard
-        return NextResponse.redirect(new URL(`/dashboard/${profile.role}`, requestUrl.origin));
+        return NextResponse.redirect(new URL(`/dashboard/${profile.role}?rememberMe=${rememberMe}`, requestUrl.origin));
       }
       
       // ============================================================================
@@ -168,7 +169,7 @@ export async function GET(request: Request) {
           console.log("✅ [CALLBACK] user_metadata actualizado con rol:", pendingRole);
         }
         
-        return NextResponse.redirect(new URL(`/dashboard/${pendingRole}`, requestUrl.origin));
+        return NextResponse.redirect(new URL(`/dashboard/${pendingRole}?rememberMe=${rememberMe}`, requestUrl.origin));
       }
       
       // ============================================================================
@@ -178,7 +179,7 @@ export async function GET(request: Request) {
       if (profile?.role) {
         // Usuario existe con rol → Redirigir al dashboard
         console.log("✅ [CALLBACK] Usuario con perfil encontrado, redirigiendo a dashboard");
-        return NextResponse.redirect(new URL(`/dashboard/${profile.role}`, requestUrl.origin));
+        return NextResponse.redirect(new URL(`/dashboard/${profile.role}?rememberMe=${rememberMe}`, requestUrl.origin));
       } else {
         // Usuario sin perfil → NO PERMITIR ACCESO
         // Cerrar sesión y redirigir a login con error

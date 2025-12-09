@@ -3,102 +3,65 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
+const ESTADOS_VENEZUELA = [
+  "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", 
+  "Carabobo", "Cojedes", "Delta Amacuro", "Distrito Capital", "Falcón", 
+  "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta", 
+  "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia"
+];
+
 /**
  * GET /api/public/geographic-coverage
  * 
- * Retorna estadísticas de cobertura geográfica en Venezuela:
- * - Número de estados con servicios activos
- * - Total de servicios por estado
- * - Porcentaje de penetración nacional
+ * Retorna estadísticas de cobertura geográfica en Venezuela
  */
 export async function GET() {
   try {
-    // Obtener total de estados de Venezuela
-    const { count: totalEstados } = await supabaseAdmin
-      .from("estados_venezuela")
-      .select("*", { count: "exact", head: true });
-
-    if (!totalEstados) {
-      return NextResponse.json({
-        success: false,
-        error: "No se pudieron obtener los estados",
-      }, { status: 500 });
-    }
-
-    // Obtener estados con médicos activos
-    const { data: estadosConMedicos } = await supabaseAdmin
-      .from("doctor_profiles")
-      .select("estado_id")
-      .not("estado_id", "is", null)
+    // Obtener médicos verificados con su estado
+    const { data: doctors, error } = await supabaseAdmin
+      .from("doctor_details")
+      .select(`
+        id,
+        profile:profiles(estado)
+      `)
       .eq("verified", true);
 
-    // Obtener estados con clínicas activas
-    const { data: estadosConClinicas } = await supabaseAdmin
-      .from("clinic_profiles")
-      .select("estado_id")
-      .not("estado_id", "is", null);
+    if (error) throw error;
 
-    // Obtener estados con farmacias activas
-    const { data: estadosConFarmacias } = await supabaseAdmin
-      .from("pharmacy_profiles")
-      .select("estado_id")
-      .not("estado_id", "is", null);
+    const stateCounts: Record<string, { medicos: number, total: number }> = {};
 
-    // Obtener estados con laboratorios activos
-    const { data: estadosConLaboratorios } = await supabaseAdmin
-      .from("laboratory_profiles")
-      .select("estado_id")
-      .not("estado_id", "is", null);
+    // Inicializar contadores
+    ESTADOS_VENEZUELA.forEach(estado => {
+      stateCounts[estado] = { medicos: 0, total: 0 };
+    });
 
-    // Obtener estados con aseguradoras activas
-    const { data: estadosConSeguros } = await supabaseAdmin
-      .from("insurance_profiles")
-      .select("estado_id")
-      .not("estado_id", "is", null);
+    // Contar médicos por estado
+    doctors?.forEach((doc: any) => {
+      const estado = doc.profile?.estado;
+      if (estado && ESTADOS_VENEZUELA.includes(estado)) {
+        stateCounts[estado].medicos++;
+        stateCounts[estado].total++;
+      }
+    });
 
-    // Combinar todos los estado_ids únicos
-    const todosEstados = [
-      ...(estadosConMedicos?.map(d => d.estado_id) || []),
-      ...(estadosConClinicas?.map(c => c.estado_id) || []),
-      ...(estadosConFarmacias?.map(f => f.estado_id) || []),
-      ...(estadosConLaboratorios?.map(l => l.estado_id) || []),
-      ...(estadosConSeguros?.map(s => s.estado_id) || []),
-    ];
-
-    const estadosUnicos = new Set(todosEstados.filter(id => id !== null));
-    const estadosConCobertura = estadosUnicos.size;
-
-    // Calcular porcentaje de penetración
+    // Calcular estadísticas
+    const estadosConCobertura = Object.values(stateCounts).filter(s => s.total > 0).length;
+    const totalEstados = ESTADOS_VENEZUELA.length;
     const porcentajePenetracion = Math.round((estadosConCobertura / totalEstados) * 100);
 
-    // Obtener detalles de los estados con cobertura
-    const { data: estadosDetalles } = await supabaseAdmin
-      .from("estados_venezuela")
-      .select("id, nombre, codigo")
-      .in("id", Array.from(estadosUnicos));
-
-    // Contar servicios por estado
-    const serviciosPorEstado = estadosDetalles?.map(estado => {
-      const medicos = estadosConMedicos?.filter(d => d.estado_id === estado.id).length || 0;
-      const clinicas = estadosConClinicas?.filter(c => c.estado_id === estado.id).length || 0;
-      const farmacias = estadosConFarmacias?.filter(f => f.estado_id === estado.id).length || 0;
-      const laboratorios = estadosConLaboratorios?.filter(l => l.estado_id === estado.id).length || 0;
-      const seguros = estadosConSeguros?.filter(s => s.estado_id === estado.id).length || 0;
-
-      return {
-        estado: estado.nombre,
-        codigo: estado.codigo,
-        total: medicos + clinicas + farmacias + laboratorios + seguros,
-        medicos,
-        clinicas,
-        farmacias,
-        laboratorios,
-        seguros,
-      };
-    }) || [];
-
-    // Ordenar por total de servicios (descendente)
-    serviciosPorEstado.sort((a, b) => b.total - a.total);
+    const serviciosPorEstado = Object.entries(stateCounts)
+      .filter(([_, counts]) => counts.total > 0)
+      .map(([estado, counts]) => ({
+        estado,
+        codigo: estado.substring(0, 2).toUpperCase(), // Código dummy
+        total: counts.total,
+        medicos: counts.medicos,
+        clinicas: 0,
+        farmacias: 0,
+        laboratorios: 0,
+        seguros: 0,
+      }))
+      .sort((a, b) => b.total - a.total);
 
     return NextResponse.json({
       success: true,

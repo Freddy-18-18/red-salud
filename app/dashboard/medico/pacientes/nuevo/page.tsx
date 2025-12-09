@@ -20,16 +20,16 @@ export default function NuevoPacientePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fromCita = searchParams.get("from") === "cita";
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [validatingCedula, setValidatingCedula] = useState(false);
   const [cedulaFound, setCedulaFound] = useState(false);
-  
+
   // Si viene de cita, mostrar mensaje y no redirigir automáticamente
   // El usuario ya está en la página correcta
-  
+
   type PatientFormData = {
     cedula: string;
     nombre_completo: string;
@@ -50,7 +50,7 @@ export default function NuevoPacientePage() {
     direccion: "",
   });
   const [edad, setEdad] = useState<number | null>(null);
-  
+
   // Medical data
   const [alergias, setAlergias] = useState<string[]>([]);
   const [condicionesCronicas, setCondicionesCronicas] = useState<string[]>([]);
@@ -91,14 +91,14 @@ export default function NuevoPacientePage() {
   useEffect(() => {
     const validateCedulaDebounced = async () => {
       const cleanCedula = formData.cedula.trim();
-      
+
       if (cleanCedula.length >= 6 && isValidVenezuelanCedula(cleanCedula)) {
         setValidatingCedula(true);
         setCedulaFound(false);
-        
+
         try {
           const result = await validateCedulaWithCNE(cleanCedula);
-          
+
           if (result.found && result.nombre_completo) {
             setCedulaFound(true);
             setFormData((prev) => ({
@@ -124,7 +124,7 @@ export default function NuevoPacientePage() {
     return () => clearTimeout(debounce);
   }, [formData.cedula]);
 
-  
+
 
   useEffect(() => {
     setEmailError(validateEmailFormat(formData.email));
@@ -136,7 +136,7 @@ export default function NuevoPacientePage() {
   useEffect(() => {
     const { formatted } = enforceVzlaPhone(formData.telefono);
     if (formatted !== formData.telefono) setFormData((prev) => ({ ...prev, telefono: formatted }));
-    setTelefonoError(validateVzlaPhone(formData.telefono));
+    // Removed immediate validation to prevent error on load
   }, []);
 
   const saveDraft = async () => {
@@ -170,7 +170,7 @@ export default function NuevoPacientePage() {
         await supabase.from("offline_patients").insert(payload);
       }
       if (!draftSavedOnce) setDraftSavedOnce(true);
-    } catch {}
+    } catch { }
   };
 
   useEffect(() => {
@@ -240,10 +240,10 @@ export default function NuevoPacientePage() {
         return;
       }
 
-      const notasConDiagnosticos = notasMedicas + 
+      const notasConDiagnosticos = notasMedicas +
         (diagnosticos.length > 0 ? `\n\nDiagnósticos:\n${diagnosticos.join("\n")}` : "");
 
-      const { data: offlinePatient, error: insertError} = await supabase
+      const { data: offlinePatient, error: insertError } = await supabase
         .from("offline_patients")
         .insert({
           doctor_id: user.id,
@@ -290,9 +290,9 @@ export default function NuevoPacientePage() {
             <div className="w-full px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => router.back()}
                     className="hover:bg-gray-100"
                   >
@@ -366,18 +366,18 @@ export default function NuevoPacientePage() {
             </div>
             {/* Actions (desktop estático, móvil/tables fijo) */}
             <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 lg:static lg:mt-10 lg:w-full lg:justify-end">
-              <Button 
-                type="button" 
-                onClick={handleNextStep} 
+              <Button
+                type="button"
+                onClick={handleNextStep}
                 className="h-11 px-5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg transition-colors"
                 disabled={!formData.cedula || !formData.nombre_completo}
                 aria-label="Continuar al diagnóstico"
               >
                 Continuar al Diagnóstico
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => router.back()}
                 className="h-11 px-5 transition-colors"
                 aria-label="Cancelar"

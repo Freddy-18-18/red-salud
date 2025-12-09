@@ -1,14 +1,15 @@
 import { supabase } from "./client";
 import type { RegisterFormData, LoginFormData } from "@/lib/validations/auth";
 
-export type UserRole = 
-  | "paciente" 
-  | "medico" 
-  | "clinica" 
-  | "farmacia" 
-  | "laboratorio" 
-  | "ambulancia" 
-  | "seguro";
+export type UserRole =
+  | "paciente"
+  | "medico"
+  | "clinica"
+  | "farmacia"
+  | "laboratorio"
+  | "ambulancia"
+  | "seguro"
+  | "secretaria";
 
 interface SignUpData extends RegisterFormData {
   role: UserRole;
@@ -56,7 +57,7 @@ export async function signUp(data: SignUpData) {
     };
   } catch (error: any) {
     console.error("Error en signUp:", error);
-    
+
     // Detectar errores de red
     if (error.message?.includes("fetch") || error.message?.includes("network")) {
       return {
@@ -64,7 +65,7 @@ export async function signUp(data: SignUpData) {
         error: "Error de conexión. Verifica tu internet e intenta de nuevo.",
       };
     }
-    
+
     return {
       success: false,
       error: "Error inesperado al registrar usuario. Intenta de nuevo.",
@@ -103,7 +104,7 @@ export async function signIn(data: LoginFormData) {
     };
   } catch (error: any) {
     console.error("Error en signIn:", error);
-    
+
     // Detectar errores de red
     if (error.message?.includes("fetch") || error.message?.includes("network")) {
       return {
@@ -111,7 +112,7 @@ export async function signIn(data: LoginFormData) {
         error: "Error de conexión. Verifica tu internet e intenta de nuevo.",
       };
     }
-    
+
     return {
       success: false,
       error: "Error inesperado al iniciar sesión. Intenta de nuevo.",
@@ -124,19 +125,24 @@ export async function signIn(data: LoginFormData) {
  * @param provider - Proveedor OAuth (google, github, etc.)
  * @param role - Rol del usuario (solo para registro)
  * @param action - "login" o "register" para diferenciar el flujo
+ * @param rememberMe - Si debe mantener la sesión iniciada
  */
 export async function signInWithOAuth(
-  provider: "google", 
+  provider: "google",
   role?: string,
-  action: "login" | "register" = "login"
+  action: "login" | "register" = "login",
+  rememberMe: boolean = false
 ) {
   try {
-    // Construir URL de callback con action y rol
+    // Construir URL de callback con action, rol y rememberMe
     let callbackUrl = `${window.location.origin}/callback?action=${action}`;
-    
+
     if (role && action === "register") {
       callbackUrl += `&role=${role}`;
     }
+    
+    // Agregar rememberMe a la URL
+    callbackUrl += `&rememberMe=${rememberMe}`;
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,

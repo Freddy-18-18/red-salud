@@ -10,21 +10,17 @@ export async function GET(request: NextRequest) {
 
   try {
     let query = supabaseAdmin
-      .from("doctor_profiles")
+      .from("doctor_details")
       .select(
         `
         id,
-        specialty_id,
-        license_number,
-        years_experience,
-        bio,
-        consultation_price,
-        consultation_duration,
-        is_verified,
-        is_active,
-        accepts_insurance,
-        professional_phone,
-        clinic_address,
+        especialidad_id,
+        licencia_medica,
+        anos_experiencia,
+        biografia,
+        tarifa_consulta,
+        verified,
+        acepta_seguros,
         created_at,
         updated_at,
         profile:profiles(
@@ -37,7 +33,7 @@ export async function GET(request: NextRequest) {
           ciudad,
           estado
         ),
-        specialty:medical_specialties(
+        specialty:specialties(
           id,
           name,
           description,
@@ -46,12 +42,11 @@ export async function GET(request: NextRequest) {
         )
       `
       )
-      .eq("is_active", true)
-      .eq("is_verified", true)
+      .eq("verified", true)
       .order("created_at", { ascending: true });
 
     if (specialtyId) {
-      query = query.eq("specialty_id", specialtyId);
+      query = query.eq("especialidad_id", specialtyId);
     }
 
     // Filtrar por destacados si hay configuración (tabla o columna). Fallback seguro.
@@ -66,16 +61,15 @@ export async function GET(request: NextRequest) {
           if (ids.length > 0) {
             // @ts-ignore - in() está disponible en el cliente de Supabase
             query = query.in("id", ids);
-          } else {
-            return NextResponse.json({ success: true, data: [] });
           }
         } else {
-          // Si no hay tabla o no hay destacados, devolver vacío para evitar datos falsos
-          return NextResponse.json({ success: true, data: [] });
+          // Si no hay tabla o no hay destacados, ignoramos el filtro y devolvemos los más recientes
+          // Esto asegura que la UI no se quede vacía
+          console.warn("No featured doctors found or table missing, returning latest verified doctors.");
         }
       } catch (e) {
-        // Tabla no existe u otro error: no mostramos nada
-        return NextResponse.json({ success: true, data: [] });
+        // Tabla no existe u otro error: ignoramos el filtro
+        console.warn("Error checking featured_doctors, returning latest verified doctors.", e);
       }
     }
 
@@ -95,21 +89,21 @@ export async function GET(request: NextRequest) {
 
       return {
         id: row.id,
-        specialty_id: row.specialty_id,
-        license_number: row.license_number,
-        anos_experiencia: row.years_experience || 0,
-        biografia: row.bio || undefined,
-        tarifa_consulta: row.consultation_price
-          ? Number(row.consultation_price)
+        specialty_id: row.especialidad_id,
+        license_number: row.licencia_medica,
+        anos_experiencia: row.anos_experiencia || 0,
+        biografia: row.biografia || undefined,
+        tarifa_consulta: row.tarifa_consulta
+          ? Number(row.tarifa_consulta)
           : undefined,
-        consultation_duration: row.consultation_duration || 30,
-        verified: row.is_verified,
+        consultation_duration: 30, // Default value as it's missing in DB
+        verified: row.verified,
         created_at: row.created_at,
         updated_at: row.updated_at,
         profile,
         specialty:
           row.specialty || {
-            id: row.specialty_id || "",
+            id: row.especialidad_id || "",
             name: "Medicina General",
             description: "",
             icon: "stethoscope",

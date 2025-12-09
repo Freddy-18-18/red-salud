@@ -125,11 +125,13 @@ export interface LabOrderStatusHistory {
 }
 
 export interface CreateLabOrderData {
+  paciente_id: string;
   medico_id?: string;
   diagnostico_presuntivo?: string;
   indicaciones_clinicas?: string;
   prioridad?: LabOrderPriority;
-  test_type_ids: string[];
+  test_type_ids?: string[];
+  tests?: string[]; // Alias for test_type_ids
   instrucciones_paciente?: string;
 }
 

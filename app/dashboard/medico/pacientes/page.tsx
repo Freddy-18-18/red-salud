@@ -13,6 +13,7 @@ import { PatientsGrid } from "@/components/dashboard/medico/patients/patients-gr
 import { usePatientsList } from "@/components/dashboard/medico/patients/hooks/usePatientsList";
 import type { RegisteredPatient, OfflinePatient } from "@/components/dashboard/medico/patients/utils";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Components
 import { StatsCards } from "@/components/dashboard/medico/patients/stats-cards";
@@ -83,7 +84,7 @@ export default function DoctorPatientsPage() {
     try {
       // Consulta simplificada para evitar ambigüedad
       const { data, error } = await supabase
-        .from("citas")
+        .from("appointments")
         .select("duracion_minutos, motivo, completed_at")
         .eq("medico_id", doctorId)
         .eq("status", "completada")
@@ -214,16 +215,7 @@ export default function DoctorPatientsPage() {
     }
   };
 
-  if (state.loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-      </div>
-    );
-  }
-
   const completedToday = todayAppointments.filter(a => a.status === "completada").length;
-  const inProgress = todayAppointments.filter(a => a.status === "en_consulta").length;
   const waiting = todayAppointments.filter(a => a.status === "en_espera").length;
 
   return (
@@ -234,7 +226,11 @@ export default function DoctorPatientsPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Mis Pacientes</h1>
             <p className="text-gray-600 mt-1">
-              {state.patients.length + state.offlinePatients.length} paciente{(state.patients.length + state.offlinePatients.length) !== 1 ? "s" : ""} total{(state.patients.length + state.offlinePatients.length) !== 1 ? "es" : ""}
+              {state.loading ? (
+                <Skeleton className="h-5 w-32" />
+              ) : (
+                `${state.patients.length + state.offlinePatients.length} paciente${(state.patients.length + state.offlinePatients.length) !== 1 ? "s" : ""} total${(state.patients.length + state.offlinePatients.length) !== 1 ? "es" : ""}`
+              )}
             </p>
           </div>
           <Button onClick={() => router.push("/dashboard/medico/pacientes/nuevo")}>
@@ -245,13 +241,14 @@ export default function DoctorPatientsPage() {
 
         {/* Stats Cards */}
         <StatsCards
+          loading={state.loading}
           todayCount={todayAppointments.length}
           completedToday={completedToday}
           waiting={waiting}
           totalPatients={state.patients.length + state.offlinePatients.length}
           registeredCount={state.patients.length}
           offlineCount={state.offlinePatients.length}
-          inProgress={inProgress}
+          newPatientsThisMonth={state.newPatientsThisMonth}
           avgConsultationTime={avgConsultationTime}
           expandedSection={expandedSection}
           onToggleSection={toggleSection}
@@ -276,10 +273,12 @@ export default function DoctorPatientsPage() {
                 <FiltersBar
                   searchQuery={state.searchQuery}
                   onSearchChange={actions.setSearchQuery}
-                  filterType={state.filterType}
-                  onFilterTypeChange={actions.setFilterType}
                   filterGender={state.filterGender}
                   onFilterGenderChange={actions.setFilterGender}
+                  filterAgeRange={state.filterAgeRange}
+                  onFilterAgeRangeChange={actions.setFilterAgeRange}
+                  filterLastVisit={state.filterLastVisit}
+                  onFilterLastVisitChange={actions.setFilterLastVisit}
                   sortBy={state.sortBy}
                   onSortByChange={actions.setSortBy}
                   viewMode={state.viewMode}
@@ -289,12 +288,22 @@ export default function DoctorPatientsPage() {
             </Card>
 
             <div className="space-y-4">
-              {state.filteredPatients.length > 0 ? (
+              {state.filteredPatients.length > 0 || state.loading ? (
                 <>
                   {state.viewMode === "table" ? (
-                    <PatientsTable patients={state.filteredPatients} onView={handleView} onMessage={handleMessage} />
+                    <PatientsTable
+                      loading={state.loading}
+                      patients={state.filteredPatients}
+                      onView={handleView}
+                      onMessage={handleMessage}
+                    />
                   ) : (
-                    <PatientsGrid patients={state.filteredPatients} onView={handleView} onMessage={handleMessage} />
+                    <PatientsGrid
+                      loading={state.loading}
+                      patients={state.filteredPatients}
+                      onView={handleView}
+                      onMessage={handleMessage}
+                    />
                   )}
                 </>
               ) : (

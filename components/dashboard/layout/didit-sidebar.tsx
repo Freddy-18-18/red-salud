@@ -121,7 +121,7 @@ export function DiditSidebar({
     <motion.div
       data-state={collapsed ? "collapsed" : "expanded"}
       data-collapsible="icon"
-      className="group peer hidden md:block relative h-screen sticky top-0"
+      className="group peer hidden md:block h-screen sticky top-0"
       animate={{ width: collapsed ? 72 : 224 }}
       transition={{ duration: 0.2, ease: "linear" }}
     >
@@ -134,6 +134,7 @@ export function DiditSidebar({
           {/* Header - User Info */}
           <div
             data-sidebar="header"
+            data-tour="sidebar-profile"
             className={cn(
               "flex items-center border-b border-gray-200 p-3 transition-all",
               collapsed ? "justify-center" : "justify-start"
@@ -174,6 +175,7 @@ export function DiditSidebar({
                 return (
                   <Link key={item.key} href={item.route}>
                     <button
+                      data-tour={`sidebar-item-${item.key}`}
                       onFocus={() => setFocusedIndex(index)}
                       onBlur={() => setFocusedIndex(-1)}
                       className={cn(
@@ -215,6 +217,7 @@ export function DiditSidebar({
             collapsed ? "flex flex-col items-center gap-2" : "space-y-2"
           )}>
             <button
+              data-tour="sidebar-logout"
               onClick={onLogout}
               className={cn(
                 "flex items-center gap-2 rounded-md hover:bg-red-50 transition-colors text-red-600 text-sm font-medium",

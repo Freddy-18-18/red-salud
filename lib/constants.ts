@@ -15,6 +15,10 @@ export const ROUTES = {
   CONTACTO: "/soporte/contacto",
   BLOG: "/blog",
   FAQ: "/soporte/faq",
+  GUIAS: "/soporte/guias",
+  ESTADO: "/soporte/estado",
+  CHAT: "/soporte/chat",
+  AGENDAR_LLAMADA: "/soporte/agendar-llamada",
   TERMINOS: "/terminos",
   PRIVACIDAD: "/privacidad",
 } as const;

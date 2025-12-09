@@ -19,7 +19,7 @@ export function GoogleSignInButton({
     <Button
       type="button"
       variant="outline"
-      className="w-auto px-6"
+      className="w-full"
       size={size}
       onClick={onClick}
       disabled={disabled}

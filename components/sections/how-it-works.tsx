@@ -78,7 +78,7 @@ const roles = [
     name: "Aseguradora", 
     icon: Briefcase, 
     color: "from-orange-600 to-orange-700",
-    href: "/servicios/aseguradoras",
+    href: "/servicios/seguros",
     description: "Administra pólizas y reembolsos"
   },
   { 
@@ -111,11 +111,11 @@ export function HowItWorksSection() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   return (
-    <section className="py-20 lg:py-28 bg-gradient-to-b from-white via-gray-50 to-white dark:from-background dark:via-slate-900/50 dark:to-background relative overflow-hidden">
+    <section className="py-20 lg:py-28 bg-gradient-to-b from-background via-secondary/5 to-background dark:from-background dark:via-background dark:to-background relative overflow-hidden">
       {/* Fondo sutil animado */}
       <div className="absolute inset-0 opacity-5 dark:opacity-10">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+        <div className="absolute top-20 left-10 w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -129,23 +129,23 @@ export function HowItWorksSection() {
         >
           <motion.div
             variants={fadeInUp}
-            className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-teal-100 dark:from-blue-900/30 dark:to-teal-900/30 text-blue-700 dark:text-blue-300 text-sm font-semibold mb-4 border border-blue-200 dark:border-blue-800"
+            className="inline-block px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-primary text-sm font-semibold mb-4 border border-primary/20 dark:border-primary/30"
           >
             Cómo funciona
           </motion.div>
           <motion.h2
             variants={fadeInUp}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-foreground mb-6"
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6"
           >
             Solo{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+            <span className="gradient-text">
               3 pasos
             </span>
             {" "}para empezar
           </motion.h2>
           <motion.p
             variants={fadeInUp}
-            className="text-xl text-gray-600 dark:text-muted-foreground leading-relaxed"
+            className="text-xl text-muted-foreground leading-relaxed"
           >
             Un proceso simple para todos los roles de nuestra plataforma
           </motion.p>
@@ -169,30 +169,30 @@ export function HowItWorksSection() {
               >
                 {/* Línea conectora */}
                 {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-16 left-[calc(100%-2rem)] w-[calc(100%+4rem)] h-0.5 bg-gradient-to-r from-blue-300 to-transparent dark:from-blue-800 dark:to-transparent z-0" />
+                  <div className="hidden md:block absolute top-16 left-[calc(100%-2rem)] w-[calc(100%+4rem)] h-0.5 bg-gradient-to-r from-primary/30 to-transparent dark:from-primary/20 dark:to-transparent z-0" />
                 )}
 
-                <div className="relative bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl p-8 transition-all duration-500 hover:shadow-2xl hover:scale-105 hover:border-blue-400 dark:hover:border-blue-600 h-full flex flex-col">
-                  <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                <div className="relative bg-card border border-border rounded-2xl p-8 transition-all duration-500 hover-lift hover:border-primary/50 h-full flex flex-col">
+                  <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg shadow-lg">
                     {step.number}
                   </div>
 
                   <div className="mb-6">
-                    <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-blue-600 to-teal-600 shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                    <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
                       <Icon className="h-8 w-8 text-white" />
                     </div>
                   </div>
 
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-foreground mb-4">
+                  <h3 className="text-2xl font-bold text-foreground mb-4">
                     {step.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-muted-foreground leading-relaxed flex-1">
+                  <p className="text-muted-foreground leading-relaxed flex-1">
                     {step.description}
                   </p>
 
-                  <div className="mt-6 pt-6 border-t border-gray-200 dark:border-border">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-muted-foreground">
-                      <CheckCircle2 className="h-4 w-4 text-teal-500" />
+                  <div className="mt-6 pt-6 border-t border-border dark:border-border">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 text-secondary" />
                       <span>Rápido y seguro</span>
                     </div>
                   </div>
@@ -211,14 +211,14 @@ export function HowItWorksSection() {
           viewport={{ once: true }}
         >
           <motion.div variants={fadeInUp} className="text-center mb-12">
-            <h3 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-foreground mb-4">
+            <h3 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
               ¿Quieres ver el{" "}
-              <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+              <span className="gradient-text">
                 verdadero potencial
               </span>
               ?
             </h3>
-            <p className="text-lg text-gray-600 dark:text-muted-foreground">
+            <p className="text-lg text-muted-foreground">
               Descubre cómo nuestra plataforma se adapta a tu rol
             </p>
           </motion.div>
@@ -240,13 +240,13 @@ export function HowItWorksSection() {
                   className="group"
                 >
                   <div className={`
-                    relative p-6 rounded-2xl border-2 transition-all duration-300
+                    relative p-6 rounded-2xl border transition-all duration-300 h-full
                     ${isSelected 
                       ? 'bg-gradient-to-br ' + role.color + ' border-transparent shadow-2xl scale-105' 
-                      : 'bg-white dark:bg-card border-gray-200 dark:border-border hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xl'
+                      : 'bg-card border-border hover:border-primary/50 hover-lift'
                     }
                   `}>
-                    <div className={`flex flex-col items-center gap-3 transition-colors duration-300 ${isSelected ? 'text-white' : 'text-gray-900 dark:text-foreground'}`}>
+                    <div className={`flex flex-col items-center gap-3 transition-colors duration-300 ${isSelected ? 'text-white' : 'text-foreground'}`}>
                       <div className={`p-3 rounded-xl transition-all duration-300 ${
                         isSelected 
                           ? 'bg-white/20' 
@@ -256,21 +256,11 @@ export function HowItWorksSection() {
                       </div>
                       <div className="text-center">
                         <div className="font-bold text-sm mb-1">{role.name}</div>
-                        <div className={`text-xs transition-opacity duration-300 ${isSelected ? 'text-white/90' : 'text-gray-500 dark:text-muted-foreground'}`}>
+                        <div className={`text-xs transition-opacity duration-300 ${isSelected ? 'text-white/90' : 'text-muted-foreground'}`}>
                           {role.description}
                         </div>
                       </div>
                     </div>
-                    
-                    {isSelected && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-white text-xs font-medium bg-black/20 backdrop-blur-sm px-3 py-1 rounded-full"
-                      >
-                        Ver más →
-                      </motion.div>
-                    )}
                   </div>
                 </Link>
               );

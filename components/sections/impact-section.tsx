@@ -66,11 +66,11 @@ export function ImpactSection() {
     ];
 
   return (
-    <section className="py-20 lg:py-32 bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-background relative overflow-hidden">
+    <section className="py-20 lg:py-32 bg-gradient-to-b from-muted/30 to-background dark:from-muted/10 dark:to-background relative overflow-hidden">
       {/* Fondo decorativo */}
-      <div className="absolute inset-0 opacity-5 dark:opacity-10">
-        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+      <div className="absolute inset-0 opacity-10 dark:opacity-5">
+        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob" />
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-secondary rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob animation-delay-2000" />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -83,16 +83,16 @@ export function ImpactSection() {
         >
           <motion.div
             variants={fadeInUp}
-            className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-teal-100 dark:from-blue-900/30 dark:to-teal-900/30 text-blue-700 dark:text-blue-300 text-sm font-semibold mb-6 border border-blue-200 dark:border-blue-800"
+            className="inline-block px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary text-sm font-semibold mb-6 border border-primary/20 dark:border-primary/30"
           >
             Nuestro impacto
           </motion.div>
           <motion.h2
             variants={fadeInUp}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-foreground mb-6 leading-tight"
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight"
           >
             Transformando la{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-teal-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="gradient-text">
               salud digital
             </span>
             <br />
@@ -100,7 +100,7 @@ export function ImpactSection() {
           </motion.h2>
           <motion.p
             variants={fadeInUp}
-            className="text-xl text-gray-600 dark:text-muted-foreground leading-relaxed"
+            className="text-xl text-muted-foreground leading-relaxed"
           >
             La primera plataforma que conecta todo el ecosistema de salud en un solo lugar,
             diseñada por venezolanos para revolucionar el acceso a servicios médicos de calidad.
@@ -123,31 +123,31 @@ export function ImpactSection() {
                 variants={fadeInUp}
                 className="group"
               >
-                <div className="relative bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl p-8 transition-all duration-500 hover:shadow-2xl hover:scale-105 hover:border-blue-400 dark:hover:border-blue-600 h-full">
+                <div className="relative bg-card border border-border rounded-2xl p-8 transition-all duration-300 hover:shadow-xl hover:border-primary/30 dark:hover:border-primary/50 h-full overflow-hidden">
                   {/* Icono */}
                   <div className="mb-6">
-                    <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${stat.color} shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6`}>
+                    <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${stat.color} shadow-lg transition-transform duration-300 group-hover:scale-105`}>
                       <Icon className="h-8 w-8 text-white" />
                     </div>
                   </div>
 
                   {/* Valor */}
-                  <div className={`text-5xl font-bold mb-2 bg-gradient-to-br ${stat.color} bg-clip-text text-transparent`}>
+                  <div className={`text-5xl font-bold mb-2 bg-gradient-to-br ${stat.color} bg-clip-text text-transparent tabular-nums`}>
                     {stat.value}
                   </div>
 
                   {/* Label */}
-                  <div className="text-lg font-semibold text-gray-900 dark:text-foreground mb-1">
+                  <div className="text-lg font-semibold text-foreground mb-1">
                     {stat.label}
                   </div>
 
                   {/* Description */}
-                  <div className="text-sm text-gray-600 dark:text-muted-foreground">
+                  <div className="text-sm text-muted-foreground">
                     {stat.description}
                   </div>
 
-                  {/* Decorative line */}
-                  <div className={`absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r ${stat.color} transition-all duration-500 group-hover:w-full rounded-b-2xl`} />
+                  {/* Decorative line - ahora dentro del overflow-hidden */}
+                  <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color} transform origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100`} />
                 </div>
               </motion.div>
             );
@@ -162,8 +162,8 @@ export function ImpactSection() {
           viewport={{ once: true }}
           className="mt-20 max-w-4xl mx-auto text-center"
         >
-          <div className="bg-gradient-to-br from-blue-600 via-teal-600 to-indigo-600 rounded-3xl p-12 shadow-2xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black)]" />
+          <div className="bg-gradient-to-br from-primary via-primary/90 to-secondary rounded-3xl p-12 shadow-2xl shadow-primary/20 relative overflow-hidden shine">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1),transparent_50%)]" />
             <div className="relative z-10">
               <div className="text-white/90 text-lg font-medium mb-4">Nuestra visión</div>
               <h3 className="text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight">
