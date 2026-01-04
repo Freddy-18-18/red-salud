@@ -1,0 +1,13 @@
+.ux-switch { width: 100%; }
+.ux-grid, .ux-table { transition: opacity 300ms ease, transform 300ms ease; }
+.ux-grid { opacity: 1; transform: translateY(0); }
+.ux-table { opacity: 0; transform: translateY(6px); display: none; }
+.ux-grid-active .ux-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
+.ux-grid-active .ux-table { display: none; opacity: 0; transform: translateY(6px); }
+.ux-table-active .ux-grid { display: none; opacity: 0; transform: translateY(-6px); }
+.ux-table-active .ux-table { display: grid; grid-template-columns: 1fr; gap: 1rem; opacity: 1; transform: translateY(0); }
+
+@media (max-width: 1300px) {
+  .ux-grid-active { display: block; }
+  .ux-table-active { display: block; }
+}

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageSquare, Send, Search } from "lucide-react";
-import { VerificationGuard } from "@/components/dashboard/medico/verification-guard";
+import { VerificationGuard } from "@/components/dashboard/medico/features/verification-guard";
 
 export default function DoctorMensajeriaPage() {
   const router = useRouter();

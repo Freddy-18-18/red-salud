@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Contacto",
-  description: "Ponte en contacto con nuestro equipo de Red-Salus",
+  description: "Contacta con el equipo de soporte de Red-Salud. Estamos aquí para ayudarte con cualquier consulta o problema.",
 };
 
 export default function ContactoLayout({ children }: { children: React.ReactNode }) {

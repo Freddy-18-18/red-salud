@@ -102,13 +102,13 @@ export default function LaboratoriosPage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Tecnología para tu laboratorio
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Solución completa para la gestión moderna de laboratorios clínicos
             </p>
           </div>
@@ -117,15 +117,15 @@ export default function LaboratoriosPage() {
             {features.map((feature) => (
               <div 
                 key={feature.title}
-                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-emerald-200"
+                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-emerald-200"
               >
                 <div className="bg-linear-to-br from-emerald-100 to-teal-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6">
                   <feature.icon className="h-7 w-7 text-emerald-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   {feature.description}
                 </p>
               </div>
@@ -135,26 +135,26 @@ export default function LaboratoriosPage() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative order-2 lg:order-1">
               <div className="aspect-square rounded-2xl bg-linear-to-br from-emerald-50 to-teal-50 p-12 flex flex-col items-center justify-center">
                 <div className="text-center mb-8">
                   <div className="text-6xl font-bold text-emerald-600 mb-2">-50%</div>
-                  <p className="text-xl text-gray-700">Tiempo de Entrega</p>
+                  <p className="text-xl text-gray-700 dark:text-gray-300">Tiempo de Entrega</p>
                 </div>
                 <div className="text-center">
                   <div className="text-6xl font-bold text-teal-600 mb-2">99.9%</div>
-                  <p className="text-xl text-gray-700">Precisión</p>
+                  <p className="text-xl text-gray-700 dark:text-gray-300">Precisión</p>
                 </div>
               </div>
             </div>
             <div className="order-1 lg:order-2">
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+              <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
                 Ventajas competitivas
               </h2>
-              <p className="text-lg text-gray-600 mb-8">
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
                 Laboratorios modernos eligen nuestra plataforma para optimizar 
                 operaciones y mejorar la experiencia del paciente.
               </p>
@@ -162,7 +162,7 @@ export default function LaboratoriosPage() {
                 {benefits.map((benefit) => (
                   <div key={benefit} className="flex items-start gap-3">
                     <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-lg">{benefit}</span>
+                    <span className="text-gray-700 dark:text-gray-300 text-lg">{benefit}</span>
                   </div>
                 ))}
               </div>
@@ -195,3 +195,5 @@ export default function LaboratoriosPage() {
     </div>
   );
 }
+
+

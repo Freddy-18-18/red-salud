@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Mail, ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
+import { Mail, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,38 +56,47 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-blue-50/30 via-white to-blue-50/50 flex items-center justify-center px-4">
+      <div className="h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
+        {/* Background decorativo minimalista */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
+        </div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
           className="w-full max-w-md"
         >
-          <Card className="border-2 shadow-xl bg-white">
-            <CardContent className="px-6 py-8 text-center">
+          <Card className="border shadow-lg bg-card/80 backdrop-blur-sm">
+            <CardContent className="px-8 py-12 text-center space-y-6">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring" }}
+                transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+                className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30"
               >
-                <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
               </motion.div>
-              
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                ¡Correo Enviado!
-              </h2>
-              
-              <p className="text-gray-600 mb-6">
-                Revisa tu bandeja de entrada. Te hemos enviado un enlace para restablecer tu contraseña.
-              </p>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-blue-800">
-                  💡 <strong>Tip:</strong> Si no ves el correo, revisa tu carpeta de spam.
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-foreground">
+                  ¡Correo Enviado!
+                </h2>
+                <p className="text-muted-foreground text-sm">
+                  Revisa tu bandeja de entrada. Te hemos enviado un enlace para restablecer tu contraseña.
                 </p>
               </div>
 
-              <Link href="/login">
-                <Button className="w-full">
+              <div className="bg-muted/50 rounded-lg p-4 text-left">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">💡 Consejo:</span> Si no ves el correo en unos minutos, revisa tu carpeta de spam.
+                </p>
+              </div>
+
+              <Link href="/login" className="block">
+                <Button className="w-full" size="lg">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Volver al Login
                 </Button>
@@ -100,33 +109,41 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50/30 via-white to-blue-50/50 flex items-center justify-center px-4">
+    <div className="h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Background decorativo minimalista */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
         className="w-full max-w-md"
       >
-        {/* Header */}
-        <div className="text-center mb-6">
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al login
-          </Link>
-          
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        {/* Botón de regreso minimalista */}
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8 group"
+        >
+          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Volver al login</span>
+        </Link>
+
+        {/* Título centrado y minimalista */}
+        <div className="text-center mb-8 space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
             ¿Olvidaste tu contraseña?
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground text-sm">
             No te preocupes, te enviaremos instrucciones para restablecerla
           </p>
         </div>
 
         {/* Card del formulario */}
-        <Card className="border-2 shadow-xl bg-white">
-          <CardContent className="px-6 py-6">
+        <Card className="border shadow-lg bg-card/80 backdrop-blur-sm">
+          <CardContent className="px-8 py-8">
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
@@ -134,29 +151,31 @@ export default function ForgotPasswordPage() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm"
+                  className="mb-6 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm"
                 >
                   {error}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <Label htmlFor="email">Correo electrónico</Label>
-                <div className="relative mt-2">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-foreground/80">
+                  Correo electrónico
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="tu@email.com"
-                    className="pl-10"
+                    className="pl-10 h-11 bg-background"
                     {...register("email")}
                     disabled={isLoading}
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-xs text-red-600 mt-1">
+                  <p className="text-xs text-destructive font-medium">
                     {errors.email.message}
                   </p>
                 )}
@@ -165,7 +184,7 @@ export default function ForgotPasswordPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="w-full bg-linear-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700"
+                className="w-full h-11 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -180,11 +199,11 @@ export default function ForgotPasswordPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 ¿Recordaste tu contraseña?{" "}
                 <Link
                   href="/login"
-                  className="font-semibold text-blue-600 hover:text-blue-700"
+                  className="font-semibold text-primary hover:text-primary/80 hover:underline transition-all"
                 >
                   Inicia sesión
                 </Link>

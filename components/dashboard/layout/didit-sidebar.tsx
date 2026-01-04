@@ -121,39 +121,40 @@ export function DiditSidebar({
     <motion.div
       data-state={collapsed ? "collapsed" : "expanded"}
       data-collapsible="icon"
-      className="group peer hidden md:block relative h-screen sticky top-0"
+      className="group peer hidden md:block h-screen sticky top-0"
       animate={{ width: collapsed ? 72 : 224 }}
       transition={{ duration: 0.2, ease: "linear" }}
     >
       {/* Sidebar Container */}
-      <div className="h-full p-2">
+      <div className="h-full">
         <div
           data-sidebar="sidebar"
-          className="bg-white border border-gray-200 rounded-lg shadow-sm flex h-full w-full flex-col"
+          className="bg-sidebar border-r border-sidebar-border flex h-full w-full flex-col"
         >
           {/* Header - User Info */}
           <div
             data-sidebar="header"
+            data-tour="sidebar-profile"
             className={cn(
-              "flex items-center border-b border-gray-200 p-3 transition-all",
+              "flex items-center border-b border-sidebar-border p-3 transition-all",
               collapsed ? "justify-center" : "justify-start"
             )}
           >
             <button
               onClick={onProfileClick}
               className={cn(
-                "inline-flex items-center gap-2 rounded-md hover:bg-gray-50 transition-colors p-2 w-full",
+                "inline-flex items-center gap-2 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors p-2 w-full",
                 collapsed && "justify-center"
               )}
             >
               <Avatar className="size-8 shrink-0">
-                <AvatarFallback className="bg-gray-900 text-white text-xs">
+                <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs">
                   {userName.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               {!collapsed && (
                 <div className="flex-1 text-left overflow-hidden">
-                  <div className="text-sm font-medium truncate">{userName}</div>
+                  <div className="text-sm font-medium text-sidebar-foreground truncate">{userName}</div>
                 </div>
               )}
             </button>
@@ -174,14 +175,16 @@ export function DiditSidebar({
                 return (
                   <Link key={item.key} href={item.route}>
                     <button
+                      data-tour={`sidebar-item-${item.key}`}
                       onFocus={() => setFocusedIndex(index)}
                       onBlur={() => setFocusedIndex(-1)}
                       className={cn(
                         "w-full flex items-center gap-3 rounded-md transition-all",
-                        "hover:bg-gray-100",
+                        "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                         collapsed ? "justify-center p-3" : "justify-start px-3 py-2",
-                        active && "bg-blue-50 text-blue-600 hover:bg-blue-100",
-                        focused && !active && "ring-2 ring-blue-300"
+                        active && "bg-sidebar-accent text-sidebar-primary font-medium",
+                        !active && "text-sidebar-foreground/70",
+                        focused && !active && "ring-2 ring-sidebar-ring"
                       )}
                       title={collapsed ? item.label : undefined}
                     >
@@ -190,14 +193,14 @@ export function DiditSidebar({
                           className={cn(
                             "shrink-0",
                             collapsed ? "size-5" : "size-4.5",
-                            active ? "text-blue-600" : "text-gray-700"
+                            active ? "text-sidebar-primary" : "text-sidebar-foreground/70"
                           )}
                         />
                       )}
                       {!collapsed && (
                         <span className={cn(
-                          "text-sm font-medium truncate",
-                          active ? "text-blue-600" : "text-gray-700"
+                          "text-sm truncate",
+                          active ? "text-sidebar-primary" : "text-sidebar-foreground/70"
                         )}>
                           {item.label}
                         </span>
@@ -211,13 +214,14 @@ export function DiditSidebar({
 
           {/* Footer */}
           <div className={cn(
-            "border-t border-gray-200 p-2",
+            "border-t border-sidebar-border p-2",
             collapsed ? "flex flex-col items-center gap-2" : "space-y-2"
           )}>
             <button
+              data-tour="sidebar-logout"
               onClick={onLogout}
               className={cn(
-                "flex items-center gap-2 rounded-md hover:bg-red-50 transition-colors text-red-600 text-sm font-medium",
+                "flex items-center gap-2 rounded-md hover:bg-destructive/10 hover:text-destructive transition-colors text-sidebar-foreground/70 text-sm font-medium",
                 collapsed ? "justify-center p-3 w-full" : "justify-start px-3 py-2 w-full"
               )}
               title={collapsed ? "Cerrar Sesión" : undefined}
@@ -226,7 +230,7 @@ export function DiditSidebar({
               {!collapsed && <span>Cerrar Sesión</span>}
             </button>
             {!collapsed && (
-              <div className="text-xs text-gray-500 text-center px-2">
+              <div className="text-xs text-sidebar-foreground/40 text-center px-2">
                 © 2025 Red-Salud
               </div>
             )}
@@ -239,12 +243,12 @@ export function DiditSidebar({
         onClick={() => setCollapsed(!collapsed)}
         aria-label={collapsed ? "Expandir sidebar" : "Contraer sidebar"}
         title={collapsed ? "Expandir sidebar (Ctrl+B)" : "Contraer sidebar (Ctrl+B)"}
-        className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 size-7 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition-colors"
+        className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 size-7 flex items-center justify-center rounded-full border border-sidebar-border bg-sidebar shadow-sm hover:bg-sidebar-accent transition-colors"
       >
         {collapsed ? (
-          <ChevronRight className="size-4 text-gray-600" />
+          <ChevronRight className="size-4 text-sidebar-foreground" />
         ) : (
-          <ChevronLeft className="size-4 text-gray-600" />
+          <ChevronLeft className="size-4 text-sidebar-foreground" />
         )}
       </button>
     </motion.div>

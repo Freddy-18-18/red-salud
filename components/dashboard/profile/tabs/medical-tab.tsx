@@ -44,7 +44,7 @@ export function MedicalTab({
             >
               Cancelar
             </Button>
-            <Button onClick={handleSave} size="sm">
+            <Button onClick={() => void handleSave()} size="sm">
               <Save className="h-4 w-4 mr-2" aria-hidden="true" />
               Guardar
             </Button>

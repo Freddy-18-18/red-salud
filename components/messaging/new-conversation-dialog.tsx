@@ -103,7 +103,7 @@ export function NewConversationDialog({
               </SelectTrigger>
               <SelectContent>
                 {doctors.map((doctor) => {
-                  const initials = doctor.nombre_completo
+                  const initials = doctor.profile?.nombre_completo
                     ?.split(" ")
                     .map((n) => n[0])
                     .join("")
@@ -114,14 +114,14 @@ export function NewConversationDialog({
                     <SelectItem key={doctor.id} value={doctor.id}>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6">
-                          <AvatarImage src={doctor.avatar_url} />
+                          <AvatarImage src={doctor.profile?.avatar_url} />
                           <AvatarFallback className="text-xs">
                             {initials}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium">
-                            {doctor.nombre_completo}
+                            {doctor.profile?.nombre_completo}
                           </p>
                           {doctor.specialty && (
                             <p className="text-xs text-muted-foreground">

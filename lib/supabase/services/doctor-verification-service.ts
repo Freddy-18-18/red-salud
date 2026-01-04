@@ -126,21 +126,19 @@ export async function saveSACSVerification(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabase
-      .from('doctor_profiles')
+      .from('doctor_details')
       .update({
-        license_number: verificationData.mpps || verificationData.cedula,
-        license_country: 'VE',
-        is_verified: true,
-        verified_at: new Date().toISOString(),
+        licencia_medica: verificationData.mpps || verificationData.cedula,
+        verified: true,
         // Guardar datos adicionales en un campo JSONB
-        verification_data: {
-          sacs_verified: true,
+        sacs_verified: true,
+        sacs_data: {
           cedula: verificationData.cedula,
           nombre_completo: `${verificationData.nombre} ${verificationData.apellido}`,
           verified_date: new Date().toISOString()
         }
       })
-      .eq('id', userId);
+      .eq('profile_id', userId);
 
     if (error) {
       console.error('Error saving verification:', error);
@@ -181,19 +179,17 @@ export async function verifyAndCreateDoctorProfile(
 
   // Crear o actualizar el perfil del médico
   const { data, error } = await supabase
-    .from('doctor_profiles')
+    .from('doctor_details')
     .upsert({
-      id: userId,
-      specialty_id: specialtyId,
-      license_number: sacsData.mpps || sacsData.cedula,
-      license_country: 'VE',
-      is_verified: true,
-      verified_at: new Date().toISOString(),
-      professional_phone: additionalData?.professional_phone,
-      professional_email: additionalData?.professional_email,
-      bio: additionalData?.bio,
-      verification_data: {
-        sacs_verified: true,
+      profile_id: userId,
+      especialidad_id: specialtyId,
+      licencia_medica: sacsData.mpps || sacsData.cedula,
+      verified: true,
+      // professional_phone: additionalData?.professional_phone, // Not in DB
+      // professional_email: additionalData?.professional_email, // Not in DB
+      biografia: additionalData?.bio,
+      sacs_verified: true,
+      sacs_data: {
         cedula: sacsData.cedula,
         nombre_completo: `${sacsData.nombre} ${sacsData.apellido}`,
         especialidad_sacs: sacsData.especialidad,
@@ -201,7 +197,7 @@ export async function verifyAndCreateDoctorProfile(
         estado: sacsData.estado,
         verified_date: new Date().toISOString()
       }
-    })
+    }, { onConflict: 'profile_id' })
     .select()
     .single();
 

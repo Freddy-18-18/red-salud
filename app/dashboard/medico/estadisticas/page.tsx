@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Calendar, TrendingUp, DollarSign, Star, Clock } from "lucide-react";
-import { VerificationGuard } from "@/components/dashboard/medico/verification-guard";
+import { VerificationGuard } from "@/components/dashboard/medico/features/verification-guard";
 
 export default function DoctorEstadisticasPage() {
   const router = useRouter();

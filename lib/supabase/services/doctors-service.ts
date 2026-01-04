@@ -37,7 +37,7 @@ export async function getSpecialties() {
 
 export async function getSpecialtyById(id: string) {
   const { data, error } = await supabase
-    .from('medical_specialties')
+    .from('specialties')
     .select('*')
     .eq('id', id)
     .single();
@@ -60,21 +60,77 @@ export async function getDoctorProfile(userId: string) {
       .from('doctor_details')
       .select(`
         *,
-        specialty:specialties(*)
+        especialidad:specialties(id, name, icon, description),
+        profile:profiles!doctor_details_profile_id_fkey(
+          id,
+          nombre_completo,
+          email,
+          avatar_url,
+          telefono,
+          ciudad,
+          estado,
+          cedula,
+          cedula_verificada,
+          sacs_verificado,
+          sacs_nombre,
+          sacs_matricula,
+          sacs_especialidad
+        )
       `)
       .eq('profile_id', userId)
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching doctor profile:', error);
-      return { success: false, error: error.message };
+      console.error('Error fetching doctor profile detailed:', JSON.stringify(error, null, 2));
+      return { success: false, error: error.message || 'Error desconocido al obtener perfil' };
     }
 
     if (!data) {
       return { success: false, error: 'Profile not found' };
     }
 
-    return { success: true, data: data as any };
+    const doctorProfile: DoctorProfile = {
+      id: data.profile_id,
+      specialty_id: data.especialidad_id || null,
+      specialty: data.especialidad ? {
+        id: data.especialidad.id,
+        name: data.especialidad.name,
+        icon: data.especialidad.icon,
+        description: data.especialidad.description,
+      } : null,
+      license_number: data.licencia_medica || null,
+      license_country: 'VE',
+      years_experience: data.anos_experiencia || 0,
+      professional_phone: data.profile?.telefono || null,
+      professional_email: data.profile?.email || null,
+      clinic_address: null,
+      consultation_duration: 30,
+      consultation_price: data.tarifa_consulta ? Number(data.tarifa_consulta) : null,
+      accepts_insurance: data.acepta_seguros ?? false,
+      bio: data.biografia || null,
+      languages: Array.isArray(data.idiomas) && data.idiomas.length > 0 ? data.idiomas : ['es'],
+      is_verified: data.verified || false,
+      is_active: true,
+      sacs_verified: data.sacs_verified ?? data.profile?.sacs_verificado ?? false,
+      sacs_data: data.sacs_data || null,
+      average_rating: 0,
+      total_reviews: 0,
+      schedule: data.horario_atencion || undefined,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      nombre_completo: data.profile?.nombre_completo || undefined,
+      email: data.profile?.email || undefined,
+      telefono: data.profile?.telefono || undefined,
+      cedula: data.profile?.cedula || undefined,
+      cedula_verificada: data.profile?.cedula_verificada || undefined,
+      sacs_verificado: data.profile?.sacs_verificado || undefined,
+      sacs_nombre: data.profile?.sacs_nombre || undefined,
+      sacs_matricula: data.profile?.sacs_matricula || undefined,
+      sacs_especialidad: data.profile?.sacs_especialidad || undefined,
+      universidad: undefined,
+    } as DoctorProfile;
+
+    return { success: true, data: doctorProfile };
   } catch (err: any) {
     console.error('Exception fetching doctor profile:', err);
     return { success: false, error: err.message || 'Error desconocido' };
@@ -86,9 +142,9 @@ export async function createDoctorProfile(
   profileData: DoctorProfileFormData
 ) {
   const { data, error } = await supabase
-    .from('doctor_profiles')
+    .from('doctor_details')
     .insert({
-      id: userId,
+      profile_id: userId,
       ...profileData,
     })
     .select()
@@ -107,9 +163,9 @@ export async function updateDoctorProfile(
   updates: Partial<DoctorProfileFormData>
 ) {
   const { data, error } = await supabase
-    .from('doctor_profiles')
+    .from('doctor_details')
     .update(updates)
-    .eq('id', userId)
+    .eq('profile_id', userId)
     .select()
     .single();
 
@@ -127,38 +183,31 @@ export async function updateDoctorProfile(
 
 export async function searchDoctors(filters: DoctorSearchFilters = {}) {
   let query = supabase
-    .from('doctor_profiles')
+    .from('doctor_details')
     .select(`
       *,
-      specialty:medical_specialties(*)
+      especialidad:specialties(*),
+      profile:profiles(*)
     `)
-    .eq('is_active', true);
+    .eq('verified', true);
 
   if (filters.specialty_id) {
-    query = query.eq('specialty_id', filters.specialty_id);
+    query = query.eq('especialidad_id', filters.specialty_id);
   }
 
   if (filters.accepts_insurance !== undefined) {
-    query = query.eq('accepts_insurance', filters.accepts_insurance);
-  }
-
-  if (filters.min_rating) {
-    query = query.gte('average_rating', filters.min_rating);
-  }
-
-  if (filters.accepts_new_patients !== undefined) {
-    query = query.eq('accepts_new_patients', filters.accepts_new_patients);
+    query = query.eq('acepta_seguros', filters.accepts_insurance);
   }
 
   if (filters.max_price) {
-    query = query.lte('consultation_price', filters.max_price);
+    query = query.lte('tarifa_consulta', filters.max_price);
   }
 
   if (filters.languages && filters.languages.length > 0) {
-    query = query.contains('languages', filters.languages);
+    query = query.contains('idiomas', filters.languages);
   }
 
-  const { data, error } = await query.order('average_rating', { ascending: false });
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error searching doctors:', error);
@@ -170,15 +219,15 @@ export async function searchDoctors(filters: DoctorSearchFilters = {}) {
 
 export async function getFeaturedDoctors(limit: number = 10) {
   const { data, error } = await supabase
-    .from('doctor_profiles')
+    .from('doctor_details')
     .select(`
       *,
-      specialty:medical_specialties(*)
+      especialidad:specialties(*),
+      profile:profiles(*)
     `)
-    .eq('is_active', true)
-    .eq('is_verified', true)
-    .gte('average_rating', 4.0)
-    .order('average_rating', { ascending: false })
+    .eq('verified', true)
+    .eq('sacs_verified', true)
+    .order('created_at', { ascending: false })
     .limit(limit);
 
   if (error) {
@@ -342,7 +391,7 @@ export async function getDoctorStats(doctorId: string) {
         totalAppointments = appointmentsData.length;
         completedAppointments = appointmentsData.filter((a) => a.status === 'completed').length;
         cancelledAppointments = appointmentsData.filter((a) => a.status === 'cancelled').length;
-        
+
         // Citas de hoy
         const today = new Date().toISOString().split('T')[0];
         todayAppointments = appointmentsData.filter(
@@ -400,9 +449,13 @@ export async function getAvailableSlots(
 ) {
   // Obtener perfil del médico con su horario
   const { data: profile, error: profileError } = await getDoctorProfile(doctorId);
-  
+
   if (profileError || !profile) {
     return { success: false, error: 'Doctor not found' };
+  }
+
+  if (!profile.schedule) {
+    return { success: true, data: [] };
   }
 
   // Obtener excepciones para esa fecha
@@ -429,9 +482,9 @@ export async function getAvailableSlots(
   const bookedSlots = appointments?.map((a) => a.appointment_time) || [];
 
   // Generar slots disponibles basados en el horario
-  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const dayOfWeek = dayNames[new Date(date).getDay()];
-  const daySchedule = profile.schedule[dayOfWeek as keyof typeof profile.schedule];
+  const dayNames: (keyof typeof profile.schedule)[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const dayKey = dayNames[new Date(date).getDay()];
+  const daySchedule = profile.schedule[dayKey];
 
   if (!daySchedule?.enabled) {
     return { success: true, data: [] };

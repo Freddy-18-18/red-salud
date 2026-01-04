@@ -105,7 +105,9 @@ export interface CreatePrescriptionData {
   fecha_vencimiento?: string;
   diagnostico?: string;
   instrucciones_generales?: string;
-  medications: CreatePrescriptionMedicationData[];
+  notas?: string;
+  medications?: CreatePrescriptionMedicationData[];
+  medicamentos?: CreatePrescriptionMedicationData[]; // Alias for medications
 }
 
 export interface CreatePrescriptionMedicationData {

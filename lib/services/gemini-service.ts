@@ -6,7 +6,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Inicializar el cliente de Gemini
 let genAI: GoogleGenerativeAI | null = null;
 
-function getGeminiClient() {
+export function getGeminiClient() {
   if (!genAI) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -52,7 +52,7 @@ export async function generateMedicalNote(
 ): Promise<GeneratedMedicalNote> {
   try {
     const client = getGeminiClient();
-    const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = client.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `Eres un asistente médico experto. Genera una nota médica profesional en español basada en la siguiente información del paciente:
 
@@ -227,5 +227,22 @@ Si algún campo no está presente, omítelo del JSON.`;
   } catch (error) {
     console.error("Error extrayendo información médica:", error);
     return {};
+  }
+}
+
+/**
+ * Genera un embedding vectorial para un texto
+ */
+export async function getEmbedding(text: string): Promise<number[]> {
+  try {
+    const client = getGeminiClient();
+    const model = client.getGenerativeModel({ model: "text-embedding-004" });
+
+    const result = await model.embedContent(text);
+    const embedding = result.embedding;
+    return embedding.values;
+  } catch (error) {
+    console.error("Error generando embedding:", error);
+    throw new Error("Error al generar embedding vectorial");
   }
 }

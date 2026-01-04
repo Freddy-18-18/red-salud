@@ -18,40 +18,42 @@ export function PhoneInput({
   const formatPhoneNumber = (input: string) => {
     // Remover todo excepto números
     const numbers = input.replace(/\D/g, "");
-    
+
     // Si está vacío, retornar vacío
     if (!numbers) return "";
-    
+
     // Siempre empezar con 58
     let phoneNumbers = numbers;
     if (!phoneNumbers.startsWith("58")) {
       phoneNumbers = "58" + phoneNumbers;
     }
-    
-    // Formatear: +58 XXX-XXXXXXX
+
+    // Formatear: +58 XXX XXX XXXX (espacios en lugar de guiones)
     if (phoneNumbers.length <= 2) {
       return `+${phoneNumbers}`;
     } else if (phoneNumbers.length <= 5) {
       return `+58 ${phoneNumbers.slice(2)}`;
+    } else if (phoneNumbers.length <= 8) {
+      return `+58 ${phoneNumbers.slice(2, 5)} ${phoneNumbers.slice(5)}`;
     } else if (phoneNumbers.length <= 12) {
-      return `+58 ${phoneNumbers.slice(2, 5)}-${phoneNumbers.slice(5)}`;
+      return `+58 ${phoneNumbers.slice(2, 5)} ${phoneNumbers.slice(5, 8)} ${phoneNumbers.slice(8)}`;
     } else {
-      return `+58 ${phoneNumbers.slice(2, 5)}-${phoneNumbers.slice(5, 12)}`;
+      return `+58 ${phoneNumbers.slice(2, 5)} ${phoneNumbers.slice(5, 8)} ${phoneNumbers.slice(8, 12)}`;
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    
+
     // Si el usuario borra todo, mantener +58
     if (!input || input === "+58" || input === "+58 " || input === "+5" || input === "+") {
       onChange("+58 ");
       return;
     }
-    
+
     // Extraer solo los números
     const numbers = input.replace(/\D/g, "");
-    
+
     // Formatear y actualizar
     const formatted = formatPhoneNumber(numbers);
     onChange(formatted);
@@ -61,7 +63,7 @@ export function PhoneInput({
     const input = e.target as HTMLInputElement;
     const cursorPosition = input.selectionStart || 0;
     const selectionEnd = input.selectionEnd || 0;
-    
+
     // Prevenir borrar el +58
     if (e.key === "Backspace") {
       // Si hay selección y afecta el +58, prevenir
@@ -70,7 +72,7 @@ export function PhoneInput({
         return;
       }
     }
-    
+
     if (e.key === "Delete" && cursorPosition < 4) {
       e.preventDefault();
       return;

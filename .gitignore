@@ -48,7 +48,8 @@ informe-*.json
 
 .vercel
 
-# mobile (Expo React Native)
+# mobile (Flutter / Expo)
+/mobile/
 /mobile/node_modules
 **/node_modules
 /mobile/.expo

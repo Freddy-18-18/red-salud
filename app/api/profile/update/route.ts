@@ -100,6 +100,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validar formato de teléfono
+    if (profileData.telefono && !/^\+58\s\d{3}\s\d{3}\s\d{4}$/.test(profileData.telefono)) {
+      return NextResponse.json(
+        { error: true, message: "Formato de teléfono inválido. Debe ser +58 412 123 4567" },
+        { status: 400 }
+      );
+    }
+
     // Validar teléfono duplicado (solo si no está vacío)
     if (profileData.telefono && profileData.telefono.trim() !== "" && profileData.telefono !== "+58 ") {
       const { data: existingPhone, error: phoneCheckError } = await supabase

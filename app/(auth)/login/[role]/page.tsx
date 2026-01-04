@@ -24,5 +24,5 @@ export default async function LoginRolePage({ params }: LoginRolePageProps) {
 
   const config = ROLE_CONFIG[role as UserRole];
 
-  return <LoginForm role={role} roleLabel={config.label} />;
+  return <LoginForm role={role as UserRole} roleLabel={config.label} />;
 }

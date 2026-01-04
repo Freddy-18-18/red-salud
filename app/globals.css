@@ -2,53 +2,172 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 
+  PALETA MÉDICA MODERNA "AURORA HEALTH"
+  Inspirada en: confianza, innovación, calidez humana
+  Colores únicos que combinan profesionalismo con modernidad
+*/
+
 :root {
   --radius: 0.625rem;
-  --background: 0 0% 100%;
-  --foreground: 0 0% 3.9%;
+
+  /* Fondo: Blanco cálido con toque lavanda - suave para la vista */
+  --background: 240 20% 99%;
+
+  /* Texto principal: Azul pizarra profundo - excelente legibilidad */
+  --foreground: 222 35% 18%;
+
+  /* Cards: Blanco puro con sutil calidez */
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 3.9%;
+  --card-foreground: 222 35% 18%;
+
+  /* Popovers */
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 3.9%;
-  --primary: 0 0% 9%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 96.1%;
-  --secondary-foreground: 0 0% 9%;
-  --muted: 0 0% 96.1%;
-  --muted-foreground: 0 0% 45.1%;
-  --accent: 0 0% 96.1%;
-  --accent-foreground: 0 0% 9%;
-  --destructive: 0 84.2% 60.2%;
-  --border: 0 0% 89.8%;
-  --input: 0 0% 89.8%;
-  --ring: 0 0% 63.9%;
-  --chart-1: 12 76% 61%;
-  --chart-2: 173 58% 39%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
-  --sidebar: 0 0% 98%;
-  --sidebar-foreground: 0 0% 3.9%;
-  --sidebar-primary: 0 0% 9%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 0 0% 96.1%;
-  --sidebar-accent-foreground: 0 0% 9%;
-  --sidebar-border: 0 0% 89.8%;
-  --sidebar-ring: 0 0% 63.9%;
+  --popover-foreground: 222 35% 18%;
+
+  /* Primary: Índigo médico - sofisticado y confiable */
+  --primary: 243 75% 59%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary: Esmeralda vibrante - salud y vitalidad */
+  --secondary: 162 72% 42%;
+  --secondary-foreground: 0 0% 100%;
+
+  /* Muted: Gris lavanda suave */
+  --muted: 240 15% 95%;
+  --muted-foreground: 222 15% 45%;
+
+  /* Accent: Coral suave - calidez humana */
+  --accent: 12 80% 95%;
+  --accent-foreground: 12 70% 45%;
+
+  /* Estados */
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Bordes y inputs */
+  --border: 240 15% 90%;
+  --input: 240 15% 90%;
+  --ring: 243 75% 59%;
+
+  /* Charts - paleta armoniosa */
+  --chart-1: 243 75% 59%;
+  --chart-2: 162 72% 42%;
+  --chart-3: 12 70% 55%;
+  --chart-4: 280 60% 55%;
+  --chart-5: 45 90% 55%;
+
+  /* Sidebar */
+  --sidebar: 240 20% 98%;
+  --sidebar-foreground: 222 35% 25%;
+  --sidebar-primary: 243 75% 59%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 15% 95%;
+  --sidebar-accent-foreground: 222 35% 18%;
+  --sidebar-border: 240 15% 92%;
+  --sidebar-ring: 243 75% 59%;
+
+  /* Colores adicionales para UI médica */
+  --success: 162 72% 42%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 100%;
+
+  /* Gradientes personalizados */
+  --gradient-start: 243 75% 59%;
+  --gradient-end: 162 72% 42%;
 }
 
-/* Modo oscuro deshabilitado - solo modo claro disponible */
+/* 
+  MODO OSCURO: "Midnight Aurora"
+  Elegante, no agresivo, con excelente contraste
+*/
+.dark {
+  /* Fondo: Azul medianoche profundo - más oscuro para mejor contraste */
+  --background: 230 25% 6%;
+
+  /* Texto: Blanco cálido - reduce fatiga visual */
+  --foreground: 220 20% 95%;
+
+  /* Cards: Elevación sutil con azul - más claros para destacarse */
+  --card: 230 25% 15%;
+  --card-foreground: 220 20% 95%;
+
+  /* Popovers */
+  --popover: 230 25% 15%;
+  --popover-foreground: 220 20% 95%;
+
+  /* Primary: Índigo luminoso - destaca sin agredir */
+  --primary: 243 80% 70%;
+  --primary-foreground: 230 25% 9%;
+
+  /* Secondary: Esmeralda brillante */
+  --secondary: 162 65% 50%;
+  --secondary-foreground: 230 25% 9%;
+
+  /* Muted: Gris azulado oscuro - más visible */
+  --muted: 230 20% 22%;
+  --muted-foreground: 220 15% 65%;
+
+  /* Accent: Coral cálido */
+  --accent: 230 20% 22%;
+  --accent-foreground: 12 70% 65%;
+
+  /* Estados */
+  --destructive: 0 65% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Bordes y inputs - más visibles */
+  --border: 230 20% 25%;
+  --input: 230 20% 25%;
+  --ring: 243 80% 70%;
+
+  /* Charts */
+  --chart-1: 243 80% 70%;
+  --chart-2: 162 65% 50%;
+  --chart-3: 12 70% 60%;
+  --chart-4: 280 55% 65%;
+  --chart-5: 45 85% 60%;
+
+  /* Sidebar */
+  --sidebar: 230 25% 7%;
+  --sidebar-foreground: 220 20% 90%;
+  --sidebar-primary: 243 80% 70%;
+  --sidebar-primary-foreground: 230 25% 9%;
+  --sidebar-accent: 230 20% 15%;
+  --sidebar-accent-foreground: 220 20% 95%;
+  --sidebar-border: 230 20% 15%;
+  --sidebar-ring: 243 80% 70%;
+
+  /* Colores adicionales */
+  --success: 162 65% 50%;
+  --success-foreground: 230 25% 9%;
+  --warning: 38 85% 55%;
+  --warning-foreground: 230 25% 9%;
+  --info: 199 80% 55%;
+  --info-foreground: 230 25% 9%;
+
+  /* Gradientes */
+  --gradient-start: 243 80% 70%;
+  --gradient-end: 162 65% 50%;
+
+  /* Variables específicas para widgets - mejor control visual */
+  --widget-bg: 230 25% 17%;
+  --widget-border: 230 20% 28%;
+}
 
 @layer base {
   * {
     border-color: hsl(var(--border));
   }
-  
+
   *:focus-visible {
     outline: 2px solid hsl(var(--ring) / 0.5);
     outline-offset: 2px;
   }
-  
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
@@ -56,18 +175,177 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Mejora de legibilidad para números y texto pequeño */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Texto con mejor contraste en ambos temas */
+  .text-high-contrast {
+    @apply text-foreground;
+  }
+
+  /* Números siempre legibles */
+  [data-number],
+  .stat-value,
+  .price,
+  .count {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
 }
 
 @layer utilities {
+
   /* Utilidades personalizadas para mejor compatibilidad */
   .text-balance {
     text-wrap: balance;
   }
-  
+
   @supports not (text-wrap: balance) {
     .text-balance {
       text-wrap: pretty;
     }
+  }
+
+  /* Animaciones de blob para fondos dinámicos - más suaves */
+  .animate-blob {
+    animation: blob 12s ease-in-out infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  @keyframes blob {
+
+    0%,
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+      transform: translate(20px, -30px) scale(1.05);
+    }
+
+    66% {
+      transform: translate(-15px, 15px) scale(0.95);
+    }
+  }
+
+  /* Gradiente de texto animado */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg,
+        hsl(var(--primary)) 0%,
+        hsl(var(--secondary)) 50%,
+        hsl(var(--primary)) 100%);
+    background-size: 200% auto;
+  }
+
+  .gradient-text-animated {
+    @apply gradient-text;
+    animation: gradient-shift 4s ease-in-out infinite;
+  }
+
+  @keyframes gradient-shift {
+
+    0%,
+    100% {
+      background-position: 0% center;
+    }
+
+    50% {
+      background-position: 100% center;
+    }
+  }
+
+  /* Efecto de brillo sutil */
+  .shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shine::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(to right,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%);
+    transform: rotate(30deg);
+    animation: shine 6s ease-in-out infinite;
+  }
+
+  @keyframes shine {
+
+    0%,
+    100% {
+      transform: translateX(-100%) rotate(30deg);
+    }
+
+    50% {
+      transform: translateX(100%) rotate(30deg);
+    }
+  }
+
+  /* Glassmorphism mejorado */
+  .glass {
+    @apply backdrop-blur-xl bg-white/70 dark:bg-slate-900/85;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-card {
+    @apply backdrop-blur-md bg-white/80 dark:bg-slate-900/90 border border-white/20 dark:border-slate-700/50;
+  }
+
+  /* Glassmorphism específico para widgets del dashboard */
+  .glass-widget {
+    @apply backdrop-blur-xl bg-white/80 border border-white/20;
+  }
+
+  .dark .glass-widget {
+    background-color: hsl(var(--widget-bg) / 0.95);
+    border-color: hsl(var(--widget-border) / 0.6);
+  }
+
+  /* Sombras elegantes */
+  .shadow-glow {
+    box-shadow:
+      0 0 20px -5px hsl(var(--primary) / 0.3),
+      0 10px 40px -10px hsl(var(--primary) / 0.2);
+  }
+
+  .shadow-glow-secondary {
+    box-shadow:
+      0 0 20px -5px hsl(var(--secondary) / 0.3),
+      0 10px 40px -10px hsl(var(--secondary) / 0.2);
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 20px 40px -15px hsl(var(--foreground) / 0.15),
+      0 10px 20px -10px hsl(var(--foreground) / 0.1);
+  }
+
+  /* Pausa en hover para animaciones */
+  .hover\:pause:hover {
+    animation-play-state: paused;
   }
 }
 
@@ -79,4 +357,87 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ============================================
+   REACT-GRID-LAYOUT - Estilos Personalizados
+   ============================================ */
+
+/* Placeholder durante el arrastre */
+.react-grid-placeholder {
+  background: hsl(var(--primary) / 0.2) !important;
+  border: 2px dashed hsl(var(--primary) / 0.5) !important;
+  border-radius: 1rem;
+  transition: all 150ms ease;
+}
+
+/* Item durante el arrastre */
+.react-grid-item.react-draggable-dragging {
+  z-index: 100;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: scale(1.02);
+  cursor: grabbing !important;
+}
+
+/* Item durante el resize */
+.react-grid-item.resizing {
+  z-index: 100;
+}
+
+/* Handle de resize - esquina inferior derecha */
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+  opacity: 0;
+  transition: opacity 200ms;
+}
+
+.react-grid-item:hover .react-resizable-handle {
+  opacity: 1;
+}
+
+.react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid hsl(var(--muted-foreground) / 0.5);
+  border-bottom: 2px solid hsl(var(--muted-foreground) / 0.5);
+  border-radius: 0 0 4px 0;
+}
+
+.react-resizable-handle:hover::after {
+  border-color: hsl(var(--primary));
+}
+
+/* Transiciones suaves para el layout */
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top, width, height;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+}
+
+.react-grid-item.dropping {
+  transition: none;
+}
+
+/* Contenedor del layout */
+.react-grid-layout {
+  position: relative;
+}
+
+/* Animación al soltar */
+.react-grid-item.react-grid-placeholder {
+  background: hsl(var(--primary) / 0.15);
+  opacity: 1;
+  transition-duration: 100ms;
 }

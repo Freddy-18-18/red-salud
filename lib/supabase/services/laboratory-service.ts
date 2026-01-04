@@ -360,3 +360,121 @@ export async function markResultAsNotified(resultId: string) {
     return { success: false, error };
   }
 }
+
+// Crear nueva orden de laboratorio
+export async function createLabOrder(orderData: CreateLabOrderData) {
+  try {
+    // 1. Crear la orden
+    const { data: order, error: orderError } = await supabase
+      .from("lab_orders")
+      .insert({
+        paciente_id: orderData.paciente_id,
+        medico_id: orderData.medico_id,
+        prioridad: orderData.prioridad,
+        instrucciones_paciente: orderData.instrucciones_paciente,
+        status: "pendiente",
+        numero_orden: `ORD-${Date.now().toString().slice(-6)}`, // Generar número simple
+        fecha_orden: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // 2. Crear los tests asociados
+    if (orderData.tests && orderData.tests.length > 0) {
+      const testsToInsert = orderData.tests.map((testTypeId) => ({
+        order_id: order.id,
+        test_type_id: testTypeId,
+        status: "pendiente",
+      }));
+
+      const { error: testsError } = await supabase
+        .from("lab_order_tests")
+        .insert(testsToInsert);
+
+      if (testsError) throw testsError;
+    }
+
+    return { success: true, data: order };
+  } catch (error) {
+    console.error("Error creating lab order:", error);
+    return { success: false, error };
+  }
+}
+
+// Guardar resultados de laboratorio
+export async function saveLabResults(
+  orderId: string,
+  results: {
+    test_type_id: string;
+    observaciones?: string;
+    values: {
+      parametro: string;
+      valor: string;
+      unidad: string;
+      rango_referencia: string;
+      es_anormal: boolean;
+    }[];
+  }[],
+  userId: string
+) {
+  try {
+    // 1. Crear registros de resultados para cada test
+    for (const result of results) {
+      const { data: labResult, error: resultError } = await supabase
+        .from("lab_results")
+        .insert({
+          order_id: orderId,
+          test_type_id: result.test_type_id,
+          fecha_resultado: new Date().toISOString(),
+          observaciones: result.observaciones,
+          validado_por: userId,
+          notificado_paciente: false,
+        })
+        .select()
+        .single();
+
+      if (resultError) throw resultError;
+
+      // 2. Crear valores para cada resultado
+      if (result.values && result.values.length > 0) {
+        const valuesToInsert = result.values.map((val, index) => ({
+          result_id: labResult.id,
+          parametro: val.parametro,
+          valor: val.valor,
+          unidad: val.unidad,
+          rango_referencia: val.rango_referencia,
+          es_anormal: val.es_anormal,
+          orden: index,
+        }));
+
+        const { error: valuesError } = await supabase
+          .from("lab_result_values")
+          .insert(valuesToInsert);
+
+        if (valuesError) throw valuesError;
+      }
+
+      // 3. Actualizar estado del test en lab_order_tests
+      await supabase
+        .from("lab_order_tests")
+        .update({ status: "completado" })
+        .eq("order_id", orderId)
+        .eq("test_type_id", result.test_type_id);
+    }
+
+    // 4. Actualizar estado de la orden a completada
+    const { error: updateError } = await supabase
+      .from("lab_orders")
+      .update({ status: "completada" })
+      .eq("id", orderId);
+
+    if (updateError) throw updateError;
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving lab results:", error);
+    return { success: false, error };
+  }
+}

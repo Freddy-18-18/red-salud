@@ -270,12 +270,12 @@ export function UserProfileModal({
                       />
                     )}
                     {activeTab === "security" && (
-                      <SecurityTab userEmail={userEmail} userId={userId} />
+                      <SecurityTab userEmail={userEmail ?? ""} userId={userId ?? ""} />
                     )}
                     {activeTab === "preferences" && <PreferencesTab />}
-                    {activeTab === "privacy" && <PrivacyTab userId={userId} />}
-                    {activeTab === "activity" && <ActivityTab userId={userId} />}
-                    {activeTab === "billing" && <BillingTab userId={userId} />}
+                    {activeTab === "privacy" && <PrivacyTab userId={userId ?? ""} />}
+                    {activeTab === "activity" && <ActivityTab userId={userId ?? ""} />}
+                    {activeTab === "billing" && <BillingTab userId={userId ?? ""} />}
                   </AnimatePresence>
                 )}
               </div>

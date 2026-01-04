@@ -1,4 +1,4 @@
-import { ICD11Demo } from "@/components/dashboard/medico/icd11-demo";
+import { ICD11Demo } from "@/components/dashboard/medico/demos/icd11-demo";
 
 export const metadata = {
   title: "Demo ICD-11 API | Red Salud",

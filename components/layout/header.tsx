@@ -7,6 +7,9 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES, APP_NAME, AUTH_ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/logo";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { MainNav } from "@/components/layout/main-nav";
 
 const servicios = [
   { name: "Pacientes", href: "/servicios/pacientes", description: "Consultas médicas en línea" },
@@ -14,6 +17,7 @@ const servicios = [
   { name: "Clínicas", href: "/servicios/clinicas", description: "Gestión de centros médicos" },
   { name: "Laboratorios", href: "/servicios/laboratorios", description: "Análisis y resultados" },
   { name: "Farmacias", href: "/servicios/farmacias", description: "Gestión de medicamentos" },
+  { name: "Secretarias", href: "/servicios/secretarias", description: "Organiza agendas médicas" },
   { name: "Ambulancias", href: "/servicios/ambulancias", description: "Servicio de emergencias" },
   { name: "Seguros", href: "/servicios/seguros", description: "Gestión de pólizas" },
 ];
@@ -27,10 +31,11 @@ const navItems = [
   { name: "Soporte", href: ROUTES.SOPORTE },
 ];
 
+
+
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isServiciosOpen, setIsServiciosOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,7 +51,7 @@ export function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
-          ? "bg-white/95 backdrop-blur-md shadow-lg"
+          ? "bg-background/95 backdrop-blur-xl shadow-lg border-b border-border/50"
           : "bg-transparent"
       )}
       initial={{ y: -100 }}
@@ -54,132 +59,46 @@ export function Header() {
       transition={{ duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }}
     >
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Link href={ROUTES.HOME} className="flex items-center space-x-2">
-              <div className="relative">
-                <div className="absolute -inset-1 bg-linear-to-r from-blue-600 to-teal-600 rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
-                <div className="relative bg-linear-to-br from-blue-600 to-teal-600 text-white px-3 py-2 rounded-lg font-bold text-xl">
-                  RS
-                </div>
-              </div>
-              <span
-                className={cn(
-                  "font-bold text-2xl transition-colors duration-300",
-                  isScrolled ? "text-gray-900" : "text-white"
-                )}
-              >
-                {APP_NAME}
-              </span>
+            <Link href={ROUTES.HOME} className="hover:opacity-80 transition-opacity">
+              <Logo size="lg" />
             </Link>
           </motion.div>
 
           {/* Desktop Navigation */}
           <motion.div
-            className="hidden lg:flex items-center space-x-1"
+            className="hidden xl:flex items-center space-x-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            {navItems.map((item, index) => (
-              <motion.div
-                key={item.name}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 * index }}
-                className="relative"
-                onMouseEnter={() => item.hasDropdown && setIsServiciosOpen(true)}
-                onMouseLeave={() => item.hasDropdown && setIsServiciosOpen(false)}
-              >
-                {item.hasDropdown ? (
-                  <>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 flex items-center gap-1",
-                        isScrolled
-                          ? "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
-                          : "text-white/90 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      {item.name}
-                      <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isServiciosOpen && "rotate-180")} />
-                    </Link>
-                    
-                    {/* Dropdown Menu */}
-                    <AnimatePresence>
-                      {isServiciosOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                          className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50"
-                        >
-                          <div className="p-2">
-                            {servicios.map((servicio) => (
-                              <Link
-                                key={servicio.name}
-                                href={servicio.href}
-                                className="block px-4 py-3 rounded-lg hover:bg-blue-50 transition-colors duration-200 group"
-                              >
-                                <div className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
-                                  {servicio.name}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-0.5">
-                                  {servicio.description}
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105",
-                      isScrolled
-                        ? "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
-                        : "text-white/90 hover:bg-white/10 hover:text-white"
-                    )}
-                  >
-                    {item.name}
-                  </Link>
-                )}
-              </motion.div>
-            ))}
+            <MainNav isScrolled={isScrolled} />
           </motion.div>
 
-          {/* Auth Buttons Desktop */}
+          {/* Theme Toggle + Auth Buttons Desktop */}
           <motion.div
-            className="hidden lg:flex items-center gap-3"
+            className="hidden xl:flex items-center gap-3"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
+            <ThemeToggle />
             <Button
               asChild
               variant="outline"
-              className={cn(
-                "border-2 transition-all duration-300",
-                isScrolled
-                  ? "border-blue-600 text-blue-600 hover:bg-blue-50 bg-white"
-                  : "border-white text-white hover:bg-white hover:text-blue-600 bg-white/10 backdrop-blur-sm"
-              )}
+              className="border border-border hover:border-primary/50 text-foreground hover:bg-primary/5 transition-all duration-300"
             >
               <Link href={AUTH_ROUTES.LOGIN}>Iniciar Sesión</Link>
             </Button>
             <Button
               asChild
-              className="bg-linear-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
             >
               <Link href={AUTH_ROUTES.REGISTER}>Registrarse</Link>
             </Button>
@@ -187,27 +106,19 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <motion.button
-            className="lg:hidden p-2 rounded-lg"
+            className="xl:hidden p-2 rounded-lg"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
             aria-label="Toggle menu"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-menu"
           >
             {isMobileMenuOpen ? (
-              <X
-                className={cn(
-                  "h-6 w-6",
-                  isScrolled ? "text-gray-900" : "text-white"
-                )}
-              />
+              <X className="h-6 w-6 text-foreground" />
             ) : (
-              <Menu
-                className={cn(
-                  "h-6 w-6",
-                  isScrolled ? "text-gray-900" : "text-white"
-                )}
-              />
+              <Menu className="h-6 w-6 text-foreground" />
             )}
           </motion.button>
         </div>
@@ -217,7 +128,8 @@ export function Header() {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            className="lg:hidden bg-white border-t border-gray-200"
+            id="mobile-menu"
+            className="xl:hidden bg-background border-t border-border"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -232,13 +144,17 @@ export function Header() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Link
-                    href={item.href}
-                    className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-300 font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
+                  {item.hasDropdown ? (
+                    <MobileServiciosItem />
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className="block px-4 py-3 rounded-lg text-foreground hover:bg-primary/5 hover:text-primary transition-colors duration-300 font-medium"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  )}
                 </motion.div>
               ))}
               <motion.div
@@ -248,6 +164,9 @@ export function Header() {
                 transition={{ duration: 0.3, delay: 0.2 }}
                 className="pt-4 flex flex-col gap-3"
               >
+                <div className="flex items-center justify-between">
+                  <ThemeToggle />
+                </div>
                 <Button
                   asChild
                   variant="outline"
@@ -264,7 +183,7 @@ export function Header() {
                 <Button
                   asChild
                   size="lg"
-                  className="w-full bg-linear-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
                 >
                   <Link
                     href={AUTH_ROUTES.REGISTER}
@@ -279,5 +198,41 @@ export function Header() {
         )}
       </AnimatePresence>
     </motion.header>
+  );
+}
+
+function MobileServiciosItem() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button
+        className="w-full px-4 py-3 rounded-lg text-foreground hover:bg-primary/5 hover:text-primary transition-colors duration-300 font-medium flex items-center justify-between"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-controls="mobile-servicios"
+      >
+        Servicios
+        <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            id="mobile-servicios"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-2 ml-2 border-l border-border"
+          >
+            <div className="pl-4 space-y-1">
+              {servicios.map((s) => (
+                <Link key={s.name} href={s.href} className="block px-3 py-2 rounded-md text-muted-foreground hover:bg-primary/5 hover:text-primary transition-colors" >
+                  {s.name}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
