@@ -10,10 +10,10 @@ export function useI18n() {
   const t = (key: string, defaultValue?: string) => {
     const dict = getTranslations(lang);
     const parts = key.split(".");
-    let current: any = dict as any;
+    let current: Record<string, unknown> | string = dict as Record<string, unknown>;
     for (const p of parts) {
-      if (current && p in current) {
-        current = current[p];
+      if (typeof current === 'object' && current && p in current) {
+        current = current[p] as Record<string, unknown> | string;
       } else {
         return defaultValue ?? key;
       }

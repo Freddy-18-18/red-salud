@@ -88,3 +88,24 @@ ts-errors*.txt
 
 # Test files
 nul
+
+# Supabase temporary files
+supabase/.temp/
+
+# Scripts temporales de corrección
+scripts/fix-*.ps1
+scripts/fix-*.ts
+scripts/create-clinic-credentials.ts
+
+# Validación temporal
+validate-progress.ps1
+
+# Proyecto móvil Flutter (si existe en raíz)
+red_salud_medico_mobile/
+
+# Proyecto Tauri (desarrollo local)
+src-tauri/target/
+src-tauri/Cargo.lock
+
+# Plans folder (temporal)
+plans/

@@ -1,17 +1,17 @@
+"use client";
+
 /**
  * @file use-dashboard-data.ts
  * @description Hook principal para obtener datos reales del dashboard del médico.
  * Centraliza todas las queries y suscripciones de tiempo real para los widgets.
- * 
+ *
  * @module Dashboard
- * 
+ *
  * @example
  * const { appointments, messages, notifications, stats, isLoading } = useDashboardData(doctorId);
  */
 
 import type { Appointment } from '@/lib/supabase/types/appointments';
-
-"use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase/client";
