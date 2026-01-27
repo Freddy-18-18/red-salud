@@ -63,4 +63,4 @@ supabase/.temp/
 
 # Package manager files (Vercel installs from package.json)
 node_modules/
-package-lock.json
+
