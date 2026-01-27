@@ -145,11 +145,14 @@ const recentIncidents: Incident[] = [
   },
 ];
 
-// Historial de uptime de los últimos 90 días (simulado)
-const uptimeHistory = Array.from({ length: 90 }, (_, i) => ({
-  date: new Date(Date.now() - (89 - i) * 24 * 60 * 60 * 1000),
-  status: Math.random() > 0.02 ? "operational" : Math.random() > 0.5 ? "degraded" : "partial",
-}));
+// Function to generate uptime history (called during render, not at module level)
+function generateUptimeHistory() {
+  const now = Date.now();
+  return Array.from({ length: 90 }, (_, i) => ({
+    date: new Date(now - (89 - i) * 24 * 60 * 60 * 1000),
+    status: Math.random() > 0.02 ? "operational" : Math.random() > 0.5 ? "degraded" : "partial",
+  }));
+}
 
 const statusConfig: Record<ServiceStatus, { label: string; color: string; icon: React.ElementType; bg: string }> = {
   operational: {
@@ -224,6 +227,7 @@ function ServiceCard({ service }: { service: Service }) {
 }
 
 function UptimeBar() {
+  const uptimeHistory = generateUptimeHistory();
   return (
     <div className="flex gap-0.5">
       {uptimeHistory.map((day, i) => {
