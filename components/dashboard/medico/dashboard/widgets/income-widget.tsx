@@ -307,7 +307,7 @@ export function IncomeWidget({
                                             borderRadius: "8px",
                                             fontSize: "12px",
                                         }}
-                                        formatter={(value: number) => [formatCurrency(value), "Ingresos"]}
+                                        formatter={(value) => [formatCurrency(typeof value === 'number' ? value : 0), "Ingresos"]}
                                     />
                                     <Area
                                         type="monotone"

@@ -17,7 +17,7 @@ import {
   PatientDataSnapshot,
   MedicoDataSnapshot,
   PrescriptionMedication,
-} from '../types/prescriptions-advanced';
+} from '../../types/prescriptions-advanced';
 
 // ============================================================================
 // TEMPLATE QUERIES
@@ -81,7 +81,7 @@ export async function getTemplateById(
     return { success: true, data };
   } catch (error) {
     console.error('[getTemplateById] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -162,7 +162,7 @@ export async function getDoctorActiveSignature(
     return { success: true, data };
   } catch (error) {
     console.error('[getDoctorActiveSignature] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -243,7 +243,7 @@ export async function getScanById(
     return { success: true, data };
   } catch (error) {
     console.error('[getScanById] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -317,7 +317,7 @@ export async function getPrescriptionDetail(
     };
   } catch (error) {
     console.error('[getPrescriptionDetail] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -443,6 +443,6 @@ export async function getPrintStatistics(
     };
   } catch (error) {
     console.error('[getPrintStatistics] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }

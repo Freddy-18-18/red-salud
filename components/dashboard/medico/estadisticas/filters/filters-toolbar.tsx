@@ -291,7 +291,6 @@ export function FiltersToolbar({
                   >
                     <Checkbox
                       checked={filters.consultationTypes.includes(type.value)}
-                      readOnly
                     />
                     {type.label}
                   </DropdownMenuItem>
@@ -324,7 +323,6 @@ export function FiltersToolbar({
                   >
                     <Checkbox
                       checked={filters.statuses.includes(status.value)}
-                      readOnly
                     />
                     {status.label}
                   </DropdownMenuItem>

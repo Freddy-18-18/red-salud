@@ -18,7 +18,8 @@ import {
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { DashboardMegaMenu, MegaMenuSection } from "./dashboard-mega-menu";
+import { DashboardMegaMenu } from "./dashboard-mega-menu";
+import { MegaMenuSection } from "@/components/dashboard/medico/configuracion/configuracion-mega-menu-config";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +45,7 @@ export interface DashboardHeaderProps {
     sacs_especialidad?: string;
     is_verified?: boolean;
     sacs_verified?: boolean;
-  };
+  } | null;
   onTourClick?: () => void;
   onChatClick?: () => void;
   megaMenu?: {

@@ -85,7 +85,7 @@ class RuntimeServiceImpl implements IRuntimeService {
         this.storageService = new WebStorageService();
       }
     }
-    return this.storageService;
+    return this.storageService!;
   }
 
   /**
@@ -103,7 +103,7 @@ class RuntimeServiceImpl implements IRuntimeService {
         this.networkService = new WebNetworkService();
       }
     }
-    return this.networkService;
+    return this.networkService!;
   }
 
   /**
@@ -121,7 +121,7 @@ class RuntimeServiceImpl implements IRuntimeService {
         this.pdfService = new WebPDFService();
       }
     }
-    return this.pdfService;
+    return this.pdfService!;
   }
 
   /**
@@ -139,7 +139,7 @@ class RuntimeServiceImpl implements IRuntimeService {
         this.notificationService = new WebNotificationService();
       }
     }
-    return this.notificationService;
+    return this.notificationService!;
   }
 
   /**

@@ -13,7 +13,7 @@ import {
   UpdateDoctorSignatureInput,
   CreatePrescriptionScanInput,
   ServiceResponse,
-} from '../types/prescriptions-advanced';
+} from '../../types/prescriptions-advanced';
 
 // ============================================================================
 // TEMPLATE MUTATIONS
@@ -103,7 +103,7 @@ export async function createPrescriptionTemplate(
     return { success: true, data };
   } catch (error) {
     console.error('[createPrescriptionTemplate] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -175,7 +175,7 @@ export async function updatePrescriptionTemplate(
     return { success: true, data };
   } catch (error) {
     console.error('[updatePrescriptionTemplate] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -225,10 +225,20 @@ export async function incrementTemplateUsage(
   templateId: string
 ): Promise<ServiceResponse<void>> {
   try {
+    // First, get the current count
+    const { data: template, error: fetchError } = await supabase
+      .from('prescription_templates')
+      .select('usos_count')
+      .eq('id', templateId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Then update with incremented value
     const { error } = await supabase
       .from('prescription_templates')
       .update({
-        usos_count: supabase.raw('usos_count + 1')
+        usos_count: (template?.usos_count || 0) + 1
       })
       .eq('id', templateId);
 
@@ -278,7 +288,7 @@ export async function createDoctorSignature(
     return { success: true, data };
   } catch (error) {
     console.error('[createDoctorSignature] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -335,7 +345,7 @@ export async function updateDoctorSignature(
     return { success: true, data };
   } catch (error) {
     console.error('[updateDoctorSignature] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -406,7 +416,7 @@ export async function createPrescriptionScan(
     return { success: true, data };
   } catch (error) {
     console.error('[createPrescriptionScan] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -459,7 +469,7 @@ export async function updatePrescriptionScan(
     return { success: true, data };
   } catch (error) {
     console.error('[updatePrescriptionScan] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -545,7 +555,7 @@ export async function createPrescriptionExtended(
     return { success: true, data: result };
   } catch (error) {
     console.error('[createPrescriptionExtended] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -600,7 +610,7 @@ export async function updatePrescriptionExtended(
     return { success: true, data };
   } catch (error) {
     console.error('[updatePrescriptionExtended] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }
 
@@ -638,6 +648,6 @@ export async function recordPrescriptionPrint(
     return { success: true, data };
   } catch (error) {
     console.error('[recordPrescriptionPrint] Error:', error);
-    return { success: false, error, data: null };
+    return { success: false, error, data: undefined };
   }
 }

@@ -1,0 +1,66 @@
+# Tauri (desktop app - not needed for web deployment)
+src-tauri/
+src-tauricapabilities/
+src-tauriicons/
+src-taurisrc/
+
+# Flutter mobile app
+red_salud_medico_mobile/
+
+# Microservices (deployed separately)
+bcv-rate-service/
+sacs-verification-service/
+
+# Large video files
+public/videos/
+
+# Documentation and reports
+*.md
+!README.md
+docs/
+plans/
+
+# IDE and AI assistant folders
+.claude/
+.cursor/
+.kiro/
+.trae/
+.agent/
+.idea/
+.vscode/
+
+# Test and validation scripts
+scripts/
+validate-progress.ps1
+test-*.js
+
+# Lint and error reports
+eslint-*.json
+eslint-*.txt
+lint-*.txt
+ts-errors*.txt
+
+# Git
+.git/
+.github/
+
+# Temporary files
+nul
+*.log
+*.pem
+debug-*.png
+resultados-*.json
+informe-*.json
+sacs-*.html
+sacs-*.json
+
+# Build artifacts
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Supabase temp
+supabase/.temp/
+
+# Package manager files (Vercel installs from package.json)
+node_modules/
+package-lock.json

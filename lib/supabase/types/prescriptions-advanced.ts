@@ -155,7 +155,15 @@ export interface PrescriptionExtended {
   numero_receta?: string | null;
   paciente_data?: PatientDataSnapshot | null;
   medico_data?: MedicoDataSnapshot | null;
-  // ... otros campos de farmacia_recetas
+  medicamentos?: PrescriptionMedication[] | null;
+  indicaciones?: string | null;
+  diagnostico?: string | null;
+  fecha_emision?: string | null;
+  estado?: string | null;
+  medico_id?: string | null;
+  paciente_id?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface PatientDataSnapshot {
@@ -377,22 +385,3 @@ export enum PrescriptionErrorCode {
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type Nullable<T> = T | null;
 
-// ============================================================================
-// EXPORT ALL
-// ============================================================================
-
-export type {
-  PrescriptionTemplate,
-  DoctorSignature,
-  PrescriptionScan,
-  PrescriptionPrint,
-  PrescriptionExtended,
-  PatientDataSnapshot,
-  MedicoDataSnapshot,
-  OCRData,
-  LayoutConfig,
-  CustomStyles,
-  HeaderConfig,
-  FooterConfig,
-  PatientField,
-};
