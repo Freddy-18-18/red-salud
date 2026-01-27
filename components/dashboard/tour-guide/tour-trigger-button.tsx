@@ -28,6 +28,7 @@ export function TourTriggerButton() {
     return () => document.removeEventListener('start-tour', handleStart);
   }, [availableTour, startTour]);
 
+  // Early return after all hooks
   if (isTourActive || !availableTour) return null;
 
   const handleClick = () => {

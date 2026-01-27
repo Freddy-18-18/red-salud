@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,12 +54,14 @@ export function CustomTemplateCreator({
     required: false,
     rows: 3,
   });
+  const fieldCounterRef = useRef(0);
+  const templateCounterRef = useRef(0);
 
   const addField = () => {
     if (!currentField.label) return;
 
     const newField: StructuredTemplateField = {
-      id: `field_${Date.now()}`,
+      id: `field_${++fieldCounterRef.current}`,
       label: currentField.label,
       type: currentField.type,
       placeholder: currentField.placeholder,
@@ -95,7 +97,7 @@ export function CustomTemplateCreator({
     if (!templateName || fields.length === 0) return;
 
     const template: StructuredTemplate = {
-      id: `custom_${Date.now()}`,
+      id: `custom_${++templateCounterRef.current}`,
       name: templateName,
       description: templateDescription,
       category: templateCategory as any,
