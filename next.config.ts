@@ -31,12 +31,9 @@ const nextConfig: NextConfig = {
     eslint: {
       ignoreDuringBuilds: true,
     },
-    // Excluir el directorio api del build
-    experimental: {
-      // Usar outputFileTracingExcludes para excluir api
-      outputFileTracingExcludes: {
-        '*': ['app/api/**/*'],
-      },
+    // Excluir el directorio api del build (top-level en Next.js 15+)
+    outputFileTracingExcludes: {
+      '*': ['app/api/**/*'],
     },
   }),
 };
