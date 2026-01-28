@@ -1,8 +1,8 @@
-import { RegisterForm } from "@/components/auth/register-form";
+import { RegisterFormV2 } from "@/components/auth/register-form-v2";
 
 export default function RegisterMedicoPage() {
   return (
-    <RegisterForm
+    <RegisterFormV2
       role="medico"
       roleLabel="Médico"
     />

@@ -121,8 +121,8 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Grid de roles */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+        {/* Grid de roles - SOLO cambio: grid-cols-1 en móvil */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
           {roleObjects.map((role) => {
             const Icon = iconMap[role.icon];
             const isMedico = role.id === 'medico';
