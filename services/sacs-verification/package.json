@@ -1,0 +1,32 @@
+{
+  "name": "sacs-verification-service",
+  "version": "2.0.0",
+  "description": "Servicio de verificación SACS con Puppeteer para Red-Salud",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "node test-local.js"
+  },
+  "keywords": [
+    "sacs",
+    "venezuela",
+    "medical",
+    "verification",
+    "puppeteer"
+  ],
+  "author": "Red-Salud",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "puppeteer": "^24.36.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

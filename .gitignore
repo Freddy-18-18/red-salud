@@ -109,3 +109,28 @@ src-tauri/Cargo.lock
 
 # Plans folder (temporal)
 plans/
+
+# Logs and Reports
+*.log
+*.backup
+*_report.txt
+lint_web.json
+git_status.txt
+tsc_errors.log
+tsc_web.log
+
+# Scripts and Temporary Files
+move_files.ps1
+reorganization_report.md
+validate-progress.ps1
+apps_web_lint_report.txt
+
+
+# Compilation output
+**/target/
+src-tauri/target/
+.next/
+.turbo/
+dist/
+build/
+

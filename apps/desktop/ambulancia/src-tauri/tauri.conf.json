@@ -1,0 +1,37 @@
+{
+    "build": {
+        "beforeDevCommand": "npm run dev",
+        "beforeBuildCommand": "npm run build",
+        "devPath": "http://localhost:3000",
+        "distDir": "../../../apps/web/out",
+        "withGlobalTauri": true
+    },
+    "package": {
+        "productName": "Red Salud - Ambulancia",
+        "version": "0.1.0"
+    },
+    "tauri": {
+        "allowlist": {
+            "all": false,
+            "shell": {
+                "all": false,
+                "open": true
+            }
+        },
+        "bundle": {
+            "active": true,
+            "category": "Medical",
+            "identifier": "com.red-salud.ambulancia",
+            "targets": "all"
+        },
+        "windows": [
+            {
+                "fullscreen": false,
+                "resizable": true,
+                "title": "Red Salud - Ambulancia",
+                "width": 1200,
+                "height": 800
+            }
+        ]
+    }
+}

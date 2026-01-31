@@ -1,0 +1,95 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/client";
+import { DashboardLayoutClient } from "@/components/dashboard/layout/dashboard-layout-client";
+import { AppProviders } from "@/components/providers/app-providers";
+import { TourGuideProvider } from "@/components/dashboard/shared/tour-guide/tour-guide-provider";
+import { SidebarProvider } from "@/lib/contexts/sidebar-context";
+
+import type { User } from "@supabase/supabase-js";
+
+interface Profile {
+  id: string;
+  role: string;
+  nombre_completo: string | null;
+}
+
+export function MedicoLayoutClient({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Verificar autenticación
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      setUser(user);
+
+      // Obtener perfil
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.role !== "medico") {
+        router.push(`/dashboard/${profile?.role || "paciente"}`);
+        return;
+      }
+
+      setProfile(profile);
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    // Escuchar cambios de autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_OUT") {
+          router.push("/login");
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user || !profile) {
+    return null;
+  }
+
+  return (
+    <AppProviders>
+      <SidebarProvider>
+        <TourGuideProvider>
+          <DashboardLayoutClient
+            userName={profile?.nombre_completo || user.email?.split("@")[0]}
+            userEmail={user.email}
+            userRole="medico"
+            userId={user.id}
+          >
+            {children}
+          </DashboardLayoutClient>
+        </TourGuideProvider>
+      </SidebarProvider>
+    </AppProviders>
+  );
+}
