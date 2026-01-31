@@ -14,14 +14,14 @@ export interface CedulaValidationResult {
 }
 
 // Validar cédula con API real de cedula.com.ve
-export async function validateCedulaWithCNE(cedula: string): Promise<CedulaValidationResult> {
+export async function validateCedulaWithCNE(cedula: string, nacionalidad: string = 'V'): Promise<CedulaValidationResult> {
   if (!cedula || cedula.length < 6) {
     return { found: false };
   }
 
   try {
-    // Consultar API real
-    const response = await fetch(`/api/cne/validate?cedula=${cedula}`, {
+    // Consultar API real a través de nuestro proxy
+    const response = await fetch(`/api/cne/validate?cedula=${cedula}&nacionalidad=${nacionalidad}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -43,10 +43,13 @@ export async function validateCedulaWithCNE(cedula: string): Promise<CedulaValid
       return { found: false };
     }
 
-    // Otros errores
+    // Error de la API (por ejemplo, token inválido o expirado)
+    const errorData = await response.json().catch(() => ({}));
+    console.error('Error in cedula validation:', errorData.error || response.statusText);
+
     return { found: false };
   } catch (error) {
-    // Error de red - permitir ingreso manual
+    console.error('Network error validating cedula:', error);
     return { found: false };
   }
 }
@@ -54,7 +57,8 @@ export async function validateCedulaWithCNE(cedula: string): Promise<CedulaValid
 // Validar formato de cédula venezolana
 export function isValidVenezuelanCedula(cedula: string): boolean {
   const cleaned = cedula.replace(/[\s-]/g, "");
-  if (!/^\d{6,8}$/.test(cleaned)) {
+  // Las cédulas venezolanas suelen tener entre 6 y 9 dígitos, pero permitimos hasta 10 por seguridad
+  if (!/^\d{6,10}$/.test(cleaned)) {
     return false;
   }
   return true;
@@ -63,16 +67,16 @@ export function isValidVenezuelanCedula(cedula: string): boolean {
 // Calcular edad desde fecha de nacimiento (super rápido)
 export function calculateAge(birthDate: string): number | null {
   if (!birthDate) return null;
-  
+
   const today = new Date();
   const birth = new Date(birthDate);
-  
+
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
-  
+
   return age;
 }

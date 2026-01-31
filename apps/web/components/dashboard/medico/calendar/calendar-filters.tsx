@@ -59,11 +59,11 @@ export function CalendarFilters({
     const hasFilters = selectedStatuses.length > 0 || selectedTypes.length > 0;
 
     return (
-        <div className={`flex flex-wrap items-center gap-2 ${className}`}>
+        <div className={`flex flex-wrap items-center gap-2 w-full sm:w-auto ${className}`}>
             {/* Status Filter */}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 border-dashed">
+                    <Button variant="outline" size="sm" className="h-8 border-dashed flex-1 sm:flex-none justify-center">
                         <Filter className="mr-2 h-3.5 w-3.5" />
                         Estados
                         {selectedStatuses.length > 0 && (
@@ -106,7 +106,7 @@ export function CalendarFilters({
             {/* Type Filter */}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 border-dashed">
+                    <Button variant="outline" size="sm" className="h-8 border-dashed flex-1 sm:flex-none justify-center">
                         <Filter className="mr-2 h-3.5 w-3.5" />
                         Tipo
                         {selectedTypes.length > 0 && (

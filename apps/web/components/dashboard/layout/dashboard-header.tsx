@@ -215,7 +215,7 @@ export function DashboardHeader({
             ) : offices.length > 0 ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 min-w-[220px]">
+                  <Button variant="outline" size="sm" className="gap-2 min-w-[220px]" disabled={pathname?.includes("/citas/nueva")}>
                     <Building2 className="h-4 w-4" />
                     <span className="truncate">
                       {showAllOffices ? "Todos los consultorios" : selectedOffice?.nombre || "Seleccionar"}
@@ -279,9 +279,7 @@ export function DashboardHeader({
         {/* Right Section - Actions */}
         <div className="flex items-center gap-x-2 flex-shrink-0">
           {/* Modo Clínico Toggle (Solo en /citas/nueva) */}
-          {pathname?.includes("/citas/nueva") && (
-            <ClinicModeToggle />
-          )}
+
 
           {/* Chat Button */}
           <Button

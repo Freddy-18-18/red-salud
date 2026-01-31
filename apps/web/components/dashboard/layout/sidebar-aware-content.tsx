@@ -17,7 +17,8 @@ export function SidebarAwareContent({
   const [currentMode, setCurrentMode] = useState<string>("hover");
 
   // Calcular width basado en el modo actual (derivado)
-  const sidebarWidth = currentMode === "expanded" ? 256 : currentMode === "collapsed" ? 48 : 0;
+  // FIX: En modo hover y collapsed, reservamos espacio para la barra colapsada (48px)
+  const sidebarWidth = currentMode === "expanded" ? 256 : 48;
 
   useEffect(() => {
     // 1. Leer estado inicial
@@ -40,12 +41,15 @@ export function SidebarAwareContent({
     <main
       className={cn(
         "flex-1 min-h-full transition-all duration-200 ease-out",
+        // En mobile: ancho completo, sin margen
+        "w-full ml-0",
+        // En desktop: margen y ancho ajustados según el sidebar
+        "md:ml-[var(--sidebar-width)] md:w-[calc(100%-var(--sidebar-width))]",
         className
       )}
       style={{
-        marginLeft: currentMode === "hover" ? "0px" : `${sidebarWidth}px`,
-        width: currentMode === "hover" ? "100%" : `calc(100% - ${sidebarWidth}px)`
-      }}
+        "--sidebar-width": `${sidebarWidth}px`
+      } as React.CSSProperties}
     >
       <div className={userRole === "medico" ? "" : "pt-14 md:pt-0"}>
         {children}

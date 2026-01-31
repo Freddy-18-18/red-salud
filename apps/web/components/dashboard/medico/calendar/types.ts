@@ -22,6 +22,7 @@ export interface CalendarAppointment {
   cancelled_at?: string | null;
   cancellation_reason?: string | null;
   medical_record_id?: string | null;
+  location_id?: string | null;
 }
 
 export interface TimeBlock {

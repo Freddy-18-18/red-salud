@@ -1,5 +1,6 @@
 export * from "./accordion";
 export * from "./alert";
+export * from "./alert-dialog";
 export * from "./autocomplete-textarea";
 export * from "./avatar";
 export * from "./avatar-upload";
@@ -42,9 +43,10 @@ export * from "./table";
 export * from "./tabs";
 export * from "./textarea";
 export * from "./theme-toggle";
-export * from "./time-picker";
+
 export * from "./timezone-select";
 export * from "./toast";
 export * from "./toggle";
 export * from "./toggle-group";
 export * from "./tooltip";
+export * from "./lib/contexts/theme-context";

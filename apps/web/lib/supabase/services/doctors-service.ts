@@ -384,8 +384,8 @@ export async function getDoctorStats(doctorId: string) {
     try {
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('appointments')
-        .select('status, appointment_date, patient_id')
-        .eq('doctor_id', doctorId);
+        .select('status, fecha_hora, paciente_id')
+        .eq('medico_id', doctorId);
 
       if (!appointmentsError && appointmentsData) {
         totalAppointments = appointmentsData.length;
@@ -395,11 +395,11 @@ export async function getDoctorStats(doctorId: string) {
         // Citas de hoy
         const today = new Date().toISOString().split('T')[0];
         todayAppointments = appointmentsData.filter(
-          (a) => a.appointment_date === today && a.status === 'scheduled'
+          (a) => a.fecha_hora.startsWith(today) && a.status === 'scheduled'
         ).length;
 
         // Contar pacientes únicos
-        uniquePatients = new Set(appointmentsData.map(p => p.patient_id)).size;
+        uniquePatients = new Set(appointmentsData.map(p => p.paciente_id)).size;
       }
     } catch (err) {
       console.log('Appointments table not available yet');
@@ -474,12 +474,16 @@ export async function getAvailableSlots(
   // Obtener citas ya agendadas para ese día
   const { data: appointments } = await supabase
     .from('appointments')
-    .select('appointment_date, appointment_time')
-    .eq('doctor_id', doctorId)
-    .eq('appointment_date', date)
+    .select('fecha_hora')
+    .eq('medico_id', doctorId)
+    .gte('fecha_hora', `${date}T00:00:00`)
+    .lte('fecha_hora', `${date}T23:59:59`)
     .in('status', ['scheduled', 'confirmed']);
 
-  const bookedSlots = appointments?.map((a) => a.appointment_time) || [];
+  const bookedSlots = appointments?.map((a) => {
+    const d = new Date(a.fecha_hora);
+    return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+  }) || [];
 
   // Generar slots disponibles basados en el horario
   const dayNames: (keyof typeof profile.schedule)[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];

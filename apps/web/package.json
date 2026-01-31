@@ -53,6 +53,7 @@
     "@react-google-maps/api": "^2.20.8",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
+    "@red-salud/core": "workspace:^",
     "@red-salud/types": "*",
     "@red-salud/ui": "*",
     "@reduxjs/toolkit": "^2.10.1",

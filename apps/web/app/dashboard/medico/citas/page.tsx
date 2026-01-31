@@ -1,6 +1,6 @@
 
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { VerificationGuard } from "@/components/dashboard/medico/features/verification-guard";
@@ -24,6 +24,7 @@ interface RawAppointment {
   tipo_cita: string | null;
   color: string | null;
   notas_internas: string | null;
+  location_id: string | null;
   paciente: {
     nombre_completo: string;
     telefono: string | null;
@@ -51,6 +52,20 @@ function CitasContent() {
   // Filters
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Escuchar el evento de cambio de consultorio
+    const handleOfficeChange = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setSelectedOfficeId(customEvent.detail.officeId);
+    };
+
+    window.addEventListener("office-changed", handleOfficeChange);
+    return () => {
+      window.removeEventListener("office-changed", handleOfficeChange);
+    };
+  }, []);
 
   const [toast, setToast] = useState<{ message: string; type: ToastType; isVisible: boolean }>({
     message: "",
@@ -66,7 +81,17 @@ function CitasContent() {
 
   // Handlers - deben declararse antes de los hooks customizados
   const handleNewAppointment = () => {
-    router.push("/dashboard/medico/citas/nueva");
+    if (!selectedOfficeId) {
+      showToast("Debes seleccionar un consultorio específico arriba para crear una cita", "warning");
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (selectedOfficeId) {
+      params.append("officeId", selectedOfficeId);
+    }
+    const queryString = params.toString();
+    router.push(`/dashboard/medico/citas/nueva${queryString ? `?${queryString}` : ""}`);
   };
 
   const handleAppointmentClick = (appointment: CalendarAppointment) => {
@@ -88,6 +113,11 @@ function CitasContent() {
       selectedDateTime.setHours(hour, 0, 0, 0);
     }
 
+    if (!selectedOfficeId) {
+      showToast("Debes seleccionar un consultorio específico para agendar en esta hora", "warning");
+      return;
+    }
+
     // Check for double booking
     if (selectedDateTime < now) {
       showToast("No puedes agendar citas en fechas u horas pasadas", "warning");
@@ -96,6 +126,11 @@ function CitasContent() {
 
     // Check if slot is taken (basic check)
     const isSlotTaken = appointments.some(apt => {
+      // Filtrar también por consultorio si es necesario
+      if (selectedOfficeId && apt.location_id && apt.location_id !== selectedOfficeId) {
+        return false; // No contar conflictos en otros consultorios si estamos filtrando
+      }
+
       const aptDate = new Date(apt.fecha_hora);
       const aptEndDate = new Date(apt.fecha_hora_fin);
       const selectedEndTime = new Date(selectedDateTime.getTime() + (apt.duracion_minutos || 30) * 60000); // Assuming default 30 min for new slot check
@@ -122,7 +157,9 @@ function CitasContent() {
 
     const dateParam = date.toISOString();
     const hourParam = hour !== undefined ? `&hour=${hour}` : "";
-    router.push(`/dashboard/medico/citas/nueva?date=${dateParam}${hourParam}`);
+    const officeParam = selectedOfficeId ? `&officeId=${selectedOfficeId}` : "";
+
+    router.push(`/dashboard/medico/citas/nueva?date=${dateParam}${hourParam}${officeParam}`);
   };
 
   const handleMessage = (appointment: CalendarAppointment) => {
@@ -189,6 +226,7 @@ function CitasContent() {
         tipo_cita: aptData.tipo_cita as CalendarAppointment['tipo_cita'],
         color: aptData.color as string,
         notas_internas: aptData.notas_internas as string | null,
+        location_id: aptData.location_id as string | null,
       };
     } catch (error) {
       console.error('Error formatting appointment:', error);
@@ -270,7 +308,7 @@ function CitasContent() {
       }
 
       // 3. Consulta REST a Supabase a través del proxy de Tauri
-      const selectQuery = "id,paciente_id,offline_patient_id,fecha_hora,duracion_minutos,motivo,status,tipo_cita,color,notas_internas,paciente:profiles!appointments_paciente_id_fkey(nombre_completo,telefono,email,avatar_url),offline_patient:offline_patients!appointments_offline_patient_id_fkey(nombre_completo,telefono,email)";
+      const selectQuery = "id,paciente_id,offline_patient_id,fecha_hora,duracion_minutos,motivo,status,tipo_cita,color,notas_internas,location_id,paciente:profiles!appointments_paciente_id_fkey(nombre_completo,telefono,email,avatar_url),offline_patient:offline_patients!appointments_offline_patient_id_fkey(nombre_completo,telefono,email)";
 
       const queryParams = new URLSearchParams({
         select: selectQuery,
@@ -284,7 +322,7 @@ function CitasContent() {
         token
       );
 
-      if (data) {
+      if (data && Array.isArray(data)) {
         const formattedAppointments: CalendarAppointment[] = data.map((apt) => {
           const isOfflinePatient = !apt.paciente_id && apt.offline_patient_id;
           const patientData = isOfflinePatient ? apt.offline_patient : apt.paciente;
@@ -307,12 +345,14 @@ function CitasContent() {
             tipo_cita: apt.tipo_cita as CalendarAppointment['tipo_cita'] || "presencial",
             color: apt.color || "#3B82F6",
             notas_internas: apt.notas_internas || null,
+            location_id: apt.location_id || null,
           };
         });
 
         console.log(`Synced ${formattedAppointments.length} appointments from server`);
+        console.log("✅ Synced appointments from server:", formattedAppointments.length, formattedAppointments);
         setAppointments(formattedAppointments);
-
+        setLoading(false);
         await tauriApiService.saveOfflineData(cacheKey, formattedAppointments);
       }
     } catch (error) {
@@ -353,13 +393,23 @@ function CitasContent() {
   const filteredAppointments = appointments.filter((apt) => {
     if (selectedStatuses.length > 0 && !selectedStatuses.includes(apt.status)) return false;
     if (selectedTypes.length > 0 && !selectedTypes.includes(apt.tipo_cita)) return false;
-    return true;
+    if (selectedOfficeId && apt.location_id && apt.location_id !== selectedOfficeId) return false;
+    const result = true;
+    return result;
+  });
+
+  console.log("🔍 Filtered appointments for calendar:", {
+    total: appointments.length,
+    filtered: filteredAppointments.length,
+    selectedOfficeId,
+    selectedStatuses,
+    selectedTypes
   });
 
   // Updated JSX with Glassmorphism
   return (
     <VerificationGuard>
-      <div className="flex flex-col h-[calc(100vh-48px)] overflow-hidden p-4 space-y-4">
+      <div className="flex flex-col h-[calc(100dvh-48px)] overflow-hidden p-2 sm:p-4 space-y-3 sm:space-y-4">
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between flex-shrink-0">
           <div className="glass px-4 py-2 rounded-lg">

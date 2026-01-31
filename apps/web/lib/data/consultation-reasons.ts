@@ -1,5 +1,42 @@
-// Motivos de consulta más comunes y detallados organizados por categoría
+// Motivos de consulta organizados por categoría para sugerencias inteligentes
 export const CONSULTATION_REASONS = [
+  // --- ODONTOLOGÍA (NUEVO) ---
+  "Limpieza dental (Profilaxis)",
+  "Dolor de muela",
+  "Caries dental",
+  "Gingivitis (Encías inflamadas)",
+  "Sangrado de encías",
+  "Mal aliento (Halitosis)",
+  "Blanqueamiento dental",
+  "Extracción de muela",
+  "Extracción de muela del juicio",
+  "Ortodoncia (Brackets)",
+  "Ajuste de brackets",
+  "Revisión de ortodoncia",
+  "Implante dental",
+  "Prótesis dental",
+  "Sensibilidad dental",
+  "Bruxismo (Rechinar dientes)",
+  "Férula de descarga",
+  "Endodoncia (Tratamiento de conducto)",
+  "Absceso dental",
+  "Diente roto o astillado",
+  "Restauración dental (Empaste)",
+
+  // --- NUTRICIÓN Y DIETÉTICA (NUEVO) ---
+  "Control de peso",
+  "Plan de alimentación personalizado",
+  "Nutrición deportiva",
+  "Nutrición para diabéticos",
+  "Nutrición para hipertensos",
+  "Alergias alimentarias",
+  "Intolerancias alimentarias",
+  "Trastornos de la conducta alimentaria",
+  "Anorexia",
+  "Bulimia",
+  "Suplementación nutricional",
+  "Evaluación antropométrica",
+
   // --- SÍNTOMAS GENERALES ---
   "Dolor de cabeza",
   "Dolor de cabeza persistente",
@@ -25,7 +62,7 @@ export const CONSULTATION_REASONS = [
   "Desmayos (Síncope)",
   "Desvanecimiento",
   "Sed excesiva (Polidipsia)",
-  
+
   // --- RESPIRATORIO ---
   "Tos seca",
   "Tos productiva (con flema)",
@@ -57,7 +94,7 @@ export const CONSULTATION_REASONS = [
   "Rinitis alérgica",
   "Apnea del sueño",
   "Ronquidos fuertes",
-  
+
   // --- GASTROINTESTINAL ---
   "Dolor abdominal agudo",
   "Dolor abdominal crónico",
@@ -92,7 +129,7 @@ export const CONSULTATION_REASONS = [
   "Ictericia (Piel amarilla)",
   "Intolerancia a la lactosa",
   "Celiaquía",
-  
+
   // --- CARDIOVASCULAR ---
   "Dolor en el pecho (precordial)",
   "Opresión en el pecho",
@@ -111,8 +148,8 @@ export const CONSULTATION_REASONS = [
   "Arritmia cardíaca",
   "Soplo cardíaco",
   "Riesgo cardiovascular",
-  
-  // --- MUSCULOESQUELÉTICO ---
+
+  // --- MUSCULOESQUELÉTICO Y FISIOTERAPIA ---
   "Dolor de espalda alta (Dorsalgia)",
   "Dolor de espalda baja (Lumbalgia)",
   "Lumbago con ciática",
@@ -151,7 +188,10 @@ export const CONSULTATION_REASONS = [
   "Bursitis",
   "Osteoporosis",
   "Fibromialgia",
-  
+  "Rehabilitación física",
+  "Terapia manual",
+  "Masaje terapéutico",
+
   // --- DERMATOLÓGICO ---
   "Erupción cutánea (Rash)",
   "Picazón intensa (Prurito)",
@@ -183,7 +223,7 @@ export const CONSULTATION_REASONS = [
   "Úlcera varicosa",
   "Caída del cabello (Alopecia)",
   "Caspa severa",
-  
+
   // --- NEUROLÓGICO ---
   "Dolor de cabeza tensional",
   "Migraña crónica",
@@ -205,7 +245,7 @@ export const CONSULTATION_REASONS = [
   "Trastornos del sueño",
   "Insomnio de conciliación",
   "Neuropatía diabética",
-  
+
   // --- OFTALMOLÓGICO ---
   "Dolor ocular",
   "Ardor en los ojos",
@@ -226,7 +266,9 @@ export const CONSULTATION_REASONS = [
   "Blefaritis",
   "Glaucoma",
   "Cataratas",
-  
+  "Examen de la vista",
+  "Medida de lentes",
+
   // --- OTORRINOLARINGOLÓGICO ---
   "Dolor de oído (Otalgia)",
   "Sensación de oído tapado",
@@ -242,7 +284,7 @@ export const CONSULTATION_REASONS = [
   "Amigdalitis aguda",
   "Faringitis",
   "Laringitis",
-  
+
   // --- UROLÓGICO ---
   "Dolor al orinar (Disuria)",
   "Ardor al orinar",
@@ -263,7 +305,7 @@ export const CONSULTATION_REASONS = [
   "Hiperplasia prostática",
   "Prostatitis",
   "Disfunción eréctil",
-  
+
   // --- GINECOLÓGICO ---
   "Dolor menstrual (Dismenorrea)",
   "Cólicos menstruales intensos",
@@ -290,7 +332,7 @@ export const CONSULTATION_REASONS = [
   "Mastitis",
   "Dolor en senos",
   "Bulto en seno",
-  
+
   // --- ENDOCRINO ---
   "Diabetes Mellitus Tipo 1",
   "Diabetes Mellitus Tipo 2",
@@ -306,7 +348,7 @@ export const CONSULTATION_REASONS = [
   "Síndrome metabólico",
   "Colesterol alto (Hipercolesterolemia)",
   "Triglicéridos altos",
-  
+
   // --- SALUD MENTAL ---
   "Ansiedad generalizada",
   "Crisis de ansiedad",
@@ -324,7 +366,8 @@ export const CONSULTATION_REASONS = [
   "Duelo",
   "Problemas de pareja",
   "Adicciones",
-  
+  "Terapia psicológica",
+
   // --- PEDIÁTRICO ---
   "Fiebre en niños",
   "Tos en niños",
@@ -344,7 +387,7 @@ export const CONSULTATION_REASONS = [
   "Problemas de sueño en niños",
   "Hiperactividad",
   "Problemas de aprendizaje",
-  
+
   // --- PREVENTIVO Y ADMINISTRATIVO ---
   "Chequeo general (Check-up)",
   "Examen físico anual",
@@ -360,7 +403,7 @@ export const CONSULTATION_REASONS = [
   "Retiro de puntos",
   "Lavado de oídos",
   "Aplicación de inyección",
-  
+
   // --- OTROS / URGENCIAS MENORES ---
   "Reacción alérgica leve",
   "Picadura de insecto",
@@ -371,20 +414,50 @@ export const CONSULTATION_REASONS = [
   "Deshidratación leve",
   "Insolación",
   "Cuerpo extraño en ojo",
-  "Cuerpo extraño en oído/nariz"
+  "Cuerpo extraño en oído/nariz",
+  "Lavado gástrico"
 ];
 
-// Función optimizada para buscar motivos
+// Normaliza texto para búsqueda (quita acentos, minúsculas)
+const normalizeText = (text: string) => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
+
+// Función de búsqueda avanzada y eficiente
 export function searchConsultationReasons(query: string): string[] {
-  if (!query || query.length < 2) return [];
-  
-  const terms = query.toLowerCase().trim().split(/\s+/); // Separar por palabras
-  
+  if (!query || query.trim().length === 0) return [];
+
+  const normalizedQuery = normalizeText(query.trim());
+  const terms = normalizedQuery.split(/\s+/); // Separar por palabras
+
+  // Filtrar y rankear resultados
   return CONSULTATION_REASONS
     .filter(reason => {
-      const lowerReason = reason.toLowerCase();
-      // Todas las palabras de la búsqueda deben estar presentes en el motivo
-      return terms.every(term => lowerReason.includes(term));
+      const normalizedReason = normalizeText(reason);
+      // Debe contener todos los términos de búsqueda
+      return terms.every(term => normalizedReason.includes(term));
     })
-    .slice(0, 15); // Aumentamos el límite de sugerencias
+    .sort((a, b) => {
+      const normA = normalizeText(a);
+      const normB = normalizeText(b);
+      const normQuery = normalizedQuery;
+
+      // Criterios de ordenamiento:
+      // 1. Coincidencia exacta
+      if (normA === normQuery) return -1;
+      if (normB === normQuery) return 1;
+
+      // 2. Empieza con la búsqueda (más relevante)
+      const aStarts = normA.startsWith(normQuery);
+      const bStarts = normB.startsWith(normQuery);
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+
+      // 3. Menor longitud (más conciso suele ser mejor)
+      return a.length - b.length;
+    })
+    .slice(0, 20); // Retornar top 20 resultados
 }

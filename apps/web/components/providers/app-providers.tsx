@@ -25,7 +25,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <PreferencesProvider>
           <SupabaseAuthProvider>
-            <ThemeProvider>
+            <ThemeProvider defaultTheme="system" storageKey="theme">
               {children}
               <Toaster richColors position="top-center" />
             </ThemeProvider>

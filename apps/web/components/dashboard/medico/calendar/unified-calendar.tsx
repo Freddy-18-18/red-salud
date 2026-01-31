@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@red-salud/ui";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, AlignJustify, LayoutGrid, LayoutList } from "lucide-react";
 import { format, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, isToday, parseISO } from "date-fns";
@@ -15,6 +15,7 @@ import type { CalendarAppointment } from "./types";
 import { cn } from "@red-salud/core/utils";
 import { AppointmentCard } from "./appointment-card";
 import { AppointmentStack } from "./appointment-stack";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +46,32 @@ export function UnifiedCalendar({
 }: UnifiedCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("week");
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  // Switch to day view on mobile if in week view
+  useEffect(() => {
+    if (!isDesktop && viewMode === "week") {
+      setViewMode("day");
+    }
+  }, [isDesktop]);
+
+  // Estado para la hora actual
+  const [now, setNow] = useState(new Date());
+
+  // Actualizar la hora cada minuto
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 60000); // 1 minuto
+    return () => clearInterval(interval);
+  }, []);
+
+  // Función para determinar si un slot es pasado
+  const isSlotPast = (date: Date, hour: number) => {
+    const slotEnd = new Date(date);
+    slotEnd.setHours(hour + 1, 0, 0, 0);
+    return slotEnd < now;
+  };
 
   const handlePrevious = () => {
     switch (viewMode) {
@@ -96,7 +123,11 @@ export function UnifiedCalendar({
   };
 
   const getAppointmentsForDate = (date: Date) => {
-    return appointments.filter(apt => isSameDay(new Date(apt.fecha_hora), date));
+    const filtered = appointments.filter(apt => isSameDay(new Date(apt.fecha_hora), date));
+    if (filtered.length > 0) {
+      console.log(`📅 Appointments for ${format(date, 'yyyy-MM-dd')}:`, filtered.length);
+    }
+    return filtered;
   };
 
   const getAppointmentsForHour = (date: Date, hour: number) => {
@@ -116,16 +147,36 @@ export function UnifiedCalendar({
         <div className="min-w-full md:min-w-[600px]">
           {hours.map(hour => {
             const hourAppointments = getAppointmentsForHour(currentDate, hour);
+            const isPast = isSlotPast(currentDate, hour);
+            const isCurrentHour = isSameDay(currentDate, now) && hour === now.getHours();
+
             return (
               <div
                 key={hour}
-                className="flex border-b border-border hover:bg-muted/30 transition-colors"
-                onClick={() => hourAppointments.length === 0 && onTimeSlotClick?.(currentDate, hour)}
+                className={cn(
+                  "flex border-b border-border transition-colors relative min-h-[60px]",
+                  isPast ? "bg-muted/20" : "hover:bg-muted/30"
+                )}
+                onClick={() => !isPast && hourAppointments.length === 0 && onTimeSlotClick?.(currentDate, hour)}
               >
-                <div className="w-14 md:w-16 flex-shrink-0 p-1 text-xs text-muted-foreground font-medium border-r border-border md:border-none flex items-start justify-center pt-2">
+                {/* Línea de tiempo actual */}
+                {isCurrentHour && (
+                  <div
+                    className="absolute w-full z-20 pointer-events-none flex items-center"
+                    style={{ top: `${(now.getMinutes() / 60) * 100}%` }}
+                  >
+                    <div className="w-full border-t-2 border-red-500/70" />
+                    <div className="absolute -left-1.5 w-3 h-3 bg-red-500 rounded-full" />
+                  </div>
+                )}
+
+                <div className="w-14 md:w-16 flex-shrink-0 p-1 text-xs text-muted-foreground font-medium border-r border-border md:border-none flex items-start justify-center pt-2 select-none">
                   {format(new Date().setHours(hour, 0), "HH:mm")}
                 </div>
-                <div className="flex-1 min-h-[50px] md:min-h-[40px] p-0.5 relative">
+                <div className={cn(
+                  "flex-1 p-0.5 relative",
+                  isPast && "cursor-not-allowed opacity-80"
+                )}>
                   {hourAppointments.length > 0 ? (
                     <AppointmentStack
                       appointments={hourAppointments}
@@ -134,9 +185,11 @@ export function UnifiedCalendar({
                       onAppointmentClick={onAppointmentClick}
                     />
                   ) : (
-                    <div className="h-full w-full absolute inset-0 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                      <Plus className="h-4 w-4 text-muted-foreground/30" />
-                    </div>
+                    !isPast && (
+                      <div className="h-full w-full absolute inset-0 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                        <Plus className="h-4 w-4 text-muted-foreground/30" />
+                      </div>
+                    )
                   )}
                 </div>
               </div>
@@ -153,10 +206,10 @@ export function UnifiedCalendar({
     const hours = Array.from({ length: 16 }, (_, i) => i + 7);
 
     return (
-      <div className="h-full">
+      <div className="h-full overflow-auto">
         <div className="min-w-[700px] lg:min-w-full">
           {/* Header con días - MÁS COMPACTO */}
-          <div className="flex border-b border-border bg-muted sticky top-0 z-10">
+          <div className="flex border-b border-border bg-muted/50 sticky top-0 z-10 glass">
             <div className="w-12 flex-shrink-0" />
             {weekDays.map(day => (
               <div key={day.toISOString()} className={cn("flex-1 p-2 text-center border-l border-border/50", isToday(day) && "bg-primary/5")}>
@@ -176,28 +229,50 @@ export function UnifiedCalendar({
           {/* Grid de horas - MÁS COMPACTO */}
           {hours.map(hour => (
             <div key={hour} className="flex border-b border-border">
-              <div className="w-12 flex-shrink-0 p-1 text-[10px] text-muted-foreground font-medium text-center pt-2">
-                {format(new Date().setHours(hour, 0), "HH:mm")}
+              <div className="w-12 flex-shrink-0 p-1 text-[10px] text-muted-foreground font-medium text-center pt-2 select-none relative">
+                {/* Hora Sticky?? No, mejor simple */}
+                <span className="-mt-2.5 block">{format(new Date().setHours(hour, 0), "HH:mm")}</span>
               </div>
               {weekDays.map(day => {
                 const hourAppointments = getAppointmentsForHour(day, hour);
                 const isDayToday = isToday(day);
+                const isPast = isSlotPast(day, hour);
+                const isCurrentHour = isDayToday && hour === now.getHours();
+
                 return (
                   <div
                     key={day.toISOString()}
                     className={cn(
-                      "flex-1 min-h-[44px] p-0.5 border-l border-border hover:bg-muted/30 transition-colors cursor-pointer relative",
-                      isDayToday && "bg-primary/[0.02]"
+                      "flex-1 min-h-[50px] p-0.5 border-l border-border transition-colors relative group",
+                      isPast ? "bg-muted/20 cursor-not-allowed" : "hover:bg-muted/30 cursor-pointer",
+                      isDayToday && !isPast && "bg-primary/[0.02]"
                     )}
-                    onClick={() => hourAppointments.length === 0 && onTimeSlotClick?.(day, hour)}
+                    onClick={() => !isPast && hourAppointments.length === 0 && onTimeSlotClick?.(day, hour)}
                   >
-                    {hourAppointments.length > 0 && (
+                    {/* Línea de tiempo actual - Solo en la columna de hoy y hora actual */}
+                    {isCurrentHour && (
+                      <div
+                        className="absolute w-full z-20 pointer-events-none flex items-center"
+                        style={{ top: `${(now.getMinutes() / 60) * 100}%` }}
+                      >
+                        <div className="absolute -left-[1px] w-2 h-2 bg-red-500 rounded-full ring-2 ring-background" />
+                        <div className="w-full border-t border-red-500 shadow-[0_0_4px_rgba(239,68,68,0.4)]" />
+                      </div>
+                    )}
+
+                    {hourAppointments.length > 0 ? (
                       <AppointmentStack
                         appointments={hourAppointments}
                         maxVisible={2}
                         compact={true}
                         onAppointmentClick={onAppointmentClick}
                       />
+                    ) : (
+                      !isPast && (
+                        <div className="hidden group-hover:flex items-center justify-center h-full opacity-30">
+                          <Plus className="h-3 w-3" />
+                        </div>
+                      )
                     )}
                   </div>
                 );
@@ -289,23 +364,23 @@ export function UnifiedCalendar({
     });
 
     return (
-      <div className="h-full p-4 overflow-y-auto">
+      <div className="w-full pb-10">
         {sortedAppointments.length > 0 ? (
-          <div className="space-y-6 w-full pb-10">
+          <div className="space-y-6 w-full">
             {Object.entries(groupedAppointments).map(([dateKey, apts]) => (
               <div key={dateKey} className="space-y-3">
-                <div className="sticky top-0 bg-background/95 backdrop-blur-sm p-2 z-10 border-b border-border flex items-center gap-2">
+                <div className="sticky top-0 bg-background/80 backdrop-blur-md px-4 py-3 z-10 border-b border-border/50 flex items-center gap-3 shadow-sm">
                   <div className={cn(
-                    "text-lg font-bold",
-                    isToday(parseISO(dateKey)) && "text-primary"
+                    "text-lg font-bold tracking-tight capitalize",
+                    isToday(parseISO(dateKey)) ? "text-primary" : "text-foreground"
                   )}>
                     {format(parseISO(dateKey), "EEEE d 'de' MMMM", { locale: es })}
                   </div>
-                  <div className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                  <div className="text-[10px] font-semibold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full border border-border/50 uppercase tracking-wider">
                     {apts.length} {apts.length === 1 ? 'cita' : 'citas'}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pl-2 sm:pl-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4">
                   {apts.map(apt => (
                     <AppointmentCard
                       key={apt.id}
@@ -354,7 +429,7 @@ export function UnifiedCalendar({
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2 sm:p-3 border-b border-border bg-card gap-3 sm:gap-4 transition-all duration-200">
 
         {/* Navigation & Date */}
-        <div className="flex items-center justify-between sm:justify-start gap-2">
+        <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
           <div className="flex items-center bg-muted/30 rounded-lg p-0.5">
             <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-background shadow-none" onClick={handlePrevious}>
               <ChevronLeft className="h-4 w-4" />
@@ -375,7 +450,7 @@ export function UnifiedCalendar({
         </div>
 
         {/* Controls */}
-        <div className="flex items-center justify-between sm:justify-end gap-2">
+        <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
           {/* View Selector Mobile (Dropdown) / Desktop (Tabs) */}
           <div className="sm:hidden">
             <DropdownMenu>
@@ -385,9 +460,11 @@ export function UnifiedCalendar({
                   <AlignJustify className="ml-2 h-4 w-4 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-[200px]">
                 <DropdownMenuItem onClick={() => setViewMode("day")}>Día</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setViewMode("week")}>Semana</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setViewMode("week")} disabled={!isDesktop}>
+                  Semana {!isDesktop && <span className="text-xs text-muted-foreground ml-2">(Solo PC)</span>}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setViewMode("month")}>Mes</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setViewMode("list")}>Lista</DropdownMenuItem>
               </DropdownMenuContent>
@@ -431,7 +508,7 @@ export function UnifiedCalendar({
 
           <Button onClick={onNewAppointment} size="sm" className="h-9 px-4 shadow-sm active:scale-95 transition-transform">
             <Plus className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Nueva Cita</span>
+            <span className="inline sm:inline">Nueva Cita</span>
           </Button>
         </div>
       </div>

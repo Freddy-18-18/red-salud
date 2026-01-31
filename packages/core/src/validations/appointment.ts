@@ -8,6 +8,8 @@ import { isBefore, startOfDay } from "date-fns";
 const baseAppointmentSchema = z.object({
     paciente_id: z.string().min(1, "Debes seleccionar un paciente"),
 
+    consultorio_id: z.string().optional().or(z.literal("")),
+
     fecha: z.string().refine((date) => {
         const today = startOfDay(new Date());
         const selectedDate = startOfDay(new Date(date));
