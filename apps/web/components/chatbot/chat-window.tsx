@@ -112,7 +112,9 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(true);
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const [isAtBottom, setIsAtBottom] = useState(true);
+    const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const scrollBottomRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const pathname = usePathname();
@@ -173,12 +175,19 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
         }
     }, [messages]);
 
-    // Scroll to bottom on new messages
+    // Scroll to bottom only if user was already at bottom or message is from user
     useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollIntoView({ behavior: "smooth" });
+        if (isAtBottom && scrollBottomRef.current) {
+            scrollBottomRef.current.scrollIntoView({ behavior: "smooth" });
         }
-    }, [messages]);
+    }, [messages, isAtBottom]);
+
+    const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+        const target = e.currentTarget;
+        const threshold = 50; // pixels from bottom
+        const atBottom = target.scrollHeight - target.scrollTop - target.clientHeight < threshold;
+        setIsAtBottom(atBottom);
+    }, []);
 
     // Focus input when chat opens
     useEffect(() => {
@@ -243,12 +252,26 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
         setIsLoading(true);
 
         try {
+            // Prepare history for the backend (excluding the last welcome if it's the only one)
+            const chatHistory = messages
+                .filter(m => m.content !== "") // Filter out empty messages if any
+                .map(m => ({
+                    role: m.role === "model" ? "assistant" : "user",
+                    content: m.content
+                }));
+
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    messages: [...messages, { role: "user", content: messageText }],
-                    context: effectiveContext,
+                    message: messageText,
+                    history: chatHistory,
+                    context: {
+                        pageTitle: document.title,
+                        currentUrl: window.location.href,
+                        role: effectiveContext.role,
+                        pageSummary: document.querySelector('meta[name="description"]')?.getAttribute("content") || ""
+                    },
                 }),
             });
 
@@ -258,23 +281,27 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
             if (!reader) throw new Error("No se pudo iniciar el stream");
 
             const modelMessageId = generateId();
+            // Add a placeholder message for the model response
             setMessages((prev) => [...prev, { id: modelMessageId, role: "model", content: "" }]);
 
             const decoder = new TextDecoder();
-            let done = false;
             let accumulatedText = "";
 
-            while (!done) {
-                const { value, done: doneReading } = await reader.read();
-                done = doneReading;
-                const chunkValue = decoder.decode(value, { stream: !done });
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                const chunkValue = decoder.decode(value);
                 accumulatedText += chunkValue;
 
                 setMessages((prev) => {
                     const newMessages = [...prev];
                     const lastMessage = newMessages[newMessages.length - 1];
-                    if (lastMessage.role === "model") {
-                        lastMessage.content = accumulatedText;
+                    if (lastMessage && lastMessage.id === modelMessageId) {
+                        return [
+                            ...newMessages.slice(0, -1),
+                            { ...lastMessage, content: accumulatedText }
+                        ];
                     }
                     return newMessages;
                 });
@@ -286,7 +313,7 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
                 {
                     id: generateId(),
                     role: "model",
-                    content: t("error_message"),
+                    content: t("error_message") || "Lo siento, hubo un error al procesar tu mensaje. Inténtalo de nuevo.",
                 },
             ]);
         } finally {
@@ -354,7 +381,10 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
                     </div>
 
                     {/* Messages */}
-                    <ScrollArea className="flex-1 p-4 bg-muted/20">
+                    <ScrollArea
+                        className="flex-1 p-4 bg-muted/20"
+                        onScroll={handleScroll as any}
+                    >
                         <div className="space-y-4">
                             {messages.map((message) => (
                                 <motion.div
@@ -440,7 +470,7 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
                                                         message.feedback === "negative"
                                                             ? "text-red-600 bg-red-100 dark:bg-red-900/30"
                                                             : message.feedback === "positive"
-                                                                ? "text-muted-foreground/30 cursor-not-allowed"
+                                                                ? "text-muted-foreground/30 <SAME>"
                                                                 : "text-muted-foreground hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
                                                     )}
                                                     title={t("feedback_negative")}
@@ -452,7 +482,19 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
                                     </div>
                                 </motion.div>
                             ))}
-                            <div ref={scrollRef} />
+                            {!isAtBottom && (
+                                <div className="sticky bottom-4 flex justify-center w-full pointer-events-none">
+                                    <Button
+                                        size="xs"
+                                        variant="secondary"
+                                        className="rounded-full shadow-lg pointer-events-auto h-7 text-[10px]"
+                                        onClick={() => scrollBottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                                    >
+                                        Bajar a la respuesta nueva
+                                    </Button>
+                                </div>
+                            )}
+                            <div ref={scrollBottomRef} />
                         </div>
 
                         {/* Suggested questions */}

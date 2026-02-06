@@ -35,6 +35,7 @@ export interface Prescription {
   farmacia_id?: string;
   fecha_surtida?: string;
   notas?: string;
+  folio?: string;
   created_at: string;
   updated_at: string;
   // Datos relacionados
@@ -51,6 +52,14 @@ export interface Prescription {
     avatar_url?: string;
     fecha_nacimiento?: string;
     genero?: string;
+  };
+  offline_patient?: {
+    id: string;
+    nombre_completo: string;
+    numero_documento?: string;
+    telefono?: string;
+    email?: string;
+    fecha_nacimiento?: string;
   };
   medications?: PrescriptionMedication[];
 }
@@ -106,7 +115,8 @@ export interface MedicationIntakeLog {
 
 // Tipos para crear/actualizar
 export interface CreatePrescriptionData {
-  paciente_id: string;
+  paciente_id?: string;
+  offline_patient_id?: string;
   medico_id: string;
   medical_record_id?: string;
   appointment_id?: string;

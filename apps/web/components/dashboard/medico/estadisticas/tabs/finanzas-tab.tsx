@@ -30,10 +30,6 @@ export function FinanzasTab({ doctorId, dateRange }: FinanzasTabProps) {
   const [stats, setStats] = useState<FinanzasStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadFinanzas();
-  }, [loadFinanzas]);
-
   const loadFinanzas = useCallback(async () => {
     try {
       setLoading(true);
@@ -106,6 +102,10 @@ export function FinanzasTab({ doctorId, dateRange }: FinanzasTabProps) {
       setLoading(false);
     }
   }, [doctorId]);
+
+  useEffect(() => {
+    loadFinanzas();
+  }, [loadFinanzas]);
 
   if (loading) {
     return (

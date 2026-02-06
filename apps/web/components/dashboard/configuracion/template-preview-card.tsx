@@ -10,6 +10,7 @@ import {
 } from "@red-salud/ui";
 import { Layout, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import type { PrescriptionFrame, PrescriptionWatermark } from "@/lib/supabase/types/settings";
 
 interface TemplatePreviewCardProps {
@@ -70,10 +71,12 @@ export function TemplatePreviewCard({
                 <div className="flex justify-center">
                     <div className="w-40 h-52 border-2 border-primary/20 rounded-lg overflow-hidden bg-white shadow-lg relative">
                         {selectedFrame && (
-                            <img
+                            <Image
                                 src={selectedFrame.image_url}
                                 alt={selectedFrame.name}
-                                className="w-full h-full object-cover"
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 768px) 100vw, 300px"
                                 style={{
                                     filter: selectedFrame.has_customizable_color
                                         ? `hue-rotate(${hueRotation}deg)`
@@ -83,10 +86,12 @@ export function TemplatePreviewCard({
                         )}
                         {selectedWatermark && (
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <img
+                                <Image
                                     src={selectedWatermark.image_url}
                                     alt={selectedWatermark.name}
-                                    className="object-contain opacity-10 w-1/2 h-1/2"
+                                    fill
+                                    className="object-contain opacity-10"
+                                    sizes="150px"
                                 />
                             </div>
                         )}

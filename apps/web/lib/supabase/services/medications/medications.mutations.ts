@@ -16,7 +16,8 @@ export async function createPrescription(prescriptionData: CreatePrescriptionDat
     const { data: prescription, error: prescriptionError } = await supabase
       .from("prescriptions")
       .insert({
-        paciente_id: prescriptionData.paciente_id,
+        paciente_id: prescriptionData.paciente_id || null,
+        offline_patient_id: prescriptionData.offline_patient_id || null,
         medico_id: prescriptionData.medico_id,
         medical_record_id: prescriptionData.medical_record_id,
         appointment_id: prescriptionData.appointment_id,

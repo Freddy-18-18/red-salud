@@ -30,6 +30,7 @@ export interface MegaMenuItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   description: string;
+  href?: string;
 }
 
 /**
@@ -95,8 +96,33 @@ export const CONFIGURACION_MEGA_MENU: MegaMenuSection[] = [
         icon: Users,
         description: "Equipo",
       },
+      {
+        id: "configuracion-recetas",
+        label: "Recetas",
+        icon: Settings,
+        description: "Diseño y datos",
+        href: "/dashboard/medico/recetas/configuracion"
+      },
     ],
   },
+  /* 
+  // Removed separate Recetas section as per user request
+  {
+    id: "recetas",
+    label: "Recetas",
+    icon: FileText,
+    items: [
+      {
+        id: "configuracion-recetas",
+        label: "Configuración",
+        icon: Settings,
+        description: "Diseño y datos",
+        href: "/dashboard/medico/recetas/configuracion"
+      },
+    ]
+  }, 
+  */
+
   {
     id: "sistema",
     label: "Sistema",

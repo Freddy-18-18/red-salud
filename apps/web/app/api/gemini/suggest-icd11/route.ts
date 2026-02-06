@@ -1,17 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { suggestICD11Codes } from "@/lib/services/gemini-service";
+import { z } from "zod";
+
+const SuggestionSchema = z.object({
+    text: z.string().min(1, "Text field is required"),
+});
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { text } = body;
 
-        if (!text) {
+        // Validar entrada con Zod
+        const validation = SuggestionSchema.safeParse(body);
+
+        if (!validation.success) {
             return NextResponse.json(
-                { success: false, message: "Text field is required in the body" },
+                {
+                    success: false,
+                    message: "Invalid input",
+                    errors: validation.error.errors
+                },
                 { status: 400 }
             );
         }
+
+        const { text } = validation.data;
 
         // Usar Gemini para sugerir códigos basados en el texto clínico
         const suggestions = await suggestICD11Codes(text);

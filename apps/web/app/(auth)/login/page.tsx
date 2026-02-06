@@ -80,7 +80,7 @@ export default function LoginPage() {
             {roles.map((role) => {
               const config = ROLE_CONFIG[role as UserRole];
               const Icon = iconMap[config.icon];
-              const isEnabled = role === 'medico' || role === 'farmacia';
+              const isEnabled = role === USER_ROLES.MEDICO || role === USER_ROLES.FARMACIA || role === USER_ROLES.PACIENTE;
 
               return (
                 <div key={role} className={cn(

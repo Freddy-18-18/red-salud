@@ -19,7 +19,6 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  AlertCircle,
   TrendingUp,
   Calendar,
   Plus,
@@ -52,7 +51,7 @@ export default function MedicamentosPage() {
   }, [router]);
 
   const { prescriptions, loading: prescriptionsLoading } = usePatientPrescriptions(userId || undefined);
-  const { intakeLog, recordIntake, refreshIntakeLog } = useTodayIntakeLog(userId || undefined);
+  const { intakeLog, recordIntake } = useTodayIntakeLog(userId || undefined);
   const { stats } = useAdherenceStats(userId || undefined, 30);
   const { summary } = useActiveMedicationsSummary(userId || undefined);
   const { reminders } = usePatientReminders(userId || undefined);
@@ -190,11 +189,10 @@ export default function MedicamentosPage() {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
-                        log.status === 'tomado' ? 'bg-green-100' :
-                        log.status === 'omitido' ? 'bg-red-100' :
-                        'bg-gray-100'
-                      }`}>
+                      <div className={`h-12 w-12 rounded-full flex items-center justify-center ${log.status === 'tomado' ? 'bg-green-100' :
+                          log.status === 'omitido' ? 'bg-red-100' :
+                            'bg-gray-100'
+                        }`}>
                         {log.status === 'tomado' ? (
                           <CheckCircle2 className="h-6 w-6 text-green-600" />
                         ) : log.status === 'omitido' ? (
@@ -336,8 +334,8 @@ export default function MedicamentosPage() {
                           <Badge
                             variant={
                               prescription.status === 'activa' ? 'default' :
-                              prescription.status === 'surtida' ? 'outline' :
-                              'destructive'
+                                prescription.status === 'surtida' ? 'outline' :
+                                  'destructive'
                             }
                           >
                             {prescription.status}

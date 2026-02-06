@@ -247,17 +247,17 @@ ALTER TABLE doctor_profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Perfiles de médicos son públicos para lectura"
   ON doctor_profiles FOR SELECT
   TO authenticated
-  USING (is_active = true);
+  USING (is_active = true); -- Public as long as active
 
 CREATE POLICY "Médicos pueden actualizar su propio perfil"
   ON doctor_profiles FOR UPDATE
   TO authenticated
-  USING (auth.uid() = id);
+  USING ((select auth.uid()) = id);
 
 CREATE POLICY "Médicos pueden insertar su propio perfil"
   ON doctor_profiles FOR INSERT
   TO authenticated
-  WITH CHECK (auth.uid() = id);
+  WITH CHECK ((select auth.uid()) = id);
 
 -- Reviews: pacientes pueden crear, todos pueden leer
 ALTER TABLE doctor_reviews ENABLE ROW LEVEL SECURITY;
@@ -265,30 +265,27 @@ ALTER TABLE doctor_reviews ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Reseñas son públicas para lectura"
   ON doctor_reviews FOR SELECT
   TO authenticated
-  USING (true);
+  USING (true); -- Public reviews
 
 CREATE POLICY "Pacientes pueden crear reseñas"
   ON doctor_reviews FOR INSERT
   TO authenticated
-  WITH CHECK (auth.uid() = patient_id);
+  WITH CHECK ((select auth.uid()) = patient_id);
 
 CREATE POLICY "Pacientes pueden actualizar sus reseñas"
   ON doctor_reviews FOR UPDATE
   TO authenticated
-  USING (auth.uid() = patient_id);
+  USING ((select auth.uid()) = patient_id);
 
 -- Availability exceptions: solo el médico
 ALTER TABLE doctor_availability_exceptions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Médicos pueden ver sus excepciones"
-  ON doctor_availability_exceptions FOR SELECT
-  TO authenticated
-  USING (auth.uid() = doctor_id);
+  USING ((select auth.uid()) = doctor_id);
 
 CREATE POLICY "Médicos pueden crear excepciones"
   ON doctor_availability_exceptions FOR INSERT
   TO authenticated
-  WITH CHECK (auth.uid() = doctor_id);
+  WITH CHECK ((select auth.uid()) = doctor_id);
 
 CREATE POLICY "Médicos pueden actualizar sus excepciones"
   ON doctor_availability_exceptions FOR UPDATE

@@ -436,7 +436,7 @@ export default function CajaPage() {
                             </p>
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-bold text-green-600">
-                                ${producto.precio_venta.toFixed(2)}
+                                ${producto.precio_venta_usd.toFixed(2)}
                               </span>
                               <span className="text-xs text-muted-foreground">
                                 Stock: {producto.stock_actual}
@@ -495,7 +495,7 @@ export default function CajaPage() {
                               {item.producto.nombre}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              ${item.producto.precio_venta.toFixed(2)} x{" "}
+                              ${item.producto.precio_venta_usd.toFixed(2)} x{" "}
                               {item.cantidad}
                             </p>
                           </div>

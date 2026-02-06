@@ -31,10 +31,6 @@ export function EficienciaTab({ doctorId, dateRange }: EficienciaTabProps) {
   const [stats, setStats] = useState<EficienciaStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadEficiencia();
-  }, [loadEficiencia]);
-
   const loadEficiencia = useCallback(async () => {
     try {
       setLoading(true);
@@ -92,6 +88,10 @@ export function EficienciaTab({ doctorId, dateRange }: EficienciaTabProps) {
       setLoading(false);
     }
   }, [doctorId, dateRange]);
+
+  useEffect(() => {
+    loadEficiencia();
+  }, [loadEficiencia]);
 
   if (loading) {
     return (

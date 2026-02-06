@@ -36,12 +36,16 @@ export function useCurrentOffice() {
             if (!user) return;
 
             // Actualizar en base de datos
-            await supabase
+            const { error: upsertError } = await supabase
                 .from("doctor_preferences")
                 .upsert({
                     doctor_id: user.id,
                     current_office_id: officeId,
+                }, {
+                    onConflict: 'doctor_id'
                 });
+
+            if (upsertError) throw upsertError;
 
             // Actualizar estado local
             const office = allOffices.find(o => o.id === officeId);
@@ -69,7 +73,10 @@ export function useCurrentOffice() {
                 .eq("activo", true)
                 .order("es_principal", { ascending: false });
 
-            if (officesError) throw officesError;
+            if (officesError) {
+                console.error("Error fetching offices:", officesError);
+                throw officesError;
+            }
 
             setAllOffices(offices || []);
 
@@ -79,11 +86,15 @@ export function useCurrentOffice() {
             }
 
             // Intentar cargar preferencia guardada
-            const { data: preference } = await supabase
+            const { data: preference, error: prefError } = await supabase
                 .from("doctor_preferences")
                 .select("current_office_id")
                 .eq("doctor_id", user.id)
-                .single();
+                .maybeSingle();
+
+            if (prefError) {
+                console.warn("Error fetching preference:", prefError);
+            }
 
             // Si hay preferencia, buscar ese consultorio
             if (preference?.current_office_id) {
@@ -105,6 +116,13 @@ export function useCurrentOffice() {
 
         } catch (error) {
             console.error("[useCurrentOffice] Error:", error);
+            if (typeof error === 'object' && error !== null) {
+                try {
+                    console.error("Error details:", JSON.stringify(error, null, 2));
+                } catch (e) {
+                    // Ignore circular reference errors
+                }
+            }
         } finally {
             setLoading(false);
         }

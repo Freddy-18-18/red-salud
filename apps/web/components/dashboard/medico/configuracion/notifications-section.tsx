@@ -43,10 +43,6 @@ export function NotificationsSection() {
     recordatorio_1h: true,
   });
 
-  useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
-
   const loadSettings = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -69,6 +65,10 @@ export function NotificationsSection() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   const handleSave = async () => {
     setSaving(true);

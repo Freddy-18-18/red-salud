@@ -1,5 +1,7 @@
 import { supabase } from "../client";
 import { logActivity } from "./activity-service";
+import { PostgrestError } from "@supabase/supabase-js";
+import { UUID } from "crypto"; // Optional, purely for type correctness if used
 
 export interface PatientProfile {
   // Datos básicos del perfil
@@ -14,7 +16,7 @@ export interface PatientProfile {
   estado?: string;
   codigo_postal?: string;
   avatar_url?: string;
-  
+
   // Campos CNE
   cne_estado?: string;
   cne_municipio?: string;
@@ -26,14 +28,14 @@ export interface PatientProfile {
   segundo_nombre?: string;
   primer_apellido?: string;
   segundo_apellido?: string;
-  
+
   // Verificación
   cedula_verificada?: boolean;
   cedula_photo_verified?: boolean;
   cedula_photo_verified_at?: string;
   didit_request_id?: string;
   profile_locked?: boolean;
-  
+
   // Información médica (de patient_details)
   grupo_sanguineo?: string;
   alergias?: string[];
@@ -108,10 +110,10 @@ export async function getPatientProfile(
 export async function updateBasicProfile(
   userId: string,
   data: Partial<PatientProfile>
-) {
+): Promise<{ success: boolean; error?: PostgrestError | Error }> {
   try {
     // Preparar datos para actualizar
-    const updateData: any = {
+    const updateData: Partial<PatientProfile> & { updated_at: string;[key: string]: any } = {
       updated_at: new Date().toISOString(),
     };
 
@@ -124,7 +126,7 @@ export async function updateBasicProfile(
     if (data.ciudad !== undefined) updateData.ciudad = data.ciudad;
     if (data.estado !== undefined) updateData.estado = data.estado;
     if (data.codigo_postal !== undefined) updateData.codigo_postal = data.codigo_postal;
-    
+
     // Campos CNE
     if (data.cne_estado !== undefined) updateData.cne_estado = data.cne_estado;
     if (data.cne_municipio !== undefined) updateData.cne_municipio = data.cne_municipio;
@@ -136,7 +138,7 @@ export async function updateBasicProfile(
     if (data.segundo_nombre !== undefined) updateData.segundo_nombre = data.segundo_nombre;
     if (data.primer_apellido !== undefined) updateData.primer_apellido = data.primer_apellido;
     if (data.segundo_apellido !== undefined) updateData.segundo_apellido = data.segundo_apellido;
-    
+
     // Verificación
     if (data.cedula_verificada !== undefined) updateData.cedula_verificada = data.cedula_verificada;
     if (data.cedula_photo_verified !== undefined) updateData.cedula_photo_verified = data.cedula_photo_verified;
@@ -156,14 +158,14 @@ export async function updateBasicProfile(
     return { success: true };
   } catch (error) {
     console.error("Error updating basic profile:", error);
-    return { success: false, error };
+    return { success: false, error: error as Error };
   }
 }
 
 export async function updateMedicalInfo(
   userId: string,
   data: Partial<PatientProfile>
-) {
+): Promise<{ success: boolean; error?: PostgrestError | Error }> {
   try {
     // Preparar datos médicos
     const medicalData: any = {
@@ -199,7 +201,7 @@ export async function updateMedicalInfo(
     return { success: true };
   } catch (error) {
     console.error("Error updating medical info:", error);
-    return { success: false, error };
+    return { success: false, error: error as Error };
   }
 }
 

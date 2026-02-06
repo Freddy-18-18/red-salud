@@ -17,6 +17,7 @@ import {
   Menu,
   Stethoscope
 } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 import { Button } from "@red-salud/ui";
 import { AUTH_ROUTES } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
@@ -57,19 +58,61 @@ export function HeroSection() {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics>(defaultMetrics);
   const [loading, setLoading] = useState(true);
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [currentDoctorIndex, setCurrentDoctorIndex] = useState(0);
   const { scrollYProgress } = useScroll();
   const yRange = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
   useEffect(() => {
-    async function loadMetrics() {
+    async function loadInitialData() {
+      try {
+        const [metricsData, doctorsRes] = await Promise.all([
+          getDashboardMetrics(),
+          fetch('/api/public/doctors?featured=true&limit=10').then(res => res.json())
+        ]);
+
+        if (metricsData) setMetrics(metricsData);
+        if (doctorsRes.success && doctorsRes.data?.length > 0) {
+          setDoctors(doctorsRes.data);
+        }
+      } catch (error) {
+        console.error("Error loading hero data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadInitialData();
+
+    // Refrescar métricas cada 30s
+    const metricsInterval = setInterval(async () => {
       const data = await getDashboardMetrics();
       if (data) setMetrics(data);
-      setLoading(false);
-    }
-    loadMetrics();
-    const interval = setInterval(loadMetrics, 30000);
-    return () => clearInterval(interval);
+    }, 30000);
+
+    return () => clearInterval(metricsInterval);
   }, []);
+
+  // Intervalo para rotación de doctores
+  useEffect(() => {
+    if (doctors.length <= 1) return;
+
+    const rotationInterval = setInterval(() => {
+      setCurrentDoctorIndex((prev) => (prev + 1) % doctors.length);
+    }, 5000);
+
+    return () => clearInterval(rotationInterval);
+  }, [doctors.length]);
+
+  const currentDoctor = doctors.length > 0 ? doctors[currentDoctorIndex] : null;
+
+  // Intentar obtener el nombre completo de varias fuentes comunes
+  const rawName = currentDoctor?.profile?.nombre_completo ||
+    currentDoctor?.nombre_completo ||
+    currentDoctor?.profiles?.nombre_completo ||
+    null;
+
+  const doctorName = rawName ? `Dr. ${rawName}` : "Dr. Roberto G.";
+  const doctorSpecialty = currentDoctor?.especialidad?.name || currentDoctor?.specialty?.name || "Cardiología";
 
   return (
     <section className="relative min-h-[90vh] lg:min-h-screen flex items-center pt-20 overflow-hidden bg-gradient-to-br from-blue-50/90 via-teal-50/60 to-slate-50 dark:from-background dark:via-background/95 dark:to-background">
@@ -222,13 +265,24 @@ export function HeroSection() {
                           <Calendar className="h-32 w-32" />
                         </div>
                         <div className="space-y-4 relative z-10">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <div className="text-blue-100 text-xs font-medium mb-1">Mañana, 09:30 AM</div>
-                              <div className="text-lg font-bold">Dr. Roberto G.</div>
-                              <div className="text-blue-100 text-xs">Cardiología</div>
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="relative h-14 flex-1">
+                              <AnimatePresence mode="wait">
+                                <motion.div
+                                  key={currentDoctorIndex}
+                                  initial={{ opacity: 0, x: 20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: -20 }}
+                                  transition={{ duration: 0.4 }}
+                                  className="absolute inset-0"
+                                >
+                                  <div className="text-blue-100 text-xs font-medium mb-1">Mañana, 09:30 AM</div>
+                                  <div className="text-lg font-bold truncate">{doctorName}</div>
+                                  <div className="text-blue-100 text-xs">{doctorSpecialty}</div>
+                                </motion.div>
+                              </AnimatePresence>
                             </div>
-                            <div className="h-10 w-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                            <div className="h-10 w-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shrink-0">
                               <Stethoscope className="h-5 w-5 text-white" />
                             </div>
                           </div>

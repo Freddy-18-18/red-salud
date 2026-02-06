@@ -13,7 +13,7 @@ import {
     ShieldCheck
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { getDoctors, type DoctorProfile } from '../../services/supabase.queries';
 import { toast } from 'sonner';
 
 interface Profile {
@@ -28,7 +28,7 @@ interface Profile {
 
 const DoctorsPage: React.FC = () => {
     const navigate = useNavigate();
-    const [users, setUsers] = useState<Profile[]>([]);
+    const [users, setUsers] = useState<DoctorProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const premiumEasing: any = [0.16, 1, 0.3, 1];
@@ -40,16 +40,15 @@ const DoctorsPage: React.FC = () => {
     const fetchDoctors = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('role', 'medico')
-                .order('created_at', { ascending: false });
+            const data = await getDoctors();
+            console.log('[DoctorsPage] Doctors received:', data.length);
+            setUsers(data);
 
-            if (error) throw error;
-            setUsers(data || []);
+            if (data.length === 0) {
+                console.warn('[DoctorsPage] No doctors found in database');
+            }
         } catch (error) {
-            console.error('Error fetching doctors:', error);
+            console.error('[DoctorsPage] Error fetching doctors:', error);
             toast.error('Error al cargar el escuadrón médico');
         } finally {
             setLoading(false);
@@ -72,7 +71,7 @@ const DoctorsPage: React.FC = () => {
                     className="space-y-4"
                 >
                     <button
-                        onClick={() => navigate('/dashboard/roles')}
+                        onClick={() => navigate('/roles')}
                         className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-blue-500 transition-colors group mb-6"
                     >
                         <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />

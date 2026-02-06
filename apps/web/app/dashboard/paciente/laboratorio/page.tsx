@@ -15,13 +15,11 @@ import {
 } from "@red-salud/ui";
 import {
   FlaskConical,
-  Calendar,
   FileText,
   Download,
   AlertCircle,
   CheckCircle2,
   Clock,
-  TrendingUp,
   Filter,
   Loader2,
 } from "lucide-react";

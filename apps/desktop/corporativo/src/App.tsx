@@ -15,6 +15,8 @@ import PharmacyHubPage from './pages/roles/PharmacyHub';
 import PatientsPage from './pages/roles/Patients';
 import DoctorsPage from './pages/roles/Doctors';
 import RolePlaceholderPage from './pages/roles/RolePlaceholder';
+import AcademyPage from './pages/Academy';
+import SupportPage from './pages/Support';
 
 import { supabase } from './lib/supabase';
 
@@ -67,6 +69,8 @@ const App: React.FC = () => {
                 </Route>
                 <Route path="/" element={isInitialized === false ? <Navigate to="/security-setup" replace /> : <DashboardLayout />}>
                     <Route path="users" element={<UsersPage />} />
+                    <Route path="academy" element={<AcademyPage />} />
+                    <Route path="soporte" element={<SupportPage />} />
                     <Route path="roles" element={<RolesHubPage />} />
                     <Route path="roles/paciente" element={<PatientsPage />} />
                     <Route path="roles/medico" element={<DoctorsPage />} />

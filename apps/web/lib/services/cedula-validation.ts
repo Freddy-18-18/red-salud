@@ -45,6 +45,13 @@ export async function validateCedulaWithCNE(cedula: string, nacionalidad: string
 
     // Error de la API (por ejemplo, token inválido o expirado)
     const errorData = await response.json().catch(() => ({}));
+
+    // RECORD_NOT_FOUND is expected when cedula doesn't exist in CNE
+    if (errorData.error === 'RECORD_NOT_FOUND') {
+      return { found: false };
+    }
+
+    // Other errors are actual problems
     console.error('Error in cedula validation:', errorData.error || response.statusText);
 
     return { found: false };

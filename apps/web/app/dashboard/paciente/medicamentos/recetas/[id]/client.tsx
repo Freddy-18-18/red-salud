@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { differenceInYears } from "date-fns";
 import { supabase } from "@/lib/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Separator } from "@red-salud/ui";
 import { usePrescription } from "@/hooks/use-medications";
 import {
   ArrowLeft,
@@ -416,34 +413,35 @@ export default function DetalleRecetaPage() {
       {/* Hidden PDF Container for Capture */}
       <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
         {prescription && doctorSettings && userId && (
-          <PrescriptionPDF
-            id="prescription-pdf-content"
-            recipe={{
-              created_at: prescription.fecha_prescripcion,
-              medicamentos: prescription.medications?.map(m => ({
-                nombre_comercial: m.nombre_medicamento,
-                nombre_generico: m.medication?.nombre_generico,
-                dosis: m.dosis,
-                presentacion: m.medication?.presentacion ?? undefined, // Handle null/undefined
-                frecuencia: m.frecuencia,
-                duracion: m.duracion_dias ? `${m.duracion_dias} días` : undefined,
-                indicaciones: m.instrucciones_especiales || undefined
-              })) || [],
-              folio: "RX-" + (prescription.id.slice(0, 8).toUpperCase()), // Placeholder folio if not present
-              diagnostico: prescription.diagnostico
-            }}
-            settings={doctorSettings}
-            patient={{
-              nombre_completo: prescription.paciente?.nombre_completo || "Paciente",
-              edad: prescription.paciente?.fecha_nacimiento
-                ? differenceInYears(new Date(), new Date(prescription.paciente.fecha_nacimiento)).toString()
-                : "--",
-              peso: "--",
-              sexo: prescription.paciente?.genero
-                ? (prescription.paciente.genero === 'masculino' ? 'M' : prescription.paciente.genero === 'femenino' ? 'F' : prescription.paciente.genero.charAt(0).toUpperCase())
-                : "--"
-            }}
-          />
+          <div id="prescription-pdf-content">
+            <PrescriptionPDF
+              recipe={{
+                created_at: prescription.fecha_prescripcion,
+                medicamentos: prescription.medications?.map(m => ({
+                  nombre_comercial: m.nombre_medicamento,
+                  nombre_generico: m.medication?.nombre_generico,
+                  dosis: m.dosis,
+                  presentacion: m.medication?.forma_farmaceutica ?? undefined, // Handle null/undefined
+                  frecuencia: m.frecuencia,
+                  duracion: m.duracion_dias ? `${m.duracion_dias} días` : undefined,
+                  indicaciones: m.instrucciones_especiales || undefined
+                })) || [],
+                folio: "RX-" + (prescription.id.slice(0, 8).toUpperCase()), // Placeholder folio if not present
+                diagnostico: prescription.diagnostico
+              }}
+              settings={doctorSettings}
+              patient={{
+                nombre_completo: prescription.paciente?.nombre_completo || "Paciente",
+                edad: prescription.paciente?.fecha_nacimiento
+                  ? differenceInYears(new Date(), new Date(prescription.paciente.fecha_nacimiento)).toString()
+                  : "--",
+                peso: "--",
+                sexo: prescription.paciente?.genero
+                  ? (prescription.paciente.genero === 'masculino' ? 'M' : prescription.paciente.genero === 'femenino' ? 'F' : prescription.paciente.genero.charAt(0).toUpperCase())
+                  : "--"
+              }}
+            />
+          </div>
         )}
       </div>
     </div>

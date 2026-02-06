@@ -28,10 +28,6 @@ export function BrotesTab({ doctorId, dateRange }: BrotesTabProps) {
   const [brotes, setBrotes] = useState<BroteDetectado[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    detectarBrotes();
-  }, [detectarBrotes]);
-
   const detectarBrotes = useCallback(async () => {
     try {
       setLoading(true);
@@ -113,6 +109,10 @@ export function BrotesTab({ doctorId, dateRange }: BrotesTabProps) {
       setLoading(false);
     }
   }, [doctorId, dateRange]);
+
+  useEffect(() => {
+    detectarBrotes();
+  }, [detectarBrotes]);
 
   if (loading) {
     return (

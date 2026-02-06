@@ -43,47 +43,95 @@ export interface UpdateDoctorRecipeSettingsData {
     };
 }
 
-export async function getDoctorRecipeSettings(doctorId: string) {
-    const { data, error } = await supabase
+export async function getDoctorRecipeSettings(doctorId: string, officeId?: string | null) {
+    let query = supabase
         .from("doctor_recipe_settings")
         .select("*")
-        .eq("doctor_id", doctorId)
-        .single();
+        .eq("doctor_id", doctorId);
 
-    if (error && error.code !== "PGRST116") { // 116 is no rows returned
+    if (officeId) {
+        query = query.eq("office_id", officeId);
+    } else {
+        query = query.is("office_id", null);
+    }
+
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
         console.error("Error fetching recipe settings:", error.message, error);
         return { success: false, error };
     }
 
-    // If no settings exist, create default ones
+    // If no settings exist for this specific context, return null (UI will handle fallback/creation)
     if (!data) {
-        const { data: newData, error: createError } = await supabase
-            .from("doctor_recipe_settings")
-            .insert({
-                doctor_id: doctorId,
-                watermark_config: { enabled: false, opacity: 10, text: "" },
-                frame_color: '#0da9f7'
-            })
-            .select()
-            .single();
+        // If requesting specific office but none exists, try to fetch global settings to use as base
+        if (officeId) {
+            const { data: globalData } = await supabase
+                .from("doctor_recipe_settings")
+                .select("*")
+                .eq("doctor_id", doctorId)
+                .is("office_id", null)
+                .single();
 
-        if (createError) {
-            console.error("Error creating default recipe settings:", createError.message, createError);
-            return { success: false, error: createError };
+            if (globalData) {
+                return { success: true, data: { ...globalData, id: undefined, office_id: officeId } as DoctorRecipeSettings, isFallback: true };
+            }
         }
-        return { success: true, data: newData as DoctorRecipeSettings };
+
+        // Return default structure if nothing exists
+        return {
+            success: true,
+            data: {
+                doctor_id: doctorId,
+                office_id: officeId || null,
+                watermark_config: { enabled: false, opacity: 10, text: "" },
+                frame_color: '#0da9f7',
+                use_digital_signature: false,
+                use_logo: false
+            } as Partial<DoctorRecipeSettings>,
+            isNew: true
+        };
     }
 
     return { success: true, data: data as DoctorRecipeSettings };
 }
 
-export async function updateDoctorRecipeSettings(doctorId: string, updates: UpdateDoctorRecipeSettingsData) {
-    const { data, error } = await supabase
+export async function updateDoctorRecipeSettings(doctorId: string, updates: UpdateDoctorRecipeSettingsData, officeId?: string | null) {
+    // Check if record exists first
+    let query = supabase
         .from("doctor_recipe_settings")
-        .update(updates)
-        .eq("doctor_id", doctorId)
-        .select()
-        .single();
+        .select("id")
+        .eq("doctor_id", doctorId);
+
+    if (officeId) {
+        query = query.eq("office_id", officeId);
+    } else {
+        query = query.is("office_id", null);
+    }
+
+    const { data: existing } = await query.maybeSingle();
+
+    let result;
+    if (existing) {
+        result = await supabase
+            .from("doctor_recipe_settings")
+            .update(updates)
+            .eq("id", existing.id)
+            .select()
+            .single();
+    } else {
+        result = await supabase
+            .from("doctor_recipe_settings")
+            .insert({
+                ...updates,
+                doctor_id: doctorId,
+                office_id: officeId || null
+            })
+            .select()
+            .single();
+    }
+
+    const { data, error } = result;
 
     if (error) {
         console.error("Error updating recipe settings:", error.message, error);

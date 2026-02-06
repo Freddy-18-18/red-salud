@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-    LineChart,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -9,298 +7,484 @@ import {
     ResponsiveContainer,
     AreaChart,
     Area,
-    BarChart,
-    Bar,
+    PieChart,
+    Pie,
     Cell
 } from 'recharts';
 import {
     TrendingUp,
+    TrendingDown,
     Users,
     Building2,
     Stethoscope,
-    Calendar,
     ArrowUpRight,
     ArrowDownRight,
-    Filter,
-    RefreshCw
+    RefreshCw,
+    Download,
+    CheckCircle2,
+    AlertCircle,
+    Briefcase,
+    Activity
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import {
+    getCorporateKPIs,
+    getGrowthHistory,
+    getRoleDistribution,
+    getRegistrationComparison,
+    getPharmacyNetworkStats,
+    exportToCSV,
+    type CorporateKPIs,
+    type GrowthDataPoint,
+    type RoleDistribution,
+    type DateRange
+} from '@/services/analytics.service';
 
-const COLORS = ['#3b82f6', '#6366f1', '#10b981', '#f59e0b'];
+// ============================================
+// METRIC CARD COMPONENT
+// ============================================
 
-const MetricOverview = ({ label, value, trend, trendValue, icon: Icon, loading }: any) => (
-    <div className="bg-slate-900/20 border border-white/[0.03] p-6 rounded-[2rem] backdrop-blur-sm relative overflow-hidden">
-        {loading && (
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center z-10">
-                <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />
-            </div>
-        )}
+interface MetricCardProps {
+    label: string;
+    value: string | number;
+    trend?: 'up' | 'down' | 'stable';
+    trendValue?: string;
+    icon: React.ElementType;
+    loading?: boolean;
+}
+
+const MetricCard: React.FC<MetricCardProps> = ({
+    label,
+    value,
+    trend,
+    trendValue,
+    icon: Icon,
+    loading
+}) => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="stat-card group"
+    >
         <div className="flex items-start justify-between mb-4">
-            <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500">
-                <Icon className="h-5 w-5" />
+            <div className="p-2.5 rounded-xl bg-[#0071e3]/10 text-[#0071e3] group-hover:bg-[#0071e3]/15 transition-colors">
+                <Icon className="h-5 w-5" strokeWidth={1.5} />
             </div>
-            <div className={`flex items-center gap-1 text-[10px] font-black ${trend === 'up' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                {trend === 'up' ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                {trendValue}
-            </div>
+            {trend && trendValue && (
+                <span className={`text-xs font-medium flex items-center gap-1 ${trend === 'up' ? 'text-[#30d158]' :
+                        trend === 'down' ? 'text-[#ff453a]' :
+                            'text-[#86868b]'
+                    }`}>
+                    {trend === 'up' ? <ArrowUpRight className="h-3 w-3" /> :
+                        trend === 'down' ? <ArrowDownRight className="h-3 w-3" /> : null}
+                    {trendValue}
+                </span>
+            )}
         </div>
-        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">{label}</p>
-        <h3 className="text-2xl font-bold text-white tracking-tight">{value}</h3>
-    </div>
+
+        <p className="text-overline mb-1">{label}</p>
+        {loading ? (
+            <div className="h-8 w-16 bg-white/5 rounded-lg animate-pulse" />
+        ) : (
+            <p className="text-2xl font-semibold text-white">{value}</p>
+        )}
+    </motion.div>
 );
 
+// ============================================
+// PERIOD SELECTOR
+// ============================================
+
+interface PeriodSelectorProps {
+    selected: DateRange;
+    onChange: (range: DateRange) => void;
+}
+
+const PeriodSelector: React.FC<PeriodSelectorProps> = ({ selected, onChange }) => {
+    const options: { value: DateRange; label: string }[] = [
+        { value: '7d', label: '7D' },
+        { value: '30d', label: '30D' },
+        { value: '90d', label: '90D' },
+        { value: '6m', label: '6M' }
+    ];
+
+    return (
+        <div className="flex bg-white/[0.04] p-1 rounded-xl">
+            {options.map(opt => (
+                <button
+                    key={opt.value}
+                    onClick={() => onChange(opt.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selected === opt.value
+                            ? 'bg-[#0071e3] text-white'
+                            : 'text-[#86868b] hover:text-white'
+                        }`}
+                >
+                    {opt.label}
+                </button>
+            ))}
+        </div>
+    );
+};
+
+// ============================================
+// MAIN PAGE
+// ============================================
+
 const MetricsPage: React.FC = () => {
-    const [activeTab, setActiveTab] = useState('growth');
     const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState({
-        medicos: 0,
-        farmacias: 0,
-        pacientes: 0,
-        consultas: 0,
-        growth: 0
-    });
-    const [chartData, setChartData] = useState<any[]>([]);
+    const [period, setPeriod] = useState<DateRange>('30d');
+    const [kpis, setKpis] = useState<CorporateKPIs | null>(null);
+    const [growthData, setGrowthData] = useState<GrowthDataPoint[]>([]);
+    const [roleDistribution, setRoleDistribution] = useState<RoleDistribution[]>([]);
+    const [comparison, setComparison] = useState<{ current: number; previous: number; change: number; changePercent: number } | null>(null);
+    const [pharmacyStats, setPharmacyStats] = useState<any>(null);
 
-    useEffect(() => {
-        fetchStats();
-    }, []);
-
-    const fetchStats = async () => {
+    const fetchAllData = useCallback(async () => {
         setLoading(true);
         try {
-            // Fetch total counts
-            const [medicosRes, farmaciasRes, pacientesRes, consultasRes] = await Promise.all([
-                supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'medico'),
-                supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'farmacia'),
-                supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'paciente'),
-                supabase.from('support_tickets').select('*', { count: 'exact', head: true })
+            const [kpisData, growthHistory, roles, comparisonData, pharmaStats] = await Promise.all([
+                getCorporateKPIs(),
+                getGrowthHistory(6),
+                getRoleDistribution(),
+                getRegistrationComparison(period),
+                getPharmacyNetworkStats()
             ]);
 
-            const newStats = {
-                medicos: medicosRes.count || 0,
-                farmacias: farmaciasRes.count || 0,
-                pacientes: pacientesRes.count || 0,
-                consultas: consultasRes.count || 0,
-                growth: 12.5 // This could be calculated from history
-            };
-
-            setStats(newStats);
-
-            // Mock historical data generation based on real counts for the charts
-            // In a production app, this would be an aggregate query
-            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
-            const factor = newStats.medicos / 6;
-            const history = months.map((month, i) => ({
-                name: month,
-                medicos: Math.floor(factor * (i + 1)),
-                farmacias: Math.floor((newStats.farmacias / 6) * (i + 1)),
-                consultas: Math.floor((newStats.consultas / 6) * (i + 1))
-            }));
-            setChartData(history);
-
+            setKpis(kpisData);
+            setGrowthData(growthHistory);
+            setRoleDistribution(roles);
+            setComparison(comparisonData);
+            setPharmacyStats(pharmaStats);
         } catch (error) {
-            console.error('Error fetching stats:', error);
-            toast.error('Error al actualizar métricas');
+            console.error('[MetricsPage] Error:', error);
+            toast.error('Error al cargar métricas');
         } finally {
             setLoading(false);
+        }
+    }, [period]);
+
+    useEffect(() => {
+        fetchAllData();
+    }, [fetchAllData]);
+
+    const handleExport = () => {
+        if (growthData.length > 0) {
+            exportToCSV(growthData, 'growth_metrics');
+            toast.success('Datos exportados');
         }
     };
 
     return (
-        <div className="space-y-8 max-w-7xl mx-auto pb-20">
+        <div className="space-y-8 max-w-[1600px] mx-auto pb-16">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-4xl font-black text-white tracking-tighter mb-2">Inteligencia de Negocios</h1>
-                    <p className="text-slate-500 font-medium text-sm text-balance max-w-md">
-                        Métricas avanzadas y proyecciones de crecimiento de la red Red-Salud.
+            <motion.header
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col md:flex-row md:items-end justify-between gap-6"
+            >
+                <div className="space-y-2">
+                    <p className="text-overline">Analytics</p>
+                    <h1 className="text-display text-white">Métricas</h1>
+                    <p className="text-body text-[#86868b] max-w-lg">
+                        Análisis en tiempo real del crecimiento de la red Red-Salud.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={fetchStats}
-                        className="p-3 bg-slate-900/40 border border-white/[0.03] rounded-2xl text-slate-500 hover:text-blue-500 transition-all font-black uppercase tracking-widest text-[10px] flex items-center gap-3"
-                    >
-                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                        Sincronizar
-                    </button>
-                    <div className="flex bg-slate-900/40 p-1 rounded-2xl border border-white/[0.03] backdrop-blur-sm">
-                        <button
-                            onClick={() => setActiveTab('growth')}
-                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'growth' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            Crecimiento
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('usage')}
-                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'usage' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            Uso de Red
-                        </button>
-                    </div>
-                </div>
-            </div>
+                <div className="flex items-center gap-3">
+                    <PeriodSelector selected={period} onChange={setPeriod} />
 
-            {/* Top Metrics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricOverview
-                    label="Tasa de Crecimiento"
-                    value={`${stats.growth}%`}
-                    trend="up"
-                    trendValue="+2.1%"
+                    <button
+                        onClick={handleExport}
+                        className="apple-button-secondary h-10 w-10 !p-0 rounded-xl flex items-center justify-center"
+                        title="Exportar CSV"
+                    >
+                        <Download className="h-4 w-4" strokeWidth={1.5} />
+                    </button>
+
+                    <button
+                        onClick={fetchAllData}
+                        disabled={loading}
+                        className="apple-button h-10 w-10 !p-0 rounded-xl flex items-center justify-center"
+                    >
+                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} strokeWidth={1.5} />
+                    </button>
+                </div>
+            </motion.header>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <MetricCard
+                    label="Crecimiento"
+                    value={`${kpis?.growthRate || 0}%`}
+                    trend={kpis?.growthTrend}
+                    trendValue="vs mes anterior"
                     icon={TrendingUp}
                     loading={loading}
                 />
-                <MetricOverview
-                    label="Médicos Registrados"
-                    value={stats.medicos.toLocaleString()}
+                <MetricCard
+                    label="Médicos"
+                    value={kpis?.doctors?.toLocaleString() || '0'}
                     trend="up"
-                    trendValue={`+${Math.floor(stats.medicos * 0.05)}`}
                     icon={Stethoscope}
                     loading={loading}
                 />
-                <MetricOverview
-                    label="Farmacias Activas"
-                    value={stats.farmacias.toLocaleString()}
+                <MetricCard
+                    label="Farmacias"
+                    value={kpis?.pharmacies?.toLocaleString() || '0'}
                     trend="up"
-                    trendValue={`+${Math.floor(stats.farmacias * 0.03)}`}
+                    trendValue={`${pharmacyStats?.verificationRate || 0}% verif.`}
                     icon={Building2}
                     loading={loading}
                 />
-                <MetricOverview
-                    label="Tickets / Soporte"
-                    value={stats.consultas.toLocaleString()}
-                    trend="up"
-                    trendValue="+12"
-                    icon={Calendar}
+                <MetricCard
+                    label="Pacientes"
+                    value={kpis?.patients?.toLocaleString() || '0'}
+                    icon={Users}
+                    loading={loading}
+                />
+                <MetricCard
+                    label="Tickets"
+                    value={kpis?.pendingTickets || 0}
+                    trend={kpis?.pendingTickets ? 'down' : 'stable'}
+                    trendValue={kpis?.pendingTickets ? 'pendientes' : 'ok'}
+                    icon={kpis?.pendingTickets ? AlertCircle : CheckCircle2}
+                    loading={loading}
+                />
+                <MetricCard
+                    label="Equipo"
+                    value={kpis?.corporateUsers || 0}
+                    icon={Briefcase}
                     loading={loading}
                 />
             </div>
 
             {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Main Growth Chart */}
-                <div className="bg-slate-900/20 border border-white/[0.03] p-8 rounded-[2.5rem] backdrop-blur-sm">
-                    <div className="flex items-center justify-between mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Growth Chart */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="lg:col-span-2 apple-card p-6"
+                >
+                    <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h3 className="text-lg font-bold text-white uppercase tracking-tight">Crecimiento Mensual</h3>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Evolución de Médicos vs Farmacias</p>
+                            <h3 className="text-title text-white">Crecimiento de la Red</h3>
+                            <p className="text-caption mt-1">Últimos 6 meses</p>
                         </div>
-                        <Filter className="h-4 w-4 text-slate-600 hover:text-blue-500 cursor-pointer transition-colors" />
+                        <Activity className="h-5 w-5 text-[#0071e3]" strokeWidth={1.5} />
                     </div>
 
-                    <div className="h-[350px] w-full">
+                    <div className="h-[280px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData}>
+                            <AreaChart data={growthData}>
                                 <defs>
-                                    <linearGradient id="colorMed" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                    <linearGradient id="gradDoctors" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#0071e3" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#0071e3" stopOpacity={0} />
                                     </linearGradient>
-                                    <linearGradient id="colorFar" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                    <linearGradient id="gradPharmacies" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#5e5ce6" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#5e5ce6" stopOpacity={0} />
+                                    </linearGradient>
+                                    <linearGradient id="gradPatients" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#30d158" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#30d158" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" vertical={false} />
                                 <XAxis
-                                    dataKey="name"
-                                    stroke="#475569"
-                                    fontSize={10}
+                                    dataKey="month"
+                                    stroke="#6e6e73"
+                                    fontSize={11}
                                     tickLine={false}
                                     axisLine={false}
-                                    dy={10}
                                 />
                                 <YAxis
-                                    stroke="#475569"
-                                    fontSize={10}
+                                    stroke="#6e6e73"
+                                    fontSize={11}
                                     tickLine={false}
                                     axisLine={false}
-                                    width={30}
+                                    width={35}
                                 />
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: '#0f172a',
-                                        borderRadius: '16px',
-                                        border: '1px solid #ffffff05',
-                                        fontSize: '11px',
-                                        color: '#fff'
+                                        backgroundColor: '#1c1c1e',
+                                        borderRadius: '12px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        fontSize: '12px',
+                                        color: '#f5f5f7'
                                     }}
                                 />
-                                <Area type="monotone" dataKey="medicos" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorMed)" />
-                                <Area type="monotone" dataKey="farmacias" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorFar)" />
+                                <Area type="monotone" dataKey="doctors" name="Médicos" stroke="#0071e3" strokeWidth={2} fillOpacity={1} fill="url(#gradDoctors)" />
+                                <Area type="monotone" dataKey="pharmacies" name="Farmacias" stroke="#5e5ce6" strokeWidth={2} fillOpacity={1} fill="url(#gradPharmacies)" />
+                                <Area type="monotone" dataKey="patients" name="Pacientes" stroke="#30d158" strokeWidth={2} fillOpacity={1} fill="url(#gradPatients)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
-                </div>
 
-                {/* Consultation Volume Chart */}
-                <div className="bg-slate-900/20 border border-white/[0.03] p-8 rounded-[2.5rem] backdrop-blur-sm">
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 className="text-lg font-bold text-white uppercase tracking-tight">Volumen de Actividad</h3>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Interacciones procesadas en la red</p>
+                    {/* Legend */}
+                    <div className="flex items-center justify-center gap-6 mt-4">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#0071e3]" />
+                            <span className="text-xs text-[#86868b]">Médicos</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#5e5ce6]" />
+                            <span className="text-xs text-[#86868b]">Farmacias</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#30d158]" />
+                            <span className="text-xs text-[#86868b]">Pacientes</span>
                         </div>
                     </div>
+                </motion.div>
 
-                    <div className="h-[350px] w-full">
+                {/* Role Distribution */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="apple-card p-6"
+                >
+                    <div className="mb-6">
+                        <h3 className="text-title text-white">Distribución</h3>
+                        <p className="text-caption mt-1">Por tipo de usuario</p>
+                    </div>
+
+                    <div className="h-[180px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                                <XAxis
-                                    dataKey="name"
-                                    stroke="#475569"
-                                    fontSize={10}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    dy={10}
-                                />
-                                <YAxis
-                                    stroke="#475569"
-                                    fontSize={10}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    width={40}
-                                />
-                                <Tooltip
-                                    cursor={{ fill: '#ffffff05' }}
-                                    contentStyle={{
-                                        backgroundColor: '#0f172a',
-                                        borderRadius: '16px',
-                                        border: '1px solid #ffffff05',
-                                        fontSize: '11px',
-                                        color: '#fff'
-                                    }}
-                                />
-                                <Bar dataKey="consultas" radius={[10, 10, 0, 0]}>
-                                    {chartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            <PieChart>
+                                <Pie
+                                    data={roleDistribution.slice(0, 5)}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={45}
+                                    outerRadius={70}
+                                    paddingAngle={3}
+                                    dataKey="count"
+                                    nameKey="role"
+                                >
+                                    {roleDistribution.slice(0, 5).map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
-                                </Bar>
-                            </BarChart>
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: '#1c1c1e',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        fontSize: '11px',
+                                        color: '#f5f5f7'
+                                    }}
+                                    formatter={(value: number, name: string) => [`${value}`, name]}
+                                />
+                            </PieChart>
                         </ResponsiveContainer>
                     </div>
-                </div>
+
+                    {/* Legend */}
+                    <div className="space-y-2 mt-4">
+                        {roleDistribution.slice(0, 4).map((role, idx) => (
+                            <div key={idx} className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: role.color }} />
+                                    <span className="text-xs text-[#86868b] capitalize">{role.role}</span>
+                                </div>
+                                <span className="text-xs text-white font-medium">{role.percentage}%</span>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
             </div>
 
             {/* Bottom Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="col-span-full bg-blue-600/5 border border-blue-500/10 rounded-3xl p-6 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-600/20 rounded-2xl text-blue-500">
-                            <TrendingUp className="h-5 w-5" />
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Pharmacy Verification */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="apple-card p-6"
+                >
+                    <div className="flex items-center justify-between mb-6">
                         <div>
-                            <p className="text-xs font-bold text-white uppercase tracking-tight">Reporte de Desempeño</p>
-                            <p className="text-[10px] text-slate-500 font-medium">El crecimiento se mantiene constante con la integración de nuevos nodos.</p>
+                            <h3 className="text-title text-white">Red de Farmacias</h3>
+                            <p className="text-caption mt-1">Estado de verificación SACS</p>
+                        </div>
+                        <Building2 className="h-5 w-5 text-[#5e5ce6]" strokeWidth={1.5} />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                        <div className="text-center p-4 rounded-xl bg-[#30d158]/10">
+                            <p className="text-xl font-semibold text-[#30d158]">{pharmacyStats?.verified || 0}</p>
+                            <p className="text-[10px] text-[#86868b] mt-1">Verificadas</p>
+                        </div>
+                        <div className="text-center p-4 rounded-xl bg-[#ffd60a]/10">
+                            <p className="text-xl font-semibold text-[#ffd60a]">{pharmacyStats?.pending || 0}</p>
+                            <p className="text-[10px] text-[#86868b] mt-1">Pendientes</p>
+                        </div>
+                        <div className="text-center p-4 rounded-xl bg-[#0071e3]/10">
+                            <p className="text-xl font-semibold text-[#0071e3]">{pharmacyStats?.verificationRate || 0}%</p>
+                            <p className="text-[10px] text-[#86868b] mt-1">Tasa</p>
                         </div>
                     </div>
-                    <button className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                        Exportar Inteligencia
-                    </button>
-                </div>
+
+                    {/* Progress bar */}
+                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-[#30d158] rounded-full transition-all duration-1000"
+                            style={{ width: `${pharmacyStats?.verificationRate || 0}%` }}
+                        />
+                    </div>
+                </motion.div>
+
+                {/* New Registrations */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="apple-card p-6 bg-gradient-to-br from-[#0071e3]/5 to-[#5e5ce6]/5"
+                >
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 className="text-title text-white">Nuevos Registros</h3>
+                            <p className="text-caption mt-1">Comparación con período anterior</p>
+                        </div>
+                        {comparison?.change && comparison.change > 0 ? (
+                            <TrendingUp className="h-5 w-5 text-[#30d158]" strokeWidth={1.5} />
+                        ) : (
+                            <TrendingDown className="h-5 w-5 text-[#ff453a]" strokeWidth={1.5} />
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <p className="text-caption mb-1">Período Actual</p>
+                            <p className="text-3xl font-semibold text-white">{comparison?.current || 0}</p>
+                        </div>
+                        <div>
+                            <p className="text-caption mb-1">Período Anterior</p>
+                            <p className="text-3xl font-semibold text-[#6e6e73]">{comparison?.previous || 0}</p>
+                        </div>
+                    </div>
+
+                    <div className={`flex items-center gap-2 ${comparison?.change && comparison.change > 0 ? 'text-[#30d158]' : 'text-[#ff453a]'
+                        }`}>
+                        {comparison?.change && comparison.change > 0 ? (
+                            <ArrowUpRight className="h-5 w-5" />
+                        ) : (
+                            <ArrowDownRight className="h-5 w-5" />
+                        )}
+                        <span className="text-xl font-semibold">
+                            {comparison?.change && comparison.change > 0 ? '+' : ''}{comparison?.change || 0}
+                        </span>
+                        <span className="text-sm opacity-70">
+                            ({comparison?.changePercent || 0}%)
+                        </span>
+                    </div>
+                </motion.div>
             </div>
         </div>
     );

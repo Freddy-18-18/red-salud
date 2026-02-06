@@ -119,10 +119,6 @@ export function OfficesSection() {
     // Estado para Toast
     const [toast, setToast] = useState({ visible: false, message: "", type: "info" as "success" | "error" | "info" });
 
-    useEffect(() => {
-        loadOffices();
-    }, [loadOffices]);
-
     /**
      * Carga los consultorios del médico
      */
@@ -148,6 +144,10 @@ export function OfficesSection() {
             setLoading(false);
         }
     }, []);
+
+    useEffect(() => {
+        loadOffices();
+    }, [loadOffices]);
 
     /**
      * Guarda un consultorio (crear o actualizar)

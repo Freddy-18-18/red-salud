@@ -20,7 +20,9 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
+  LucideIcon,
 } from "lucide-react";
+import Image from "next/image";
 import type { TelemedicineSession } from "@/lib/supabase/types/telemedicine";
 
 export default function TelemedicinePage() {
@@ -40,7 +42,7 @@ export default function TelemedicinePage() {
   }, []);
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline", icon: any }> = {
+    const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline", icon: LucideIcon }> = {
       scheduled: { variant: "outline", icon: Calendar },
       waiting: { variant: "secondary", icon: Clock },
       active: { variant: "default", icon: Play },
@@ -217,10 +219,12 @@ export default function TelemedicinePage() {
                         <div className="flex items-center gap-3 mb-3">
                           <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                             {session.doctor?.avatar_url ? (
-                              <img
+                              <Image
                                 src={session.doctor.avatar_url}
                                 alt={session.doctor.nombre_completo}
-                                className="h-12 w-12 rounded-full object-cover"
+                                className="rounded-full object-cover"
+                                width={48}
+                                height={48}
                               />
                             ) : (
                               <User className="h-6 w-6 text-blue-600" />
@@ -317,10 +321,12 @@ export default function TelemedicinePage() {
                         <div className="flex items-center gap-3 mb-3">
                           <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
                             {session.doctor?.avatar_url ? (
-                              <img
+                              <Image
                                 src={session.doctor.avatar_url}
                                 alt={session.doctor.nombre_completo}
-                                className="h-12 w-12 rounded-full object-cover"
+                                className="rounded-full object-cover"
+                                width={48}
+                                height={48}
                               />
                             ) : (
                               <User className="h-6 w-6 text-gray-600" />

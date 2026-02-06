@@ -22,6 +22,7 @@ import { useTourGuide } from "@/components/dashboard/shared/tour-guide/tour-guid
 import { supabase } from "@/lib/supabase/client";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 import { DashboardWidgetGrid } from "@/components/dashboard/medico/dashboard";
+import { DashboardV2 } from "@/components/dashboard/medico/dashboard-v2/DashboardV2";
 import { ThemeToggle } from "@red-salud/ui";
 import { useCurrentOffice } from "@/hooks/use-current-office";
 import { OfficeQuickSelectorDropdown } from "@/components/dashboard/medico/office-quick-selector-dropdown";
@@ -296,17 +297,11 @@ export default function DoctorDashboardPage() {
             </motion.div>
           )}
 
-          {/* Widget Grid */}
+          {/* Dashboard V2 - Unified Experience */}
           <motion.div variants={fadeInUp}>
-            <DashboardWidgetGrid
-              mode={currentMode}
-              positions={getWidgetPositions()}
-              hiddenWidgets={state.hiddenWidgets}
-              onPositionsChange={saveLayout}
-              onModeChange={setMode}
-              onResetLayout={resetLayout}
-              onToggleWidget={toggleWidgetVisibility}
-              doctorId={userId || undefined}
+            <DashboardV2
+              profile={profile}
+              userId={userId || undefined}
             />
           </motion.div>
         </motion.div>

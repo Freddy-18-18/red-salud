@@ -90,7 +90,7 @@ const RolePlaceholder: React.FC = () => {
 
                         <div className="pt-10 flex flex-col md:flex-row items-center justify-center gap-4">
                             <button
-                                onClick={() => navigate('/dashboard/roles')}
+                                onClick={() => navigate('/roles')}
                                 className="px-10 py-5 bg-slate-950/60 border border-white/[0.05] text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all flex items-center gap-3 w-full md:w-auto"
                             >
                                 <ArrowLeft className="h-4 w-4" />

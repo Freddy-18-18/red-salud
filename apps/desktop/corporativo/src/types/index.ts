@@ -1,4 +1,8 @@
-export type UserRole = 'medico' | 'paciente' | 'farmacia' | 'laboratorio' | 'clinica' | 'aseguradora' | 'ambulancia' | 'admin' | 'corporate';
+// Platform roles
+export type UserRole = 'medico' | 'paciente' | 'farmacia' | 'laboratorio' | 'clinica' | 'aseguradora' | 'ambulancia' | 'admin' | 'corporate' | 'gerente' | 'administrador' | 'contador' | 'rrhh' | 'soporte' | 'analista' | 'supervisor';
+
+// Re-export corporate types
+export * from './corporate-users.types';
 
 export interface Permissions {
     can_edit_users?: boolean;
@@ -48,4 +52,50 @@ export interface AuditLog {
         nombre_completo: string | null;
         email: string | null;
     };
+}
+
+export interface AcademyModule {
+    id: string;
+    title: string;
+    description: string | null;
+    video_url: string | null;
+    thumbnail_url: string | null;
+    category: 'general' | 'clinical' | 'system' | 'compliance';
+    target_roles: UserRole[];
+    duration_minutes: number;
+    created_at: string;
+    updated_at: string;
+    created_by: string;
+}
+
+export interface AcademyProgress {
+    id: string;
+    user_id: string;
+    module_id: string;
+    status: 'started' | 'completed';
+    progress_percent: number;
+    last_accessed_at: string;
+    completed_at: string | null;
+}
+
+export interface SupportTicket {
+    id: string;
+    subject: string;
+    description: string;
+    status: 'open' | 'in_progress' | 'resolved' | 'closed';
+    priority: 'low' | 'medium' | 'high' | 'critical';
+    category: string;
+    created_by: string | null;
+    created_at: string;
+    updated_at: string;
+    profiles?: { nombre_completo: string | null; email: string | null };
+}
+
+export interface SupportMessage {
+    id: string;
+    ticket_id: string;
+    sender_id: string;
+    message: string;
+    created_at: string;
+    profiles?: { nombre_completo: string | null; avatar_url: string | null };
 }

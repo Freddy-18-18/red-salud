@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
-import { Loader2, Check, Upload, CircleCheckBig, Palette, Users } from "lucide-react";
+import { Loader2, Check, Upload, CircleCheckBig, Palette, Users, ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import {
     getDoctorRecipeSettings,
@@ -16,16 +16,32 @@ import { Button, Label, Card, Separator, Tabs, TabsContent, TabsList, TabsTrigge
 import { cn } from "@red-salud/core/utils";
 import { VisualRecipePreview } from "@/components/dashboard/recetas/visual-recipe-preview";
 import { getProfile } from "@/lib/supabase/services/profile"; // ensure this exists or use query
+import {
+    TemplateModern, TemplateGeometric, TemplateElegant,
+    TemplateClinical, TemplateWaves, TemplateTech,
+    WatermarkCaduceus, WatermarkHeartbeat, WatermarkCross
+} from "@/components/dashboard/recetas/recipe-graphics";
+
 
 
 const TEMPLATES = [
-    { id: "plantilla-3", name: "plantilla 3", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets/generic_frames/pc%203%20copia%202.png" },
-    { id: "media-pagina-1", name: "Media Pagina 1", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets/generic_frames/osea%20si%20pero%20arriba%20copia.png" },
-    { id: "plantilla-1", name: "Plantilla 1", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets//generic_frames/1754768140717_pc_1_juajau.png" },
-    { id: "plantilla-2", name: "Plantilla 2", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets//generic_frames/1754766102442_copipoadjsoidh.png" },
+    { id: "plantilla-3", name: "Original 3", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets/generic_frames/pc%203%20copia%202.png" },
+    { id: "media-pagina-1", name: "Media Carta", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets/generic_frames/osea%20si%20pero%20arriba%20copia.png" },
+    { id: "plantilla-1", name: "Original 1", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets//generic_frames/1754768140717_pc_1_juajau.png" },
+    { id: "plantilla-2", name: "Original 2", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets//generic_frames/1754766102442_copipoadjsoidh.png" },
+    // New Templates
+    { id: "modern-minimal", name: "Minimalista", image: "/assets/templates/modern-minimal.png" },
+    { id: "classic-elegant", name: "Elegante", image: "/assets/templates/classic-elegant.png" },
+    { id: "medical-clean", name: "Clínico", image: "/assets/templates/medical-clean.png" },
+    { id: "geometric-border", name: "Geométrico", image: "/assets/templates/geometric-border.png" },
+    { id: "abstract-waves", name: "Olas", image: "/assets/templates/abstract-waves.png" },
+    { id: "tech-line", name: "Tech", image: "/assets/templates/tech-line.png" },
 ];
 
 const WATERMARKS = [
+    { id: "wm-caduceus", name: "Caduceo", image: "/assets/watermarks/caduceus-shield.png" },
+    { id: "wm-heartbeat", name: "Latidos", image: "/assets/watermarks/heartbeat-line.png" },
+    { id: "wm-cross", name: "Cruz", image: "/assets/watermarks/medical-cross.png" },
     { id: "wm-5", name: "Genérico 5", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets/generic_watermarks/1754451399054_5.png" },
     { id: "wm-4", name: "Genérico 4", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets/generic_watermarks/1754451407146_4.png" },
     { id: "wm-3", name: "Genérico 3", image: "https://lgbyvkowppcdyyymnfjk.supabase.co/storage/v1/object/public/generic_assets/generic_watermarks/1754451413018_3.png" },
@@ -179,8 +195,19 @@ export default function TemplateEditorPage() {
         <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 pb-20">
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-2xl font-bold">Editor de Plantillas</h1>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="mr-3 gap-2"
+                                onClick={() => router.push('/dashboard/medico/recetas/configuracion')}
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                                <span className="hidden sm:inline">Volver</span>
+                            </Button>
+                            <h1 className="text-2xl font-bold">Editor de Plantillas</h1>
+                        </div>
                         <p className="text-muted-foreground">Personaliza las plantillas y colores de tus recetas médicas.</p>
                     </div>
                 </div>
@@ -253,14 +280,32 @@ export default function TemplateEditorPage() {
                                                             : "border-transparent hover:border-primary/50"
                                                     )}
                                                 >
-                                                    <img
-                                                        alt={template.name}
-                                                        className="object-cover w-full h-full"
-                                                        src={template.image}
-                                                    />
+                                                    {/* Dynamic Preview Rendering */}
+                                                    {(() => {
+                                                        const PreviewProps = { color: frameColor, className: "w-full h-full object-contain" };
+                                                        switch (template.id) {
+                                                            case 'modern-minimal': return <div className="p-2 w-full h-full"><TemplateModern {...PreviewProps} /></div>;
+                                                            case 'geometric-border': return <div className="p-2 w-full h-full"><TemplateGeometric {...PreviewProps} /></div>;
+                                                            case 'classic-elegant': return <div className="p-2 w-full h-full"><TemplateElegant {...PreviewProps} /></div>;
+                                                            case 'medical-clean': return <div className="p-2 w-full h-full"><TemplateClinical {...PreviewProps} /></div>;
+                                                            case 'abstract-waves': return <div className="p-2 w-full h-full"><TemplateWaves {...PreviewProps} /></div>;
+                                                            case 'tech-line': return <div className="p-2 w-full h-full"><TemplateTech {...PreviewProps} /></div>;
+                                                            default:
+                                                                return (
+                                                                    <img
+                                                                        alt={template.name}
+                                                                        className="object-cover w-full h-full"
+                                                                        src={template.image}
+                                                                    />
+                                                                );
+                                                        }
+                                                    })()}
+
                                                     {selectedTemplate === template.id && (
-                                                        <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                                                            <CircleCheckBig className="h-8 w-8 text-white/90 drop-shadow-md" />
+                                                        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                                                            <div className="bg-white/80 rounded-full p-1 shadow-sm">
+                                                                <CircleCheckBig className="h-6 w-6 text-primary" />
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -328,17 +373,34 @@ export default function TemplateEditorPage() {
                                                     <div
                                                         onClick={() => setSelectedWatermark(wm.image)}
                                                         className={cn(
-                                                            "relative border-2 rounded-lg cursor-pointer transition-all duration-200 bg-white aspect-video flex items-center justify-center p-2",
+                                                            "relative border-2 rounded-lg cursor-pointer transition-all duration-200 bg-white aspect-video flex items-center justify-center p-4 overflow-hidden",
                                                             selectedWatermark === wm.image
                                                                 ? "border-primary bg-primary/5"
                                                                 : "border-gray-100 hover:border-primary/30"
                                                         )}
                                                     >
-                                                        <img
-                                                            alt={wm.name}
-                                                            className="object-contain w-full h-full max-h-16"
-                                                            src={wm.image}
-                                                        />
+                                                        {(() => {
+                                                            // Determine if custom SVG or image
+                                                            if (wm.id === 'wm-caduceus') return <WatermarkCaduceus className="w-full h-full text-gray-400" />;
+                                                            if (wm.id === 'wm-heartbeat') return <WatermarkHeartbeat className="w-full h-full text-gray-400" />;
+                                                            if (wm.id === 'wm-cross') return <WatermarkCross className="w-full h-full text-gray-400" />;
+
+                                                            return (
+                                                                <img
+                                                                    alt={wm.name}
+                                                                    className="object-contain w-full h-full max-h-16"
+                                                                    src={wm.image}
+                                                                />
+                                                            );
+                                                        })()}
+
+                                                        {selectedWatermark === wm.image && (
+                                                            <div className="absolute top-1 right-1">
+                                                                <div className="bg-primary/10 rounded-full p-0.5">
+                                                                    <CircleCheckBig className="h-4 w-4 text-primary" />
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <p className="text-[10px] text-center text-muted-foreground truncate">{wm.name}</p>
                                                 </div>

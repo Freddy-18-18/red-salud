@@ -22,7 +22,7 @@ CREATE POLICY "Admins can view audit logs" ON audit_logs
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM profiles 
-            WHERE id = auth.uid() 
+            WHERE id = (select auth.uid()) 
             AND (role = 'admin' OR access_level >= 4)
         )
     );

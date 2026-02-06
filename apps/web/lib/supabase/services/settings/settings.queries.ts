@@ -28,7 +28,10 @@ export async function getDoctorSettings(doctorId: string) {
 
         return { success: true, data: data as DoctorSettings };
     } catch (error) {
-        console.error("Error fetching doctor settings:", error);
+        // Only log if it's a real error (not empty object)
+        if (typeof error === 'object' && error !== null && Object.keys(error).length > 0) {
+            console.error("Error fetching doctor settings:", error);
+        }
         return { success: false, error, data: null };
     }
 }
@@ -48,7 +51,10 @@ export async function getAvailableFrames(doctorId: string) {
         if (error) throw error;
         return { success: true, data: data as PrescriptionFrame[] };
     } catch (error) {
-        console.error("Error fetching frames:", error);
+        // Only log if it's a real error (not empty object)
+        if (typeof error === 'object' && error !== null && Object.keys(error).length > 0) {
+            console.error("Error fetching frames:", error);
+        }
         return { success: false, error, data: [] };
     }
 }
@@ -68,7 +74,10 @@ export async function getAvailableWatermarks(doctorId: string) {
         if (error) throw error;
         return { success: true, data: data as PrescriptionWatermark[] };
     } catch (error) {
-        console.error("Error fetching watermarks:", error);
+        // Only log if it's a real error (not empty object)
+        if (typeof error === 'object' && error !== null && Object.keys(error).length > 0) {
+            console.error("Error fetching watermarks:", error);
+        }
         return { success: false, error, data: [] };
     }
 }

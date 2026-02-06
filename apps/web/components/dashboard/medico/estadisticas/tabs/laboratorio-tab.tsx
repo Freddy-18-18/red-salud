@@ -27,10 +27,6 @@ export function LaboratorioTab({ doctorId, dateRange }: LaboratorioTabProps) {
   const [stats, setStats] = useState<LabStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadLaboratorio();
-  }, [loadLaboratorio]);
-
   const loadLaboratorio = useCallback(async () => {
     try {
       setLoading(true);
@@ -89,6 +85,10 @@ export function LaboratorioTab({ doctorId, dateRange }: LaboratorioTabProps) {
       setLoading(false);
     }
   }, [doctorId, dateRange]);
+
+  useEffect(() => {
+    loadLaboratorio();
+  }, [loadLaboratorio]);
 
   if (loading) {
     return (

@@ -111,22 +111,26 @@ export function FAQSection() {
 
               {/* Accordion */}
               <Accordion type="single" collapsible className="w-full">
-                {category.items.map((item, index) => (
-                  <AccordionItem
-                    key={`${category.category}-${index}`}
-                    value={`${category.category}-${index}`}
-                    className="border border-gray-200 dark:border-slate-700 rounded-lg mb-3 overflow-hidden hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
-                  >
-                    <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors data-[state=open]:bg-blue-50 dark:data-[state=open]:bg-blue-900/20">
-                      <span className="text-left font-semibold text-gray-900 dark:text-white">
-                        {item.question}
-                      </span>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-6 py-4 bg-gray-50 dark:bg-slate-800/50 text-gray-600 dark:text-gray-300 leading-relaxed">
-                      {item.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
+                {category.items.map((item, index) => {
+                  const itemId = `faq-${category.category.toLowerCase().replace(/\s+/g, '-')}-${index}`;
+                  return (
+                    <AccordionItem
+                      key={itemId}
+                      value={itemId}
+                      id={itemId}
+                      className="border border-gray-200 dark:border-slate-700 rounded-lg mb-3 overflow-hidden hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
+                    >
+                      <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors data-[state=open]:bg-blue-50 dark:data-[state=open]:bg-blue-900/20">
+                        <span className="text-left font-semibold text-gray-900 dark:text-white">
+                          {item.question}
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 py-4 bg-gray-50 dark:bg-slate-800/50 text-gray-600 dark:text-gray-300 leading-relaxed">
+                        {item.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
               </Accordion>
             </div>
           ))}

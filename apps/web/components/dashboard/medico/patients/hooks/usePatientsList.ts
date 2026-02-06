@@ -49,7 +49,7 @@ export function usePatientsList(doctorId: string | null) {
     const { data, error } = await supabase
       .from("doctor_patients")
       .select(`*,
-        patient:profiles!doctor_patients_patient_id_fkey(
+        patient:profiles(
           id,
           nombre_completo,
           email,

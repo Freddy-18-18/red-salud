@@ -1,4 +1,5 @@
 import { supabase } from "../../client";
+import { PostgrestError } from "@supabase/supabase-js";
 import type {
   MedicationCatalog,
   Prescription,
@@ -90,80 +91,73 @@ export async function getPatientPrescriptions(patientId: string) {
 // Obtener prescripciones del médico
 export async function getDoctorPrescriptions(medicoId: string) {
   try {
-    // First, try a simple query to check if basic access works
-    const { data: basicData, error: basicError } = await supabase
-      .from("prescriptions")
-      .select("id, medico_id, paciente_id")
-      .eq("medico_id", medicoId)
-      .limit(1);
+    console.log("[getDoctorPrescriptions] Starting query for doctor:", medicoId);
 
-    if (basicError) {
-      console.error("Basic query failed - possible RLS issue:", {
-        message: basicError.message,
-        details: basicError.details,
-        hint: basicError.hint,
-        code: basicError.code
-      });
-      throw new Error(`Database access error: ${basicError.message}`);
-    }
-
-    // If basic query works, try the full query with joins
-    const { data, error } = await supabase
+    // 1. Fetch ALL prescriptions for this doctor
+    const { data: prescriptions, error: mainError } = await supabase
       .from("prescriptions")
-      .select(`
-        *,
-        paciente:profiles!prescriptions_paciente_id_fkey(
-          id,
-          nombre_completo,
-          cedula,
-          avatar_url,
-          fecha_nacimiento
-        ),
-        medications:prescription_medications(
-          *,
-          medication:medications_catalog(*)
-        )
-      `)
+      .select("*")
       .eq("medico_id", medicoId)
       .order("fecha_prescripcion", { ascending: false });
 
-    if (error) {
-      console.error("Full query failed - possible foreign key or join issue:", {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code,
-        medicoId
-      });
-
-      // Try without the medications join as fallback
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from("prescriptions")
-        .select(`
-          *,
-          paciente:profiles!prescriptions_paciente_id_fkey(
-            id,
-            nombre_completo,
-            cedula,
-            avatar_url,
-            fecha_nacimiento
-          )
-        `)
-        .eq("medico_id", medicoId)
-        .order("fecha_prescripcion", { ascending: false });
-
-      if (fallbackError) {
-        console.error("Fallback query also failed:", fallbackError);
-        throw error; // Throw original error
-      }
-
-      console.warn("Using fallback query without medications");
-      return { success: true, data: fallbackData as Prescription[] };
+    if (mainError) {
+      console.error("[getDoctorPrescriptions] Main query failed:", mainError);
+      throw mainError;
     }
 
-    return { success: true, data: data as Prescription[] };
+    if (!prescriptions || prescriptions.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // 2. Enrich with data
+    const enrichedPrescriptions = await Promise.all(
+      prescriptions.map(async (p) => {
+        let enriched = { ...p } as any; // Using any temporarily to construct the object
+
+        // A. Fetch Medications (Always needed)
+        const { data: meds } = await supabase
+          .from("prescription_medications")
+          .select("*, medication:medications_catalog(*)")
+          .eq("prescription_id", p.id);
+
+        enriched.medications = meds || [];
+
+        // B. Fetch Patient (Registered)
+        if (p.paciente_id) {
+          const { data: patientData } = await supabase
+            .from("profiles")
+            .select("id, nombre_completo, cedula, avatar_url, fecha_nacimiento")
+            .eq("id", p.paciente_id)
+            .single();
+
+          if (patientData) {
+            enriched.paciente = patientData;
+          }
+        }
+
+        // C. Fetch Patient (Offline) - ONLY if no registered patient or explicit offline_patient_id
+        if ((!enriched.paciente && p.offline_patient_id) || (p.offline_patient_id && !p.paciente_id)) {
+          const { data: offlineData } = await supabase
+            .from("offline_patients")
+            .select("id, nombre_completo, numero_documento:cedula, telefono, fecha_nacimiento, email")
+            .eq("id", p.offline_patient_id)
+            .single();
+
+          if (offlineData) {
+            enriched.offline_patient = offlineData;
+            // Polyfill for display consistency if needed, but the UI handles 'offline_patient' prop
+          }
+        }
+
+        return enriched as Prescription;
+      })
+    );
+
+    console.log(`[getDoctorPrescriptions] Returning ${enrichedPrescriptions.length} enriched records`);
+    return { success: true, data: enrichedPrescriptions };
+
   } catch (error) {
-    console.error("Error fetching doctor prescriptions:", error);
+    console.error("[getDoctorPrescriptions] Unexpected error:", error);
     return { success: false, error, data: [] };
   }
 }
@@ -254,7 +248,7 @@ export async function getTodayIntakeLog(patientId: string) {
 }
 
 // Obtener estadísticas de adherencia
-export async function getAdherenceStats(patientId: string, days: number = 30): Promise<{ success: boolean; data: AdherenceStats | null; error?: any }> {
+export async function getAdherenceStats(patientId: string, days: number = 30): Promise<{ success: boolean; data: AdherenceStats | null; error?: PostgrestError | Error | null }> {
   try {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -305,12 +299,12 @@ export async function getAdherenceStats(patientId: string, days: number = 30): P
     return { success: true, data: stats };
   } catch (error) {
     console.error("Error calculating adherence stats:", error);
-    return { success: false, error, data: null };
+    return { success: false, error: error as Error, data: null };
   }
 }
 
 // Obtener resumen de medicamentos activos
-export async function getActiveMedicationsSummary(patientId: string): Promise<{ success: boolean; data: ActiveMedicationsSummary | null; error?: any }> {
+export async function getActiveMedicationsSummary(patientId: string): Promise<{ success: boolean; data: ActiveMedicationsSummary | null; error?: PostgrestError | Error | null }> {
   try {
     const { data: reminders, error } = await supabase
       .from("medication_reminders")
@@ -363,6 +357,6 @@ export async function getActiveMedicationsSummary(patientId: string): Promise<{ 
     return { success: true, data: summary };
   } catch (error) {
     console.error("Error fetching active medications summary:", error);
-    return { success: false, error, data: null };
+    return { success: false, error: error as Error, data: null };
   }
 }

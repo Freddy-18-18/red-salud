@@ -1,0 +1,673 @@
+app/(public)/blog/escribir/page.tsx(53,7): error TS2448: Block-scoped variable 'checkUserAndLoadData' used before its declaration.
+app/(public)/blog/escribir/page.tsx(53,7): error TS2454: Variable 'checkUserAndLoadData' is used before being assigned.
+app/(public)/soporte/chat/page.tsx(313,32): error TS2532: Object is possibly 'undefined'.
+app/(public)/soporte/chat/page.tsx(443,15): error TS18048: 'lastMessage' is possibly 'undefined'.
+app/(public)/soporte/chat/page.tsx(444,13): error TS18048: 'lastMessage' is possibly 'undefined'.
+app/(public)/soporte/contacto/page.tsx(153,28): error TS2304: Cannot find name 'supportService'.
+app/(public)/soporte/contacto/page.tsx(165,9): error TS2304: Cannot find name 'toast'.
+app/(public)/soporte/contacto/page.tsx(167,9): error TS2304: Cannot find name 'toast'.
+app/(public)/soporte/contacto/page.tsx(171,7): error TS2304: Cannot find name 'toast'.
+app/(public)/soporte/contacto/page.tsx(458,62): error TS18048: 'colors' is possibly 'undefined'.
+app/(public)/soporte/contacto/page.tsx(459,58): error TS18048: 'colors' is possibly 'undefined'.
+app/(public)/soporte/page.tsx(247,13): error TS18048: 'colors' is possibly 'undefined'.
+app/(public)/soporte/page.tsx(250,42): error TS18048: 'colors' is possibly 'undefined'.
+app/(public)/soporte/page.tsx(291,13): error TS18048: 'colors' is possibly 'undefined'.
+app/(public)/soporte/page.tsx(294,42): error TS18048: 'colors' is possibly 'undefined'.
+app/(public)/soporte/page.tsx(319,46): error TS2304: Cannot find name 'KBSearchResult'.
+app/(public)/soporte/page.tsx(356,54): error TS2304: Cannot find name 'KBSearchResult'.
+app/(public)/soporte/page.tsx(358,58): error TS2304: Cannot find name 'KBSearchResult'.
+app/(public)/soporte/page.tsx(361,3): error TS2304: Cannot find name 'useEffect'.
+app/(public)/soporte/page.tsx(363,28): error TS2304: Cannot find name 'supportService'.
+app/(public)/soporte/page.tsx(367,9): error TS2304: Cannot find name 'toast'.
+app/(public)/soporte/page.tsx(376,3): error TS2304: Cannot find name 'useEffect'.
+app/(public)/soporte/page.tsx(380,30): error TS2304: Cannot find name 'supportService'.
+app/(public)/soporte/page.tsx(384,11): error TS2304: Cannot find name 'toast'.
+app/api/public/doctor-specialties/route.ts(45,24): error TS2339: Property 'id' does not exist on type '{ id: any; name: any; description: any; icon: any; category: any; active: any; }[]'.
+app/api/public/doctor-specialties/route.ts(46,26): error TS2339: Property 'name' does not exist on type '{ id: any; name: any; description: any; icon: any; category: any; active: any; }[]'.
+app/api/public/doctor-specialties/route.ts(47,33): error TS2339: Property 'description' does not exist on type '{ id: any; name: any; description: any; icon: any; category: any; active: any; }[]'.
+app/api/public/doctor-specialties/route.ts(48,26): error TS2339: Property 'icon' does not exist on type '{ id: any; name: any; description: any; icon: any; category: any; active: any; }[]'.
+app/api/public/doctor-specialties/route.ts(49,30): error TS2339: Property 'category' does not exist on type '{ id: any; name: any; description: any; icon: any; category: any; active: any; }[]'.
+app/dashboard/clinica/page.tsx(24,41): error TS18048: 'firstClinic' is possibly 'undefined'.
+app/dashboard/farmacia/caja/page.tsx(439,44): error TS2551: Property 'precio_venta' does not exist on type 'Producto'. Did you mean 'precio_venta_usd'?
+app/dashboard/farmacia/caja/page.tsx(498,47): error TS2551: Property 'precio_venta' does not exist on type 'Producto'. Did you mean 'precio_venta_usd'?
+app/dashboard/farmacia/caja/pos-page.tsx(242,13): error TS18004: No value exists in scope for the shorthand property 'exchange_rate'. Either declare one or provide an initializer.
+app/dashboard/farmacia/fidelizacion/page.tsx(251,30): error TS2304: Cannot find name 'DollarSign'.
+app/dashboard/farmacia/page.tsx(33,15): error TS2322: Type 'string' is not assignable to type 'never'.
+app/dashboard/medico/citas/nueva/page.tsx(42,5): error TS2719: Type 'import("C:/Users/Fredd/Dev/red-salud/node_modules/.pnpm/react-hook-form@7.71.1_react@19.2.0/node_modules/react-hook-form/dist/types/resolvers").Resolver<{ fecha: string; paciente_id: string; hora: string; duracion_minutos: number; tipo_cita: "presencial" | "telemedicina" | "urgencia" | "seguimiento" | "primera_vez";...' is not assignable to type 'import("C:/Users/Fredd/Dev/red-salud/node_modules/.pnpm/react-hook-form@7.71.1_react@19.2.0/node_modules/react-hook-form/dist/types/resolvers").Resolver<{ fecha: string; paciente_id: string; hora: string; duracion_minutos: number; tipo_cita: "presencial" | "telemedicina" | "urgencia" | "seguimiento" | "primera_vez";...'. Two different types with this name exist, but they are unrelated.
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'import("C:/Users/Fredd/Dev/red-salud/node_modules/.pnpm/react-hook-form@7.71.1_react@19.2.0/node_modules/react-hook-form/dist/types/resolvers").ResolverOptions<{ fecha: string; paciente_id: string; hora: string; duracion_minutos: number; tipo_cita: "presencial" | "telemedicina" | "urgencia" | "seguimiento" | "primer...' is not assignable to type 'import("C:/Users/Fredd/Dev/red-salud/node_modules/.pnpm/react-hook-form@7.71.1_react@19.2.0/node_modules/react-hook-form/dist/types/resolvers").ResolverOptions<{ fecha: string; paciente_id: string; hora: string; duracion_minutos: number; tipo_cita: "presencial" | "telemedicina" | "urgencia" | "seguimiento" | "primer...'. Two different types with this name exist, but they are unrelated.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+app/dashboard/medico/citas/nueva/page.tsx(563,40): error TS2345: Argument of type '(data: AppointmentFormValues) => Promise<void>' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ fecha: string; paciente_id: string; hora: string; duracion_minutos: number; tipo_cita: "presencial" | "telemedicina" | "urgencia" | "seguimiento" | "primera_vez"; motivo: string; metodo_pago: string; enviar_recordatorio: boolean; notas_internas?: string | undefined; precio?: string | undefined; new_patient_data?: ...'.
+      Type 'FieldValues' is missing the following properties from type '{ fecha: string; paciente_id: string; hora: string; duracion_minutos: number; tipo_cita: "presencial" | "telemedicina" | "urgencia" | "seguimiento" | "primera_vez"; motivo: string; metodo_pago: string; enviar_recordatorio: boolean; notas_internas?: string | undefined; precio?: string | undefined; new_patient_data?: ...': fecha, paciente_id, hora, duracion_minutos, and 4 more.
+app/dashboard/medico/configuracion/page.tsx(69,19): error TS2304: Cannot find name 'Skeleton'.
+app/dashboard/medico/configuracion/page.tsx(72,19): error TS2304: Cannot find name 'Skeleton'.
+app/dashboard/medico/configuracion/secretarias/page.tsx(29,7): error TS2448: Block-scoped variable 'loadSecretaries' used before its declaration.
+app/dashboard/medico/configuracion/secretarias/page.tsx(29,7): error TS2454: Variable 'loadSecretaries' is used before being assigned.
+app/dashboard/medico/consulta/page.tsx(50,19): error TS18048: 'patientData' is possibly 'undefined'.
+app/dashboard/medico/consulta/page.tsx(51,32): error TS18048: 'patientData' is possibly 'undefined'.
+app/dashboard/medico/consulta/page.tsx(52,22): error TS18048: 'patientData' is possibly 'undefined'.
+app/dashboard/medico/consulta/page.tsx(53,23): error TS18048: 'patientData' is possibly 'undefined'.
+app/dashboard/medico/laboratorio/nueva/page.tsx(121,29): error TS2322: Type '({ id: string; nombre_completo: string; email: string; type: string; } | { id: string; nombre_completo: string; cedula: string; type: string; })[]' is not assignable to type 'Patient[]'.
+  Type '{ id: string; nombre_completo: string; email: string; type: string; } | { id: string; nombre_completo: string; cedula: string; type: string; }' is not assignable to type 'Patient'.
+    Property 'cedula' is missing in type '{ id: string; nombre_completo: string; email: string; type: string; }' but required in type 'Patient'.
+app/dashboard/medico/pacientes/nuevo/consulta/page.tsx(135,9): error TS2322: Type '(patientId: string, patientData: Record<string, unknown>) => void' is not assignable to type '(patientId: string, patientData: OfflinePatient) => void'.
+  Types of parameters 'patientData' and 'patientData' are incompatible.
+    Type 'OfflinePatient' is not assignable to type 'Record<string, unknown>'.
+      Index signature for type 'string' is missing in type 'OfflinePatient'.
+app/dashboard/medico/pacientes/nuevo/simple/page.tsx(38,27): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(schema: Zod3Type<{ cedula: string; nombre_completo: string; fecha_nacimiento?: string | undefined; genero?: "" | "F" | "M" | undefined; telefono?: string | undefined; email?: string | undefined; }, { ...; }>, schemaOptions?: ParseParams | undefined, resolverOptions?: NonRawResolverOptions | undefined): Resolver<...>', gave the following error.
+    Argument of type 'ZodObject<{ cedula: ZodString; nombre_completo: ZodString; fecha_nacimiento: ZodUnion<[ZodOptional<ZodString>, ZodLiteral<"">]>; genero: ZodUnion<...>; telefono: ZodUnion<...>; email: ZodUnion<...>; }, $strip>' is not assignable to parameter of type 'Zod3Type<{ cedula: string; nombre_completo: string; fecha_nacimiento?: string | undefined; genero?: "" | "F" | "M" | undefined; telefono?: string | undefined; email?: string | undefined; }, { ...; }>'.
+      Types of property '_def' are incompatible.
+        Property 'typeName' is missing in type '$ZodObjectDef<{ cedula: ZodString; nombre_completo: ZodString; fecha_nacimiento: ZodUnion<[ZodOptional<ZodString>, ZodLiteral<"">]>; genero: ZodUnion<...>; telefono: ZodUnion<...>; email: ZodUnion<...>; }>' but required in type '{ typeName: string; }'.
+  Overload 2 of 4, '(schema: $ZodType<unknown, FieldValues, $ZodTypeInternals<unknown, FieldValues>>, schemaOptions?: ParseContext<$ZodIssue> | undefined, resolverOptions?: NonRawResolverOptions | undefined): Resolver<...>', gave the following error.
+    Argument of type 'ZodObject<{ cedula: ZodString; nombre_completo: ZodString; fecha_nacimiento: ZodUnion<[ZodOptional<ZodString>, ZodLiteral<"">]>; genero: ZodUnion<...>; telefono: ZodUnion<...>; email: ZodUnion<...>; }, $strip>' is not assignable to parameter of type '$ZodType<unknown, FieldValues, $ZodTypeInternals<unknown, FieldValues>>'.
+      The types of '_zod.version.minor' are incompatible between these types.
+        Type '3' is not assignable to type '0'.
+app/dashboard/medico/pacientes/offline/[id]/_components/contact-flip-card.tsx(43,26): error TS2345: Argument of type '{ telefono: string; email: string; direccion: string; fecha_nacimiento: string | undefined; }' is not assignable to parameter of type '{ telefono: string; email: string; direccion: string; fecha_nacimiento: string; }'.
+  Types of property 'fecha_nacimiento' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+app/dashboard/medico/pacientes/offline/[id]/_components/flip-card.tsx(33,46): error TS2322: Type 'string' is not assignable to type 'ValueTransition'.
+app/dashboard/medico/pacientes/offline/[id]/_components/medical-flip-card.tsx(51,27): error TS2322: Type 'string' is not assignable to type 'never'.
+app/dashboard/medico/pacientes/page.tsx(142,11): error TS2532: Object is possibly 'undefined'.
+app/dashboard/medico/pacientes/page.tsx(143,13): error TS2532: Object is possibly 'undefined'.
+app/dashboard/medico/pacientes/page.tsx(143,38): error TS2532: Object is possibly 'undefined'.
+app/dashboard/medico/perfil/setup/page.tsx(65,17): error TS2322: Type 'import("C:/Users/Fredd/Dev/red-salud/apps/web/components/dashboard/medico/profile-setup/hooks/useProfileSetup").Specialty[]' is not assignable to type 'Specialty[]'.
+  Type 'import("C:/Users/Fredd/Dev/red-salud/apps/web/components/dashboard/medico/profile-setup/hooks/useProfileSetup").Specialty' is not assignable to type 'Specialty'.
+    Types of property 'description' are incompatible.
+      Type 'string | null' is not assignable to type 'string | undefined'.
+        Type 'null' is not assignable to type 'string | undefined'.
+app/dashboard/medico/perfil/setup/page.tsx(66,17): error TS2322: Type 'import("C:/Users/Fredd/Dev/red-salud/apps/web/components/dashboard/medico/profile-setup/hooks/useProfileSetup").Specialty[]' is not assignable to type 'Specialty[]'.
+  Type 'import("C:/Users/Fredd/Dev/red-salud/apps/web/components/dashboard/medico/profile-setup/hooks/useProfileSetup").Specialty' is not assignable to type 'Specialty'.
+    Types of property 'description' are incompatible.
+      Type 'string | null' is not assignable to type 'string | undefined'.
+        Type 'null' is not assignable to type 'string | undefined'.
+app/dashboard/medico/perfil/setup/page.tsx(69,17): error TS2322: Type 'import("C:/Users/Fredd/Dev/red-salud/apps/web/components/dashboard/medico/profile-setup/hooks/useProfileSetup").Specialty | null' is not assignable to type 'Specialty | null'.
+  Type 'import("C:/Users/Fredd/Dev/red-salud/apps/web/components/dashboard/medico/profile-setup/hooks/useProfileSetup").Specialty' is not assignable to type 'Specialty'.
+    Types of property 'description' are incompatible.
+      Type 'string | null' is not assignable to type 'string | undefined'.
+        Type 'null' is not assignable to type 'string | undefined'.
+app/dashboard/medico/recetas/configuracion/page.tsx(271,47): error TS2345: Argument of type 'File | undefined' is not assignable to parameter of type 'Blob | MediaSource'.
+  Type 'undefined' is not assignable to type 'Blob | MediaSource'.
+app/dashboard/medico/recetas/configuracion/page.tsx(273,25): error TS2345: Argument of type 'File | undefined' is not assignable to parameter of type 'SetStateAction<File | null>'.
+  Type 'undefined' is not assignable to type 'SetStateAction<File | null>'.
+app/dashboard/medico/recetas/nueva/page.tsx(78,9): error TS2322: Type '{ id?: string; medicamentoId?: string; medicamento?: string | undefined; nombreComercial?: string; presentacion?: string | undefined; dosis?: string | undefined; frecuencia?: string | undefined; duracion?: string | undefined; viaAdministracion?: string | undefined; instrucciones?: string | undefined; }' is not assignable to type 'MedicationItemData'.
+  Types of property 'medicamento' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+app/dashboard/medico/recetas/nueva/page.tsx(157,38): error TS2339: Property 'medicationId' does not exist on type 'MedicationItemData'.
+app/dashboard/medico/recetas/nueva/page.tsx(197,13): error TS1117: An object literal cannot have multiple properties with the same name.
+app/dashboard/medico/recetas/nueva/page.tsx(199,31): error TS2339: Property 'cedula' does not exist on type '{ id: string; nombre_completo: string; email: string; avatar_url: string | null; fecha_nacimiento: string | null; genero: string | null; telefono: string | null; }'.
+app/dashboard/medico/recetas/plantillas/page.tsx(18,28): error TS2307: Cannot find module '@/lib/supabase/services/profile' or its corresponding type declarations.
+app/dashboard/paciente/citas/nueva/page.tsx(67,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/dashboard/paciente/citas/page.tsx(91,28): error TS18048: 'config' is possibly 'undefined'.
+app/dashboard/paciente/citas/page.tsx(91,45): error TS18048: 'config' is possibly 'undefined'.
+app/dashboard/paciente/citas/page.tsx(223,53): error TS2322: Type 'Appointment' is not assignable to type 'PatientAppointment'.
+  Types of property 'doctor' are incompatible.
+    Type 'DoctorProfile | undefined' is not assignable to type '{ nombre_completo: string; avatar_url: string | null; specialty?: { name: string; } | undefined; } | undefined'.
+      Type 'DoctorProfile' is missing the following properties from type '{ nombre_completo: string; avatar_url: string | null; specialty?: { name: string; } | undefined; }': nombre_completo, avatar_url
+app/dashboard/paciente/citas/page.tsx(244,53): error TS2322: Type 'Appointment' is not assignable to type 'PatientAppointment'.
+  Types of property 'doctor' are incompatible.
+    Type 'DoctorProfile | undefined' is not assignable to type '{ nombre_completo: string; avatar_url: string | null; specialty?: { name: string; } | undefined; } | undefined'.
+      Type 'DoctorProfile' is missing the following properties from type '{ nombre_completo: string; avatar_url: string | null; specialty?: { name: string; } | undefined; }': nombre_completo, avatar_url
+app/dashboard/paciente/citas/page.tsx(258,53): error TS2322: Type 'Appointment' is not assignable to type 'PatientAppointment'.
+  Types of property 'doctor' are incompatible.
+    Type 'DoctorProfile | undefined' is not assignable to type '{ nombre_completo: string; avatar_url: string | null; specialty?: { name: string; } | undefined; } | undefined'.
+      Type 'DoctorProfile' is missing the following properties from type '{ nombre_completo: string; avatar_url: string | null; specialty?: { name: string; } | undefined; }': nombre_completo, avatar_url
+app/dashboard/paciente/configuracion/page.tsx(18,29): error TS2307: Cannot find module '@/components/paciente/configuracion/ProfileCard' or its corresponding type declarations.
+app/dashboard/paciente/configuracion/page.tsx(19,33): error TS2307: Cannot find module '@/components/paciente/configuracion/MedicalInfoCard' or its corresponding type declarations.
+app/dashboard/paciente/configuracion/page.tsx(20,33): error TS2307: Cannot find module '@/components/paciente/configuracion/PreferencesCard' or its corresponding type declarations.
+app/dashboard/paciente/configuracion/page.tsx(21,35): error TS2307: Cannot find module '@/components/paciente/configuracion/NotificationsCard' or its corresponding type declarations.
+app/dashboard/paciente/configuracion/page.tsx(22,29): error TS2307: Cannot find module '@/components/paciente/configuracion/PrivacyCard' or its corresponding type declarations.
+app/dashboard/paciente/configuracion/page.tsx(108,55): error TS7006: Parameter 'p' implicitly has an 'any' type.
+app/dashboard/paciente/configuracion/page.tsx(115,26): error TS7006: Parameter 'd' implicitly has an 'any' type.
+app/dashboard/paciente/configuracion/page.tsx(123,71): error TS7006: Parameter 'p' implicitly has an 'any' type.
+app/dashboard/paciente/configuracion/page.tsx(130,32): error TS7006: Parameter 'n' implicitly has an 'any' type.
+app/dashboard/paciente/configuracion/page.tsx(138,55): error TS7006: Parameter 'p' implicitly has an 'any' type.
+app/dashboard/paciente/medicamentos/recetas/[id]/client.tsx(73,41): error TS2339: Property 'folio' does not exist on type 'Prescription'.
+app/dashboard/paciente/medicamentos/recetas/[id]/client.tsx(417,13): error TS2322: Type '{ id: string; recipe: { created_at: string; medicamentos: { nombre_comercial: string; nombre_generico: string | undefined; dosis: string; presentacion: any; frecuencia: string; duracion: string | undefined; indicaciones: string | undefined; }[]; folio: string; diagnostico: string | undefined; }; settings: DoctorSett...' is not assignable to type 'IntrinsicAttributes & PrescriptionPDFProps & RefAttributes<HTMLDivElement>'.
+  Property 'id' does not exist on type 'IntrinsicAttributes & PrescriptionPDFProps & RefAttributes<HTMLDivElement>'.
+app/dashboard/paciente/medicamentos/recetas/[id]/client.tsx(424,45): error TS2339: Property 'presentacion' does not exist on type 'MedicationCatalog'.
+app/dashboard/paciente/medicamentos/recordatorios/nuevo/page.tsx(106,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/dashboard/paciente/page.tsx(9,10): error TS2305: Module '"@red-salud/core"' has no exported member 'useI18n'.
+app/dashboard/paciente/telemedicina/page.tsx(55,18): error TS18048: 'config' is possibly 'undefined'.
+app/dashboard/paciente/telemedicina/page.tsx(58,23): error TS18048: 'config' is possibly 'undefined'.
+components/academy/LessonRunner.tsx(129,63): error TS2322: Type 'string | string[] | { [key: string]: string; }' is not assignable to type 'ReactNode'.
+  Type '{ [key: string]: string; }' is not assignable to type 'ReactNode'.
+    Type '{ [key: string]: string; }' is missing the following properties from type 'ReactPortal': children, type, props, key
+components/academy/visuals/ActiveRecallVisual.tsx(51,43): error TS2538: Type 'undefined' cannot be used as an index type.
+components/academy/visuals/ActiveRecallVisual.tsx(52,43): error TS2538: Type 'undefined' cannot be used as an index type.
+components/academy/visuals/ActiveRecallVisual.tsx(53,43): error TS2538: Type 'undefined' cannot be used as an index type.
+components/academy/visuals/ActiveRecallVisual.tsx(54,43): error TS2538: Type 'undefined' cannot be used as an index type.
+components/academy/visuals/ActiveRecallVisual.tsx(64,47): error TS2538: Type 'undefined' cannot be used as an index type.
+components/academy/visuals/ActiveRecallVisual.tsx(64,65): error TS2538: Type 'undefined' cannot be used as an index type.
+components/academy/visuals/ActiveRecallVisual.tsx(64,85): error TS2538: Type 'undefined' cannot be used as an index type.
+components/academy/visuals/ActiveRecallVisual.tsx(64,101): error TS2538: Type 'undefined' cannot be used as an index type.
+components/auth/login-form.tsx(54,27): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(schema: Zod3Type<{ email: string; password: string; }, { email: string; password: string; }>, schemaOptions?: ParseParams | undefined, resolverOptions?: NonRawResolverOptions | undefined): Resolver<...>', gave the following error.
+    Argument of type 'ZodObject<{ email: ZodString; password: ZodString; }, $strip>' is not assignable to parameter of type 'Zod3Type<{ email: string; password: string; }, { email: string; password: string; }>'.
+      Types of property '_def' are incompatible.
+        Property 'typeName' is missing in type '$ZodObjectDef<{ email: ZodString; password: ZodString; }>' but required in type '{ typeName: string; }'.
+  Overload 2 of 4, '(schema: $ZodType<unknown, FieldValues, $ZodTypeInternals<unknown, FieldValues>>, schemaOptions?: ParseContext<$ZodIssue> | undefined, resolverOptions?: NonRawResolverOptions | undefined): Resolver<...>', gave the following error.
+    Argument of type 'ZodObject<{ email: ZodString; password: ZodString; }, $strip>' is not assignable to parameter of type '$ZodType<unknown, FieldValues, $ZodTypeInternals<unknown, FieldValues>>'.
+      The types of '_zod.version.minor' are incompatible between these types.
+        Type '3' is not assignable to type '0'.
+components/auth/register-form-v2.tsx(82,27): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(schema: Zod3Type<{ fullName: string; email: string; password: string; confirmPassword: string; }, { fullName: string; email: string; password: string; confirmPassword: string; }>, schemaOptions?: ParseParams | undefined, resolverOptions?: NonRawResolverOptions | undefined): Resolver<...>', gave the following error.
+    Argument of type 'ZodObject<{ fullName: ZodString; email: ZodString; password: ZodString; confirmPassword: ZodString; }, $strip>' is not assignable to parameter of type 'Zod3Type<{ fullName: string; email: string; password: string; confirmPassword: string; }, { fullName: string; email: string; password: string; confirmPassword: string; }>'.
+      Types of property '_def' are incompatible.
+        Property 'typeName' is missing in type '$ZodObjectDef<{ fullName: ZodString; email: ZodString; password: ZodString; confirmPassword: ZodString; }>' but required in type '{ typeName: string; }'.
+  Overload 2 of 4, '(schema: $ZodType<unknown, FieldValues, $ZodTypeInternals<unknown, FieldValues>>, schemaOptions?: ParseContext<$ZodIssue> | undefined, resolverOptions?: NonRawResolverOptions | undefined): Resolver<...>', gave the following error.
+    Argument of type 'ZodObject<{ fullName: ZodString; email: ZodString; password: ZodString; confirmPassword: ZodString; }, $strip>' is not assignable to parameter of type '$ZodType<unknown, FieldValues, $ZodTypeInternals<unknown, FieldValues>>'.
+      The types of '_zod.version.minor' are incompatible between these types.
+        Type '3' is not assignable to type '0'.
+components/auth/register-form.tsx(46,27): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(schema: Zod3Type<{ fullName: string; email: string; password: string; confirmPassword: string; }, { fullName: string; email: string; password: string; confirmPassword: string; }>, schemaOptions?: ParseParams | undefined, resolverOptions?: NonRawResolverOptions | undefined): Resolver<...>', gave the following error.
+    Argument of type 'ZodObject<{ fullName: ZodString; email: ZodString; password: ZodString; confirmPassword: ZodString; }, $strip>' is not assignable to parameter of type 'Zod3Type<{ fullName: string; email: string; password: string; confirmPassword: string; }, { fullName: string; email: string; password: string; confirmPassword: string; }>'.
+      Types of property '_def' are incompatible.
+        Property 'typeName' is missing in type '$ZodObjectDef<{ fullName: ZodString; email: ZodString; password: ZodString; confirmPassword: ZodString; }>' but required in type '{ typeName: string; }'.
+  Overload 2 of 4, '(schema: $ZodType<unknown, FieldValues, $ZodTypeInternals<unknown, FieldValues>>, schemaOptions?: ParseContext<$ZodIssue> | undefined, resolverOptions?: NonRawResolverOptions | undefined): Resolver<...>', gave the following error.
+    Argument of type 'ZodObject<{ fullName: ZodString; email: ZodString; password: ZodString; confirmPassword: ZodString; }, $strip>' is not assignable to parameter of type '$ZodType<unknown, FieldValues, $ZodTypeInternals<unknown, FieldValues>>'.
+      The types of '_zod.version.minor' are incompatible between these types.
+        Type '3' is not assignable to type '0'.
+components/chatbot/chat-window.tsx(276,25): error TS18048: 'lastMessage' is possibly 'undefined'.
+components/chatbot/chat-window.tsx(277,25): error TS18048: 'lastMessage' is possibly 'undefined'.
+components/chatbot/chat-window.tsx(467,38): error TS18048: 'effectiveSuggestions' is possibly 'undefined'.
+components/citas/nueva/appointment-form.tsx(157,51): error TS2538: Type 'undefined' cannot be used as an index type.
+components/citas/nueva/appointment-form.tsx(169,43): error TS2339: Property 'horarios' does not exist on type 'Schedule'.
+components/citas/nueva/appointment-form.tsx(178,80): error TS2538: Type 'undefined' cannot be used as an index type.
+components/citas/nueva/appointment-form.tsx(181,51): error TS2339: Property 'office_id' does not exist on type 'Schedule'.
+components/citas/nueva/appointment-form.tsx(182,77): error TS2339: Property 'office_id' does not exist on type 'Schedule'.
+components/citas/nueva/appointment-form.tsx(250,53): error TS2353: Object literal may only specify known properties, and 'DayContent' does not exist in type 'Partial<CustomComponents>'.
+components/citas/nueva/appointment-form.tsx(250,68): error TS7031: Binding element 'date' implicitly has an 'any' type.
+components/citas/nueva/appointment-form.tsx(361,62): error TS2538: Type 'undefined' cannot be used as an index type.
+components/citas/nueva/appointment-form.tsx(362,62): error TS2538: Type 'undefined' cannot be used as an index type.
+components/citas/nueva/appointment-form.tsx(369,66): error TS2538: Type 'undefined' cannot be used as an index type.
+components/citas/nueva/appointment-form.tsx(370,66): error TS2538: Type 'undefined' cannot be used as an index type.
+components/citas/nueva/appointment-form.tsx(377,66): error TS2538: Type 'undefined' cannot be used as an index type.
+components/citas/nueva/appointment-form.tsx(378,66): error TS2538: Type 'undefined' cannot be used as an index type.
+components/citas/nueva/appointment-form.tsx(384,62): error TS2538: Type 'undefined' cannot be used as an index type.
+components/citas/nueva/appointment-form.tsx(385,62): error TS2538: Type 'undefined' cannot be used as an index type.
+components/citas/nueva/appointment-form.tsx(390,74): error TS2339: Property 'horarios' does not exist on type 'Schedule'.
+components/dashboard/clinica/clinic-scope-provider.tsx(10,45): error TS2307: Cannot find module '@/lib/types/clinic.types' or its corresponding type declarations.
+components/dashboard/configuracion/signature-canvas.tsx(63,15): error TS2532: Object is possibly 'undefined'.
+components/dashboard/configuracion/signature-canvas.tsx(66,15): error TS2532: Object is possibly 'undefined'.
+components/dashboard/configuracion/signature-canvas.tsx(88,15): error TS2532: Object is possibly 'undefined'.
+components/dashboard/configuracion/signature-canvas.tsx(91,15): error TS2532: Object is possibly 'undefined'.
+components/dashboard/medico/configuracion/info-profesional-section.tsx(564,59): error TS2532: Object is possibly 'undefined'.
+components/dashboard/medico/configuracion/office-photos.tsx(30,24): error TS2304: Cannot find name 'useCallback'.
+components/dashboard/medico/configuracion/recipe-settings-section.tsx(21,19): error TS2339: Property 'profile' does not exist on type '{ user: User | null; session: any; loading: boolean; }'.
+components/dashboard/medico/configuracion/schedule-section.tsx(83,25): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/medico/configuracion/schedule-section.tsx(265,17): error TS2345: Argument of type '(prev: Schedule) => { [x: string]: DaySchedule | { activo: boolean; horarios?: TimeSlot[] | undefined; }; }' is not assignable to parameter of type 'SetStateAction<Schedule>'.
+  Type '(prev: Schedule) => { [x: string]: DaySchedule | { activo: boolean; horarios?: TimeSlot[] | undefined; }; }' is not assignable to type '(prevState: Schedule) => Schedule'.
+    Type '{ [x: string]: DaySchedule | { activo: boolean; horarios?: TimeSlot[] | undefined; }; }' is not assignable to type 'Schedule'.
+      'string' index signatures are incompatible.
+        Type 'DaySchedule | { activo: boolean; horarios?: TimeSlot[] | undefined; }' is not assignable to type 'DaySchedule'.
+          Type '{ activo: boolean; horarios?: TimeSlot[] | undefined; }' is not assignable to type 'DaySchedule'.
+            Types of property 'horarios' are incompatible.
+              Type 'TimeSlot[] | undefined' is not assignable to type 'TimeSlot[]'.
+                Type 'undefined' is not assignable to type 'TimeSlot[]'.
+components/dashboard/medico/configuracion/schedule-section.tsx(299,17): error TS2345: Argument of type '(prev: Schedule) => { [x: string]: DaySchedule | { horarios: TimeSlot[]; activo?: boolean | undefined; }; }' is not assignable to parameter of type 'SetStateAction<Schedule>'.
+  Type '(prev: Schedule) => { [x: string]: DaySchedule | { horarios: TimeSlot[]; activo?: boolean | undefined; }; }' is not assignable to type '(prevState: Schedule) => Schedule'.
+    Type '{ [x: string]: DaySchedule | { horarios: TimeSlot[]; activo?: boolean | undefined; }; }' is not assignable to type 'Schedule'.
+      'string' index signatures are incompatible.
+        Type 'DaySchedule | { horarios: TimeSlot[]; activo?: boolean | undefined; }' is not assignable to type 'DaySchedule'.
+          Type '{ horarios: TimeSlot[]; activo?: boolean | undefined; }' is not assignable to type 'DaySchedule'.
+            Types of property 'activo' are incompatible.
+              Type 'boolean | undefined' is not assignable to type 'boolean'.
+                Type 'undefined' is not assignable to type 'boolean'.
+components/dashboard/medico/configuracion/schedule-section.tsx(315,17): error TS2345: Argument of type '(prev: Schedule) => { [x: string]: DaySchedule | { horarios: TimeSlot[]; activo?: boolean | undefined; }; }' is not assignable to parameter of type 'SetStateAction<Schedule>'.
+  Type '(prev: Schedule) => { [x: string]: DaySchedule | { horarios: TimeSlot[]; activo?: boolean | undefined; }; }' is not assignable to type '(prevState: Schedule) => Schedule'.
+    Type '{ [x: string]: DaySchedule | { horarios: TimeSlot[]; activo?: boolean | undefined; }; }' is not assignable to type 'Schedule'.
+      'string' index signatures are incompatible.
+        Type 'DaySchedule | { horarios: TimeSlot[]; activo?: boolean | undefined; }' is not assignable to type 'DaySchedule'.
+          Type '{ horarios: TimeSlot[]; activo?: boolean | undefined; }' is not assignable to type 'DaySchedule'.
+            Types of property 'activo' are incompatible.
+              Type 'boolean | undefined' is not assignable to type 'boolean'.
+                Type 'undefined' is not assignable to type 'boolean'.
+components/dashboard/medico/configuracion/schedule-section.tsx(317,7): error TS2322: Type '{ inicio?: string | undefined; fin?: string | undefined; }' is not assignable to type 'TimeSlot'.
+  Types of property 'inicio' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(56,9): error TS2448: Block-scoped variable 'loadTodaySchedules' used before its declaration.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(56,9): error TS2454: Variable 'loadTodaySchedules' is used before being assigned.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(67,34): error TS18048: 'startH' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(67,48): error TS18048: 'startM' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(68,32): error TS18048: 'endH' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(68,44): error TS18048: 'endM' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(105,57): error TS2538: Type 'undefined' cannot be used as an index type.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(129,31): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(184,30): error TS18048: 'displaySchedule' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(186,26): error TS18048: 'displaySchedule' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(188,34): error TS18048: 'displaySchedule' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(189,34): error TS18048: 'displaySchedule' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(189,72): error TS18048: 'displaySchedule' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(208,26): error TS18048: 'displaySchedule' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(209,56): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(213,50): error TS18048: 'startH' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(213,64): error TS18048: 'startM' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(214,48): error TS18048: 'endH' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(214,60): error TS18048: 'endM' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/current-location-widget.tsx(245,58): error TS18048: 'displaySchedule' is possibly 'undefined'.
+components/dashboard/medico/dashboard/widgets/income-widget.tsx(198,17): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/medico/dashboard/widgets/monthly-goals-widget.tsx(304,17): error TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'.
+components/dashboard/medico/dashboard/widgets/performance-chart-widget.tsx(258,19): error TS2322: Type 'string' is not assignable to type 'never'.
+components/dashboard/medico/dashboard/widgets/revenue-analytics-widget.tsx(45,17): error TS2448: Block-scoped variable 'loadRevenueData' used before its declaration.
+components/dashboard/medico/dashboard/widgets/revenue-analytics-widget.tsx(45,17): error TS2454: Variable 'loadRevenueData' is used before being assigned.
+components/dashboard/medico/dashboard/widgets/tasks-widget.tsx(133,21): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+components/dashboard/medico/dashboard/widgets/tasks-widget.tsx(133,27): error TS18048: 'month' is possibly 'undefined'.
+components/dashboard/medico/estadisticas/tabs/pacientes-tab.tsx(102,26): error TS2532: Object is possibly 'undefined'.
+components/dashboard/medico/estadisticas/tabs/pacientes-tab.tsx(103,32): error TS2532: Object is possibly 'undefined'.
+components/dashboard/medico/estadisticas/tabs/pacientes-tab.tsx(104,32): error TS2532: Object is possibly 'undefined'.
+components/dashboard/medico/estadisticas/tabs/pacientes-tab.tsx(105,32): error TS2532: Object is possibly 'undefined'.
+components/dashboard/medico/estadisticas/tabs/pacientes-tab.tsx(106,16): error TS2532: Object is possibly 'undefined'.
+components/dashboard/medico/estadisticas/tabs/patrones-tab.tsx(57,23): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/medico/estadisticas/tabs/patrones-tab.tsx(57,41): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/medico/patients/today-patients-section.tsx(82,3): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/medico/recetas/signature-canvas.tsx(123,27): error TS2532: Object is possibly 'undefined'.
+components/dashboard/medico/recetas/signature-canvas.tsx(124,27): error TS2532: Object is possibly 'undefined'.
+components/dashboard/medico/templates/custom-template-creator.tsx(103,6): error TS2322: Type 'StructuredTemplateField | undefined' is not assignable to type 'StructuredTemplateField'.
+  Type 'undefined' is not assignable to type 'StructuredTemplateField'.
+components/dashboard/medico/templates/custom-template-creator.tsx(103,24): error TS2322: Type 'StructuredTemplateField | undefined' is not assignable to type 'StructuredTemplateField'.
+  Type 'undefined' is not assignable to type 'StructuredTemplateField'.
+components/dashboard/medico/templates/structured-template-editor.tsx(89,29): error TS18048: 'vitalSigns.pa' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(90,29): error TS18048: 'vitalSigns.fc' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(91,29): error TS18048: 'vitalSigns.fr' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(92,31): error TS18048: 'vitalSigns.temp' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(93,33): error TS18048: 'vitalSigns.satO2' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(133,19): error TS2345: Argument of type '(prev: Record<string, VitalSign>) => { [x: string]: VitalSign | { value: string; unit?: string | undefined; normalRange?: { min: number; max: number; } | undefined; label?: string | undefined; }; }' is not assignable to parameter of type 'SetStateAction<Record<string, VitalSign>>'.
+  Type '(prev: Record<string, VitalSign>) => { [x: string]: VitalSign | { value: string; unit?: string | undefined; normalRange?: { min: number; max: number; } | undefined; label?: string | undefined; }; }' is not assignable to type '(prevState: Record<string, VitalSign>) => Record<string, VitalSign>'.
+    Type '{ [x: string]: VitalSign | { value: string; unit?: string | undefined; normalRange?: { min: number; max: number; } | undefined; label?: string | undefined; }; }' is not assignable to type 'Record<string, VitalSign>'.
+      'string' index signatures are incompatible.
+        Type 'VitalSign | { value: string; unit?: string | undefined; normalRange?: { min: number; max: number; } | undefined; label?: string | undefined; }' is not assignable to type 'VitalSign'.
+          Type '{ value: string; unit?: string | undefined; normalRange?: { min: number; max: number; } | undefined; label?: string | undefined; }' is not assignable to type 'VitalSign'.
+            Types of property 'unit' are incompatible.
+              Type 'string | undefined' is not assignable to type 'string'.
+                Type 'undefined' is not assignable to type 'string'.
+components/dashboard/medico/templates/structured-template-editor.tsx(141,10): error TS18048: 'vital' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(147,33): error TS18048: 'vital' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(147,33): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/medico/templates/structured-template-editor.tsx(151,29): error TS18048: 'vital' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(155,20): error TS18048: 'vital' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(155,56): error TS18048: 'vital' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(157,22): error TS18048: 'vital' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(157,64): error TS18048: 'vital' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(216,30): error TS18048: 'vitalSigns.pa' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(228,32): error TS18048: 'vitalSigns.pa' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(228,64): error TS18048: 'vitalSigns.pa' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(238,30): error TS18048: 'vitalSigns.fc' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(251,32): error TS18048: 'vitalSigns.fc' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(251,64): error TS18048: 'vitalSigns.fc' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(261,30): error TS18048: 'vitalSigns.fr' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(274,32): error TS18048: 'vitalSigns.fr' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(274,64): error TS18048: 'vitalSigns.fr' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(284,30): error TS18048: 'vitalSigns.temp' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(298,32): error TS18048: 'vitalSigns.temp' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(298,66): error TS18048: 'vitalSigns.temp' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(308,30): error TS18048: 'vitalSigns.satO2' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(321,32): error TS18048: 'vitalSigns.satO2' is possibly 'undefined'.
+components/dashboard/medico/templates/structured-template-editor.tsx(321,67): error TS18048: 'vitalSigns.satO2' is possibly 'undefined'.
+components/dashboard/medico/workspace/icd-search-tab.tsx(196,25): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<string | null>'.
+  Type 'undefined' is not assignable to type 'SetStateAction<string | null>'.
+components/dashboard/medico/workspace/icd-search-tab.tsx(197,23): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<string>'.
+  Type 'undefined' is not assignable to type 'SetStateAction<string>'.
+components/dashboard/recetas/medication-input.tsx(79,45): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/recetas/medication-input.tsx(85,38): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/recetas/medication-input.tsx(91,43): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/dashboard/recetas/recipe-viewer-modal.tsx(5,31): error TS2724: '"./visual-recipe-preview"' has no exported member named 'VisualRecipePreviewProps'. Did you mean 'VisualRecipePreview'?
+components/dashboard/shared/profile/components/security/security-questions-modal.tsx(147,27): error TS2532: Object is possibly 'undefined'.
+components/dashboard/shared/profile/components/security/security-questions-modal.tsx(171,27): error TS2532: Object is possibly 'undefined'.
+components/dashboard/shared/profile/tabs/billing-tab.tsx(27,15): error TS2448: Block-scoped variable 'loadData' used before its declaration.
+components/dashboard/shared/profile/tabs/billing-tab.tsx(27,15): error TS2454: Variable 'loadData' is used before being assigned.
+components/dashboard/shared/profile/tabs/profile-tab.tsx(46,31): error TS2532: Object is possibly 'undefined'.
+components/dashboard/shared/profile/tabs/profile-tab.tsx(47,25): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<string>'.
+  Type 'undefined' is not assignable to type 'SetStateAction<string>'.
+components/dashboard/shared/profile/tabs/security-tab-new.tsx(71,7): error TS2448: Block-scoped variable 'loadSecuritySettingsInBackground' used before its declaration.
+components/dashboard/shared/profile/tabs/security-tab-new.tsx(71,7): error TS2454: Variable 'loadSecuritySettingsInBackground' is used before being assigned.
+components/messaging/message-thread.tsx(43,13): error TS2532: Object is possibly 'undefined'.
+components/nosotros/DNAHelixVisual.tsx(238,26): error TS18048: 'pos' is possibly 'undefined'.
+components/nosotros/DNAHelixVisual.tsx(239,25): error TS18048: 'pos' is possibly 'undefined'.
+components/nosotros/DNAHelixVisual.tsx(344,25): error TS2322: Type 'DNAIcon | undefined' is not assignable to type 'DNAIcon'.
+  Type 'undefined' is not assignable to type 'DNAIcon'.
+components/sections/impact-section/ImpactSection.tsx(76,62): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/sections/impact-section/useImpactData.ts(61,9): error TS2322: Type '{ value: string; description: string; icon?: LucideIcon | undefined; color?: string | undefined; label?: string | undefined; bgColor?: string; cardBgColor?: string; cardBorderColor?: string; }' is not assignable to type 'StatItem'.
+  Types of property 'icon' are incompatible.
+    Type 'LucideIcon | undefined' is not assignable to type 'LucideIcon'.
+      Type 'undefined' is not assignable to type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>'.
+components/sections/impact-section/useImpactData.ts(66,9): error TS2322: Type '{ value: string; description: string; icon?: LucideIcon | undefined; color?: string | undefined; label?: string | undefined; bgColor?: string; cardBgColor?: string; cardBorderColor?: string; }' is not assignable to type 'StatItem'.
+  Types of property 'icon' are incompatible.
+    Type 'LucideIcon | undefined' is not assignable to type 'LucideIcon'.
+      Type 'undefined' is not assignable to type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>'.
+components/sections/impact-section/useImpactData.ts(79,9): error TS2322: Type '{ value: string; description: string; icon?: LucideIcon | undefined; color?: string | undefined; label?: string | undefined; bgColor?: string; cardBgColor?: string; cardBorderColor?: string; }' is not assignable to type 'StatItem'.
+  Types of property 'icon' are incompatible.
+    Type 'LucideIcon | undefined' is not assignable to type 'LucideIcon'.
+      Type 'undefined' is not assignable to type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>'.
+components/sections/impact-section/useImpactData.ts(84,9): error TS2322: Type '{ value: string; description: string; icon?: LucideIcon | undefined; color?: string | undefined; label?: string | undefined; bgColor?: string; cardBgColor?: string; cardBorderColor?: string; }' is not assignable to type 'StatItem'.
+  Types of property 'icon' are incompatible.
+    Type 'LucideIcon | undefined' is not assignable to type 'LucideIcon'.
+      Type 'undefined' is not assignable to type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>'.
+components/sections/medicos/ProductShowcase.tsx(51,33): error TS2322: Type 'ModuleData | undefined' is not assignable to type 'ModuleData'.
+  Type 'undefined' is not assignable to type 'ModuleData'.
+components/sections/medicos/Testimonials.tsx(48,22): error TS2532: Object is possibly 'undefined'.
+components/sections/pacientes/Features.tsx(51,11): error TS2532: Object is possibly 'undefined'.
+components/sections/pacientes/Features.tsx(52,12): error TS2532: Object is possibly 'undefined'.
+components/sections/pacientes/Features.tsx(53,14): error TS2532: Object is possibly 'undefined'.
+components/sections/pacientes/Features.tsx(54,12): error TS2532: Object is possibly 'undefined'.
+components/sections/pacientes/PacientesProductShowcase.tsx(301,49): error TS18048: 'currentFeature' is possibly 'undefined'.
+components/sections/pacientes/PacientesProductShowcase.tsx(303,50): error TS18048: 'currentFeature' is possibly 'undefined'.
+components/sections/pacientes/PacientesProductShowcase.tsx(306,80): error TS18048: 'currentFeature' is possibly 'undefined'.
+components/sections/pacientes/PacientesProductShowcase.tsx(307,95): error TS18048: 'currentFeature' is possibly 'undefined'.
+components/sections/pacientes/PacientesProductShowcase.tsx(328,54): error TS18048: 'currentFeature' is possibly 'undefined'.
+components/sections/pacientes/PacientesProductShowcase.tsx(359,54): error TS18048: 'currentFeature' is possibly 'undefined'.
+components/sections/pacientes/Testimonials.tsx(107,31): error TS18048: 'currentTestimonial' is possibly 'undefined'.
+components/sections/pacientes/Testimonials.tsx(113,28): error TS18048: 'currentTestimonial' is possibly 'undefined'.
+components/sections/pacientes/Testimonials.tsx(118,23): error TS18048: 'currentTestimonial' is possibly 'undefined'.
+components/sections/pacientes/Testimonials.tsx(118,49): error TS18048: 'currentTestimonial' is possibly 'undefined'.
+components/sections/pacientes/Testimonials.tsx(118,86): error TS18048: 'currentTestimonial' is possibly 'undefined'.
+components/sections/pacientes/Testimonials.tsx(122,25): error TS18048: 'currentTestimonial' is possibly 'undefined'.
+components/sections/pacientes/Testimonials.tsx(122,52): error TS18048: 'currentTestimonial' is possibly 'undefined'.
+components/sections/pacientes/Testimonials.tsx(125,25): error TS18048: 'currentTestimonial' is possibly 'undefined'.
+components/sections/specialties/specialty-map.tsx(4,70): error TS7016: Could not find a declaration file for module 'react-simple-maps'. 'C:/Users/Fredd/Dev/red-salud/node_modules/.pnpm/react-simple-maps@4.0.0-beta.6_prop-types@15.8.1_react-dom@19.2.0_react@19.2.0/node_modules/react-simple-maps/dist/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/react-simple-maps` if it exists or add a new declaration (.d.ts) file containing `declare module 'react-simple-maps';`
+components/sections/specialties/specialty-map.tsx(5,31): error TS7016: Could not find a declaration file for module 'd3-scale'. 'C:/Users/Fredd/Dev/red-salud/node_modules/.pnpm/d3-scale@4.0.2/node_modules/d3-scale/src/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/d3-scale` if it exists or add a new declaration (.d.ts) file containing `declare module 'd3-scale';`
+components/sections/specialties/specialty-map.tsx(141,33): error TS7031: Binding element 'geographies' implicitly has an 'any' type.
+components/sections/specialties/SpecialtySearch.tsx(110,30): error TS2532: Object is possibly 'undefined'.
+components/sections/specialties/SpecialtySearch.tsx(182,30): error TS2345: Argument of type 'Specialty | undefined' is not assignable to parameter of type 'Specialty'.
+  Type 'undefined' is not assignable to type 'Specialty'.
+hooks/use-cita-tour-guide.ts(7,31): error TS2307: Cannot find module '@/components/citas/nueva/tour-guide' or its corresponding type declarations.
+hooks/use-cita-tour-guide.ts(59,30): error TS7006: Parameter 'step' implicitly has an 'any' type.
+hooks/use-cita-tour-guide.ts(62,38): error TS7006: Parameter 'btn' implicitly has an 'any' type.
+hooks/use-clinic-operations.ts(28,8): error TS2307: Cannot find module '@/lib/types/clinic.types' or its corresponding type declarations.
+hooks/use-clinic-operations.ts(84,50): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+hooks/use-clinic-overview.ts(18,79): error TS2307: Cannot find module '@/lib/types/clinic.types' or its corresponding type declarations.
+hooks/use-clinic-rcm.ts(36,8): error TS2307: Cannot find module '@/lib/types/clinic.types' or its corresponding type declarations.
+hooks/use-clinic-resources.ts(19,8): error TS2307: Cannot find module '@/lib/types/clinic.types' or its corresponding type declarations.
+hooks/use-secretary-permissions.ts(70,26): error TS18048: 'selectedDoctor' is possibly 'undefined'.
+hooks/use-secretary-permissions.ts(72,22): error TS18048: 'selectedDoctor' is possibly 'undefined'.
+hooks/use-smart-suggestions.ts(9,26): error TS2307: Cannot find module 'lodash' or its corresponding type declarations.
+hooks/use-tasks.ts(88,21): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+hooks/use-tasks.ts(88,27): error TS18048: 'month' is possibly 'undefined'.
+hooks/use-tour-guide.ts(9,34): error TS2307: Cannot find module '../components/dashboard/tour-guide/tour-guide-provider' or its corresponding type declarations.
+hooks/use-tour-guide.ts(36,3): error TS2740: Type '{}' is missing the following properties from type 'TourGuideContextValue': currentTour, currentStep, completedTours, startTour, and 8 more.
+hooks/useMedicalForm.ts(2,50): error TS2307: Cannot find module '@/components/dashboard/profile/types' or its corresponding type declarations.
+hooks/useMedicalForm.ts(38,18): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+lib/academy/services/gamification.service.ts(218,24): error TS2532: Object is possibly 'undefined'.
+lib/academy/services/gamification.service.ts(221,48): error TS2532: Object is possibly 'undefined'.
+lib/recipe-utils.tsx(2,10): error TS2305: Module '"@/components/dashboard/recetas/visual-recipe-preview"' has no exported member 'DoctorInfo'.
+lib/recipe-utils.tsx(2,43): error TS2724: '"@/components/dashboard/recetas/visual-recipe-preview"' has no exported member named 'VisualRecipePreviewProps'. Did you mean 'VisualRecipePreview'?
+lib/recipe-utils.tsx(51,24): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | number | Date'.
+      Type 'undefined' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+      Type 'undefined' is not assignable to type 'string | number'.
+lib/redux/profileSlice.ts(2,31): error TS2307: Cannot find module '@/components/dashboard/profile/types' or its corresponding type declarations.
+lib/runtime/__tests__/connectivity-monitor.property.test.ts(121,40): error TS2532: Object is possibly 'undefined'.
+lib/runtime/__tests__/connectivity-monitor.property.test.ts(123,22): error TS2532: Object is possibly 'undefined'.
+lib/runtime/__tests__/network-service.test.ts(283,41): error TS2532: Object is possibly 'undefined'.
+lib/runtime/__tests__/sync-service.property.test.ts(73,9): error TS2345: Argument of type 'Arbitrary<{ id: string; type: string; entity: string; data: { id: string; name: string; value: string | number | boolean; timestamp: number; }; timestamp: number; retries: number; }>' is not assignable to parameter of type 'Arbitrary<PendingChange>'.
+  Type '{ id: string; type: string; entity: string; data: { id: string; name: string; value: string | number | boolean; timestamp: number; }; timestamp: number; retries: number; }' is not assignable to type 'PendingChange'.
+    Types of property 'type' are incompatible.
+      Type 'string' is not assignable to type '"delete" | "create" | "update"'.
+lib/runtime/__tests__/sync-service.property.test.ts(122,9): error TS2345: Argument of type 'Arbitrary<{ id: string; type: string; entity: "patient"; data: { id: string; firstName: string; lastName: string; dateOfBirth: string; gender: string; phone: string; }; timestamp: number; retries: number; }>' is not assignable to parameter of type 'Arbitrary<PendingChange>'.
+  Type '{ id: string; type: string; entity: "patient"; data: { id: string; firstName: string; lastName: string; dateOfBirth: string; gender: string; phone: string; }; timestamp: number; retries: number; }' is not assignable to type 'PendingChange'.
+    Types of property 'type' are incompatible.
+      Type 'string' is not assignable to type '"delete" | "create" | "update"'.
+lib/runtime/__tests__/sync-service.property.test.ts(159,9): error TS2345: Argument of type 'Arbitrary<{ id: string; type: string; entity: "appointment"; data: { id: string; patientId: string; doctorId: string; date: string; duration: number; type: string; status: string; }; timestamp: number; retries: number; }>' is not assignable to parameter of type 'Arbitrary<PendingChange>'.
+  Type '{ id: string; type: string; entity: "appointment"; data: { id: string; patientId: string; doctorId: string; date: string; duration: number; type: string; status: string; }; timestamp: number; retries: number; }' is not assignable to type 'PendingChange'.
+    Types of property 'type' are incompatible.
+      Type 'string' is not assignable to type '"delete" | "create" | "update"'.
+lib/runtime/__tests__/sync-service.property.test.ts(197,9): error TS2345: Argument of type 'Arbitrary<{ id: string; type: string; entity: "consultation"; data: { id: string; patientId: string; doctorId: string; date: string; chiefComplaint: string; symptoms: string[]; diagnoses: { id: string; icd11Code: string; description: string; type: string; }[]; }; timestamp: number; retries: number; }>' is not assignable to parameter of type 'Arbitrary<PendingChange>'.
+  Type '{ id: string; type: string; entity: "consultation"; data: { id: string; patientId: string; doctorId: string; date: string; chiefComplaint: string; symptoms: string[]; diagnoses: { id: string; icd11Code: string; description: string; type: string; }[]; }; timestamp: number; retries: number; }' is not assignable to type 'PendingChange'.
+    Types of property 'type' are incompatible.
+      Type 'string' is not assignable to type '"delete" | "create" | "update"'.
+lib/runtime/__tests__/sync-service.property.test.ts(243,9): error TS2345: Argument of type 'Arbitrary<{ id: string; type: string; entity: "message"; data: { id: string; conversationId: string; senderId: string; recipientId: string; content: string; sentAt: string; }; timestamp: number; retries: number; }>' is not assignable to parameter of type 'Arbitrary<PendingChange>'.
+  Type '{ id: string; type: string; entity: "message"; data: { id: string; conversationId: string; senderId: string; recipientId: string; content: string; sentAt: string; }; timestamp: number; retries: number; }' is not assignable to type 'PendingChange'.
+    Types of property 'type' are incompatible.
+      Type 'string' is not assignable to type '"delete" | "create" | "update"'.
+lib/runtime/__tests__/sync-service.property.test.ts(279,9): error TS2345: Argument of type 'Arbitrary<{ id: string; type: string; entity: "settings"; data: { id: string; userId: string; credentials: string; specialties: string[]; licenseNumber: string; }; timestamp: number; retries: number; }>' is not assignable to parameter of type 'Arbitrary<PendingChange>'.
+  Type '{ id: string; type: string; entity: "settings"; data: { id: string; userId: string; credentials: string; specialties: string[]; licenseNumber: string; }; timestamp: number; retries: number; }' is not assignable to type 'PendingChange'.
+    Types of property 'type' are incompatible.
+      Type 'string' is not assignable to type '"delete" | "create" | "update"'.
+lib/runtime/__tests__/sync-service.property.test.ts(314,9): error TS2345: Argument of type 'Arbitrary<{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }[]>' is not assignable to parameter of type 'Arbitrary<PendingChange[]>'.
+  Type '{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }[]' is not assignable to type 'PendingChange[]'.
+    Type '{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }' is not assignable to type 'PendingChange'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type '"delete" | "create" | "update"'.
+lib/runtime/__tests__/sync-service.property.test.ts(351,20): error TS2532: Object is possibly 'undefined'.
+lib/runtime/__tests__/sync-service.property.test.ts(351,38): error TS2532: Object is possibly 'undefined'.
+lib/runtime/__tests__/sync-service.property.test.ts(365,9): error TS2345: Argument of type 'Arbitrary<{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }[]>' is not assignable to parameter of type 'Arbitrary<PendingChange[]>'.
+  Type '{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }[]' is not assignable to type 'PendingChange[]'.
+    Type '{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }' is not assignable to type 'PendingChange'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type '"delete" | "create" | "update"'.
+lib/runtime/__tests__/sync-service.property.test.ts(411,9): error TS2345: Argument of type 'Arbitrary<{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }>' is not assignable to parameter of type 'Arbitrary<PendingChange>'.
+  Type '{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }' is not assignable to type 'PendingChange'.
+    Types of property 'type' are incompatible.
+      Type 'string' is not assignable to type '"delete" | "create" | "update"'.
+lib/runtime/__tests__/sync-service.property.test.ts(471,9): error TS2345: Argument of type 'Arbitrary<{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }[]>' is not assignable to parameter of type 'Arbitrary<PendingChange[]>'.
+  Type '{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }[]' is not assignable to type 'PendingChange[]'.
+    Type '{ id: string; type: string; entity: string; data: { id: string; value: string; }; timestamp: number; retries: number; }' is not assignable to type 'PendingChange'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type '"delete" | "create" | "update"'.
+lib/runtime/__tests__/sync-service.property.test.ts(510,20): error TS2532: Object is possibly 'undefined'.
+lib/runtime/__tests__/sync-service.property.test.ts(510,38): error TS2532: Object is possibly 'undefined'.
+lib/runtime/services/tauri-network-service.ts(117,35): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/runtime/storage-keys.ts(151,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/specialty-theme.ts(227,36): error TS2322: Type 'SpecialtyTheme | undefined' is not assignable to type 'SpecialtyTheme'.
+  Type 'undefined' is not assignable to type 'SpecialtyTheme'.
+lib/specialty-theme.ts(228,36): error TS2322: Type 'SpecialtyTheme | undefined' is not assignable to type 'SpecialtyTheme'.
+  Type 'undefined' is not assignable to type 'SpecialtyTheme'.
+lib/specialty-theme.ts(229,37): error TS2322: Type 'SpecialtyTheme | undefined' is not assignable to type 'SpecialtyTheme'.
+  Type 'undefined' is not assignable to type 'SpecialtyTheme'.
+lib/supabase/services/appointments/appointments.mutations.ts(98,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/supabase/services/appointments/appointments.mutations.ts(99,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/supabase/services/appointments/appointments.mutations.ts(133,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/supabase/services/appointments/appointments.mutations.ts(134,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/supabase/services/appointments/appointments.mutations.ts(168,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/supabase/services/appointments/appointments.mutations.ts(169,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/supabase/services/appointments/appointments.queries.ts(261,14): error TS18048: 'hours' is possibly 'undefined'.
+lib/supabase/services/appointments/appointments.queries.ts(261,27): error TS18048: 'minutes' is possibly 'undefined'.
+lib/supabase/services/clinic-rcm-service.ts(272,54): error TS2532: Object is possibly 'undefined'.
+lib/supabase/services/doctors-service.ts(491,40): error TS2538: Type 'undefined' cannot be used as an index type.
+lib/supabase/services/doctors-service.ts(507,23): error TS18048: 'startHour' is possibly 'undefined'.
+lib/supabase/services/doctors-service.ts(507,40): error TS18048: 'startMinute' is possibly 'undefined'.
+lib/supabase/services/doctors-service.ts(508,21): error TS18048: 'endHour' is possibly 'undefined'.
+lib/supabase/services/doctors-service.ts(508,36): error TS18048: 'endMinute' is possibly 'undefined'.
+lib/supabase/services/health-metrics-service.ts(206,11): error TS2532: Object is possibly 'undefined'.
+lib/supabase/services/health-metrics-service.ts(206,24): error TS2532: Object is possibly 'undefined'.
+lib/supabase/services/health-metrics-service.ts(206,55): error TS2532: Object is possibly 'undefined'.
+lib/supabase/services/health-metrics-service.ts(213,25): error TS18048: 'ultimo_valor' is possibly 'undefined'.
+lib/supabase/services/health-metrics-service.ts(213,72): error TS18048: 'ultimo_valor' is possibly 'undefined'.
+lib/supabase/services/health-metrics-service.ts(220,7): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+lib/supabase/services/medical-records-service.ts(254,11): error TS2532: Object is possibly 'undefined'.
+lib/supabase/services/medications/medications.mutations.ts(146,39): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/supabase/services/medications/medications.mutations.ts(146,56): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/supabase/services/prescriptions-advanced/prescriptions.mutations.ts(162,44): error TS2322: Type 'Partial<LayoutConfig>' is not assignable to type 'LayoutConfig'.
+  Types of property 'show_logo' are incompatible.
+    Type 'boolean | undefined' is not assignable to type 'boolean'.
+      Type 'undefined' is not assignable to type 'boolean'.
+lib/supabase/services/prescriptions-advanced/prescriptions.mutations.ts(163,44): error TS2322: Type 'Partial<CustomStyles>' is not assignable to type 'CustomStyles'.
+  Types of property 'primary_color' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+lib/supabase/services/prescriptions-advanced/prescriptions.mutations.ts(164,44): error TS2322: Type 'Partial<HeaderConfig>' is not assignable to type 'HeaderConfig'.
+  Types of property 'logo_type' are incompatible.
+    Type '"custom" | "none" | "esculapio" | undefined' is not assignable to type '"custom" | "none" | "esculapio"'.
+      Type 'undefined' is not assignable to type '"custom" | "none" | "esculapio"'.
+lib/supabase/services/prescriptions-advanced/prescriptions.mutations.ts(166,44): error TS2322: Type 'Partial<FooterConfig>' is not assignable to type 'FooterConfig'.
+  Types of property 'show_firma' are incompatible.
+    Type 'boolean | undefined' is not assignable to type 'boolean'.
+      Type 'undefined' is not assignable to type 'boolean'.
+lib/supabase/services/prescriptions-advanced/prescriptions.mutations.ts(575,5): error TS2300: Duplicate identifier 'template_id'.
+lib/supabase/services/prescriptions-advanced/prescriptions.mutations.ts(576,5): error TS2300: Duplicate identifier 'signature_id'.
+lib/supabase/services/prescriptions-advanced/prescriptions.mutations.ts(577,5): error TS2300: Duplicate identifier 'template_id'.
+lib/supabase/services/prescriptions-advanced/prescriptions.mutations.ts(578,5): error TS2300: Duplicate identifier 'signature_id'.
+lib/utils/format-utils.ts(109,12): error TS2532: Object is possibly 'undefined'.
+lib/utils/format-utils.ts(112,11): error TS2532: Object is possibly 'undefined'.
+lib/utils/format-utils.ts(112,32): error TS2532: Object is possibly 'undefined'.
+lib/utils/format-utils.ts(201,3): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+../../packages/core/src/hooks/use-keyboard-shortcuts.ts(1,40): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+../../packages/core/src/hooks/use-theme-color.ts(1,37): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+../../packages/core/src/hooks/use-theme-color.ts(87,19): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ blue: { name: string; gradient: { from: string; to: string; }; primary: string; primaryHover: string; text: string; bg: string; border: string; ring: string; }; purple: { name: string; gradient: { from: string; to: string; }; ... 5 more ...; ring: string; }; green: { ...; }; orange: { ...; }; indigo: { ...; }; pin...'.
+../../packages/core/src/pharmacy/advanced-finance.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/backup.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/backup.ts(5,32): error TS2307: Cannot find module 'lzutf8' or its corresponding type declarations.
+../../packages/core/src/pharmacy/backup.ts(97,60): error TS2345: Argument of type '"Configuration not found"' is not assignable to parameter of type 'BackupType'.
+../../packages/core/src/pharmacy/backup.ts(105,60): error TS2345: Argument of type '"Backup configuration is inactive"' is not assignable to parameter of type 'BackupType'.
+../../packages/core/src/pharmacy/backup.ts(157,5): error TS2741: Property 'verified' is missing in type '{ id: any; config_id: string; warehouse_id: string; status: BackupStatus; backup_type: BackupType; started_at: Date; created_at: Date; }' but required in type '{ status: BackupStatus; id: string; created_at: Date; warehouse_id: string; backup_type: BackupType; config_id: string; started_at: Date; verified: boolean; ... 9 more ...; verification_date?: Date | undefined; }'.
+../../packages/core/src/pharmacy/banking.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/banking.ts(102,7): error TS18004: No value exists in scope for the shorthand property 'reconciled_by'. Either declare one or provide an initializer.
+../../packages/core/src/pharmacy/barcode.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/barcode.ts(83,30): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+../../packages/core/src/pharmacy/barcode.ts(126,30): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+../../packages/core/src/pharmacy/consultation.ts(14,5): error TS2741: Property 'prescribed_medications' is missing in type '{ patient_id: string; consultation_type: "follow_up" | "general" | "specialist"; reason: string; symptoms: never[]; consulted_by: string; warehouse_id: string; }' but required in type 'Omit<{ id: string; patient_id: string; created_at: Date; updated_at: Date; warehouse_id: string; consultation_type: "follow_up" | "general" | "specialist"; reason: string; symptoms: string[]; ... 14 more ...; fee_ves?: number | undefined; }, "id" | ... 1 more ... | "updated_at">'.
+../../packages/core/src/pharmacy/delivery.ts(22,5): error TS2741: Property 'tracking_notes' is missing in type '{ order_number: string; patient_id: string; customer_name: string; customer_phone: string; delivery_address: string; delivery_zone_id: string; invoice_id: string; delivery_fee_usd: number; ... 8 more ...; created_by: string; }' but required in type 'Omit<{ status: "pending" | "cancelled" | "confirmed" | "delivered" | "preparing" | "out_for_delivery"; id: string; patient_id: string; created_at: Date; updated_at: Date; created_by: string; ... 16 more ...; delivered_by?: string | undefined; }, "id" | ... 1 more ... | "updated_at">'.
+../../packages/core/src/pharmacy/e-prescription.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/e-prescription.ts(430,30): error TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.
+../../packages/core/src/pharmacy/ecommerce.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/ecommerce.ts(31,7): error TS2353: Object literal may only specify known properties, and 'updated_at' does not exist in type '{ status: OnlineOrderStatus; id: string; created_at: Date; warehouse_id: string; order_number: string; items: { product_id: string; quantity: number; unit_price_usd: number; unit_price_ves: number; subtotal_usd: number; subtotal_ves: number; product_name: string; }[]; ... 18 more ...; confirmed_at?: Date | undefined...'.
+../../packages/core/src/pharmacy/ecommerce.ts(45,11): error TS2339: Property 'updated_at' does not exist on type '{ status: OnlineOrderStatus; id: string; created_at: Date; warehouse_id: string; order_number: string; items: { product_id: string; quantity: number; unit_price_usd: number; unit_price_ves: number; subtotal_usd: number; subtotal_ves: number; product_name: string; }[]; ... 18 more ...; confirmed_at?: Date | undefined...'.
+../../packages/core/src/pharmacy/encryption.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/encryption.ts(3,21): error TS2307: Cannot find module 'crypto-js' or its corresponding type declarations.
+../../packages/core/src/pharmacy/encryption.ts(129,67): error TS2339: Property 'purpose' does not exist on type 'EncryptionOptions'.
+../../packages/core/src/pharmacy/encryption.ts(222,52): error TS2353: Object literal may only specify known properties, and 'purpose' does not exist in type 'EncryptionOptions'.
+../../packages/core/src/pharmacy/encryption.ts(233,52): error TS2353: Object literal may only specify known properties, and 'purpose' does not exist in type 'EncryptionOptions'.
+../../packages/core/src/pharmacy/encryption.ts(246,16): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/encryption.ts(251,14): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/encryption.ts(301,30): error TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.
+../../packages/core/src/pharmacy/expenses.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/fleet.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/forms.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/inventory.ts(108,5): error TS2322: Type '{ id: string; created_at: Date; updated_at: Date; product_id: string; lot_number: string; expiry_date: Date; warehouse_id: string; zone: InventoryZone; ... 5 more ...; supplier_id?: string | undefined; } | undefined' is not assignable to type '{ id: string; created_at: Date; updated_at: Date; product_id: string; lot_number: string; expiry_date: Date; warehouse_id: string; zone: InventoryZone; ... 5 more ...; supplier_id?: string | undefined; } | null'.
+  Type 'undefined' is not assignable to type '{ id: string; created_at: Date; updated_at: Date; product_id: string; lot_number: string; expiry_date: Date; warehouse_id: string; zone: InventoryZone; ... 5 more ...; supplier_id?: string | undefined; } | null'.
+../../packages/core/src/pharmacy/labels.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/labels.ts(108,7): error TS2322: Type '{ name: string; position: string; value: string; }[]' is not assignable to type '{ name: string; value: string; position: "top_left" | "top_right" | "bottom_left" | "bottom_right"; }[]'.
+  Type '{ name: string; position: string; value: string; }' is not assignable to type '{ name: string; value: string; position: "top_left" | "top_right" | "bottom_left" | "bottom_right"; }'.
+    Types of property 'position' are incompatible.
+      Type 'string' is not assignable to type '"top_left" | "top_right" | "bottom_left" | "bottom_right"'.
+../../packages/core/src/pharmacy/labels.ts(193,7): error TS18004: No value exists in scope for the shorthand property 'total_items'. Either declare one or provide an initializer.
+../../packages/core/src/pharmacy/lopd-compliance.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/lopd-compliance.ts(344,5): error TS2740: Type '{ id: string; created_at: Date; updated_at: Date; generated_by: string; encryption_enabled: boolean; report_number: string; period_start: Date; period_end: Date; total_events: number; ... 14 more ...; review_date?: Date | undefined; }' is missing the following properties from type '{ id: string; description: string; created_at: Date; user_id: string; action: string; entity_type: string; event_type: LOPDAuditEventType; user_name: string; user_role: UserRole; ... 4 more ...; user_agent?: string | undefined; }': description, user_id, action, entity_type, and 4 more.
+../../packages/core/src/pharmacy/lopd-compliance.ts(422,12): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/mobile-analytics.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/mobile-analytics.ts(109,31): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/mobile-analytics.ts(135,9): error TS2740: Type '{ date: Date; sales_usd: number; sales_ves: number; transactions: number; }' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.
+../../packages/core/src/pharmacy/mobile-analytics.ts(135,32): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: { date: Date; sales_usd: number; sales_ves: number; transactions: number; }, currentValue: { date: Date; sales_usd: number; sales_ves: number; transactions: number; }, currentIndex: number, array: { ...; }[]) => { ...; }, initialValue: { ...; }): { ...; }', gave the following error.
+    Argument of type '(acc: { date: string; cumulative_usd: number; cumulative_ves: number; }[], d: { date: Date; sales_usd: number; sales_ves: number; transactions: number; }, i: number) => { date: string | undefined; cumulative_usd: number; cumulative_ves: number; }[]' is not assignable to parameter of type '(previousValue: { date: Date; sales_usd: number; sales_ves: number; transactions: number; }, currentValue: { date: Date; sales_usd: number; sales_ves: number; transactions: number; }, currentIndex: number, array: { ...; }[]) => { ...; }'.
+      Types of parameters 'acc' and 'previousValue' are incompatible.
+        Type '{ date: Date; sales_usd: number; sales_ves: number; transactions: number; }' is missing the following properties from type '{ date: string; cumulative_usd: number; cumulative_ves: number; }[]': length, pop, push, concat, and 35 more.
+  Overload 2 of 3, '(callbackfn: (previousValue: { date: string; cumulative_usd: number; cumulative_ves: number; }[], currentValue: { date: Date; sales_usd: number; sales_ves: number; transactions: number; }, currentIndex: number, array: { ...; }[]) => { ...; }[], initialValue: { ...; }[]): { ...; }[]', gave the following error.
+    Argument of type '(acc: { date: string; cumulative_usd: number; cumulative_ves: number; }[], d: { date: Date; sales_usd: number; sales_ves: number; transactions: number; }, i: number) => { date: string | undefined; cumulative_usd: number; cumulative_ves: number; }[]' is not assignable to parameter of type '(previousValue: { date: string; cumulative_usd: number; cumulative_ves: number; }[], currentValue: { date: Date; sales_usd: number; sales_ves: number; transactions: number; }, currentIndex: number, array: { ...; }[]) => { ...; }[]'.
+      Type '{ date: string | undefined; cumulative_usd: number; cumulative_ves: number; }[]' is not assignable to type '{ date: string; cumulative_usd: number; cumulative_ves: number; }[]'.
+        Type '{ date: string | undefined; cumulative_usd: number; cumulative_ves: number; }' is not assignable to type '{ date: string; cumulative_usd: number; cumulative_ves: number; }'.
+          Types of property 'date' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string'.
+              Type 'undefined' is not assignable to type 'string'.
+../../packages/core/src/pharmacy/mobile-analytics.ts(136,35): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/mobile-analytics.ts(137,35): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/notifications.ts(13,5): error TS2741: Property 'is_active' is missing in type '{ name: string; template_type: SMSTemplateType; content: string; variables: string[]; }' but required in type 'Omit<{ content: string; id: string; name: string; created_at: Date; updated_at: Date; is_active: boolean; template_type: SMSTemplateType; variables: string[]; }, "id" | ... 1 more ... | "updated_at">'.
+../../packages/core/src/pharmacy/notifications.ts(46,5): error TS1016: A required parameter cannot follow an optional parameter.
+../../packages/core/src/pharmacy/notifications.ts(254,56): error TS2345: Argument of type '"order_confirmation"' is not assignable to parameter of type 'SMSTemplateType'.
+../../packages/core/src/pharmacy/notifications.ts(285,56): error TS2345: Argument of type '"delivery_update"' is not assignable to parameter of type 'SMSTemplateType'.
+../../packages/core/src/pharmacy/offline.ts(243,17): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | PromiseLike<string | null> | null'.
+  Type 'undefined' is not assignable to type 'string | PromiseLike<string | null> | null'.
+../../packages/core/src/pharmacy/offline.ts(394,7): error TS18047: 'context' is possibly 'null'.
+../../packages/core/src/pharmacy/payroll.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/petty-cash.ts(14,5): error TS2741: Property 'is_active' is missing in type '{ warehouse_id: string; name: string; initial_balance_usd: number; initial_balance_ves: number; current_balance_usd: number; current_balance_ves: number; custodian_id: string; }' but required in type 'Omit<{ id: string; name: string; created_at: Date; updated_at: Date; warehouse_id: string; is_active: boolean; initial_balance_usd: number; initial_balance_ves: number; current_balance_usd: number; current_balance_ves: number; custodian_id: string; max_balance_usd?: number | undefined; max_balance_ves?: number | und...'.
+../../packages/core/src/pharmacy/petty-cash.ts(39,5): error TS1016: A required parameter cannot follow an optional parameter.
+../../packages/core/src/pharmacy/petty-cash.ts(67,5): error TS1016: A required parameter cannot follow an optional parameter.
+../../packages/core/src/pharmacy/petty-cash.ts(107,5): error TS1016: A required parameter cannot follow an optional parameter.
+../../packages/core/src/pharmacy/pos.ts(3,3): error TS2305: Module '"@red-salud/types"' has no exported member 'InvoiceItem'.
+../../packages/core/src/pharmacy/production.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/security.ts(528,58): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(530,11): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(534,48): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(534,128): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(539,19): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(540,24): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(542,15): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(543,20): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(544,19): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(545,24): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(546,22): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(547,20): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(548,23): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(549,23): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(551,20): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(554,11): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(558,49): error TS18048: 'current' is possibly 'undefined'.
+../../packages/core/src/pharmacy/security.ts(658,34): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/suppliers.ts(68,17): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/suppliers.ts(69,18): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/suppliers.ts(70,18): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/suppliers.ts(103,50): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/suppliers.ts(104,49): error TS2532: Object is possibly 'undefined'.
+../../packages/core/src/pharmacy/suppliers.ts(211,31): error TS18048: 'bestPrice' is possibly 'undefined'.
+../../packages/core/src/pharmacy/suppliers.ts(212,33): error TS18048: 'bestPrice' is possibly 'undefined'.
+../../packages/core/src/pharmacy/suppliers.ts(213,33): error TS18048: 'bestPrice' is possibly 'undefined'.
+../../packages/core/src/pharmacy/suppliers.ts(325,67): error TS2304: Cannot find name 'supplierId'.
+../../packages/core/src/pharmacy/topup.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/topup.ts(58,9): error TS2322: Type '{ id: any; name: TopupOperator.MOVISTAR; display_name: string; commission_percent: number; min_amount_usd: number; max_amount_usd: number; is_active: true; created_at: Date; }' is not assignable to type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(68,9): error TS2322: Type '{ id: any; name: TopupOperator.DIGITEL; display_name: string; commission_percent: number; min_amount_usd: number; max_amount_usd: number; is_active: true; created_at: Date; }' is not assignable to type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(78,9): error TS2322: Type '{ id: any; name: TopupOperator.CANTV; display_name: string; commission_percent: number; min_amount_usd: number; max_amount_usd: number; is_active: true; created_at: Date; }' is not assignable to type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(94,51): error TS2339: Property 'id' does not exist on type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(99,19): error TS2339: Property 'is_active' does not exist on type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(103,39): error TS2339: Property 'min_amount_usd' does not exist on type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(106,46): error TS2339: Property 'min_amount_usd' does not exist on type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(110,39): error TS2339: Property 'max_amount_usd' does not exist on type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(113,46): error TS2339: Property 'max_amount_usd' does not exist on type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(123,58): error TS2339: Property 'commission_percent' does not exist on type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(180,43): error TS2339: Property 'is_active' does not exist on type 'TopupOperator'.
+../../packages/core/src/pharmacy/topup.ts(184,41): error TS2339: Property 'id' does not exist on type 'TopupOperator'.
+../../packages/core/src/pharmacy/updater.ts(1,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+../../packages/core/src/pharmacy/updater.ts(55,26): error TS2345: Argument of type '{ id: any; version: string; version_number: string; channel: UpdateChannel.STABLE; release_date: Date; is_latest: true; created_at: Date; }' is not assignable to parameter of type '{ id: string; created_at: Date; version: string; version_number: string; channel: UpdateChannel; release_date: Date; is_latest: boolean; is_critical: boolean; changelog?: string | undefined; download_url?: string | undefined; file_size?: number | undefined; checksum?: string | undefined; }'.
+  Property 'is_critical' is missing in type '{ id: any; version: string; version_number: string; channel: UpdateChannel.STABLE; release_date: Date; is_latest: true; created_at: Date; }' but required in type '{ id: string; created_at: Date; version: string; version_number: string; channel: UpdateChannel; release_date: Date; is_latest: boolean; is_critical: boolean; changelog?: string | undefined; download_url?: string | undefined; file_size?: number | undefined; checksum?: string | undefined; }'.
+../../packages/core/src/pharmacy/updater.ts(87,21): error TS18048: 'latestVersion' is possibly 'undefined'.
+../../packages/core/src/pharmacy/updater.ts(108,11): error TS2741: Property 'rollback_available' is missing in type '{ id: any; version_id: string; version: string; status: UpdateStatus.DOWNLOADING; started_at: Date; created_at: Date; }' but required in type '{ status: UpdateStatus; id: string; created_at: Date; started_at: Date; version: string; version_id: string; rollback_available: boolean; error_message?: string | undefined; completed_at?: Date | undefined; rollback_date?: Date | undefined; }'.
+../../packages/core/src/pharmacy/updater.ts(137,11): error TS2741: Property 'rollback_available' is missing in type '{ id: any; version_id: string; version: string; status: UpdateStatus.INSTALLING; started_at: Date; created_at: Date; }' but required in type '{ status: UpdateStatus; id: string; created_at: Date; started_at: Date; version: string; version_id: string; rollback_available: boolean; error_message?: string | undefined; completed_at?: Date | undefined; rollback_date?: Date | undefined; }'.
+../../packages/core/src/pharmacy/updater.ts(232,77): error TS2339: Property 'PENDING' does not exist on type 'typeof UpdateStatus'.
+../../packages/core/src/validations/appointment.ts(72,31): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+../../packages/core/src/validations/appointment.ts(98,35): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+../../packages/ui/src/breadcrumbs.tsx(2,18): error TS2307: Cannot find module 'next/link' or its corresponding type declarations.
+../../packages/ui/src/logo.tsx(6,5): error TS2300: Duplicate identifier 'size'.
+../../packages/ui/src/logo.tsx(7,5): error TS2300: Duplicate identifier 'size'.

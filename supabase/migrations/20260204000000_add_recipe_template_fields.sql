@@ -31,12 +31,12 @@ ALTER TABLE doctor_recipe_settings ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view their own recipe settings" 
 ON doctor_recipe_settings FOR SELECT 
-USING (auth.uid() = doctor_id);
+USING ((select auth.uid()) = doctor_id);
 
 CREATE POLICY "Users can update their own recipe settings" 
 ON doctor_recipe_settings FOR UPDATE 
-USING (auth.uid() = doctor_id);
+USING ((select auth.uid()) = doctor_id);
 
 CREATE POLICY "Users can insert their own recipe settings" 
 ON doctor_recipe_settings FOR INSERT 
-WITH CHECK (auth.uid() = doctor_id);
+WITH CHECK ((select auth.uid()) = doctor_id);

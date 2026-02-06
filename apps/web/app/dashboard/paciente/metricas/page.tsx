@@ -18,7 +18,6 @@ import {
 import {
   Activity,
   TrendingUp,
-  TrendingDown,
   Target,
   Plus,
   Calendar,

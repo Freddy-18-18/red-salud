@@ -8,26 +8,28 @@ import { Button } from "@red-salud/ui";
 import { Label } from "@red-salud/ui";
 import { Input } from "@red-salud/ui";
 import { Textarea } from "@red-salud/ui";
-import { Pill, Save, ArrowLeft, Loader2, Plus, FileText, Sparkles, Camera, Zap } from "lucide-react";
+import { Pill, Save, ArrowLeft, Loader2, Plus, Building2 } from "lucide-react";
 import { VerificationGuard } from "@/components/dashboard/medico/features/verification-guard";
-import { PatientSelector } from "@/components/dashboard/recetas/patient-selector";
+import { RecipePatientSearch, type PatientOption } from "@/components/dashboard/recetas/recipe-patient-search";
 import { usePatientsList } from "@/components/dashboard/medico/patients/hooks/usePatientsList";
 import { createPrescription } from "@/lib/supabase/services/medications-service";
 import { MedicationInput, RecipePreview, type MedicationItemData } from "@/components/dashboard/recetas";
 import { toast } from "sonner";
+import { differenceInYears } from "date-fns";
+import { useCurrentOffice } from "@/hooks/use-current-office";
+import type { CreatePrescriptionData } from "@/lib/supabase/types/medications";
 
 // Use the enhanced MedicationItemData type from components
 
 export default function NewPrescriptionPage() {
     const router = useRouter();
     const [userId, setUserId] = useState<string | null>(null);
-    const { state: patientsState } = usePatientsList(userId);
+    const { state: patientsState, actions: patientsActions } = usePatientsList(userId);
 
-    // Estado para el selector de métodos
-    const [showMethodSelector, setShowMethodSelector] = useState(true);
-    const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+    // Office selection for multi-office doctors
+    const { currentOffice, allOffices, updateCurrentOffice, loading: officeLoading } = useCurrentOffice();
 
-    const [selectedPatientId, setSelectedPatientId] = useState<string>("");
+    const [selectedPatient, setSelectedPatient] = useState<PatientOption | null>(null);
     const [diagnosis, setDiagnosis] = useState("");
     const [notes, setNotes] = useState("");
     const [medications, setMedications] = useState<MedicationItemData[]>([
@@ -55,36 +57,6 @@ export default function NewPrescriptionPage() {
         init();
     }, [router]);
 
-    const handleSelectMethod = (method: string) => {
-        setSelectedMethod(method);
-        setShowMethodSelector(false);
-
-        // Manejar cada método
-        switch (method) {
-            case 'template':
-                // Proceed to recipe creation using the configured template
-                toast.success("Usando plantilla configurada");
-                break;
-            case 'personalizada':
-                // Continuar con la receta personalizada (quedarse en esta página)
-                break;
-            case 'escanear':
-                // TODO: Navegar a escaneo (funcionalidad futura)
-                toast.info("La funcionalidad de escaneo estará disponible pronto");
-                setShowMethodSelector(true);
-                setSelectedMethod(null);
-                break;
-            case 'rapida':
-                // Receta rápida sin template
-                break;
-        }
-    };
-
-    const handleBackToSelector = () => {
-        setShowMethodSelector(true);
-        setSelectedMethod(null);
-    };
-
     const handleAddMedication = () => {
         setMedications([...medications, {
             medicamento: "",
@@ -107,16 +79,77 @@ export default function NewPrescriptionPage() {
         setMedications(newMedications);
     };
 
+    const handlePatientFound = (patient: PatientOption) => {
+        setSelectedPatient(patient);
+        toast.success(`Paciente seleccionado: ${patient.nombre_completo}`);
+    };
+
+    const handleCnePatientFound = async (cedula: string, nombre: string) => {
+        if (!userId) return;
+
+        // Check if already in offline list (client-side check first)
+        const existing = patientsState.offlinePatients.find(p => p.cedula === cedula);
+        if (existing) {
+            setSelectedPatient({
+                id: existing.id,
+                nombre_completo: existing.nombre_completo,
+                cedula: existing.cedula,
+                type: "offline",
+                email: existing.email
+            });
+            return;
+        }
+
+        // Auto-create offline patient
+        try {
+            const { data, error } = await supabase
+                .from("offline_patients")
+                .insert({
+                    doctor_id: userId,
+                    nombre_completo: nombre, // Name from CNE
+                    cedula: cedula,
+                    status: "offline",
+                    // Optional fields
+                    email: null,
+                    telefono: null
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            toast.success("Paciente registrado temporalmente");
+            const newPatient: PatientOption = {
+                id: data.id,
+                nombre_completo: data.nombre_completo,
+                cedula: data.cedula,
+                type: "offline",
+                email: data.email
+            };
+
+            // Update local lists?
+            // For now just select them. The hook will refresh on next mount or if we triggered reload.
+            // patientsActions.loadData(userId) if exposed? 
+
+            setSelectedPatient(newPatient);
+
+        } catch (err) {
+            console.error("Error creating offline patient:", err);
+            toast.error("Error al registrar paciente temporal");
+        }
+    };
+
     const handleSubmit = async () => {
-        if (!userId || !selectedPatientId || !diagnosis || medications.some(m => !m.medicamento)) {
+        if (!userId || !selectedPatient || !diagnosis || medications.some(m => !m.medicamento)) {
             toast.error("Por favor complete los campos requeridos");
             return;
         }
 
         setSubmitting(true);
         try {
-            const result = await createPrescription({
-                paciente_id: selectedPatientId,
+            const prescriptionData: CreatePrescriptionData = {
+                paciente_id: selectedPatient.type === 'registered' ? selectedPatient.id : undefined,
+                offline_patient_id: selectedPatient.type === 'offline' ? selectedPatient.id : undefined,
                 medico_id: userId,
                 diagnostico: diagnosis,
                 notas: notes,
@@ -129,7 +162,9 @@ export default function NewPrescriptionPage() {
                     duracion_dias: m.duracion ? parseInt(m.duracion) || undefined : undefined,
                     instrucciones_especiales: m.instrucciones || undefined,
                 }))
-            });
+            };
+
+            const result = await createPrescription(prescriptionData);
 
             if (result.success) {
                 toast.success("Receta creada exitosamente");
@@ -146,230 +181,195 @@ export default function NewPrescriptionPage() {
         }
     };
 
-    // Combine registered and offline patients for the selector
-    const allPatients = [
+    // Prepare options for ConsultationPatientSearch
+    const patientOptions: PatientOption[] = [
         ...patientsState.patients.map(p => ({
-            id: p.patient_id,
+            id: p.patient.id,
             nombre_completo: p.patient.nombre_completo,
+            cedula: p.patient.cedula || null,
+            type: "registered" as const,
             email: p.patient.email,
-            type: 'registered'
+            fecha_nacimiento: p.patient.fecha_nacimiento,
+            genero: p.patient.genero
         })),
         ...patientsState.offlinePatients.map(p => ({
             id: p.id,
             nombre_completo: p.nombre_completo,
             cedula: p.cedula,
-            type: 'offline'
+            type: "offline" as const,
+            email: p.email,
+            fecha_nacimiento: p.fecha_nacimiento,
+            genero: p.genero
         }))
     ];
 
     return (
         <VerificationGuard>
             <div className="container mx-auto px-4 py-8 space-y-6">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" onClick={showMethodSelector ? () => router.back() : handleBackToSelector}>
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        {showMethodSelector ? 'Volver' : 'Cambiar Método'}
-                    </Button>
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Nueva Recipe Médica</h1>
-                        <p className="text-gray-600 mt-1">
-                            {showMethodSelector ? 'Selecciona el método para crear la recipe' : 'Emite una nueva recipe para tus pacientes'}
-                        </p>
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <Button variant="ghost" onClick={() => router.back()}>
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Volver
+                        </Button>
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900">
+                                Nueva Receta Médica
+                            </h1>
+                            <p className="text-gray-600 mt-1">
+                                Emite una nueva receta para tus pacientes
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Office selector for multi-office doctors */}
+                    <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-gray-500" />
+                        <select
+                            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            value={currentOffice?.id || ""}
+                            onChange={(e) => updateCurrentOffice(e.target.value)}
+                            disabled={officeLoading}
+                        >
+                            {allOffices.map((office) => (
+                                <option key={office.id} value={office.id}>
+                                    {office.nombre}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 
-                {/* Selector de Métodos */}
-                {showMethodSelector && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-                        {/* Template del Sistema */}
-                        <Card
-                            className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-blue-500 group"
-                            onClick={() => handleSelectMethod('template')}
-                        >
-                            <CardHeader className="text-center pb-4">
-                                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <Sparkles className="h-8 w-8 text-white" />
-                                </div>
-                                <CardTitle className="text-xl">Template del Sistema</CardTitle>
+                {/* Formulario de Receta */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 space-y-6">
+
+                        {/* Patient Selection */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg">Paciente</CardTitle>
                             </CardHeader>
-                            <CardContent className="text-center">
-                                <p className="text-sm text-gray-600 mb-4">
-                                    Usa un formato predeterminado profesional con logo Esculapio
-                                </p>
-                                <div className="flex flex-wrap gap-1 justify-center">
-                                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">General</span>
-                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Pediatria</span>
-                                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Cardiología</span>
-                                </div>
+                            <CardContent>
+                                {!selectedPatient ? (
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col gap-2">
+                                            <Label>Buscar Paciente</Label>
+                                            <RecipePatientSearch
+                                                patients={patientOptions}
+                                                onPatientFound={handlePatientFound}
+                                                onCnePatientFound={handleCnePatientFound}
+                                            />
+
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-muted/50 p-4 rounded-lg flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+                                        <div>
+                                            <p className="font-semibold text-lg">{selectedPatient.nombre_completo}</p>
+                                            <div className="flex gap-2 text-sm text-muted-foreground mt-1 items-center">
+                                                <span className="font-medium text-foreground/80">{selectedPatient.cedula ? `V-${selectedPatient.cedula}` : 'Sin cédula'}</span>
+                                                <span className="text-xs px-2 py-0.5 rounded-full bg-background border">
+                                                    {selectedPatient.type === 'registered' ? 'Registrado' : 'Offline'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <Button variant="ghost" size="sm" onClick={() => setSelectedPatient(null)} className="text-muted-foreground hover:text-foreground">
+                                            Cambiar
+                                        </Button>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 
-                        {/* Template Personalizado */}
-                        <Card
-                            className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-purple-500 group"
-                            onClick={() => handleSelectMethod('personalizada')}
-                        >
-                            <CardHeader className="text-center pb-4">
-                                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <FileText className="h-8 w-8 text-white" />
-                                </div>
-                                <CardTitle className="text-xl">Personalizada</CardTitle>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="flex items-center gap-2 text-lg">
+                                    <Pill className="h-5 w-5" />
+                                    Medicamentos
+                                </CardTitle>
+                                <Button variant="outline" size="sm" onClick={handleAddMedication}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Agregar Medicamento
+                                </Button>
                             </CardHeader>
-                            <CardContent className="text-center">
-                                <p className="text-sm text-gray-600 mb-4">
-                                    Crea tu propio formato o edita uno existente con el editor visual
-                                </p>
-                                <div className="flex flex-wrap gap-1 justify-center">
-                                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Editor WYSIWYG</span>
-                                    <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">Drag & Drop</span>
-                                </div>
+                            <CardContent className="space-y-4">
+                                {medications.map((medication, index) => (
+                                    <MedicationInput
+                                        key={index}
+                                        index={index}
+                                        data={medication}
+                                        onChange={handleMedicationChange}
+                                        onRemove={handleRemoveMedication}
+                                        canRemove={medications.length > 1}
+                                    />
+                                ))}
                             </CardContent>
                         </Card>
 
-                        {/* Escanear Recipe */}
-                        <Card
-                            className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-green-500 group"
-                            onClick={() => handleSelectMethod('escanear')}
-                        >
-                            <CardHeader className="text-center pb-4">
-                                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <Camera className="h-8 w-8 text-white" />
-                                </div>
-                                <CardTitle className="text-xl">Escanear Recipe</CardTitle>
+                        {/* Diagnosis and Notes Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg">Detalles de la Receta</CardTitle>
                             </CardHeader>
-                            <CardContent className="text-center">
-                                <p className="text-sm text-gray-600 mb-4">
-                                    Escanea una recipe física y el sistema extraerá los datos con OCR
-                                </p>
-                                <div className="flex flex-wrap gap-1 justify-center">
-                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Cámara</span>
-                                    <span className="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded">OCR</span>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label>Diagnóstico <span className="text-red-500">*</span></Label>
+                                    <Input
+                                        placeholder="Diagnóstico principal"
+                                        value={diagnosis}
+                                        onChange={(e) => setDiagnosis(e.target.value)}
+                                    />
                                 </div>
-                            </CardContent>
-                        </Card>
 
-                        {/* Recipe Rápida */}
-                        <Card
-                            className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-amber-500 group"
-                            onClick={() => handleSelectMethod('rapida')}
-                        >
-                            <CardHeader className="text-center pb-4">
-                                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <Zap className="h-8 w-8 text-white" />
+                                <div className="space-y-2">
+                                    <Label>Notas Adicionales</Label>
+                                    <Textarea
+                                        placeholder="Observaciones o recomendaciones..."
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                        rows={4}
+                                    />
                                 </div>
-                                <CardTitle className="text-xl">Recipe Rápida</CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-center">
-                                <p className="text-sm text-gray-600 mb-4">
-                                    Crea una recipe rápidamente sin template, solo lo esencial
-                                </p>
-                                <div className="flex flex-wrap gap-1 justify-center">
-                                    <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">Rápido</span>
-                                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Simple</span>
-                                </div>
+
+                                <Button
+                                    className="w-full"
+                                    size="lg"
+                                    onClick={handleSubmit}
+                                    disabled={submitting || !selectedPatient || !diagnosis || medications.some(m => !m.medicamento)}
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                            Creando Receta...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Save className="h-4 w-4 mr-2" />
+                                            Emitir Receta
+                                        </>
+                                    )}
+                                </Button>
                             </CardContent>
                         </Card>
                     </div>
-                )}
 
-                {/* Formulario de Receta (solo se muestra si NO está en el selector) */}
-                {!showMethodSelector && (
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2 space-y-6">
-                            <PatientSelector
-                                patients={allPatients}
-                                loadingPatients={patientsState.loading}
-                                selectedPatientId={selectedPatientId}
-                                onPatientSelect={setSelectedPatientId}
-                            />
-
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                        <Pill className="h-5 w-5" />
-                                        Medicamentos
-                                    </CardTitle>
-                                    <Button variant="outline" size="sm" onClick={handleAddMedication}>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Agregar Medicamento
-                                    </Button>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    {medications.map((medication, index) => (
-                                        <MedicationInput
-                                            key={index}
-                                            index={index}
-                                            data={medication}
-                                            onChange={handleMedicationChange}
-                                            onRemove={handleRemoveMedication}
-                                            canRemove={medications.length > 1}
-                                        />
-                                    ))}
-                                </CardContent>
-                            </Card>
-
-                            {/* Diagnosis and Notes Card */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Detalles de la Receta</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label>Diagnóstico <span className="text-red-500">*</span></Label>
-                                        <Input
-                                            placeholder="Diagnóstico principal"
-                                            value={diagnosis}
-                                            onChange={(e) => setDiagnosis(e.target.value)}
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label>Notas Adicionales</Label>
-                                        <Textarea
-                                            placeholder="Observaciones o recomendaciones..."
-                                            value={notes}
-                                            onChange={(e) => setNotes(e.target.value)}
-                                            rows={4}
-                                        />
-                                    </div>
-
-                                    <Button
-                                        className="w-full"
-                                        size="lg"
-                                        onClick={handleSubmit}
-                                        disabled={submitting || !selectedPatientId || !diagnosis || medications.some(m => !m.medicamento)}
-                                    >
-                                        {submitting ? (
-                                            <>
-                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                Creando Receta...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Save className="h-4 w-4 mr-2" />
-                                                Emitir Receta
-                                            </>
-                                        )}
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Preview Column */}
-                        <div className="space-y-6">
-                            <RecipePreview
-                                patient={selectedPatientId ? {
-                                    nombre: allPatients.find(p => p.id === selectedPatientId)?.nombre_completo || '',
-                                    cedula: allPatients.find(p => p.id === selectedPatientId && 'cedula' in p)?.cedula as string | undefined,
-                                } : null}
-                                medications={medications}
-                                diagnosis={diagnosis}
-                                notes={notes}
-                            />
-                        </div>
+                    {/* Preview Column */}
+                    <div className="space-y-6">
+                        <RecipePreview
+                            patient={selectedPatient ? {
+                                nombre: selectedPatient.nombre_completo,
+                                cedula: selectedPatient.cedula || undefined,
+                                edad: selectedPatient.edad || (selectedPatient.fecha_nacimiento ? differenceInYears(new Date(), new Date(selectedPatient.fecha_nacimiento)) : undefined),
+                                sexo: selectedPatient.genero || undefined,
+                                peso: selectedPatient.peso
+                            } : null}
+                            medications={medications}
+                            diagnosis={diagnosis}
+                            notes={notes}
+                            officeId={currentOffice?.id}
+                        />
                     </div>
-                )}
+                </div>
             </div>
         </VerificationGuard>
     );

@@ -5,6 +5,7 @@ import { MessageCircle, X } from "lucide-react";
 import { Button } from "@red-salud/ui";
 import { ChatWindow, type ChatContext, type ChatPersona } from "./chat-window";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 export interface ChatWidgetProps {
     persona?: ChatPersona;
@@ -16,8 +17,18 @@ export interface ChatWidgetProps {
 export function ChatWidget({ persona, context, suggestedQuestions, hideTrigger = false }: ChatWidgetProps) {
     const [isOpen, setIsOpen] = useState(false);
 
+    const showComingSoon = () => {
+        toast.info("Próximamente", {
+            description: "Nuestro asistente virtual estará disponible muy pronto para ayudarte.",
+            duration: 3000,
+        });
+    };
+
     useEffect(() => {
-        const handleToggle = () => setIsOpen(prev => !prev);
+        const handleToggle = () => {
+            // setIsOpen(prev => !prev);
+            showComingSoon();
+        };
         document.addEventListener('toggle-chat', handleToggle);
         return () => document.removeEventListener('toggle-chat', handleToggle);
     }, []);
@@ -36,7 +47,7 @@ export function ChatWidget({ persona, context, suggestedQuestions, hideTrigger =
                             >
                                 <Button
                                     data-tour="chat-trigger"
-                                    onClick={() => setIsOpen(true)}
+                                    onClick={showComingSoon}
                                     size="lg"
                                     className="rounded-full w-14 h-14 shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all duration-300 hover:scale-110"
                                 >

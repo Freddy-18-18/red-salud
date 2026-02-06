@@ -239,7 +239,7 @@ export default function POSPage() {
             total_usd: totalUSD,
             total_ves: totalVES,
             payment_method: activePaymentMethod,
-            exchange_rate,
+            exchange_rate: exchangeRate,
           },
         ])
         .select()

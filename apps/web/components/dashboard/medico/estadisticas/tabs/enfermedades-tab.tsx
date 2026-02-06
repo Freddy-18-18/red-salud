@@ -25,10 +25,6 @@ export function EnfermedadesTab({ doctorId, dateRange }: EnfermedadesTabProps) {
   const [topDiagnosticos, setTopDiagnosticos] = useState<DiagnosticoCount[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadEnfermedades();
-  }, [loadEnfermedades]);
-
   const loadEnfermedades = useCallback(async () => {
     try {
       setLoading(true);
@@ -66,6 +62,10 @@ export function EnfermedadesTab({ doctorId, dateRange }: EnfermedadesTabProps) {
       setLoading(false);
     }
   }, [doctorId, dateRange]);
+
+  useEffect(() => {
+    loadEnfermedades();
+  }, [loadEnfermedades]);
 
   if (loading) {
     return (

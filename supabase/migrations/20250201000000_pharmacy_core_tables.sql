@@ -786,13 +786,13 @@ ALTER TABLE consultations ENABLE ROW LEVEL SECURITY;
 
 -- Users can see their own data
 CREATE POLICY "Users can view own data" ON pharmacy_users
-  FOR SELECT USING (auth.uid() = id);
+  FOR SELECT USING ((select auth.uid()) = id);
 
 -- Admins can view all data
 CREATE POLICY "Admins can view all users" ON pharmacy_users
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM pharmacy_users WHERE id = auth.uid() AND role = 'admin'
+      SELECT 1 FROM pharmacy_users WHERE id = (select auth.uid()) AND role = 'admin'
     )
   );
 
@@ -800,7 +800,7 @@ CREATE POLICY "Admins can view all users" ON pharmacy_users
 CREATE POLICY "Patients can view own data" ON patients
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM patients WHERE id = auth.uid()
+      SELECT 1 FROM patients WHERE id = (select auth.uid())
     )
   );
 
@@ -808,7 +808,7 @@ CREATE POLICY "Patients can view own data" ON patients
 CREATE POLICY "Users can view warehouse invoices" ON invoices
   FOR SELECT USING (
     warehouse_id IN (
-      SELECT warehouse_id FROM pharmacy_users WHERE id = auth.uid()
+      SELECT warehouse_id FROM pharmacy_users WHERE id = (select auth.uid())
     )
   );
 
@@ -816,7 +816,7 @@ CREATE POLICY "Users can view warehouse invoices" ON invoices
 CREATE POLICY "Admins can view audit logs" ON audit_logs
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM pharmacy_users WHERE id = auth.uid() AND role = 'admin'
+      SELECT 1 FROM pharmacy_users WHERE id = (select auth.uid()) AND role = 'admin'
     )
   );
 

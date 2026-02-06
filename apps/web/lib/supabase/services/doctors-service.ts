@@ -223,7 +223,7 @@ export async function getFeaturedDoctors(limit: number = 10) {
     .select(`
       *,
       especialidad:specialties(*),
-      profile:profiles(*)
+      profile:profiles!doctor_details_profile_id_fkey(*)
     `)
     .eq('verified', true)
     .eq('sacs_verified', true)

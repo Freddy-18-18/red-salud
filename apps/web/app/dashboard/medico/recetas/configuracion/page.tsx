@@ -1,15 +1,10 @@
-
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
     CardDescription,
     Button,
     Input,
@@ -40,6 +35,9 @@ import {
     Square,
     RectangleHorizontal,
     RectangleVertical,
+    ArrowLeft,
+    Smartphone,
+    Building2
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase/client";
@@ -50,10 +48,19 @@ import {
     DoctorRecipeSettings,
 } from "@/lib/supabase/services/recipe-settings";
 import { SignatureCanvas, SignatureCanvasRef } from "@/components/dashboard/medico/recetas/signature-canvas";
-import { VisualRecipePreview, VisualRecipeData, VisualRecipeSettings } from "@/components/dashboard/recetas/visual-recipe-preview";
+import { VisualRecipePreview } from "@/components/dashboard/recetas/visual-recipe-preview";
+import QRCode from "qrcode";
+
+interface Office {
+    id: string;
+    nombre: string;
+    direccion?: string;
+    telefono?: string;
+}
 
 export default function RecipeSettingsPage() {
     const router = useRouter();
+
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const sigCanvasRef = useRef<SignatureCanvasRef>(null);
@@ -64,11 +71,16 @@ export default function RecipeSettingsPage() {
         nombre_completo: "",
         titulo: "",
         cedula: "",
+        matricula: "",
         especialidad: "",
+        email: "",
     });
     const [genderTitle, setGenderTitle] = useState("Dr.");
 
-    // Recipe Settings Data
+    // Offices Data
+    const [offices, setOffices] = useState<Office[]>([]);
+    const [selectedOfficeId, setSelectedOfficeId] = useState<string>("global");
+
     // Recipe Settings Data
     const [settings, setSettings] = useState<DoctorRecipeSettings | null>(null);
 
@@ -80,7 +92,7 @@ export default function RecipeSettingsPage() {
         clinic_email: "",
         use_digital_signature: false,
         use_logo: false,
-        template_id: "plantilla-3", // Default updated to match visual preview default
+        template_id: "plantilla-3",
     });
 
     // Logo Adjustment Modal State
@@ -89,6 +101,13 @@ export default function RecipeSettingsPage() {
     const [tempLogoFile, setTempLogoFile] = useState<File | null>(null);
     const [logoCropShape, setLogoCropShape] = useState<'square' | 'rect-h' | 'rect-c' | 'rect-v'>('square');
     const [logoZoom, setLogoZoom] = useState([1]);
+
+    // Mobile Sign Modal State
+    const [isMobileSignModalOpen, setIsMobileSignModalOpen] = useState(false);
+    const [mobileSignQrUrl, setMobileSignQrUrl] = useState<string | null>(null);
+
+    // Expandable Preview State
+    const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
     // Load initial data
     useEffect(() => {
@@ -103,9 +122,9 @@ export default function RecipeSettingsPage() {
                 setUserId(user.id);
 
                 // Fetch Profile
-                const { data: profile, error: profileError } = await supabase
+                const { data: profile } = await supabase
                     .from("profiles")
-                    .select("nombre_completo, especialidad, cedula") // Removed titulo as it doesn't exist
+                    .select("nombre_completo, especialidad, sacs_especialidad, cedula, email, sacs_matricula")
                     .eq("id", user.id)
                     .single();
 
@@ -113,25 +132,30 @@ export default function RecipeSettingsPage() {
                     setProfileData({
                         nombre_completo: profile.nombre_completo || "",
                         cedula: profile.cedula || "",
-                        especialidad: profile.especialidad || "",
-                        titulo: (profile as any).titulo || "Médico", // Cast if typescript complains about missing col
+                        matricula: (profile as any).sacs_matricula || "",
+                        especialidad: (profile as any).sacs_especialidad || profile.especialidad || "",
+                        titulo: (profile as any).titulo || "Médico",
+                        email: (profile as any).email || "", // Assuming email might be in profile or joined
                     });
                 }
 
-                // Fetch Settings
-                const { success, data: settingsData } = await getDoctorRecipeSettings(user.id);
-                if (success && settingsData) {
-                    setSettings(settingsData);
-                    setFormData({
-                        clinic_name: settingsData.clinic_name || "",
-                        clinic_address: settingsData.clinic_address || "",
-                        clinic_phone: settingsData.clinic_phone || "",
-                        clinic_email: settingsData.clinic_email || "",
-                        use_digital_signature: settingsData.use_digital_signature,
-                        use_logo: settingsData.use_logo,
-                        template_id: settingsData.template_id || "plantilla-3",
-                    });
+                // Fetch Offices
+                const { data: officesData } = await supabase
+                    .from("doctor_offices")
+                    .select("id, nombre, direccion, telefono")
+                    .eq("doctor_id", user.id)
+                    .eq("activo", true);
+
+                if (officesData) {
+                    setOffices(officesData as unknown as Office[]);
                 }
+
+                // Get profile email for fallback
+                const userEmail = (profile as any)?.email || "";
+
+                // Initial fetch for global settings or default
+                await fetchSettingsForContext(user.id, null, userEmail);
+
             } catch (error) {
                 console.error("Error loading settings:", error);
                 toast.error("Error cargando la configuración");
@@ -142,8 +166,66 @@ export default function RecipeSettingsPage() {
         loadData();
     }, [router]);
 
-    const handleProfileChange = (field: string, value: string) => {
-        setProfileData((prev) => ({ ...prev, [field]: value }));
+    // Generate QR Code when mobile sign modal opens
+    useEffect(() => {
+        if (isMobileSignModalOpen && userId && typeof window !== 'undefined') {
+            const url = `${window.location.origin}/dashboard/medico/recetas/firmar-movil?uid=${userId}`;
+            QRCode.toDataURL(url, { width: 300, margin: 2 }, (err, url) => {
+                if (!err) {
+                    setMobileSignQrUrl(url);
+                }
+            });
+        }
+    }, [isMobileSignModalOpen, userId]);
+
+    const fetchSettingsForContext = async (uid: string, officeId: string | null, fallbackEmail?: string) => {
+        setIsLoading(true);
+        try {
+            const { success, data } = await getDoctorRecipeSettings(uid, officeId);
+
+            if (success && data) {
+                setSettings(data as DoctorRecipeSettings);
+
+                // Determine form default values
+                let cAddress = data.clinic_address || "";
+                let cPhone = data.clinic_phone || "";
+                let cName = data.clinic_name || "";
+
+                // If specific office settings are empty, try to pre-fill from office details
+                if (officeId) {
+                    const office = offices.find(o => o.id === officeId);
+                    if (office) {
+                        // Only overwrite if the setting is empty
+                        if (!cName) cName = office.nombre;
+                        if (!cAddress) cAddress = office.direccion || "";
+                        // Force phone from office settings as per requirements
+                        cPhone = office.telefono || "";
+                    }
+                }
+
+                setFormData({
+                    clinic_name: cName,
+                    clinic_address: cAddress,
+                    clinic_phone: cPhone,
+                    clinic_email: data.clinic_email || fallbackEmail || profileData.email || "",
+                    use_digital_signature: data.use_digital_signature || false,
+                    use_logo: data.use_logo || false,
+                    template_id: data.template_id || "plantilla-3",
+                });
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleOfficeChange = async (value: string) => {
+        setSelectedOfficeId(value);
+        if (userId) {
+            const oid = value === "global" ? null : value;
+            await fetchSettingsForContext(userId, oid, profileData.email);
+        }
     };
 
     const handleSettingsChange = (field: string, value: any) => {
@@ -160,7 +242,6 @@ export default function RecipeSettingsPage() {
 
         try {
             const dataUrl = sigCanvasRef.current.toDataURL();
-            // Convert DataURL to File
             const res = await fetch(dataUrl);
             const blob = await res.blob();
             const file = new File([blob], "signature.png", { type: "image/png" });
@@ -168,7 +249,10 @@ export default function RecipeSettingsPage() {
             const { success, url, error } = await uploadRecipeAsset(userId, file, "signature");
 
             if (success && url) {
-                await updateDoctorRecipeSettings(userId, { digital_signature_url: url });
+                // Determine context
+                const oid = selectedOfficeId === "global" ? null : selectedOfficeId;
+                await updateDoctorRecipeSettings(userId, { digital_signature_url: url }, oid);
+
                 setSettings((prev) => prev ? ({ ...prev, digital_signature_url: url }) : null);
                 toast.success("Firma guardada exitosamente");
                 sigCanvasRef.current.clear();
@@ -184,14 +268,10 @@ export default function RecipeSettingsPage() {
     const handleLogoFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
         const file = e.target.files[0];
-
-        // Create object URL for preview
         const objectUrl = URL.createObjectURL(file);
         setTempLogoUrl(objectUrl);
         setTempLogoFile(file);
         setIsLogoModalOpen(true);
-
-        // Reset file input
         e.target.value = "";
     };
 
@@ -199,12 +279,11 @@ export default function RecipeSettingsPage() {
         if (!userId || !tempLogoFile) return;
 
         try {
-            // In a real implementation, we would crop here using a canvas based on cropShape and zoom
-            // For now, we proceed with the original file upload but mimicking the UX
             const { success, url, error } = await uploadRecipeAsset(userId, tempLogoFile, "logo");
 
             if (success && url) {
-                await updateDoctorRecipeSettings(userId, { logo_url: url });
+                const oid = selectedOfficeId === "global" ? null : selectedOfficeId;
+                await updateDoctorRecipeSettings(userId, { logo_url: url }, oid);
                 setSettings((prev) => prev ? ({ ...prev, logo_url: url }) : null);
                 toast.success("Logo guardado exitosamente");
                 setIsLogoModalOpen(false);
@@ -223,19 +302,9 @@ export default function RecipeSettingsPage() {
         if (!userId) return;
         setIsSaving(true);
         try {
-            // Update Profile (Partial) - Only fields that are editable here and sync back to profiles
-            // Note: Updating core profile data here might require separate service call
-            const { error: profileError } = await supabase
-                .from("profiles")
-                .update({
-                    nombre_completo: profileData.nombre_completo,
-                    especialidad: profileData.especialidad,
-                    cedula: profileData.cedula,
-                    // titulo might need a column or separate metadata table if not in profiles
-                })
-                .eq("id", userId);
+            // Note: Profile data is read-only here, so we don't update profiles table.
 
-            if (profileError) throw profileError;
+            const oid = selectedOfficeId === "global" ? null : selectedOfficeId;
 
             // Update Settings
             const { success, error } = await updateDoctorRecipeSettings(userId, {
@@ -246,7 +315,7 @@ export default function RecipeSettingsPage() {
                 use_digital_signature: formData.use_digital_signature,
                 use_logo: formData.use_logo,
                 template_id: formData.template_id,
-            });
+            }, oid);
 
             if (!success) throw error;
 
@@ -271,82 +340,99 @@ export default function RecipeSettingsPage() {
         <div className="container mx-auto p-4 sm:px-6 sm:py-0 space-y-8 pb-20">
             {/* Header */}
             <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold">Configuración</h1>
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="mr-3 gap-2"
+                            onClick={() => router.push('/dashboard/medico/recetas')}
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            <span className="hidden sm:inline">Volver</span>
+                        </Button>
+                        <h1 className="text-3xl font-bold tracking-tight">Recetas</h1>
+                    </div>
                     <p className="text-muted-foreground">
-                        Gestiona la información de tu perfil y la apariencia de las recetas.
+                        Gestiona la información y apariencia de tus recetas médicas.
                     </p>
+                </div>
+
+                {/* Office Context Selector */}
+                <div className="w-[320px]">
+                    <Select value={selectedOfficeId} onValueChange={handleOfficeChange}>
+                        <SelectTrigger className="h-14 w-full px-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
+                                <div className="flex flex-col items-start min-w-0 overflow-hidden">
+                                    <SelectValue placeholder="Seleccionar contexto" />
+                                </div>
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="global">
+                                <span className="font-medium">Configuración General</span>
+                                <p className="text-xs text-muted-foreground">Aplica si no hay específica</p>
+                            </SelectItem>
+                            {offices.map(office => (
+                                <SelectItem key={office.id} value={office.id}>
+                                    <span className="font-medium">{office.nombre}</span>
+                                    <p className="text-xs text-muted-foreground truncate">{office.direccion}</p>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
 
-                    {/* Personal Info */}
-                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-                        <div className="flex flex-col space-y-1.5 p-6">
-                            <div className="text-2xl font-semibold leading-none tracking-tight">
-                                Información Personal del Médico
+                    {/* Personal Info (Read Only) */}
+                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm opacity-90">
+                        <div className="flex flex-col space-y-1.5 p-6 bg-muted/20">
+                            <div className="text-xl font-semibold leading-none tracking-tight">
+                                Información Personal
                             </div>
                             <div className="text-sm text-muted-foreground">
-                                Datos personales y profesionales del médico que aparecerán en la receta.
+                                Estos datos provienen de tu perfil verificado y no pueden editarse aquí.
                             </div>
                         </div>
-                        <div className="p-6 pt-0 grid gap-6">
+                        <div className="p-6 grid gap-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="doctor_name">Nombre Completo</Label>
-                                    <Input
-                                        id="doctor_name"
-                                        value={profileData.nombre_completo}
-                                        onChange={(e) => handleProfileChange("nombre_completo", e.target.value)}
-                                        placeholder="Dr. Juan Pérez"
-                                    />
+                                    <Label>Nombre Completo</Label>
+                                    <Input value={profileData.nombre_completo} disabled className="bg-muted" />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="doctor_gender">Trato</Label>
+                                    <Label>Trato</Label>
                                     <Select value={genderTitle} onValueChange={setGenderTitle}>
-                                        <SelectTrigger id="doctor_gender">
-                                            <SelectValue placeholder="Selecciona" />
+                                        <SelectTrigger>
+                                            <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Dr.">Dr.</SelectItem>
                                             <SelectItem value="Dra.">Dra.</SelectItem>
-                                            <SelectItem value="Lic.">Lic.</SelectItem>
-                                            <SelectItem value="Mtro.">Mtro.</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="titulo">Título</Label>
-                                    <Input
-                                        id="titulo"
-                                        value={profileData.titulo}
-                                        onChange={(e) => handleProfileChange("titulo", e.target.value)}
-                                        placeholder="Médico, Dentista, etc."
-                                    />
+                                    <Label>Título</Label>
+                                    <Input value={profileData.titulo} readOnly className="bg-muted" />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="professional_id">Cédula Profesional</Label>
-                                    <Input
-                                        id="professional_id"
-                                        value={profileData.cedula}
-                                        onChange={(e) => handleProfileChange("cedula", e.target.value)}
-                                        placeholder="12345678"
-                                    />
+                                    <Label>Cédula Profesional</Label>
+                                    <Input value={profileData.cedula} readOnly className="bg-muted" />
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-1 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="specialty">Especialidad Médica</Label>
-                                    <Input
-                                        id="specialty"
-                                        value={profileData.especialidad}
-                                        onChange={(e) => handleProfileChange("especialidad", e.target.value)}
-                                        placeholder="Cardiología"
-                                    />
+                                <div className="grid gap-2 md:col-span-2">
+                                    <Label>N° de Matrícula (SACS)</Label>
+                                    <Input value={profileData.matricula} readOnly className="bg-muted" placeholder="No registrado" />
+                                </div>
+                                <div className="grid gap-2 md:col-span-2">
+                                    <Label>Especialidad Médica</Label>
+                                    <Input value={profileData.especialidad} readOnly className="bg-muted" />
                                 </div>
                             </div>
                         </div>
@@ -355,11 +441,12 @@ export default function RecipeSettingsPage() {
                     {/* Clinic Info */}
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                         <div className="flex flex-col space-y-1.5 p-6">
-                            <div className="text-2xl font-semibold leading-none tracking-tight">
+                            <div className="text-xl font-semibold leading-none tracking-tight flex items-center gap-2">
                                 Información del Consultorio
+                                {selectedOfficeId !== "global" && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Específico</span>}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                                Datos del consultorio, clínica o lugar de práctica profesional.
+                                Datos de contacto que aparecerán en el encabezado o pie de página.
                             </div>
                         </div>
                         <div className="p-6 pt-0 grid gap-6">
@@ -374,7 +461,7 @@ export default function RecipeSettingsPage() {
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="address">Domicilio del Consultorio</Label>
+                                    <Label htmlFor="address">Domicilio</Label>
                                     <Input
                                         id="address"
                                         value={formData.clinic_address}
@@ -385,23 +472,28 @@ export default function RecipeSettingsPage() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="phone">Número de Teléfono</Label>
+                                    <Label htmlFor="phone">Teléfono</Label>
                                     <Input
                                         id="phone"
                                         type="tel"
                                         value={formData.clinic_phone}
                                         onChange={(e) => handleSettingsChange("clinic_phone", e.target.value)}
-                                        placeholder="55 1234 5678"
+                                        readOnly={selectedOfficeId !== "global"}
+                                        className={selectedOfficeId !== "global" ? "bg-muted" : ""}
                                     />
+                                    {selectedOfficeId !== "global" && (
+                                        <p className="text-[10px] text-muted-foreground mt-1">
+                                            Se utiliza el teléfono configurado en el consultorio.
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="email">Correo Electrónico</Label>
+                                    <Label htmlFor="email">Email</Label>
                                     <Input
                                         id="email"
                                         type="email"
                                         value={formData.clinic_email}
                                         onChange={(e) => handleSettingsChange("clinic_email", e.target.value)}
-                                        placeholder="dr.juan@ejemplo.com"
                                     />
                                 </div>
                             </div>
@@ -411,157 +503,108 @@ export default function RecipeSettingsPage() {
                     {/* Recipe Customization (Signature & Logo) */}
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                         <div className="flex flex-col space-y-1.5 p-6">
-                            <div className="text-2xl font-semibold leading-none tracking-tight">
-                                Personalización de Receta
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                                Personalice el aspecto de sus recetas con logos, firmas y plantillas.
+                            <div className="text-xl font-semibold leading-none tracking-tight">
+                                Personalización Visual
                             </div>
                         </div>
-                        <div className="p-6 pt-0 grid gap-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                        <div className="p-6 pt-0 grid gap-8">
 
-                                {/* Digital Signature */}
-                                <div className="grid gap-4">
-                                    <div className="flex items-center justify-between">
-                                        <Label className="text-base font-semibold">Firma Digital</Label>
-                                        <div className="flex items-center space-x-2">
-                                            <Label htmlFor="use-digital-signature" className="cursor-pointer">
-                                                Usar en recetas
-                                            </Label>
-                                            <Switch
-                                                id="use-digital-signature"
-                                                checked={formData.use_digital_signature}
-                                                onCheckedChange={(c) => handleSettingsChange("use_digital_signature", c)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {formData.use_digital_signature && (
-                                        <div className="p-3 rounded-lg border-2 border-primary/20 bg-primary/5 fade-in slide-in-from-top-2 animate-in duration-300">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <FilePenLine className="h-4 w-4 text-primary" />
-                                                <span className="text-sm font-medium text-primary">
-                                                    Firma Digital Activa
-                                                </span>
-                                            </div>
-                                            <p className="text-xs text-muted-foreground">
-                                                Tu firma digital aparecerá automáticamente en todas las recetas.
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    <div className="w-full aspect-video border rounded-md bg-white dark:bg-slate-100 overflow-hidden relative">
-                                        <SignatureCanvas
-                                            ref={sigCanvasRef}
-                                            className="w-full h-full"
+                            {/* Signature Section */}
+                            <div className="grid gap-4">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-base font-semibold">Firma Digital</Label>
+                                    <div className="flex items-center space-x-2">
+                                        <Label htmlFor="use-digital-signature" className="text-sm cursor-pointer">Activar</Label>
+                                        <Switch
+                                            id="use-digital-signature"
+                                            checked={formData.use_digital_signature}
+                                            onCheckedChange={(c) => handleSettingsChange("use_digital_signature", c)}
                                         />
                                     </div>
-
-                                    <div className="flex justify-between items-start gap-4">
-                                        <div className="flex gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => sigCanvasRef.current?.clear()}
-                                            >
-                                                Limpiar
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                onClick={handleSaveSignature}
-                                                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                                            >
-                                                Guardar Firma
-                                            </Button>
-                                        </div>
-                                        {settings?.digital_signature_url && (
-                                            <div className="text-right">
-                                                <p className="text-xs font-medium text-muted-foreground mb-1">
-                                                    Firma actual:
-                                                </p>
-                                                <div className="bg-slate-200 rounded p-1 inline-block">
-                                                    <Image
-                                                        src={settings.digital_signature_url}
-                                                        alt="Firma Guardada"
-                                                        width={80}
-                                                        height={40}
-                                                        className="object-contain"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        Dibuje en el recuadro y presione 'Guardar Firma' para actualizar.
-                                    </p>
                                 </div>
 
-                                {/* Logo */}
-                                <div className="grid gap-6">
-                                    <div className="grid gap-4">
-                                        <div className="flex items-center justify-between">
-                                            <Label className="text-base font-semibold">Logotipo</Label>
-                                            <div className="flex items-center space-x-2">
-                                                <Label htmlFor="use-logo" className="cursor-pointer">
-                                                    Mostrar en recetas
-                                                </Label>
-                                                <Switch
-                                                    id="use-logo"
-                                                    checked={formData.use_logo}
-                                                    onCheckedChange={(c) => handleSettingsChange("use_logo", c)}
-                                                />
-                                            </div>
-                                        </div>
+                                <div className="border rounded-md bg-white dark:bg-slate-100 overflow-hidden relative" style={{ height: '240px' }}>
+                                    <SignatureCanvas
+                                        ref={sigCanvasRef}
+                                        className="w-full h-full"
+                                    />
+                                </div>
 
-                                        {formData.use_logo && (
-                                            <div className="p-3 rounded-lg border-2 border-primary/20 bg-primary/5 fade-in slide-in-from-top-2 animate-in duration-300">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <FilePenLine className="h-4 w-4 text-primary" />
-                                                    <span className="text-sm font-medium text-primary">
-                                                        Logo Visible
-                                                    </span>
-                                                </div>
-                                                <p className="text-xs text-muted-foreground">
-                                                    Sube un logo para que aparezca automáticamente en las recetas.
-                                                </p>
-                                            </div>
-                                        )}
+                                <div className="flex flex-wrap justify-between items-center gap-4">
+                                    <div className="flex gap-2">
+                                        <Button variant="outline" size="sm" onClick={() => sigCanvasRef.current?.clear()}>
+                                            Limpiar
+                                        </Button>
+                                        <Button size="sm" onClick={handleSaveSignature} className="gap-2">
+                                            <Save className="h-4 w-4" /> Guardar
+                                        </Button>
+                                    </div>
 
-                                        <div className="flex items-center gap-3">
+                                    <Button variant="secondary" size="sm" className="gap-2" onClick={() => setIsMobileSignModalOpen(true)}>
+                                        <Smartphone className="h-4 w-4" />
+                                        Firmar desde Móvil
+                                    </Button>
+                                </div>
+
+                                {settings?.digital_signature_url && (
+                                    <div className="mt-2 text-xs text-muted-foreground flex items-center gap-2">
+                                        <CircleCheckBig className="h-3 w-3 text-green-500" />
+                                        Firma guardada disponible
+                                    </div>
+                                )}
+                            </div>
+
+                            <Separator />
+
+                            {/* Logo Section */}
+                            <div className="grid gap-4">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-base font-semibold">Logotipo</Label>
+                                    <div className="flex items-center space-x-2">
+                                        <Label htmlFor="use-logo" className="text-sm cursor-pointer">Activar</Label>
+                                        <Switch
+                                            id="use-logo"
+                                            checked={formData.use_logo}
+                                            onCheckedChange={(c) => handleSettingsChange("use_logo", c)}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-3 mb-4">
                                             <Input
                                                 id="logo-upload"
                                                 type="file"
-                                                accept="image/png, image/jpeg, image/jpg, image/webp"
+                                                accept="image/*"
                                                 className="hidden"
                                                 onChange={handleLogoFileSelect}
                                             />
                                             <Button
                                                 variant="outline"
-                                                className="w-full flex gap-2"
                                                 onClick={() => document.getElementById('logo-upload')?.click()}
+                                                className="w-full sm:w-auto"
                                             >
-                                                <Upload className="h-4 w-4" />
-                                                Seleccionar Archivo
+                                                <Upload className="h-4 w-4 mr-2" />
+                                                Subir Logo
                                             </Button>
                                         </div>
-                                        <div className="flex justify-center h-24 items-center border rounded-md border-dashed bg-muted/30">
-                                            {settings?.logo_url ? (
-                                                <div className="relative w-full h-full p-2">
-                                                    <Image
-                                                        src={settings.logo_url}
-                                                        alt="Logo Actual"
-                                                        fill
-                                                        className="object-contain"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <span className="text-sm text-muted-foreground">Ningún archivo seleccionado</span>
-                                            )}
-                                        </div>
                                         <p className="text-xs text-muted-foreground">
-                                            Selecciona una imagen y ajústala para obtener el mejor resultado. Se recomienda usar PNG con transparencias.
+                                            Formatos: PNG, JPG. Máximo 2MB. Se recomienda fondo transparente.
                                         </p>
+                                    </div>
+
+                                    <div className="h-24 w-24 border rounded-md border-dashed bg-muted/30 flex items-center justify-center overflow-hidden relative">
+                                        {settings?.logo_url ? (
+                                            <Image
+                                                src={settings.logo_url}
+                                                alt="Logo"
+                                                fill
+                                                className="object-contain p-1"
+                                            />
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground text-center px-1">Sin Logo</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -569,107 +612,118 @@ export default function RecipeSettingsPage() {
                     </div>
                 </div>
 
-                {/* Sidebar Templates */}
+                {/* Sidebar Preview */}
                 <div className="space-y-6">
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm sticky top-6">
-                        <div className="flex flex-col space-y-1.5 p-6">
-                            <div className="text-2xl font-semibold leading-none tracking-tight flex items-center gap-2">
-                                <LayoutTemplate className="h-5 w-5 text-primary" />
-                                Plantilla de Receta
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                                Selecciona y personaliza el diseño de tus recetas médicas
+                        <div className="p-4 border-b">
+                            <div className="font-semibold flex items-center gap-2">
+                                <LayoutTemplate className="h-4 w-4" /> Vista Previa
                             </div>
                         </div>
-                        <div className="p-6 pt-0 space-y-6">
-                            <div className="space-y-4">
-                                <div className="text-center">
-                                    {/* Placeholder for template preview - static for now as per design */}
-                                    <div className="mx-auto rounded-lg overflow-hidden bg-gray-100 shadow-lg relative w-full flex justify-center">
-                                        <div className="transform scale-[0.4] origin-top h-[450px]">
-                                            <VisualRecipePreview
-                                                data={{
-                                                    doctorName: profileData.nombre_completo || "Juan Pérez",
-                                                    doctorTitle: genderTitle || "Dr.",
-                                                    doctorSpecialty: profileData.especialidad || "Cardiología",
-                                                    doctorProfessionalId: profileData.cedula || "12345678",
-                                                    clinicName: formData.clinic_name || "Clínica del Sol",
-                                                    clinicAddress: formData.clinic_address || "Av. Siempre Viva 742",
-                                                    clinicPhone: formData.clinic_phone || "55 1234 5678",
-                                                    clinicEmail: formData.clinic_email || "dr.juan@example.com",
-                                                    patientName: "Paciente Ejemplo",
-                                                    patientAge: "30 años",
-                                                    patientWeight: "70 kg",
-                                                    patientSex: "M",
-                                                    date: new Date().toLocaleDateString(),
-                                                    medications: [
-                                                        { name: "Paracetamol", frequency: "Cada 8 horas", duration: "3 días", presentation: "500mg" },
-                                                        { name: "Ibuprofeno", frequency: "Cada 12 horas", duration: "5 días", presentation: "400mg" }
-                                                    ],
-                                                    diagnosis: "Fiebre y dolor general"
-                                                }}
-                                                settings={{
-                                                    templateId: formData.template_id,
-                                                    frameColor: settings?.frame_color || "#0da9f7",
-                                                    watermarkUrl: settings?.selected_watermark_url,
-                                                    logoUrl: settings?.logo_url,
-                                                    signatureUrl: settings?.digital_signature_url,
-                                                    showLogo: formData.use_logo,
-                                                    showSignature: formData.use_digital_signature
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="mt-3">
-                                        <h4 className="font-semibold text-primary">Plantilla Selecciónada</h4>
+                        <div className="p-4 space-y-6">
+                            <div
+                                className="mx-auto rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm border relative w-full flex justify-center pt-8 pb-4 cursor-pointer group hover:ring-2 hover:ring-primary/50 transition-all"
+                                onClick={() => setIsPreviewModalOpen(true)}
+                                title="Clic para ampliar vista previa"
+                            >
+                                <div className="transform scale-[0.4] origin-top h-[450px] pointer-events-none">
+                                    <VisualRecipePreview
+                                        data={{
+                                            doctorName: profileData.nombre_completo || "Nombre del Médico",
+                                            doctorTitle: genderTitle,
+                                            doctorSpecialty: profileData.especialidad || "Especialidad",
+                                            doctorProfessionalId: profileData.cedula || "0000000",
+                                            clinicName: formData.clinic_name || "Nombre Clínica/Hospital",
+                                            clinicAddress: formData.clinic_address || "Dirección del Consultorio",
+                                            clinicPhone: formData.clinic_phone || "Teléfono",
+                                            clinicEmail: formData.clinic_email || "email@ejemplo.com",
+                                            patientName: "Paciente Ejemplo",
+                                            patientAge: "30 años",
+                                            patientWeight: "70 kg",
+                                            patientSex: "M",
+                                            date: new Date().toLocaleDateString(),
+                                            medications: [
+                                                { name: "Medicamento A", frequency: "Cada 8 horas", duration: "3 días", presentation: "500mg" },
+                                            ],
+                                            diagnosis: "Diagnóstico de prueba"
+                                        }}
+                                        settings={{
+                                            templateId: formData.template_id,
+                                            frameColor: settings?.frame_color || "#0da9f7",
+                                            watermarkUrl: settings?.selected_watermark_url,
+                                            logoUrl: settings?.logo_url,
+                                            signatureUrl: settings?.digital_signature_url,
+                                            showLogo: formData.use_logo,
+                                            showSignature: formData.use_digital_signature
+                                        }}
+                                    />
+                                </div>
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="bg-white/90 dark:bg-black/80 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm flex items-center gap-2 text-foreground">
+                                        <LayoutTemplate className="h-3.5 w-3.5" /> Ampliar Vista
                                     </div>
                                 </div>
-
-                                <div className="space-y-3">
-                                    <Label>Cambiar Plantilla</Label>
-                                    <Select
-                                        value={formData.template_id}
-                                        onValueChange={(v) => handleSettingsChange("template_id", v)}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Seleccione una plantilla" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="plantilla-3">Plantilla 3 (Moderna)</SelectItem>
-                                            <SelectItem value="plantilla-1">Plantilla 1 (Clásica)</SelectItem>
-                                            <SelectItem value="plantilla-2">Plantilla 2 (Con Marco)</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <Separator />
-
-                                <Link href="/dashboard/medico/recetas/plantillas" className="w-full">
-                                    <Button className="w-full">
-                                        Editor de Plantillas de Receta <ChevronRight className="ml-auto h-4 w-4" />
-                                    </Button>
-                                </Link>
                             </div>
+
+                            <div className="space-y-3">
+                                <Label className="text-sm font-medium">Estilo de Plantilla</Label>
+                                <Select
+                                    value={formData.template_id}
+                                    onValueChange={(v) => handleSettingsChange("template_id", v)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="plantilla-3">Moderna (Estándar)</SelectItem>
+                                        <SelectItem value="plantilla-1">Clásica (Minimalista)</SelectItem>
+                                        <SelectItem value="plantilla-2">Corporativa (Con Marco)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="pt-2">
+                                <Button
+                                    variant="outline"
+                                    className="w-full text-xs"
+                                    onClick={() => router.push('/dashboard/medico/recetas/plantillas')}
+                                >
+                                    <FilePenLine className="h-3.5 w-3.5 mr-2" />
+                                    Editar Plantillas Avanzado
+                                </Button>
+                                <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                                    Personaliza colores, marcas de agua y más en el editor avanzado.
+                                </p>
+                            </div>
+
+                            <Button
+                                className="w-full"
+                                onClick={handleSaveAll}
+                                disabled={isSaving}
+                            >
+                                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                                Guardar Configuración
+                            </Button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Logo Adjustment Modal */}
+            {/* NEW ADJUST LOGO DIALOG IMPLEMENTATION */}
             <Dialog open={isLogoModalOpen} onOpenChange={setIsLogoModalOpen}>
-                <DialogContent className="sm:max-w-lg">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
+                <DialogContent className="bg-background fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg">
+                    <DialogHeader className="flex flex-col gap-2 text-center sm:text-left">
+                        <DialogTitle className="text-lg leading-none font-semibold flex items-center gap-2">
                             <Crop className="h-5 w-5" /> Ajustar Logo
                         </DialogTitle>
-                        <CardDescription>
+                        <CardDescription className="text-muted-foreground dark:text-muted-foreground/90 text-sm">
                             Ajusta tu logo para que se vea perfecto en todas las recetas. El logo se redimensionará automáticamente.
                         </CardDescription>
                     </DialogHeader>
 
                     <div className="space-y-4">
                         <div className="space-y-3">
-                            <Label>Formato del Logo</Label>
+                            <Label className="flex items-center gap-2 text-sm leading-none font-medium mb-1.5">Formato del Logo</Label>
                             <div className="grid grid-cols-2 gap-2">
                                 <button
                                     type="button"
@@ -723,31 +777,39 @@ export default function RecipeSettingsPage() {
                         </div>
 
                         <div className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-                            {/* Mock Crop Area */}
                             {tempLogoUrl && (
                                 <img
-                                    src={tempLogoUrl}
                                     className="max-h-full max-w-full object-contain"
-                                    style={{ transform: `scale(${logoZoom[0]})` }}
                                     alt="Logo preview"
+                                    src={tempLogoUrl}
+                                    style={{ transform: `scale(${logoZoom[0]})` }}
                                 />
                             )}
-                            <div className="absolute inset-0 pointer-events-none border-2 border-primary/50 opacity-50"></div>
+                            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                                <div
+                                    className={`border-2 border-primary shadow-[0_0_0_100vw_rgba(0,0,0,0.5)] transition-all duration-300 ${logoCropShape === 'square' ? 'w-40 h-40' :
+                                        logoCropShape === 'rect-h' ? 'w-56 h-32' :
+                                            logoCropShape === 'rect-c' ? 'w-48 h-36' :
+                                                'w-32 h-56'
+                                        }`}
+                                ></div>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Zoom</Label>
+                            <Label className="flex items-center gap-2 text-sm leading-none font-medium mb-1.5">Zoom</Label>
                             <Slider
                                 value={logoZoom}
                                 onValueChange={setLogoZoom}
                                 min={1}
                                 max={3}
                                 step={0.1}
+                                className="w-full"
                             />
                         </div>
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                         <Button variant="outline" onClick={() => setIsLogoModalOpen(false)}>Cancelar</Button>
                         <Button onClick={handleSaveLogoFromModal}>
                             <Save className="h-4 w-4 mr-2" />
@@ -756,18 +818,88 @@ export default function RecipeSettingsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-
-            <div className="fixed bottom-6 right-6 z-50">
-                <Button
-                    size="lg"
-                    className="shadow-lg gap-2"
-                    onClick={handleSaveAll}
-                    disabled={isSaving}
-                >
-                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CircleCheckBig className="h-4 w-4" />}
-                    Guardar Cambios
-                </Button>
-            </div>
-        </div>
+            {/* Mobile Sign Dialog */}
+            <Dialog open={isMobileSignModalOpen} onOpenChange={setIsMobileSignModalOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Firmar desde Móvil</DialogTitle>
+                        <CardDescription>
+                            Escanea este código QR con tu celular para dibujar tu firma en la pantalla.
+                        </CardDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col items-center justify-center p-6 space-y-4">
+                        {mobileSignQrUrl ? (
+                            <div className="border rounded-lg p-2 bg-white shadow-sm">
+                                <Image
+                                    src={mobileSignQrUrl}
+                                    alt="QR Code"
+                                    width={200}
+                                    height={200}
+                                />
+                            </div>
+                        ) : (
+                            <div className="h-[200px] w-[200px] flex items-center justify-center">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            </div>
+                        )}
+                        <p className="text-sm text-center text-muted-foreground">
+                            Asegúrate de haber iniciado sesión en tu dispositivo móvil.
+                        </p>
+                    </div>
+                </DialogContent>
+            </Dialog>
+            {/* EXPANDED PREVIEW MODAL */}
+            <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
+                <DialogContent className="max-w-[90vw] h-[90vh] flex flex-col p-0 bg-gray-100/95 dark:bg-gray-900/95 backdrop-blur-sm border-none">
+                    <DialogTitle className="sr-only">Vista Previa Ampliada</DialogTitle>
+                    <div className="absolute right-4 top-4 z-50">
+                        <Button
+                            variant="secondary"
+                            size="icon"
+                            className="h-8 w-8 rounded-full shadow-md"
+                            onClick={() => setIsPreviewModalOpen(false)}
+                        >
+                            <span className="sr-only">Cerrar</span>
+                            <span className="text-lg">×</span>
+                        </Button>
+                    </div>
+                    <div className="flex-1 overflow-auto grid place-items-center p-8">
+                        <div className="shadow-2xl my-auto">
+                            <VisualRecipePreview
+                                data={{
+                                    doctorName: profileData.nombre_completo || "Nombre del Médico",
+                                    doctorTitle: genderTitle,
+                                    doctorSpecialty: profileData.especialidad || "Especialidad",
+                                    doctorProfessionalId: profileData.cedula || "0000000",
+                                    clinicName: formData.clinic_name || "Nombre Clínica",
+                                    clinicAddress: formData.clinic_address || "Dirección",
+                                    clinicPhone: formData.clinic_phone || "Teléfono",
+                                    clinicEmail: formData.clinic_email || "email@ejemplo.com",
+                                    patientName: "Paciente Ejemplo",
+                                    patientAge: "30 años",
+                                    patientWeight: "70 kg",
+                                    patientSex: "M",
+                                    date: new Date().toLocaleDateString(),
+                                    medications: [
+                                        { name: "Medicamento A", frequency: "Cada 8 horas", duration: "3 días", presentation: "500mg" },
+                                        { name: "Medicamento B", frequency: "Cada 12 horas", duration: "5 días", presentation: "Tab" },
+                                    ],
+                                    diagnosis: "Diagnóstico de prueba"
+                                }}
+                                settings={{
+                                    templateId: formData.template_id,
+                                    frameColor: settings?.frame_color || "#0da9f7",
+                                    watermarkUrl: settings?.selected_watermark_url,
+                                    logoUrl: settings?.logo_url,
+                                    signatureUrl: settings?.digital_signature_url,
+                                    showLogo: formData.use_logo,
+                                    showSignature: formData.use_digital_signature
+                                }}
+                            />
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div >
     );
 }

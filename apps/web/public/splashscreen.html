@@ -133,7 +133,7 @@
         // Notificar a Tauri que el splash screen está listo
         if (window.__TAURI__) {
             window.__TAURI__.core.once('splashscreen-closed', () => {
-                console.log('Splash screen closing...');
+
             });
         }
     </script>

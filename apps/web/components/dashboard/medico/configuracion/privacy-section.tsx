@@ -82,7 +82,10 @@ export function PrivacySection() {
                 .single();
 
             if (error && error.code !== "PGRST116") {
-                console.error("Error loading privacy settings:", error);
+                // Ignore empty errors which can happen with network/cancellation
+                if (Object.keys(error).length > 0) {
+                    console.error("Error loading privacy settings:", error);
+                }
                 return;
             }
 

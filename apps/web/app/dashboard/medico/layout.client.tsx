@@ -14,6 +14,7 @@ interface Profile {
   id: string;
   role: string;
   nombre_completo: string | null;
+  scheduled_deletion_at: string | null;
 }
 
 export function MedicoLayoutClient({ children }: { children: React.ReactNode }) {
@@ -81,11 +82,25 @@ export function MedicoLayoutClient({ children }: { children: React.ReactNode }) 
       <SidebarProvider>
         <TourGuideProvider>
           <DashboardLayoutClient
-            userName={profile?.nombre_completo || user.email?.split("@")[0]}
-            userEmail={user.email}
+            userName={profile?.nombre_completo || user.email?.split("@")[0] || "Usuario"}
+            userEmail={user.email || ""}
             userRole="medico"
             userId={user.id}
           >
+            {profile?.scheduled_deletion_at && (
+              <div className="bg-orange-500 text-white px-4 py-2 flex items-center justify-between text-sm animate-pulse">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold">⚠️ ELIMINACIÓN PROGRAMADA:</span>
+                  <span>Tu cuenta se eliminará el {new Date(profile.scheduled_deletion_at).toLocaleDateString()}.</span>
+                </div>
+                <button
+                  onClick={() => router.push('/dashboard/medico/configuracion?tab=seguridad')}
+                  className="bg-white text-orange-600 px-2 py-0.5 rounded text-xs font-bold hover:bg-orange-50 transition-colors"
+                >
+                  Gestionar / Cancelar
+                </button>
+              </div>
+            )}
             {children}
           </DashboardLayoutClient>
         </TourGuideProvider>

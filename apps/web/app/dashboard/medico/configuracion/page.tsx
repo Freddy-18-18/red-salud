@@ -26,21 +26,53 @@ import {
   MapPin,
 } from "lucide-react";
 import { VerificationGuard } from "@/components/dashboard/medico/features/verification-guard";
-import { RecipeSettingsSection } from "@/components/dashboard/medico/configuracion/recipe-settings-section";
-import { ProfileSection } from "@/components/dashboard/medico/configuracion/profile-section";
 import { ProfileSectionV2 } from "@/components/dashboard/medico/configuracion/profile-section-v2";
-import { InfoProfesionalSection } from "@/components/dashboard/medico/configuracion/info-profesional-section";
-import { DocumentsSection } from "@/components/dashboard/medico/configuracion/documents-section";
-import { OfficesSection } from "@/components/dashboard/medico/configuracion/offices-section";
-import { ScheduleSection } from "@/components/dashboard/medico/configuracion/schedule-section";
-import { SecretariesSection } from "@/components/dashboard/medico/configuracion/secretaries-section";
-import { NotificationsSection } from "@/components/dashboard/medico/configuracion/notifications-section";
-import { PreferencesSection } from "@/components/dashboard/medico/configuracion/preferences-section";
-import { SecuritySection } from "@/components/dashboard/medico/configuracion/security-section";
-import { PrivacySection } from "@/components/dashboard/medico/configuracion/privacy-section";
-import { ActivitySection } from "@/components/dashboard/medico/configuracion/activity-section";
-import { BillingSection } from "@/components/dashboard/medico/configuracion/billing-section";
-import { ShortcutsSection } from "@/components/dashboard/medico/configuracion/shortcuts-section";
+import { Skeleton } from "@red-salud/ui";
+import dynamic from "next/dynamic";
+
+const LoadingFallback = () => <div className="w-full h-[400px] rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />;
+
+// Lazy load non-critical sections
+const RecipeSettingsSection = dynamic(() => import("@/components/dashboard/medico/configuracion/recipe-settings-section").then(mod => mod.RecipeSettingsSection), {
+  loading: () => <LoadingFallback />
+});
+const InfoProfesionalSection = dynamic(() => import("@/components/dashboard/medico/configuracion/info-profesional-section").then(mod => mod.InfoProfesionalSection), {
+  loading: () => <LoadingFallback />
+});
+const DocumentsSection = dynamic(() => import("@/components/dashboard/medico/configuracion/documents-section").then(mod => mod.DocumentsSection), {
+  loading: () => <LoadingFallback />
+});
+const OfficesSection = dynamic(() => import("@/components/dashboard/medico/configuracion/offices-section").then(mod => mod.OfficesSection), {
+  loading: () => <LoadingFallback />
+});
+const ScheduleSection = dynamic(() => import("@/components/dashboard/medico/configuracion/schedule-section").then(mod => mod.ScheduleSection), {
+  loading: () => <LoadingFallback />
+});
+const SecretariesSection = dynamic(() => import("@/components/dashboard/medico/configuracion/secretaries-section").then(mod => mod.SecretariesSection), {
+  loading: () => <LoadingFallback />
+});
+const NotificationsSection = dynamic(() => import("@/components/dashboard/medico/configuracion/notifications-section").then(mod => mod.NotificationsSection), {
+  loading: () => <LoadingFallback />
+});
+const PreferencesSection = dynamic(() => import("@/components/dashboard/medico/configuracion/preferences-section").then(mod => mod.PreferencesSection), {
+  loading: () => <LoadingFallback />
+});
+const SecuritySection = dynamic(() => import("@/components/dashboard/medico/configuracion/security-section").then(mod => mod.SecuritySection), {
+  loading: () => <LoadingFallback />
+});
+const PrivacySection = dynamic(() => import("@/components/dashboard/medico/configuracion/privacy-section").then(mod => mod.PrivacySection), {
+  loading: () => <LoadingFallback />
+});
+const ActivitySection = dynamic(() => import("@/components/dashboard/medico/configuracion/activity-section").then(mod => mod.ActivitySection), {
+  loading: () => <LoadingFallback />
+});
+const BillingSection = dynamic(() => import("@/components/dashboard/medico/configuracion/billing-section").then(mod => mod.BillingSection), {
+  loading: () => <Skeleton className="w-full h-[400px] rounded-xl" />
+});
+const ShortcutsSection = dynamic(() => import("@/components/dashboard/medico/configuracion/shortcuts-section").then(mod => mod.ShortcutsSection), {
+  loading: () => <Skeleton className="w-full h-[400px] rounded-xl" />
+});
+// ProfileSection removed from list to avoid duplicate imports (it is imported statically)
 
 /**
  * Tipos de tabs disponibles en la configuración
@@ -92,15 +124,27 @@ const TABS: TabConfig[] = [
   { id: "facturacion", label: "Facturación", icon: CreditCard, description: "Pagos", category: "cuenta" },
 ];
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 
 function ConfiguracionContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   // Obtener el tab activo directamente de la URL sin estado duplicado
-  const tabFromUrl = searchParams.get("tab") as TabType;
-  const activeTab = (tabFromUrl && TABS.some(t => t.id === tabFromUrl)) ? tabFromUrl : "perfil";
+  let tabFromUrl = searchParams.get("tab");
+
+  if (tabFromUrl === "configuracion-recetas") {
+    tabFromUrl = "recetas";
+  }
+
+  // Redirigir si estamos en el tab de recetas
+  useEffect(() => {
+    if (tabFromUrl === "recetas") {
+      router.push("/dashboard/medico/recetas/configuracion");
+    }
+  }, [tabFromUrl, router]);
+
+  const activeTab = (tabFromUrl && TABS.some(t => t.id === tabFromUrl)) ? (tabFromUrl as TabType) : "perfil";
 
   const handleTabChange = (tabId: TabType) => {
     const newUrl = tabId === "perfil"

@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase/client";
@@ -123,24 +123,31 @@ function EstadisticasInner() {
     setIsRefreshing(false);
   };
 
+  // Note: Using a callback ref pattern or just a stable ref object
+  const activeTabRef = useRef<any>(null);
+
   const handleExport = () => {
-    // TODO: Implementar exportación
-    alert("Exportación próximamente");
+    if (activeTabRef.current?.exportData) {
+      // Simple usage for now: Default to Excel, could add a dropdown later
+      activeTabRef.current.exportData("excel");
+    } else {
+      alert("Exportación no disponible en esta vista");
+    }
   };
 
   const renderTabContent = () => {
     if (!doctorId) return null;
 
     switch (activeTab) {
-      case "resumen": return <ResumenTab doctorId={doctorId} dateRange={dateRange} />;
-      case "pacientes": return <PacientesTab doctorId={doctorId} dateRange={dateRange} />;
+      case "resumen": return <ResumenTab ref={activeTabRef} doctorId={doctorId} dateRange={dateRange} />;
+      case "pacientes": return <PacientesTab ref={activeTabRef} doctorId={doctorId} dateRange={dateRange} />;
       case "enfermedades": return <EnfermedadesTab doctorId={doctorId} dateRange={dateRange} />;
       case "finanzas": return <FinanzasTab doctorId={doctorId} dateRange={dateRange} />;
       case "patrones": return <PatronesTab doctorId={doctorId} dateRange={dateRange} />;
       case "laboratorio": return <LaboratorioTab doctorId={doctorId} dateRange={dateRange} />;
       case "eficiencia": return <EficienciaTab doctorId={doctorId} dateRange={dateRange} />;
       case "brotes": return <BrotesTab doctorId={doctorId} dateRange={dateRange} />;
-      default: return <ResumenTab doctorId={doctorId} dateRange={dateRange} />;
+      default: return <ResumenTab ref={activeTabRef} doctorId={doctorId} dateRange={dateRange} />;
     }
   };
 

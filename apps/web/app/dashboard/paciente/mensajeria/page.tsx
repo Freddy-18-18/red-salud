@@ -1,6 +1,6 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
+
 
 import { useState, useEffect } from "react";
 import { useMessaging, useConversation } from "@/hooks/use-messaging";
@@ -9,7 +9,7 @@ import { MessageThread } from "@/components/messaging/message-thread";
 import { MessageInput } from "@/components/messaging/message-input";
 import { NewConversationDialog } from "@/components/messaging/new-conversation-dialog";
 import { Button } from "@red-salud/ui";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@red-salud/ui";
+import { Tabs, TabsList, TabsTrigger } from "@red-salud/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@red-salud/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/ui";
 import { Badge } from "@red-salud/ui";
@@ -53,7 +53,7 @@ export default function MensajeriaPage() {
   } = useMessaging(userId);
 
   const {
-    conversation: currentConversation,
+    // conversation: currentConversation,
     messages,
     loading: messagesLoading,
     sending,

@@ -15,7 +15,9 @@ import {
     ShieldCheck,
     Cpu,
     PanelLeftClose,
-    PanelLeft
+    PanelLeft,
+    GraduationCap,
+    LifeBuoy
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -136,6 +138,8 @@ const DashboardLayout: React.FC = () => {
                         {(hasPermission('can_manage_users') || hasAccessLevel(4)) && <SidebarItem to="/users" icon={UserIcon} label="Monitor Global" isCollapsed={actualCollapsed} />}
                         {(hasPermission('can_broadcast_announcements') || hasAccessLevel(3)) && <SidebarItem to="/announcements" icon={Megaphone} label="Avisos Sistema" isCollapsed={actualCollapsed} />}
                         {hasAccessLevel(3) && <SidebarItem to="/metrics" icon={BarChart3} label="Métricas" isCollapsed={actualCollapsed} />}
+                        <SidebarItem to="/academy" icon={GraduationCap} label="Academy" isCollapsed={actualCollapsed} />
+                        <SidebarItem to="/soporte" icon={LifeBuoy} label="Soporte" isCollapsed={actualCollapsed} />
 
                         <div className={`pt-6 pb-2 px-2 ${actualCollapsed ? 'text-center' : ''}`}>
                             {!actualCollapsed ? (

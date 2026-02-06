@@ -9,7 +9,7 @@ import { cn } from "./lib/utils"
 function Accordion({
   ...props
 }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return <AccordionPrimitive.Root data-slot="accordion" {...props} />
+  return <AccordionPrimitive.Root data-slot="accordion" suppressHydrationWarning {...props} />
 }
 
 function AccordionItem({
@@ -20,6 +20,7 @@ function AccordionItem({
     <AccordionPrimitive.Item
       data-slot="accordion-item"
       className={cn("border-b last:border-b-0", className)}
+      suppressHydrationWarning
       {...props}
     />
   )
@@ -57,6 +58,7 @@ function AccordionContent({
     <AccordionPrimitive.Content
       data-slot="accordion-content"
       className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
+      suppressHydrationWarning
       {...props}
     >
       <div className={cn("pt-0 pb-4", className)}>{children}</div>

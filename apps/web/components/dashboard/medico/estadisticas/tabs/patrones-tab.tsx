@@ -31,10 +31,6 @@ export function PatronesTab({ doctorId, dateRange }: PatronesTabProps) {
   const [patronesDiarios, setPatronesDiarios] = useState<PatronDiario[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadPatrones();
-  }, [loadPatrones]);
-
   const loadPatrones = useCallback(async () => {
     try {
       setLoading(true);
@@ -79,6 +75,10 @@ export function PatronesTab({ doctorId, dateRange }: PatronesTabProps) {
       setLoading(false);
     }
   }, [doctorId, dateRange]);
+
+  useEffect(() => {
+    loadPatrones();
+  }, [loadPatrones]);
 
   if (loading) {
     return (

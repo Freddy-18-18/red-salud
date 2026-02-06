@@ -838,25 +838,25 @@ ALTER TABLE chat_encryption_keys ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view workspaces they are members of"
   ON chat_workspaces FOR SELECT
   USING (
-    owner_id = auth.uid()
+    owner_id = (select auth.uid())
     OR id IN (
       SELECT workspace_id FROM chat_channels
       JOIN chat_participants ON chat_channels.id = chat_participants.channel_id
-      WHERE chat_participants.user_id = auth.uid()
+      WHERE chat_participants.user_id = (select auth.uid())
     )
   );
 
 CREATE POLICY "Users can create workspaces"
   ON chat_workspaces FOR INSERT
-  WITH CHECK (owner_id = auth.uid());
+  WITH CHECK (owner_id = (select auth.uid()));
 
 CREATE POLICY "Workspace owners can update"
   ON chat_workspaces FOR UPDATE
-  USING (owner_id = auth.uid());
+  USING (owner_id = (select auth.uid()));
 
 CREATE POLICY "Workspace owners can delete"
   ON chat_workspaces FOR DELETE
-  USING (owner_id = auth.uid());
+  USING (owner_id = (select auth.uid()));
 
 -- ----------------------------------------------------------------------------
 -- POLICIES PARA CHANNELS
@@ -866,17 +866,17 @@ CREATE POLICY "Users can view channels they participate in"
   USING (
     id IN (
       SELECT channel_id FROM chat_participants
-      WHERE user_id = auth.uid() AND is_banned = false
+      WHERE user_id = (select auth.uid()) AND is_banned = false
     )
-    OR primary_entity_id = auth.uid() -- Canales directos donde el usuario es la entidad
+    OR primary_entity_id = (select auth.uid()) -- Canales directos donde el usuario es la entidad
   );
 
 CREATE POLICY "Users can create channels"
   ON chat_channels FOR INSERT
   WITH CHECK (
-    auth.uid() IS NOT NULL
+    (select auth.uid()) IS NOT NULL
     OR workspace_id IN (
-      SELECT id FROM chat_workspaces WHERE owner_id = auth.uid()
+      SELECT id FROM chat_workspaces WHERE owner_id = (select auth.uid())
     )
   );
 
@@ -886,7 +886,7 @@ CREATE POLICY "Channel admins can update channels"
     EXISTS (
       SELECT 1 FROM chat_participants
       WHERE channel_id = chat_channels.id
-      AND user_id = auth.uid()
+      AND user_id = (select auth.uid())
       AND role IN ('owner', 'admin', 'moderator')
     )
   );
@@ -899,7 +899,7 @@ CREATE POLICY "Anyone can view participants of channels they are in"
   USING (
     channel_id IN (
       SELECT channel_id FROM chat_participants
-      WHERE user_id = auth.uid()
+      WHERE user_id = (select auth.uid())
     )
   );
 
@@ -910,14 +910,14 @@ CREATE POLICY "Users can add participants if they have permission"
       SELECT 1 FROM chat_participants p
       JOIN chat_channels c ON p.channel_id = c.id
       WHERE p.channel_id = chat_participants.channel_id
-      AND p.user_id = auth.uid()
+      AND p.user_id = (select auth.uid())
       AND (p.permissions->>'can_invite')::boolean = true
     )
   );
 
 CREATE POLICY "Users can update their own participant settings"
   ON chat_participants FOR UPDATE
-  USING (user_id = auth.uid());
+  USING (user_id = (select auth.uid()));
 
 CREATE POLICY "Admins can update other participants"
   ON chat_participants FOR UPDATE
@@ -925,7 +925,7 @@ CREATE POLICY "Admins can update other participants"
     EXISTS (
       SELECT 1 FROM chat_participants p
       WHERE p.channel_id = chat_participants.channel_id
-      AND p.user_id = auth.uid()
+      AND p.user_id = (select auth.uid())
       AND p.role IN ('owner', 'admin', 'moderator')
     )
   );
@@ -938,17 +938,17 @@ CREATE POLICY "Users can view messages from channels they participate in"
   USING (
     channel_id IN (
       SELECT channel_id FROM chat_participants
-      WHERE user_id = auth.uid() AND is_banned = false
+      WHERE user_id = (select auth.uid()) AND is_banned = false
     )
   );
 
 CREATE POLICY "Users can insert messages to channels they participate in"
   ON chat_messages FOR INSERT
   WITH CHECK (
-    sender_id = auth.uid()
+    sender_id = (select auth.uid())
     AND channel_id IN (
       SELECT channel_id FROM chat_participants
-      WHERE user_id = auth.uid()
+      WHERE user_id = (select auth.uid())
       AND (permissions->>'can_send_messages')::boolean = true
       AND is_banned = false
     )
@@ -957,14 +957,14 @@ CREATE POLICY "Users can insert messages to channels they participate in"
 CREATE POLICY "Users can edit their own messages"
   ON chat_messages FOR UPDATE
   USING (
-    sender_id = auth.uid()
+    sender_id = (select auth.uid())
     AND deleted_at IS NULL
   );
 
 CREATE POLICY "Users can delete their own messages"
   ON chat_messages FOR UPDATE
   USING (
-    sender_id = auth.uid()
+    sender_id = (select auth.uid())
   );
 
 -- ----------------------------------------------------------------------------
@@ -977,13 +977,13 @@ CREATE POLICY "Users can view read receipts from their channels"
       SELECT 1 FROM chat_messages m
       JOIN chat_participants p ON m.channel_id = p.channel_id
       WHERE m.id = chat_message_reads.message_id
-      AND p.user_id = auth.uid()
+      AND p.user_id = (select auth.uid())
     )
   );
 
 CREATE POLICY "Users can insert their own read receipts"
   ON chat_message_reads FOR INSERT
-  WITH CHECK (user_id = auth.uid());
+  WITH CHECK (user_id = (select auth.uid()));
 
 -- ----------------------------------------------------------------------------
 -- POLICIES PARA ATTACHMENTS
@@ -993,13 +993,13 @@ CREATE POLICY "Users can view attachments from their channels"
   USING (
     channel_id IN (
       SELECT channel_id FROM chat_participants
-      WHERE user_id = auth.uid()
+      WHERE user_id = (select auth.uid())
     )
   );
 
 CREATE POLICY "Authenticated users can upload attachments"
   ON chat_attachments FOR INSERT
-  WITH CHECK (uploaded_by = auth.uid());
+  WITH CHECK (uploaded_by = (select auth.uid()));
 
 -- ----------------------------------------------------------------------------
 -- POLICIES PARA USER PRESENCE
@@ -1009,12 +1009,9 @@ CREATE POLICY "Anyone can view presence"
   USING (true);
 
 CREATE POLICY "Users can update their own presence"
-  ON chat_user_presence FOR INSERT
-  WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Users can update own presence"
-  ON chat_user_presence FOR UPDATE
-  USING (user_id = auth.uid());
+  ON chat_user_presence FOR ALL
+  USING (user_id = (select auth.uid()))
+  WITH CHECK (user_id = (select auth.uid()));
 
 -- ----------------------------------------------------------------------------
 -- POLICIES PARA TYPING INDICATORS
@@ -1025,15 +1022,15 @@ CREATE POLICY "Anyone can view typing indicators"
 
 CREATE POLICY "Authenticated users can insert typing indicators"
   ON chat_typing_indicators FOR INSERT
-  WITH CHECK (user_id = auth.uid());
+  WITH CHECK (user_id = (select auth.uid()));
 
 CREATE POLICY "Users can update their typing indicators"
   ON chat_typing_indicators FOR UPDATE
-  USING (user_id = auth.uid());
+  USING (user_id = (select auth.uid()));
 
 CREATE POLICY "Users can delete their typing indicators"
   ON chat_typing_indicators FOR DELETE
-  USING (user_id = auth.uid());
+  USING (user_id = (select auth.uid()));
 
 -- ----------------------------------------------------------------------------
 -- POLICIES PARA MENTIONS
@@ -1041,15 +1038,15 @@ CREATE POLICY "Users can delete their typing indicators"
 CREATE POLICY "Users can view mentions directed to them"
   ON chat_mentions FOR SELECT
   USING (
-    mentioned_user_id = auth.uid()
+    mentioned_user_id = (select auth.uid())
     OR mentioned_role IN (
-      SELECT role FROM profiles WHERE id = auth.uid()
+      SELECT role FROM profiles WHERE id = (select auth.uid())
     )
     OR EXISTS (
       SELECT 1 FROM chat_messages m
       JOIN chat_participants p ON m.channel_id = p.channel_id
       WHERE m.id = chat_mentions.message_id
-      AND p.user_id = auth.uid()
+      AND p.user_id = (select auth.uid())
     )
   );
 
@@ -1058,7 +1055,7 @@ CREATE POLICY "Users can view mentions directed to them"
 -- ----------------------------------------------------------------------------
 CREATE POLICY "Users can view audit logs for their own actions"
   ON chat_message_audit FOR SELECT
-  USING (performed_by = auth.uid());
+  USING (performed_by = (select auth.uid()));
 
 CREATE POLICY "System can insert audit logs"
   ON chat_message_audit FOR INSERT
