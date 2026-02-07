@@ -19,7 +19,12 @@ interface ContactFlipCardProps {
 }
 
 export function ContactFlipCard({ patient, onSave }: ContactFlipCardProps) {
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        telefono: string;
+        email: string;
+        direccion: string;
+        fecha_nacimiento: string;
+    }>({
         telefono: patient.telefono || "",
         email: patient.email || "",
         direccion: patient.direccion || "",
