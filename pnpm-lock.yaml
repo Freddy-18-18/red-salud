@@ -439,10 +439,10 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@red-salud/types':
-        specifier: '*'
+        specifier: workspace:*
         version: link:../../packages/types
       '@red-salud/ui':
-        specifier: '*'
+        specifier: workspace:*
         version: link:../../packages/ui
       '@reduxjs/toolkit':
         specifier: ^2.10.1
