@@ -7,7 +7,7 @@ import { Calendar, Clock, Video, Plus, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { useI18n } from "@/lib/hooks/use-i18n";
+import { useI18n } from "@/hooks/use-i18n";
 
 interface AppointmentAlertProps {
   activeTelemed: number;

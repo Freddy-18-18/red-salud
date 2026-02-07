@@ -191,8 +191,8 @@ export function useSmartSuggestions(
                 });
             }
 
-        } catch (err: any) {
-            if (err.name === 'AbortError') {
+        } catch (err: unknown) {
+            if (err instanceof Error && err.name === 'AbortError') {
                 // Request cancelado, ignorar
                 return;
             }

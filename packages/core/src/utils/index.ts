@@ -5,6 +5,8 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
+export * from './pii-filter';
+
 export function slugify(text: string) {
     return text
         .toString()

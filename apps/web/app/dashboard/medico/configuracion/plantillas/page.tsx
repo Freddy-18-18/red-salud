@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
     Card,
     CardContent,
@@ -251,10 +252,12 @@ export default function PlantillasPage() {
                             <div className="flex justify-center">
                                 <div className="w-48 h-64 border rounded-lg overflow-hidden bg-white shadow-inner relative">
                                     {selectedFrame && (
-                                        <img
+                                        <Image
                                             src={selectedFrame.image_url}
                                             alt={selectedFrame.name}
-                                            className="w-full h-full object-cover"
+                                            className="object-cover"
+                                            fill
+                                            unoptimized
                                             style={{
                                                 filter: selectedFrame.has_customizable_color
                                                     ? `hue-rotate(${getHueRotation(frameColor)}deg)`
@@ -264,10 +267,12 @@ export default function PlantillasPage() {
                                     )}
                                     {selectedWatermarkId && (
                                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                            <img
-                                                src={watermarks.find((w) => w.id === selectedWatermarkId)?.image_url}
+                                            <Image
+                                                src={watermarks.find((w) => w.id === selectedWatermarkId)?.image_url || ''}
                                                 alt="Watermark"
-                                                className="object-contain opacity-10 w-1/2 h-1/2"
+                                                className="object-contain opacity-10"
+                                                fill
+                                                unoptimized
                                             />
                                         </div>
                                     )}

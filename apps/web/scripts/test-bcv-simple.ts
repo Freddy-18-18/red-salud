@@ -21,8 +21,6 @@ async function testBCVScraping() {
         // Based on user image, look for "USD" and associated rate
 
         const data = await page.evaluate(() => {
-            const results = {};
-
             // Log logic for debugging inside browser
             const strongs = Array.from(document.querySelectorAll('strong'));
             for (const strong of strongs) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Runtime Service - Singleton for Runtime Detection
  * 
@@ -17,7 +18,7 @@ import type {
 } from './types';
 
 class RuntimeServiceImpl implements IRuntimeService {
-  private static instance: RuntimeServiceImpl;
+  private static instance: RuntimeServiceImpl | null = null;
   private environment: RuntimeEnvironment;
   private storageService: StorageService | null = null;
   private networkService: NetworkService | null = null;
@@ -158,7 +159,7 @@ class RuntimeServiceImpl implements IRuntimeService {
    * Reset the singleton instance (useful for testing)
    */
   public static resetInstance(): void {
-    RuntimeServiceImpl.instance = null as any;
+    RuntimeServiceImpl.instance = null;
   }
 }
 

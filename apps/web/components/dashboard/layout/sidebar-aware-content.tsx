@@ -14,16 +14,21 @@ export function SidebarAwareContent({
   className,
   userRole
 }: SidebarAwareContentProps) {
-  const [currentMode, setCurrentMode] = useState<string>("hover");
+  const [currentMode, setCurrentMode] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("sidebar-mode") || "hover";
+    }
+    return "hover";
+  });
 
   // Calcular width basado en el modo actual (derivado)
   // FIX: En modo hover y collapsed, reservamos espacio para la barra colapsada (48px)
   const sidebarWidth = currentMode === "expanded" ? 256 : 48;
 
   useEffect(() => {
-    // 1. Leer estado inicial
-    const savedMode = localStorage.getItem("sidebar-mode") || "hover";
-    setCurrentMode(savedMode);
+    // 1. (Eliminado) Leer estado inicial ya se hace en useState
+
+    // 2. Suscribirse a cambios
 
     // 2. Suscribirse a cambios
     const handleSidebarModeChange = (event: Event) => {

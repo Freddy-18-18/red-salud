@@ -19,7 +19,7 @@ export const ZAI_MODEL = "glm-4.7";
 /**
  * Helper to generate chat completions with streaming
  */
-export async function createZaiChatCompletion(messages: any[], stream = true) {
+export async function createZaiChatCompletion(messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[], stream = true) {
     return zai.chat.completions.create({
         model: ZAI_MODEL,
         messages,

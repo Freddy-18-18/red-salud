@@ -6,7 +6,7 @@ import { Badge } from "@red-salud/ui";
 import { Activity, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { useI18n } from "@/lib/hooks/use-i18n";
+import { useI18n } from "@/hooks/use-i18n";
 
 interface HealthMetricsProps {
   metrics: any[];

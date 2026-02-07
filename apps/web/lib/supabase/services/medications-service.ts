@@ -24,6 +24,7 @@ import {
 export const searchMedicationsCatalog = _searchMedicationsCatalog;
 export const getMedicationById = _getMedicationById;
 export const getPatientPrescriptions = _getPatientPrescriptions;
+export const getDoctorPrescriptions = _getDoctorPrescriptions;
 export const getPrescription = _getPrescription;
 export const getPatientReminders = _getPatientReminders;
 export const getTodayIntakeLog = _getTodayIntakeLog;

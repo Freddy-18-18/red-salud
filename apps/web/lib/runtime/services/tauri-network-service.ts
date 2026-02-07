@@ -65,9 +65,9 @@ export class TauriNetworkService implements NetworkService {
     return (
       error.type === NetworkErrorType.TIMEOUT ||
       error.type === NetworkErrorType.CONNECTION_FAILED ||
-      (error.type === NetworkErrorType.SERVER_ERROR && 
-       error.statusCode !== undefined && 
-       error.statusCode >= 500)
+      (error.type === NetworkErrorType.SERVER_ERROR &&
+        error.statusCode !== undefined &&
+        error.statusCode >= 500)
     );
   }
 
@@ -76,7 +76,7 @@ export class TauriNetworkService implements NetworkService {
    */
   private parseError(error: unknown): NetworkError {
     const errorStr = String(error);
-    
+
     // Check for timeout
     if (errorStr.includes('timeout') || errorStr.includes('timed out')) {
       return new NetworkError(
@@ -86,7 +86,7 @@ export class TauriNetworkService implements NetworkService {
         error
       );
     }
-    
+
     // Check for connection errors
     if (
       errorStr.includes('connection') ||
@@ -100,7 +100,7 @@ export class TauriNetworkService implements NetworkService {
         error
       );
     }
-    
+
     // Check for authentication errors
     if (errorStr.includes('401') || errorStr.includes('unauthorized')) {
       return new NetworkError(
@@ -110,11 +110,11 @@ export class TauriNetworkService implements NetworkService {
         error
       );
     }
-    
+
     // Check for server errors
     const statusMatch = errorStr.match(/(\d{3})/);
     if (statusMatch) {
-      const statusCode = parseInt(statusMatch[1], 10);
+      const statusCode = parseInt(statusMatch[1] ?? '0', 10);
       if (statusCode >= 500) {
         return new NetworkError(
           `Server error: ${statusCode}`,
@@ -124,7 +124,7 @@ export class TauriNetworkService implements NetworkService {
         );
       }
     }
-    
+
     return new NetworkError(
       'Unknown network error',
       NetworkErrorType.UNKNOWN,
@@ -152,18 +152,18 @@ export class TauriNetworkService implements NetworkService {
         return await operation();
       } catch (error) {
         lastError = this.parseError(error);
-        
+
         // Don't retry on authentication errors
         if (lastError.type === NetworkErrorType.AUTHENTICATION_ERROR) {
           throw lastError;
         }
-        
+
         // Check if we should retry
         const isLastAttempt = attempt === maxRetries - 1;
         if (isLastAttempt || !this.isRetryableError(lastError)) {
           throw lastError;
         }
-        
+
         // Wait before retrying with exponential backoff
         const delay = this.getRetryDelay(attempt);
         console.warn(
@@ -201,12 +201,12 @@ export class TauriNetworkService implements NetworkService {
       try {
         // Extract access token from headers if present
         const accessToken = options?.headers?.['Authorization']?.replace('Bearer ', '') || '';
-        
+
         const result = await invoke<string>('supabase_get', {
           endpoint: url,
           accessToken,
         });
-        
+
         return JSON.parse(result);
       } catch (error) {
         throw this.parseError(error);
@@ -217,17 +217,17 @@ export class TauriNetworkService implements NetworkService {
   /**
    * Perform a POST request
    */
-  async post<T>(url: string, body: any, options?: RequestOptions): Promise<T> {
+  async post<T>(url: string, body: unknown, options?: RequestOptions): Promise<T> {
     return this.executeWithRetry(async () => {
       try {
         const accessToken = options?.headers?.['Authorization']?.replace('Bearer ', '') || '';
-        
+
         const result = await invoke<string>('supabase_post', {
           endpoint: url,
           body: JSON.stringify(body),
           accessToken,
         });
-        
+
         return JSON.parse(result);
       } catch (error) {
         throw this.parseError(error);
@@ -238,17 +238,17 @@ export class TauriNetworkService implements NetworkService {
   /**
    * Perform a PATCH request
    */
-  async patch<T>(url: string, body: any, options?: RequestOptions): Promise<T> {
+  async patch<T>(url: string, body: unknown, options?: RequestOptions): Promise<T> {
     return this.executeWithRetry(async () => {
       try {
         const accessToken = options?.headers?.['Authorization']?.replace('Bearer ', '') || '';
-        
+
         const result = await invoke<string>('supabase_patch', {
           endpoint: url,
           body: JSON.stringify(body),
           accessToken,
         });
-        
+
         return JSON.parse(result);
       } catch (error) {
         throw this.parseError(error);
@@ -263,12 +263,12 @@ export class TauriNetworkService implements NetworkService {
     return this.executeWithRetry(async () => {
       try {
         const accessToken = options?.headers?.['Authorization']?.replace('Bearer ', '') || '';
-        
+
         const result = await invoke<string>('supabase_delete', {
           endpoint: url,
           accessToken,
         });
-        
+
         return JSON.parse(result);
       } catch (error) {
         throw this.parseError(error);

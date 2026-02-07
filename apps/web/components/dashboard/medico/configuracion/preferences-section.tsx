@@ -13,7 +13,7 @@
 import { motion } from "framer-motion";
 import { Label } from "@red-salud/ui";
 import { usePreferences } from "@/lib/contexts/preferences-context";
-import { useI18n } from "@/lib/hooks/use-i18n";
+import { useI18n } from "@/hooks/use-i18n";
 import {
     Moon,
     Sun,

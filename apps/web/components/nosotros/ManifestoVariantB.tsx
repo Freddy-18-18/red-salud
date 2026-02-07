@@ -61,7 +61,7 @@ const itemVariantsRight = {
  */
 export function ManifestoVariantB() {
     return (
-        <section className="py-24 md:py-32 relative overflow-hidden bg-background">
+        <section id="manifiesto" className="py-24 md:py-32 relative overflow-hidden bg-background">
             {/* Background consistente con Hero */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />

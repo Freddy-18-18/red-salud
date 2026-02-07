@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 import { cn } from "@red-salud/core/utils";
+import { supabase } from "@/lib/supabase/client";
+import { useEffect } from "react";
 
 const features = [
     {
@@ -145,7 +147,7 @@ const features = [
             "Firma electrónica válida",
             "Directo a tu celular",
             "Historial de recetas",
-            "500+ farmacias afiliadas",
+            "Farmacias afiliadas",
             "Fácil de mostrar"
         ],
         preview: (
@@ -210,7 +212,102 @@ const features = [
 
 export function PacientesProductShowcase() {
     const [activeFeature, setActiveFeature] = useState("buscar");
-    const currentFeature = features.find(f => f.id === activeFeature) || features[0];
+    const [realDoctors, setRealDoctors] = useState<any[]>([]);
+    const [pharmacyCount, setPharmacyCount] = useState<number | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                // Fetch doctors
+                const { data: doctorsData, error: doctorsError } = await supabase
+                    .from('doctor_details')
+                    .select(`
+                        id,
+                        average_rating,
+                        specialty:specialties(name),
+                        profile:profiles(full_name)
+                    `)
+                    .eq('is_verified', true)
+                    .eq('is_active', true)
+                    .limit(3);
+
+                if (doctorsError) throw doctorsError;
+
+                if (doctorsData) {
+                    setRealDoctors(doctorsData.map(d => ({
+                        name: d.profile?.full_name || 'Médico Verificado',
+                        specialty: d.specialty?.name || 'Medicina General',
+                        rating: d.average_rating || '5.0',
+                        available: true
+                    })));
+                }
+
+                // Fetch pharmacy count
+                const { count, error: countError } = await supabase
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('role', 'farmacia');
+
+                if (countError) throw countError;
+                setPharmacyCount(count);
+
+            } catch (error) {
+                console.error("Error fetching patient services data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        fetchData();
+    }, []);
+
+    const updatedFeatures = features.map(f => {
+        if (f.id === "buscar" && realDoctors.length > 0) {
+            return {
+                ...f,
+                preview: (
+                    <div className="space-y-3">
+                        {realDoctors.map((doc, i) => (
+                            <div key={i} className={cn(
+                                "flex items-center justify-between p-3 rounded-lg border transition-colors",
+                                doc.available
+                                    ? "bg-card border-border/50 hover:border-primary/30"
+                                    : "bg-muted/30 border-border/30 opacity-60"
+                            )}>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/50 to-secondary/50 flex items-center justify-center text-white font-semibold text-sm">
+                                        {doc.name.split(' ').map((n: string) => n[0]).join('')}
+                                    </div>
+                                    <div>
+                                        <div className="font-medium text-sm">{doc.name}</div>
+                                        <div className="text-xs text-muted-foreground">{doc.specialty}</div>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-sm font-medium text-amber-500">★ {doc.rating}</div>
+                                    <div className={cn("text-xs", doc.available ? "text-secondary" : "text-muted-foreground")}>
+                                        {doc.available ? "Disponible" : "Sin horarios"}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )
+            };
+        }
+        if (f.id === "recetas") {
+            const countText = pharmacyCount !== null && pharmacyCount > 0 ? `+${pharmacyCount}` : "múltiples";
+            return {
+                ...f,
+                description: `Válidas en ${countText} farmacias`,
+                benefits: f.benefits.map(b => b.includes("farmacias afiliadas") ? `${countText} farmacias afiliadas` : b)
+            };
+        }
+        return f;
+    });
+
+    const currentFeature = updatedFeatures.find(f => f.id === activeFeature) || updatedFeatures[0];
 
     return (
         <section id="demo" className="py-24 relative overflow-hidden">
@@ -247,7 +344,7 @@ export function PacientesProductShowcase() {
                         <div className="grid lg:grid-cols-[280px,1fr] gap-6">
                             {/* Feature Selector */}
                             <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 scrollbar-hide">
-                                {features.map((feature) => {
+                                {updatedFeatures.map((feature) => {
                                     const Icon = feature.icon;
                                     const isActive = activeFeature === feature.id;
 

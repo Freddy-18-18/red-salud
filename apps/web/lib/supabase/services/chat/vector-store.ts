@@ -1,6 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { DocumentChunk } from "../../types/chat.types";
-import { Database } from "../../types/database.types"; // Assuming this exists or will be updated
+// import { Database } from "../../types/database.types"; // Assuming this exists or will be updated
 // If Database types don't include documents yet, we might need a partial cast or update imports later.
 // For now, we'll use 'any' or generic typed client if needed, but per plan we expect 'documents' table.
 
@@ -15,8 +15,18 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!; // IMPORTANT:
 
 // NOTE: Since this code runs on server (API routes and Actions), we should ensure secure client usage.
 
+// Define interface for RPC results
+interface RpcDocument {
+    id: number;
+    content: string;
+    metadata: Record<string, unknown>;
+    embedding?: string;
+    rank?: number;
+    similarity?: number;
+}
+
 export class VectorStore {
-    private client;
+    private client: SupabaseClient;
 
     constructor() {
         // Initialize Supabase client
@@ -78,11 +88,11 @@ export class VectorStore {
             return [];
         }
 
-        return documents.map((doc: any) => ({
-            id: doc.id,
+        return (documents as RpcDocument[]).map((doc) => ({
+            id: String(doc.id),
             content: doc.content,
-            metadata: doc.metadata,
-            similarity: doc.rank, // Use rank as similarity
+            metadata: doc.metadata as DocumentChunk['metadata'],
+            similarity: doc.rank || 0, // Use rank as similarity
         }));
     }
 
@@ -108,11 +118,11 @@ export class VectorStore {
             throw new Error(`Supabase Search Error: ${error.message}`);
         }
 
-        return documents.map((doc: any) => ({
-            id: doc.id,
+        return (documents as RpcDocument[]).map((doc) => ({
+            id: String(doc.id),
             content: doc.content,
-            metadata: doc.metadata,
-            similarity: doc.similarity,
+            metadata: doc.metadata as DocumentChunk['metadata'],
+            similarity: doc.similarity || 0,
         }));
     }
 }

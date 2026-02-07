@@ -1,7 +1,6 @@
 
 import fs from "fs/promises";
 import path from "path";
-import * as cheerio from "cheerio";
 import { createClient } from "@supabase/supabase-js";
 import { getEmbedding } from "../lib/services/gemini-service";
 import dotenv from "dotenv";

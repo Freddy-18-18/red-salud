@@ -99,13 +99,13 @@ export function HowItWorksSection() {
 
                 <div className="flex flex-wrap gap-4">
                   <Button asChild size="lg" className="rounded-full px-8 text-base h-12 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow">
-                    <Link href="/auth/register">
+                    <Link href="/register">
                       Comenzar Ahora
                       <ArrowRight className="ml-2 w-4 h-4" />
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="lg" className="rounded-full px-8 text-base h-12">
-                    <Link href="/about">
+                    <Link href="/nosotros">
                       Más Información
                     </Link>
                   </Button>

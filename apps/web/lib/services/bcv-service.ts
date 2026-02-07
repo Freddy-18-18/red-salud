@@ -16,7 +16,7 @@ export class BCVService {
         // 1. Check DB for today's rate
         const todayStr = new Date().toISOString().split('T')[0];
 
-        const { data: latestDB, error } = await supabase
+        const { data: latestDB } = await supabase
             .from('exchange_rates')
             .select('*')
             .eq('currency_pair', 'USD_TO_VES')
@@ -120,13 +120,14 @@ export class BCVService {
         const resultMap: Record<string, ExchangeRateData> = {};
 
         if (latestDB && latestDB.length > 0) {
-            latestDB.forEach((row: any) => {
-                const currency = row.currency_pair.split('_')[0];
+            latestDB.forEach((row: Record<string, unknown>) => {
+                const currency_pair = row.currency_pair as string;
+                const currency = currency_pair.split('_')[0] as string;
                 if (!resultMap[currency]) {
                     resultMap[currency] = {
-                        rate: parseFloat(row.rate),
+                        rate: parseFloat(row.rate as string),
                         currency: currency,
-                        date: row.created_at
+                        date: row.created_at as string
                     };
                 }
             });
@@ -152,13 +153,14 @@ export class BCVService {
 
         const fallbackResults: Record<string, ExchangeRateData> = {};
         if (fallbackDB) {
-            fallbackDB.forEach((row: any) => {
-                const currency = row.currency_pair.split('_')[0];
+            fallbackDB.forEach((row: Record<string, unknown>) => {
+                const currency_pair = row.currency_pair as string;
+                const currency = currency_pair.split('_')[0] as string;
                 if (!fallbackResults[currency]) {
                     fallbackResults[currency] = {
-                        rate: parseFloat(row.rate),
+                        rate: parseFloat(row.rate as string),
                         currency: currency,
-                        date: row.created_at
+                        date: row.created_at as string
                     };
                 }
             });

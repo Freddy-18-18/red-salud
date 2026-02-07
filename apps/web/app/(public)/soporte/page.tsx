@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -28,6 +28,8 @@ import { Badge } from "@red-salud/ui";
 import Link from "next/link";
 import { ROUTES, CONTACT_INFO } from "@/lib/constants";
 import { cn } from "@red-salud/core/utils";
+import { supportService, type KBSearchResult } from "@/lib/supabase/services/support-service";
+import { toast } from "sonner";
 
 // Categorías de ayuda
 const helpCategories = [
@@ -230,7 +232,9 @@ const colorClasses: Record<
 
 function CategoryCard({ category }: { category: (typeof helpCategories)[0] }) {
   const Icon = category.icon;
-  const colors = colorClasses[category.color];
+  // const Icon is already defined above
+  // const Icon is already defined above
+  const colors = colorClasses[category.color] || colorClasses.teal || { bg: "bg-teal-100 dark:bg-teal-900/30", text: "text-teal-600 dark:text-teal-400", border: "border-teal-200 dark:border-teal-800" };
 
   return (
     <Link href={category.href}>
@@ -268,7 +272,9 @@ function CategoryCard({ category }: { category: (typeof helpCategories)[0] }) {
 
 function ContactCard({ option }: { option: (typeof contactOptions)[0] }) {
   const Icon = option.icon;
-  const colors = colorClasses[option.color];
+  // const Icon is already defined above
+  // const Icon is already defined above
+  const colors = colorClasses[option.color] || colorClasses.teal || { bg: "bg-teal-100 dark:bg-teal-900/30", text: "text-teal-600 dark:text-teal-400", border: "border-teal-200 dark:border-teal-800" };
 
   return (
     <Link href={option.href}>
@@ -364,8 +370,11 @@ export default function SoportePage() {
       if (result.success && result.data) {
         setPopularArticles(result.data);
       } else if (result.error) {
+        const errorMessage = typeof result.error === 'object' && result.error !== null && 'message' in result.error
+          ? (result.error as any).message
+          : String(result.error);
         toast.error("Error al cargar artículos populares", {
-          description: result.error,
+          description: errorMessage,
         });
       }
     };
@@ -381,8 +390,11 @@ export default function SoportePage() {
         if (result.success && result.data) {
           setSearchResults(result.data);
         } else if (result.error) {
+          const errorMessage = typeof result.error === 'object' && result.error !== null && 'message' in result.error
+            ? (result.error as any).message
+            : String(result.error);
           toast.error("Error en la búsqueda", {
-            description: result.error,
+            description: errorMessage,
           });
         }
         setIsSearching(false);

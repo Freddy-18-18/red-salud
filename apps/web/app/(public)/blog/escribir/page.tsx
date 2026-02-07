@@ -301,6 +301,7 @@ Recuerda citar fuentes cuando sea necesario."
                 <TabsContent value="preview">
                   <Card className="p-6">
                     {post.cover_image && (
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={post.cover_image}
                         alt="Cover"

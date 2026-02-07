@@ -22,7 +22,7 @@ const CEDULA_A_VERIFICAR = '17497542'; // ⬅️ CAMBIA ESTE NÚMERO
 
 const PROFESIONES_MEDICAS_VALIDAS = [
   'MÉDICO', 'CIRUJANO', 'ODONTÓLOGO', 'BIOANALISTA',
-  'ENFERMERO', 'FARMACÉUTICO', 'FISIOTERAPEUTA', 
+  'ENFERMERO', 'FARMACÉUTICO', 'FISIOTERAPEUTA',
   'NUTRICIONISTA', 'PSICÓLOGO'
 ];
 
@@ -34,14 +34,14 @@ function esMedicoHumano(profesion) {
 
 async function verificarCedula(cedula) {
   let browser;
-  
+
   try {
     console.log('╔════════════════════════════════════════════════════════════╗');
     console.log(`║     VERIFICACIÓN SACS - V-${cedula}                    ║`);
     console.log('╚════════════════════════════════════════════════════════════╝\n');
 
     console.log('🚀 Iniciando navegador...');
-    
+
     browser = await puppeteer.launch({
       headless: false, // Cambiar a true para modo headless
       args: [
@@ -59,7 +59,7 @@ async function verificarCedula(cedula) {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
 
     console.log('🌐 Navegando al SACS...');
-    
+
     await page.goto('https://sistemas.sacs.gob.ve/consultas/prfsnal_salud', {
       waitUntil: 'domcontentloaded',
       timeout: 30000
@@ -69,13 +69,13 @@ async function verificarCedula(cedula) {
 
     // Esperar que cargue el formulario
     await page.waitForSelector('#tipo', { timeout: 10000 });
-    
+
     console.log('📝 Llenando formulario...');
 
     // Paso 1: Seleccionar "N°. CÉDULA"
     await page.select('#tipo', '1');
     console.log('   ✓ Tipo: N°. CÉDULA');
-    
+
     // Esperar a que aparezca el select de nacionalidad
     await new Promise(resolve => setTimeout(resolve, 500));
     await page.waitForSelector('#datajs', { timeout: 5000 });
@@ -83,18 +83,18 @@ async function verificarCedula(cedula) {
     // Paso 2: Seleccionar "V" (Venezolano)
     await page.select('#datajs', 'V');
     console.log('   ✓ Nacionalidad: V (Venezolano)');
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Paso 3: Escribir la cédula (simulando escritura humana)
     await page.waitForSelector('#cedula_matricula', { timeout: 5000 });
     await page.click('#cedula_matricula'); // Hacer clic en el campo
-    
+
     // Limpiar el campo primero
     await page.evaluate(() => {
       document.getElementById('cedula_matricula').value = '';
     });
-    
+
     // Escribir la cédula carácter por carácter (simula escritura humana)
     await page.type('#cedula_matricula', cedula, { delay: 100 });
     console.log(`   ✓ Cédula ingresada: ${cedula}`);
@@ -107,33 +107,33 @@ async function verificarCedula(cedula) {
 
     // Esperar a que carguen los resultados
     console.log('\n⏳ Esperando resultados del SACS...');
-    
+
     try {
       await page.waitForSelector('#tableUser table', { timeout: 20000 });
       console.log('✅ Tabla de datos básicos cargada');
-      
+
       // Esperar adicional para que cargue la tabla de profesiones (el servidor es lento)
       console.log('⏳ Esperando tabla de profesiones...');
       await new Promise(resolve => setTimeout(resolve, 3000));
-      
+
       // Intentar esperar la tabla de profesiones
       try {
         await page.waitForSelector('#profesional tbody tr', { timeout: 5000 });
         console.log('✅ Tabla de profesiones cargada\n');
-      } catch (err) {
+      } catch {
         console.log('⚠️  Tabla de profesiones no encontrada (puede que no sea profesional de salud)\n');
       }
-      
-    } catch (err) {
+
+    } catch {
       console.log('❌ No se encontraron resultados o timeout\n');
-      
-      await page.screenshot({ 
+
+      await page.screenshot({
         path: `scripts/sacs-error-${cedula}.png`,
-        fullPage: true 
+        fullPage: true
       });
-      
+
       await browser.close();
-      
+
       return {
         cedula,
         encontrado: false,
@@ -175,7 +175,7 @@ async function verificarCedula(cedula) {
           if (cells.length >= 5 && cells[0].innerText.trim() !== '') {
             const profesion = cells[0].innerText.trim();
             const matricula = cells[1].innerText.trim();
-            
+
             // Solo agregar si tiene datos válidos
             if (profesion && matricula) {
               datos.profesiones.push({
@@ -199,7 +199,7 @@ async function verificarCedula(cedula) {
     if (datosExtraidos.profesiones.length > 0 && datosExtraidos.profesiones[0].tiene_postgrado_btn) {
       try {
         console.log('🎓 Detectado botón de postgrados, haciendo clic...');
-        
+
         await page.click('#profesional tbody tr:first-child button');
         // Esperar más tiempo para que carguen los postgrados (servidor lento)
         await new Promise(resolve => setTimeout(resolve, 4000));
@@ -225,19 +225,19 @@ async function verificarCedula(cedula) {
         });
 
         console.log(`   ✓ ${postgrados.length} postgrado(s) encontrado(s)\n`);
-      } catch (err) {
+      } catch {
         console.log('   ⚠️  No se pudieron extraer postgrados\n');
       }
     }
 
     // Esperar un poco más antes de tomar screenshot y cerrar (asegurar que todo cargó)
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Tomar screenshot
     const screenshotPath = `scripts/sacs-resultado-${cedula}.png`;
-    await page.screenshot({ 
+    await page.screenshot({
       path: screenshotPath,
-      fullPage: true 
+      fullPage: true
     });
     console.log(`📸 Screenshot guardado: ${screenshotPath}\n`);
 
@@ -266,9 +266,9 @@ async function verificarCedula(cedula) {
       resultado.apto_red_salud = false;
       resultado.mensaje = 'Esta cédula no está registrada en el SACS como profesional de la salud';
       resultado.razon_rechazo = 'NO_REGISTRADO_SACS';
-      
+
       await browser.close();
-      
+
       console.log('═'.repeat(60));
       console.log('RESULTADO FINAL');
       console.log('═'.repeat(60));
@@ -277,19 +277,19 @@ async function verificarCedula(cedula) {
       console.log(`🔍 VALIDACIÓN:`);
       console.log(`   ❌ NO APTO - ${resultado.mensaje}`);
       console.log('\n' + '═'.repeat(60));
-      
+
       const outputPath = `resultado-sacs-${cedula}.json`;
       fs.writeFileSync(outputPath, JSON.stringify(resultado, null, 2));
       console.log(`\n💾 Resultado guardado: ${outputPath}`);
       console.log('\n✅ VERIFICACIÓN COMPLETADA!\n');
-      
+
       return resultado;
     }
 
     // CASO 2: Cédula encontrada, validar tipo de profesional
     resultado.encontrado = true;
     const profesionPrincipal = resultado.profesiones[0].profesion.toUpperCase();
-    
+
     // CASO 2A: Es veterinario
     if (profesionPrincipal.includes('VETERINARIO')) {
       resultado.es_veterinario = true;
@@ -322,7 +322,7 @@ async function verificarCedula(cedula) {
     console.log(`\n📋 Cédula: V-${resultado.cedula}`);
     console.log(`👤 Nombre: ${resultado.nombre_completo}`);
     console.log(`\n👨‍⚕️ PROFESIONES (${resultado.profesiones.length}):`);
-    
+
     resultado.profesiones.forEach((prof, i) => {
       console.log(`\n   ${i + 1}. ${prof.profesion}`);
       console.log(`      Matrícula: ${prof.matricula}`);
@@ -384,7 +384,7 @@ console.log('\n🏥 INICIANDO VERIFICACIÓN SACS\n');
 console.log(`📋 Cédula a verificar: V-${CEDULA_A_VERIFICAR}\n`);
 
 verificarCedula(CEDULA_A_VERIFICAR)
-  .then(resultado => {
+  .then(() => {
     console.log('\n🎯 Proceso finalizado');
     process.exit(0);
   })

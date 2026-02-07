@@ -129,11 +129,18 @@ export async function getClaims(filters: ClaimFilters): Promise<ClaimSummary[]> 
   if (error) throw error;
 
   // Mapear a ClaimSummary
-  return (data || []).map((claim: any) => ({
-    ...claim,
-    payer_name: claim.payer_contracts?.payer_name,
-    patient_name: claim.patients?.raw_user_meta_data?.full_name || claim.patients?.email,
-  }));
+  return (data || []).map((claim) => {
+    const typedClaim = claim as unknown as RCMClaim & {
+      payer_contracts: { payer_name: string } | null;
+      patients: { email: string; raw_user_meta_data: { full_name?: string } } | null;
+    };
+
+    return {
+      ...claim,
+      payer_name: typedClaim.payer_contracts?.payer_name,
+      patient_name: typedClaim.patients?.raw_user_meta_data?.full_name || typedClaim.patients?.email,
+    } as ClaimSummary;
+  });
 }
 
 export async function getClaimById(claimId: string): Promise<RCMClaim | null> {
@@ -355,7 +362,8 @@ export async function getUnreconciledPayments(clinicId: string): Promise<RCMPaym
   if (error) throw error;
 
   // Filtrar por clinic_id a través de claim
-  return (data || []).filter((payment: any) => payment.claim?.clinic_id === clinicId);
+  const paymentsWithClaim = data as unknown as (RCMPayment & { claim: { clinic_id: string; claim_number: string; patient_id: string } })[];
+  return (paymentsWithClaim || []).filter((payment) => payment.claim?.clinic_id === clinicId);
 }
 
 // ============ KPIs Financieros ============

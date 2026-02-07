@@ -36,13 +36,23 @@ import {
 import { cn } from "@red-salud/core/utils";
 import { format, getDay } from "date-fns";
 import { es } from "date-fns/locale";
+import { searchAllReasons, getTopReasons } from "@/lib/data/specialty-reasons-data";
+
+interface TimeRange {
+    inicio: string;
+    fin: string;
+}
+
+interface DaySchedule {
+    activo: boolean;
+    horarios: TimeRange[];
+}
 
 interface Schedule {
-    day_of_week: number;
-    start_time: string;
-    end_time: string;
-    consultorio_id: string;
-    is_active: boolean;
+    office_id?: string;
+    horarios?: {
+        [key: string]: DaySchedule;
+    };
 }
 
 interface Office {
@@ -88,9 +98,6 @@ export function AppointmentForm({
         ? currentMotivoValue.substring(lastCommaIndex + 1).trim()
         : currentMotivoValue.trim();
 
-    // Use smart suggestions from specialty data
-    const { searchAllReasons, getTopReasons } = require('@/lib/data/specialty-reasons-data');
-
     // Get specialty-aware suggestions
     const smartSuggestions = React.useMemo(() => {
         if (searchTerm.length >= 2) {
@@ -114,10 +121,17 @@ export function AppointmentForm({
 
     // Combine smart + legacy suggestions
     const allSuggestions = React.useMemo(() => {
-        const smartReasons = smartSuggestions.map((s: any) => s.reason || s);
-        const combined = [...new Set([...smartReasons, ...filteredSuggestions])];
+        let baseSuggestions: string[] = [];
+
+        if (searchTerm.length >= 2) {
+            baseSuggestions = smartSuggestions.map((s: any) => s.reason || s);
+        } else {
+            baseSuggestions = initialSuggestions;
+        }
+
+        const combined = [...new Set([...baseSuggestions, ...filteredSuggestions])];
         return combined.slice(0, 8);
-    }, [smartSuggestions, filteredSuggestions]);
+    }, [smartSuggestions, filteredSuggestions, initialSuggestions, searchTerm]);
 
     const handleAddSuggestion = (suggestion: string) => {
         let newValue = "";
@@ -344,7 +358,7 @@ export function AppointmentForm({
                                 name="hora"
                                 render={({ field }) => {
                                     const selectedDate = watch("fecha");
-                                    const duration = watch("duracion_minutos") || 30;
+                                    const duration = Number(watch("duracion_minutos") || 30);
 
                                     const getAvailableSlots = () => {
                                         if (!selectedDate || !schedules.length) return [];
@@ -353,10 +367,10 @@ export function AppointmentForm({
                                         const daysMap = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
                                         const dayName = daysMap[dayIndex];
 
-                                        let activeSchedule = null;
+                                        let activeSchedule: Schedule | undefined = undefined;
                                         if (selectedOfficeId) {
                                             // 1. Try exact office match with valid ranges
-                                            activeSchedule = schedules.find((s: any) =>
+                                            activeSchedule = schedules.find((s: Schedule) =>
                                                 s.office_id === selectedOfficeId &&
                                                 s.horarios?.[dayName]?.activo &&
                                                 s.horarios?.[dayName]?.horarios?.length > 0
@@ -364,23 +378,15 @@ export function AppointmentForm({
 
                                             // 2. Fallback to global schedule with valid ranges
                                             if (!activeSchedule) {
-                                                activeSchedule = schedules.find((s: any) =>
+                                                activeSchedule = schedules.find((s: Schedule) =>
                                                     !s.office_id &&
-                                                    s.horarios?.[dayName]?.activo &&
-                                                    s.horarios?.[dayName]?.horarios?.length > 0
-                                                );
-                                            }
-
-                                            // 3. Last resort: Any office that has slots today
-                                            if (!activeSchedule) {
-                                                activeSchedule = schedules.find((s: any) =>
                                                     s.horarios?.[dayName]?.activo &&
                                                     s.horarios?.[dayName]?.horarios?.length > 0
                                                 );
                                             }
                                         } else {
                                             // Default: use first valid schedule
-                                            activeSchedule = schedules.find((s: any) =>
+                                            activeSchedule = schedules.find((s: Schedule) =>
                                                 s.horarios?.[dayName]?.activo &&
                                                 s.horarios?.[dayName]?.horarios?.length > 0
                                             );

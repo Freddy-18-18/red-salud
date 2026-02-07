@@ -4,7 +4,7 @@ export async function logActivity(
   userId: string,
   activityType: string,
   description: string,
-  metadata?: any
+  metadata?: unknown
 ) {
   try {
     const { error } = await supabase.from("user_activity_log").insert({
@@ -17,9 +17,9 @@ export async function logActivity(
 
     if (error) throw error;
     return { success: true };
-  } catch (error) {
-    console.error("Error logging activity:", error);
-    return { success: false, error };
+  } catch (_error) {
+    console.error("Error logging activity:", _error);
+    return { success: false, error: _error };
   }
 }
 
@@ -34,9 +34,9 @@ export async function getUserActivity(userId: string, limit = 20) {
 
     if (error) throw error;
     return { success: true, data };
-  } catch (error) {
-    console.error("Error fetching activity:", error);
-    return { success: false, error };
+  } catch (_error) {
+    console.error("Error fetching activity:", _error);
+    return { success: false, error: _error };
   }
 }
 
@@ -50,9 +50,9 @@ export async function getUserSessions(userId: string) {
 
     if (error) throw error;
     return { success: true, data };
-  } catch (error) {
-    console.error("Error fetching sessions:", error);
-    return { success: false, error };
+  } catch (_error) {
+    console.error("Error fetching sessions:", _error);
+    return { success: false, error: _error };
   }
 }
 
@@ -65,8 +65,8 @@ export async function terminateSession(sessionId: string) {
 
     if (error) throw error;
     return { success: true };
-  } catch (error) {
-    console.error("Error terminating session:", error);
-    return { success: false, error };
+  } catch (_error) {
+    console.error("Error terminating session:", _error);
+    return { success: false, error: _error };
   }
 }

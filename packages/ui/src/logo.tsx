@@ -16,11 +16,12 @@ export function Logo({ className, size = "md" }: LogoProps) {
     };
 
     return (
-        <div className={cn("flex items-center justify-center", className)}>
+        <div className="flex items-center justify-center">
             <span
                 className={cn(
                     "font-bold text-foreground tracking-tight transition-colors",
-                    sizeClasses[size]
+                    sizeClasses[size],
+                    className
                 )}
             >
                 {APP_NAME}

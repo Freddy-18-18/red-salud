@@ -118,8 +118,8 @@ export async function getAvailableResources(
  */
 export async function getResourceUtilization(
   locationIds: string[],
-  dateFrom: string,
-  dateTo: string
+  _dateFrom: string,
+  _dateTo: string
 ): Promise<ResourceUtilization[]> {
   // Esta función requiere lógica adicional para calcular horas ocupadas
   // Por ahora retorna estructura básica

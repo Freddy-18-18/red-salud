@@ -52,9 +52,8 @@ async function searchDocuments(query: string) {
             });
 
             if (!error && vectorDocs) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                vectorDocs.forEach((doc: any) => {
-                    uniqueDocs.set(doc.content, { ...doc, source: 'vector' } as KnowledgeDocument);
+                vectorDocs.forEach((doc: Record<string, unknown>) => {
+                    uniqueDocs.set(doc.content as string, { ...doc, source: 'vector' } as KnowledgeDocument);
                 });
             }
         } catch (e) {
@@ -223,8 +222,7 @@ INFORMACIÓN CRÍTICA DE RESPALDO:
     const openai = getOpenAIClient();
     const response = await openai.chat.completions.create({
         model: "google/gemini-2.0-flash-exp:free", // Free model
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        messages: messages as any,
+        messages: messages as OpenAI.Chat.ChatCompletionMessageParam[],
         stream: true,
         temperature: 0.3, // Lower temperature for more deterministic/factual answers
         max_tokens: 500,  // Limit output tokens

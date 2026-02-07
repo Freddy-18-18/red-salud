@@ -13,7 +13,7 @@ import { AUTH_ROUTES } from "@/lib/constants";
 
 export function ContactoVariantB() {
     return (
-        <section className="py-24 md:py-32 relative bg-muted/30 border-y border-border">
+        <section id="contacto" className="py-24 md:py-32 relative bg-muted/30 border-y border-border">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl text-center">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}

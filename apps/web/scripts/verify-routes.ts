@@ -19,13 +19,13 @@ const APP_DIR = path.join(process.cwd(), "app");
 
 function checkRoute(route: string): RouteCheck {
   // Convertir ruta a path del sistema de archivos
-  let filePath: string;
-  
+
+
   if (route === "/") {
     // Ruta raíz puede estar en app/page.tsx o app/(public)/page.tsx
     const rootPage = path.join(APP_DIR, "page.tsx");
     const publicPage = path.join(APP_DIR, "(public)", "page.tsx");
-    
+
     if (fs.existsSync(rootPage)) {
       return { route, exists: true, filePath: rootPage };
     } else if (fs.existsSync(publicPage)) {
@@ -33,28 +33,28 @@ function checkRoute(route: string): RouteCheck {
     }
     return { route, exists: false, filePath: "N/A" };
   }
-  
+
   // Intentar encontrar la página en diferentes ubicaciones
   const segments = route.split("/").filter(Boolean);
-  
+
   // Intentar en app/(public)/...
   const publicPath = path.join(APP_DIR, "(public)", ...segments, "page.tsx");
   if (fs.existsSync(publicPath)) {
     return { route, exists: true, filePath: publicPath };
   }
-  
+
   // Intentar en app/(auth)/...
   const authPath = path.join(APP_DIR, "(auth)", ...segments, "page.tsx");
   if (fs.existsSync(authPath)) {
     return { route, exists: true, filePath: authPath };
   }
-  
+
   // Intentar en app/...
   const directPath = path.join(APP_DIR, ...segments, "page.tsx");
   if (fs.existsSync(directPath)) {
     return { route, exists: true, filePath: directPath };
   }
-  
+
   return { route, exists: false, filePath: "N/A" };
 }
 

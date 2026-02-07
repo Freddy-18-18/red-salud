@@ -88,7 +88,7 @@ export function FeaturedDoctors() {
                     </motion.div>
                     <motion.div variants={fadeInUp}>
                         <Link
-                            href="/auth/register?role=medico"
+                            href="/register?role=medico"
                             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-primary/20"
                         >
                             ¿Eres médico? Únete

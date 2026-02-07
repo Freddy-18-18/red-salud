@@ -25,13 +25,13 @@ const testUsers = [
 
 async function registerUsers() {
   console.log('🚀 Iniciando registro de usuarios de prueba...\n')
-  
+
   let successCount = 0
   let errorCount = 0
-  
+
   for (const user of testUsers) {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email: user.email,
         password: 'Test123456!',
         options: {
@@ -41,7 +41,7 @@ async function registerUsers() {
           },
         },
       })
-      
+
       if (error) {
         console.log(`❌ Error registrando ${user.name}: ${error.message}`)
         errorCount++
@@ -49,7 +49,7 @@ async function registerUsers() {
         console.log(`✅ Usuario registrado: ${user.name} ${user.lastName} (${user.email})`)
         successCount++
       }
-      
+
       // Esperar un poco entre registros para no sobrecargar
       await new Promise(resolve => setTimeout(resolve, 500))
     } catch (err) {
@@ -57,7 +57,7 @@ async function registerUsers() {
       errorCount++
     }
   }
-  
+
   console.log(`\n📊 Resumen:`)
   console.log(`   ✅ Exitosos: ${successCount}`)
   console.log(`   ❌ Errores: ${errorCount}`)

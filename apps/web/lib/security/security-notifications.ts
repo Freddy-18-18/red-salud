@@ -28,7 +28,7 @@ interface SecurityNotification {
   message: string;
   severity: NotificationSeverity;
   isRead: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   sentVia: string[];
   createdAt: string;
 }
@@ -42,7 +42,7 @@ export async function createSecurityNotification(
   message: string,
   options: {
     severity?: NotificationSeverity;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     sentVia?: string[];
   } = {}
 ): Promise<{ success: boolean; error?: string }> {
@@ -67,7 +67,7 @@ export async function createSecurityNotification(
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al crear notificación" };
   }
 }
@@ -235,7 +235,7 @@ export async function getSecurityNotifications(
     }));
 
     return { success: true, data: notifications };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al obtener notificaciones" };
   }
 }
@@ -257,7 +257,7 @@ export async function markNotificationAsRead(
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al marcar notificación" };
   }
 }
@@ -286,7 +286,7 @@ export async function markAllNotificationsAsRead(): Promise<{
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al marcar notificaciones" };
   }
 }
@@ -308,7 +308,7 @@ export async function deleteNotification(
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al eliminar notificación" };
   }
 }

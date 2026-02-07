@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@red-
 import { Button } from "@red-salud/ui";
 import { Video, Beaker, FileText, MessageSquare, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useI18n } from "@/lib/hooks/use-i18n";
+import { useI18n } from "@/hooks/use-i18n";
 
 export function QuickAccessSection() {
   const router = useRouter();

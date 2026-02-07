@@ -27,10 +27,11 @@ export const tauriNotificationService = {
         });
     },
 
-    async notifyNewAppointment(appointment: any) {
+    async notifyNewAppointment(appointment: Record<string, unknown>) {
+        const patient = appointment.paciente as Record<string, unknown> | undefined;
         await this.notify(
             "Nueva Cita Agendada",
-            `Cita con ${appointment.paciente?.nombre || 'Paciente'} a las ${appointment.hora || 'pendiente'}`
+            `Cita con ${patient?.nombre || 'Paciente'} a las ${appointment.hora || 'pendiente'}`
         );
     },
 

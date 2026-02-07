@@ -5,7 +5,7 @@ import { Button } from "@red-salud/ui";
 import { Badge } from "@red-salud/ui";
 import { Pill, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useI18n } from "@/lib/hooks/use-i18n";
+import { useI18n } from "@/hooks/use-i18n";
 
 interface MedicationsProps {
   medications: any[];

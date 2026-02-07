@@ -41,7 +41,7 @@ async function applyMigration() {
     console.log('🔍 Verifying fixes...\n')
 
     // Check RLS is enabled on lab_order_status_history
-    const { data: rlsCheck } = await supabase
+    await supabase
       .from('pg_tables')
       .select('*')
       .eq('schemaname', 'public')

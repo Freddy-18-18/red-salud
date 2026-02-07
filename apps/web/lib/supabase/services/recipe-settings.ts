@@ -152,7 +152,7 @@ export async function uploadRecipeAsset(
 
     const { error: uploadError } = await supabase.storage
         .from("private_assets")
-        .upload(`${type}s/${fileName}`, file);
+        .upload(filePath, file);
 
     if (uploadError) {
         console.warn("Upload to private_assets failed...", uploadError);

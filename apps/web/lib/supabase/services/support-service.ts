@@ -36,9 +36,9 @@ export const supportService = {
 
             if (error) throw error;
             return { success: true };
-        } catch (error) {
-            console.error("Error creating support ticket:", error);
-            return { success: false, error };
+        } catch (_error) {
+            console.error("Error creating support ticket:", _error);
+            return { success: false, error: _error };
         }
     },
 
@@ -62,9 +62,9 @@ export const supportService = {
 
             const data = await res.json();
             return { success: true, data: data.results as KBSearchResult[] };
-        } catch (error) {
-            console.error("Error searching knowledge base:", error);
-            return { success: false, error, data: [] };
+        } catch (_error) {
+            console.error("Error searching knowledge base:", _error);
+            return { success: false, error: _error, data: [] };
         }
     },
 
@@ -75,14 +75,21 @@ export const supportService = {
         try {
             const { data, error } = await supabase
                 .from("documents")
-                .select("id, content, metadata, category")
+                .select("id, content, metadata")
                 .limit(limit);
 
             if (error) throw error;
-            return { success: true, data: (data || []) as KBSearchResult[] };
-        } catch (error) {
-            console.error("Error fetching popular articles:", error);
-            return { success: false, error, data: [] };
+
+            const articles = (data || []).map((doc: any) => ({
+                ...doc,
+                category: doc.metadata?.category || 'General',
+                similarity: 1 // Default for popular articles
+            }));
+
+            return { success: true, data: articles as KBSearchResult[] };
+        } catch (_error) {
+            console.error("Error fetching popular articles:", JSON.stringify(_error, null, 2));
+            return { success: false, error: _error, data: [] };
         }
     }
 };

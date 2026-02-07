@@ -202,11 +202,11 @@ export async function uploadDoctorDocument(
         );
 
         return { success: true, data: docData as DoctorDocument };
-    } catch (error) {
-        console.error("[DoctorDocuments] Unexpected error:", error);
+    } catch (_error) {
+        console.error("[DoctorDocuments] Unexpected error:", _error);
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Error inesperado al subir documento."
+            error: _error instanceof Error ? _error.message : "Error inesperado al subir documento."
         };
     }
 }
@@ -233,9 +233,9 @@ export async function getDoctorDocuments(
         }
 
         return { success: true, data: (data || []) as DoctorDocument[] };
-    } catch (error) {
-        console.error("[DoctorDocuments] Unexpected error:", error);
-        return { success: false, error: error instanceof Error ? error.message : "Error desconocido" };
+    } catch (_error) {
+        console.error("[DoctorDocuments] Unexpected error:", _error);
+        return { success: false, error: _error instanceof Error ? _error.message : "Error desconocido" };
     }
 }
 
@@ -264,9 +264,9 @@ export async function getDoctorDocument(
         }
 
         return { success: true, data: data as DoctorDocument };
-    } catch (error) {
-        console.error("[DoctorDocuments] Unexpected error:", error);
-        return { success: false, error: error instanceof Error ? error.message : "Error desconocido" };
+    } catch (_error) {
+        console.error("[DoctorDocuments] Unexpected error:", _error);
+        return { success: false, error: _error instanceof Error ? _error.message : "Error desconocido" };
     }
 }
 
@@ -324,9 +324,9 @@ export async function deleteDoctorDocument(
         );
 
         return { success: true };
-    } catch (error) {
-        console.error("[DoctorDocuments] Unexpected error:", error);
-        return { success: false, error: error instanceof Error ? error.message : "Error desconocido" };
+    } catch (_error) {
+        console.error("[DoctorDocuments] Unexpected error:", _error);
+        return { success: false, error: _error instanceof Error ? _error.message : "Error desconocido" };
     }
 }
 
@@ -352,9 +352,9 @@ export async function getDocumentDownloadUrl(
         }
 
         return { success: true, data: data.signedUrl };
-    } catch (error) {
-        console.error("[DoctorDocuments] Unexpected error:", error);
-        return { success: false, error: error instanceof Error ? error.message : "Error desconocido" };
+    } catch (_error) {
+        console.error("[DoctorDocuments] Unexpected error:", _error);
+        return { success: false, error: _error instanceof Error ? _error.message : "Error desconocido" };
     }
 }
 
@@ -389,9 +389,9 @@ export async function updateDocumentExtractedData(
         }
 
         return { success: true };
-    } catch (error) {
-        console.error("[DoctorDocuments] Unexpected error:", error);
-        return { success: false, error: error instanceof Error ? error.message : "Error desconocido" };
+    } catch (_error) {
+        console.error("[DoctorDocuments] Unexpected error:", _error);
+        return { success: false, error: _error instanceof Error ? _error.message : "Error desconocido" };
     }
 }
 
@@ -422,7 +422,7 @@ export async function getDocumentProgress(userId: string): Promise<ServiceResult
 
         const uploadedTypes = new Set(docs?.map(d => d.document_type) || []);
         const requiredTypes = Object.entries(DOCTOR_DOCUMENT_TYPES)
-            .filter(([_, config]) => config.required)
+            .filter(([_type, config]) => config.required)
             .map(([type]) => type);
 
         const missingRequired = requiredTypes.filter(t => !uploadedTypes.has(t));
@@ -439,7 +439,7 @@ export async function getDocumentProgress(userId: string): Promise<ServiceResult
                 missingRequired: missingRequired.map(t => DOCTOR_DOCUMENT_TYPES[t as DoctorDocumentType].name),
             },
         };
-    } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : "Error desconocido" };
+    } catch (_error) {
+        return { success: false, error: _error instanceof Error ? _error.message : "Error desconocido" };
     }
 }

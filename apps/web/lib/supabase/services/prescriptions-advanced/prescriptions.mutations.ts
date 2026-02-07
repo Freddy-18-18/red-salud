@@ -125,7 +125,7 @@ export async function updatePrescriptionTemplate(
     // Verificar que el template pertenece al médico
     const { data: existing, error: fetchError } = await supabase
       .from('prescription_templates')
-      .select('medico_id, tipo')
+      .select('*')
       .eq('id', templateId)
       .single();
 
@@ -141,11 +141,11 @@ export async function updatePrescriptionTemplate(
       return createPrescriptionTemplate(medicoId, {
         nombre: input.nombre || 'Copia de template',
         descripcion: input.descripcion,
-        categoria: input.categoria as any,
+        categoria: input.categoria,
         layout_config: input.layout_config,
         custom_styles: input.custom_styles,
         header_config: input.header_config,
-        patient_fields: input.patient_fields as any,
+        patient_fields: input.patient_fields,
         footer_config: input.footer_config,
         texto_encabezado: input.texto_encabezado,
         texto_pie: input.texto_pie,
@@ -159,11 +159,11 @@ export async function updatePrescriptionTemplate(
     if (input.nombre !== undefined) updateData.nombre = input.nombre;
     if (input.descripcion !== undefined) updateData.descripcion = input.descripcion;
     if (input.categoria !== undefined) updateData.categoria = input.categoria;
-    if (input.layout_config !== undefined) updateData.layout_config = input.layout_config;
-    if (input.custom_styles !== undefined) updateData.custom_styles = input.custom_styles;
-    if (input.header_config !== undefined) updateData.header_config = input.header_config;
-    if (input.patient_fields !== undefined) updateData.patient_fields = input.patient_fields;
-    if (input.footer_config !== undefined) updateData.footer_config = input.footer_config;
+    if (input.layout_config !== undefined) updateData.layout_config = { ...existing.layout_config, ...input.layout_config };
+    if (input.custom_styles !== undefined) updateData.custom_styles = { ...existing.custom_styles, ...input.custom_styles };
+    if (input.header_config !== undefined) updateData.header_config = { ...existing.header_config, ...input.header_config };
+    if (input.patient_fields !== undefined) updateData.patient_fields = input.patient_fields; // Is array, strict replace?
+    if (input.footer_config !== undefined) updateData.footer_config = { ...existing.footer_config, ...input.footer_config };
     if (input.texto_encabezado !== undefined) updateData.texto_encabezado = input.texto_encabezado;
     if (input.texto_pie !== undefined) updateData.texto_pie = input.texto_pie;
     if (input.texto_instrucciones !== undefined) updateData.texto_instrucciones = input.texto_instrucciones;
@@ -535,7 +535,7 @@ export async function createPrescriptionExtended(
     paciente_data?: PatientDataSnapshot;
     medico_data?: MedicoDataSnapshot;
   }
-): Promise<ServiceResponse<any>> {
+): Promise<ServiceResponse<PrescriptionExtended>> {
   try {
     const { data: result, error } = await supabase
       .from('farmacia_recetas')
@@ -574,14 +574,12 @@ export async function updatePrescriptionExtended(
   updates: {
     template_id?: string;
     signature_id?: string;
-    template_id?: string;
-    signature_id?: string;
     custom_layout?: LayoutConfig;
     diagnostico?: string;
     notas?: string;
     medications?: PrescriptionMedication[];
   }
-): Promise<ServiceResponse<any>> {
+): Promise<ServiceResponse<PrescriptionExtended>> {
   try {
     // Verificar que la receta pertenece al médico
     const { data: existing, error: fetchError } = await supabase
@@ -601,6 +599,7 @@ export async function updatePrescriptionExtended(
 
     if (updates.template_id !== undefined) updateData.template_id = updates.template_id;
     if (updates.signature_id !== undefined) updateData.signature_id = updates.signature_id;
+
     if (updates.custom_layout !== undefined) updateData.custom_layout = updates.custom_layout;
     if (updates.diagnostico !== undefined) updateData.diagnostico = updates.diagnostico;
     if (updates.notas !== undefined) updateData.indicaciones = updates.notas;
@@ -637,7 +636,7 @@ export async function recordPrescriptionPrint(
     formato?: 'pdf' | 'print';
     copias?: number;
   }
-): Promise<ServiceResponse<any>> {
+): Promise<ServiceResponse<unknown>> {
   try {
     const { data, error } = await supabase
       .from('prescription_prints')

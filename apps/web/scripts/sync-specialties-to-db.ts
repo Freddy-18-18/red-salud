@@ -39,7 +39,7 @@ async function syncSpecialties() {
     for (let i = 0; i < records.length; i += batchSize) {
         const batch = records.slice(i, i + batchSize);
 
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('specialties')
             .upsert(batch, {
                 onConflict: 'id',

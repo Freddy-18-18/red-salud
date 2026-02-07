@@ -109,8 +109,8 @@ async function verifyIndex() {
     }
 
     console.log(`Found ${data?.length || 0} documents in database:`);
-    data?.forEach((doc: any) => {
-        console.log(`  - ${doc.title} (${doc.category})`);
+    data?.forEach((doc: Record<string, unknown>) => {
+        console.log(`  - ${doc.title as string} (${doc.category as string})`);
     });
 }
 
@@ -131,8 +131,10 @@ async function testSearch(query: string) {
     }
 
     console.log(`Found ${data?.length || 0} matching documents:`);
-    data?.forEach((doc: any, i: number) => {
-        console.log(`  ${i + 1}. [${(doc.similarity * 100).toFixed(1)}%] ${doc.metadata.title}`);
+    data?.forEach((doc: Record<string, unknown>, i: number) => {
+        const metadata = doc.metadata as { title: string };
+        const similarity = doc.similarity as number;
+        console.log(`  ${i + 1}. [${(similarity * 100).toFixed(1)}%] ${metadata.title}`);
     });
 }
 

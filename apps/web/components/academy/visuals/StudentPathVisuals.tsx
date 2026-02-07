@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Stars, Sphere, Torus, MeshDistortMaterial, Box, Line } from "@react-three/drei";
 import * as THREE from "three";
+
 
 // Common Canvas Wrapper
 const VisualWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -78,9 +79,9 @@ function MentorshipScene() {
         if (group.current) { group.current.rotation.y += delta * 0.2; }
     });
 
-    const particles = Array.from({ length: 15 }, () => ({
+    const particles = useMemo(() => Array.from({ length: 15 }, () => ({
         position: [(Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3] as [number, number, number]
-    }));
+    })), []);
 
     return (
         <group ref={group}>

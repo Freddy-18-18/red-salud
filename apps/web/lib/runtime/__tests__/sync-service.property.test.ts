@@ -16,7 +16,7 @@ import fc from 'fast-check';
 import { SyncService } from '../sync-service';
 import { RuntimeServiceImpl } from '../runtime-service';
 import type { StorageService, NetworkService, PendingChange } from '../types';
-import { SYNC_QUEUE, SYNC_METADATA } from '../storage-keys';
+import { SYNC_QUEUE } from '../storage-keys';
 
 /**
  * Property 1: Offline Operations Queue Changes
@@ -38,11 +38,11 @@ describe('Property 1: Offline Operations Queue Changes', () => {
     // Reset runtime service
     runtimeService = RuntimeServiceImpl.getInstance();
     runtimeService.resetServices();
-    
+
     // Get services
     storageService = runtimeService.getStorageService();
     networkService = runtimeService.getNetworkService();
-    
+
     // Create sync service
     syncService = new SyncService(storageService, networkService);
   });
@@ -52,13 +52,13 @@ describe('Property 1: Offline Operations Queue Changes', () => {
     if (syncService) {
       syncService.stop();
     }
-    
+
     // Clean up storage
     try {
       if (storageService) {
         await storageService.clear();
       }
-    } catch (error) {
+    } catch (_error) {
       // Ignore cleanup errors
     }
   });
@@ -72,14 +72,14 @@ describe('Property 1: Offline Operations Queue Changes', () => {
         // Generate arbitrary CRUD operations
         fc.record({
           id: fc.uuid(),
-          type: fc.constantFrom('create', 'update', 'delete'),
+          type: fc.constantFrom('create', 'update', 'delete') as fc.Arbitrary<PendingChange['type']>,
           entity: fc.constantFrom(
             'patient',
             'appointment',
             'consultation',
             'message',
             'settings'
-          ),
+          ) as fc.Arbitrary<PendingChange['entity']>,
           data: fc.record({
             id: fc.uuid(),
             name: fc.string(),
@@ -95,10 +95,10 @@ describe('Property 1: Offline Operations Queue Changes', () => {
 
           // Verify operation is in queue
           const queue = await syncService.getPendingChanges();
-          
+
           // Should contain the operation
           expect(queue).toContainEqual(operation);
-          
+
           // Should have all required fields
           const queuedOp = queue.find(op => op.id === operation.id);
           expect(queuedOp).toBeDefined();
@@ -121,8 +121,8 @@ describe('Property 1: Offline Operations Queue Changes', () => {
       fc.asyncProperty(
         fc.record({
           id: fc.uuid(),
-          type: fc.constantFrom('create', 'update', 'delete'),
-          entity: fc.constant('patient' as const),
+          type: fc.constantFrom('create', 'update', 'delete') as fc.Arbitrary<PendingChange['type']>,
+          entity: fc.constant('patient' as const) as fc.Arbitrary<'patient'>,
           data: fc.record({
             id: fc.uuid(),
             firstName: fc.string({ minLength: 1 }),
@@ -142,8 +142,8 @@ describe('Property 1: Offline Operations Queue Changes', () => {
 
           expect(queuedOp).toBeDefined();
           expect(queuedOp?.entity).toBe('patient');
-          expect(queuedOp?.data.firstName).toBe(operation.data.firstName);
-          expect(queuedOp?.data.lastName).toBe(operation.data.lastName);
+          expect((queuedOp?.data as Record<string, unknown>).firstName).toBe((operation.data as Record<string, unknown>).firstName);
+          expect((queuedOp?.data as Record<string, unknown>).lastName).toBe((operation.data as Record<string, unknown>).lastName);
         }
       ),
       { numRuns: 100 }
@@ -158,8 +158,8 @@ describe('Property 1: Offline Operations Queue Changes', () => {
       fc.asyncProperty(
         fc.record({
           id: fc.uuid(),
-          type: fc.constantFrom('create', 'update', 'delete'),
-          entity: fc.constant('appointment' as const),
+          type: fc.constantFrom('create', 'update', 'delete') as fc.Arbitrary<PendingChange['type']>,
+          entity: fc.constant('appointment' as const) as fc.Arbitrary<'appointment'>,
           data: fc.record({
             id: fc.uuid(),
             patientId: fc.uuid(),
@@ -180,8 +180,8 @@ describe('Property 1: Offline Operations Queue Changes', () => {
 
           expect(queuedOp).toBeDefined();
           expect(queuedOp?.entity).toBe('appointment');
-          expect(queuedOp?.data.patientId).toBe(operation.data.patientId);
-          expect(queuedOp?.data.type).toBe(operation.data.type);
+          expect((queuedOp?.data as Record<string, unknown>).patientId).toBe((operation.data as Record<string, unknown>).patientId);
+          expect((queuedOp?.data as Record<string, unknown>).type).toBe((operation.data as Record<string, unknown>).type);
         }
       ),
       { numRuns: 100 }
@@ -196,8 +196,8 @@ describe('Property 1: Offline Operations Queue Changes', () => {
       fc.asyncProperty(
         fc.record({
           id: fc.uuid(),
-          type: fc.constantFrom('create', 'update', 'delete'),
-          entity: fc.constant('consultation' as const),
+          type: fc.constantFrom('create', 'update', 'delete') as fc.Arbitrary<PendingChange['type']>,
+          entity: fc.constant('consultation' as const) as fc.Arbitrary<'consultation'>,
           data: fc.record({
             id: fc.uuid(),
             patientId: fc.uuid(),
@@ -226,8 +226,8 @@ describe('Property 1: Offline Operations Queue Changes', () => {
 
           expect(queuedOp).toBeDefined();
           expect(queuedOp?.entity).toBe('consultation');
-          expect(queuedOp?.data.chiefComplaint).toBe(operation.data.chiefComplaint);
-          expect(queuedOp?.data.diagnoses).toEqual(operation.data.diagnoses);
+          expect((queuedOp?.data as Record<string, unknown>).chiefComplaint).toBe((operation.data as Record<string, unknown>).chiefComplaint);
+          expect((queuedOp?.data as Record<string, unknown>).diagnoses).toEqual((operation.data as Record<string, unknown>).diagnoses);
         }
       ),
       { numRuns: 100 }
@@ -242,8 +242,8 @@ describe('Property 1: Offline Operations Queue Changes', () => {
       fc.asyncProperty(
         fc.record({
           id: fc.uuid(),
-          type: fc.constantFrom('create', 'update', 'delete'),
-          entity: fc.constant('message' as const),
+          type: fc.constantFrom('create', 'update', 'delete') as fc.Arbitrary<PendingChange['type']>,
+          entity: fc.constant('message' as const) as fc.Arbitrary<'message'>,
           data: fc.record({
             id: fc.uuid(),
             conversationId: fc.uuid(),
@@ -263,7 +263,7 @@ describe('Property 1: Offline Operations Queue Changes', () => {
 
           expect(queuedOp).toBeDefined();
           expect(queuedOp?.entity).toBe('message');
-          expect(queuedOp?.data.content).toBe(operation.data.content);
+          expect((queuedOp?.data as Record<string, unknown>).content).toBe((operation.data as Record<string, unknown>).content);
         }
       ),
       { numRuns: 100 }
@@ -278,8 +278,8 @@ describe('Property 1: Offline Operations Queue Changes', () => {
       fc.asyncProperty(
         fc.record({
           id: fc.uuid(),
-          type: fc.constantFrom('create', 'update', 'delete'),
-          entity: fc.constant('settings' as const),
+          type: fc.constantFrom('create', 'update', 'delete') as fc.Arbitrary<PendingChange['type']>,
+          entity: fc.constant('settings' as const) as fc.Arbitrary<'settings'>,
           data: fc.record({
             id: fc.uuid(),
             userId: fc.uuid(),
@@ -298,7 +298,7 @@ describe('Property 1: Offline Operations Queue Changes', () => {
 
           expect(queuedOp).toBeDefined();
           expect(queuedOp?.entity).toBe('settings');
-          expect(queuedOp?.data.credentials).toBe(operation.data.credentials);
+          expect((queuedOp?.data as Record<string, unknown>).credentials).toBe((operation.data as Record<string, unknown>).credentials);
         }
       ),
       { numRuns: 100 }
@@ -314,14 +314,14 @@ describe('Property 1: Offline Operations Queue Changes', () => {
         fc.array(
           fc.record({
             id: fc.uuid(),
-            type: fc.constantFrom('create', 'update', 'delete'),
+            type: fc.constantFrom('create', 'update', 'delete') as fc.Arbitrary<PendingChange['type']>,
             entity: fc.constantFrom(
               'patient',
               'appointment',
               'consultation',
               'message',
               'settings'
-            ),
+            ) as fc.Arbitrary<PendingChange['entity']>,
             data: fc.record({
               id: fc.uuid(),
               value: fc.string(),
@@ -348,7 +348,7 @@ describe('Property 1: Offline Operations Queue Changes', () => {
 
           // Should maintain order (FIFO)
           for (let i = 0; i < operations.length; i++) {
-            expect(queue[i].id).toBe(operations[i].id);
+            expect(queue[i]!.id).toBe(operations[i]!.id);
           }
         }
       ),
@@ -365,21 +365,17 @@ describe('Property 1: Offline Operations Queue Changes', () => {
         fc.array(
           fc.record({
             id: fc.uuid(),
-            type: fc.constantFrom('create', 'update', 'delete'),
+            type: fc.constantFrom('create', 'update', 'delete') as fc.Arbitrary<PendingChange['type']>,
             entity: fc.constantFrom(
-              'patient',
-              'appointment',
-              'consultation',
-              'message',
               'settings'
-            ),
+            ) as fc.Arbitrary<PendingChange['entity']>,
             data: fc.record({
               id: fc.uuid(),
               value: fc.string(),
             }),
             timestamp: fc.integer({ min: Date.now() - 1000000, max: Date.now() }),
             retries: fc.constant(0),
-          }),
+          }) as fc.Arbitrary<PendingChange>,
           { minLength: 1, maxLength: 10 }
         ),
         async (operations: PendingChange[]) => {
@@ -410,14 +406,14 @@ describe('Property 1: Offline Operations Queue Changes', () => {
       fc.asyncProperty(
         fc.record({
           id: fc.uuid(),
-          type: fc.constantFrom('create', 'update', 'delete'),
+          type: fc.constantFrom('create', 'update', 'delete') as fc.Arbitrary<PendingChange['type']>,
           entity: fc.constantFrom(
             'patient',
             'appointment',
             'consultation',
             'message',
             'settings'
-          ),
+          ) as fc.Arbitrary<PendingChange['entity']>,
           data: fc.record({
             id: fc.uuid(),
             value: fc.string(),
@@ -440,7 +436,7 @@ describe('Property 1: Offline Operations Queue Changes', () => {
 
           // Should have all instances (duplicates allowed for idempotency)
           expect(queue.length).toBe(count);
-          
+
           // All should have same ID
           queue.forEach(op => {
             expect(op.id).toBe(operation.id);
@@ -473,19 +469,15 @@ describe('Property 1: Offline Operations Queue Changes', () => {
             id: fc.uuid(),
             type: fc.constantFrom('create', 'update', 'delete'),
             entity: fc.constantFrom(
-              'patient',
-              'appointment',
-              'consultation',
-              'message',
               'settings'
-            ),
+            ) as fc.Arbitrary<PendingChange['entity']>,
             data: fc.record({
               id: fc.uuid(),
               value: fc.string(),
             }),
             timestamp: fc.integer({ min: Date.now() - 1000000, max: Date.now() }),
             retries: fc.constant(0),
-          }),
+          }) as fc.Arbitrary<PendingChange>,
           { minLength: 1, maxLength: 5 }
         ),
         async (operations: PendingChange[]) => {
@@ -504,10 +496,10 @@ describe('Property 1: Offline Operations Queue Changes', () => {
 
           // Should have all operations
           expect(queue.length).toBe(operations.length);
-          
+
           // Should match original operations
           for (let i = 0; i < operations.length; i++) {
-            expect(queue[i].id).toBe(operations[i].id);
+            expect(queue[i]!.id).toBe(operations[i]!.id);
           }
         }
       ),
@@ -535,14 +527,14 @@ describe('Property 7: Sync Store Update', () => {
     // Reset runtime service
     runtimeService = RuntimeServiceImpl.getInstance();
     runtimeService.resetServices();
-    
+
     // Get services
     storageService = runtimeService.getStorageService();
     networkService = runtimeService.getNetworkService();
-    
+
     // Mock network service to simulate server responses
     vi.spyOn(networkService, 'checkConnectivity').mockResolvedValue(true);
-    
+
     // Create sync service
     syncService = new SyncService(storageService, networkService);
   });
@@ -552,16 +544,16 @@ describe('Property 7: Sync Store Update', () => {
     if (syncService) {
       syncService.stop();
     }
-    
+
     // Clean up storage
     try {
       if (storageService) {
         await storageService.clear();
       }
-    } catch (error) {
+    } catch (_error) {
       // Ignore cleanup errors
     }
-    
+
     // Restore mocks
     vi.restoreAllMocks();
   });
@@ -878,7 +870,7 @@ describe('Property 7: Sync Store Update', () => {
           // Verify metadata was updated
           expect(metadataAfter.lastSyncTime).not.toBeNull();
           expect(metadataAfter.lastSuccessfulSync).not.toBeNull();
-          
+
           // Last sync time should be after previous sync time
           if (lastSyncBefore) {
             expect(new Date(metadataAfter.lastSyncTime!).getTime()).toBeGreaterThan(

@@ -27,9 +27,9 @@ export async function getActiveSignature(medicoId: string): Promise<ServiceRespo
     if (error) throw error;
 
     return { success: true, data };
-  } catch (error) {
-    console.error('[getActiveSignature] Error:', error);
-    return { success: false, error, data: undefined };
+  } catch (_error) {
+    console.error('[getActiveSignature] Error:', _error);
+    return { success: false, error: _error, data: undefined };
   }
 }
 
@@ -47,9 +47,9 @@ export async function getAllSignatures(medicoId: string): Promise<ServiceRespons
     if (error) throw error;
 
     return { success: true, data: data || [] };
-  } catch (error) {
-    console.error('[getAllSignatures] Error:', error);
-    return { success: false, error, data: [] };
+  } catch (_error) {
+    console.error('[getAllSignatures] Error:', _error);
+    return { success: false, error: _error, data: [] };
   }
 }
 
@@ -67,9 +67,9 @@ export async function getSignatureById(signatureId: string): Promise<ServiceResp
     if (error) throw error;
 
     return { success: true, data };
-  } catch (error) {
-    console.error('[getSignatureById] Error:', error);
-    return { success: false, error, data: undefined };
+  } catch (_error) {
+    console.error('[getSignatureById] Error:', _error);
+    return { success: false, error: _error, data: undefined };
   }
 }
 
@@ -109,9 +109,9 @@ export async function createSignature(
     if (error) throw error;
 
     return { success: true, data };
-  } catch (error) {
-    console.error('[createSignature] Error:', error);
-    return { success: false, error, data: undefined };
+  } catch (_error) {
+    console.error('[createSignature] Error:', _error);
+    return { success: false, error: _error, data: undefined };
   }
 }
 
@@ -138,7 +138,7 @@ export async function updateSignature(
     }
 
     // Actualizar firma
-    const updateData: any = {};
+    const updateData: Partial<DoctorSignature> = {};
 
     if (input.firma_url !== undefined) updateData.firma_url = input.firma_url;
     if (input.firma_type !== undefined) updateData.firma_type = input.firma_type;
@@ -167,9 +167,9 @@ export async function updateSignature(
     if (error) throw error;
 
     return { success: true, data };
-  } catch (error) {
-    console.error('[updateSignature] Error:', error);
-    return { success: false, error, data: undefined };
+  } catch (_error) {
+    console.error('[updateSignature] Error:', _error);
+    return { success: false, error: _error, data: undefined };
   }
 }
 
@@ -211,9 +211,9 @@ export async function activateSignature(
     if (error) throw error;
 
     return { success: true, data };
-  } catch (error) {
-    console.error('[activateSignature] Error:', error);
-    return { success: false, error, data: undefined };
+  } catch (_error) {
+    console.error('[activateSignature] Error:', _error);
+    return { success: false, error: _error, data: undefined };
   }
 }
 
@@ -247,9 +247,9 @@ export async function deleteSignature(
     if (error) throw error;
 
     return { success: true };
-  } catch (error) {
-    console.error('[deleteSignature] Error:', error);
-    return { success: false, error };
+  } catch (_error) {
+    console.error('[deleteSignature] Error:', _error);
+    return { success: false, error: _error };
   }
 }
 

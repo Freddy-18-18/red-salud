@@ -11,7 +11,7 @@ import { ArrowRight } from "lucide-react";
 
 const FACTS = [
     "Infraestructura lista para escala nacional",
-    "50+ especialidades médicas desde el día uno",
+    "132 especialidades médicas desde el día uno",
     "Seguridad de datos de clase mundial",
     "5 meses de ingeniería sin atajos",
 ];

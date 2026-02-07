@@ -38,7 +38,7 @@ async function applyMigration() {
     if (error) {
       // Si exec_sql no existe, intentar ejecutar directamente
       console.log('⚠️  exec_sql no disponible, ejecutando directamente...');
-      
+
       // Dividir en statements individuales
       const statements = migrationSQL
         .split(';')
@@ -48,9 +48,9 @@ async function applyMigration() {
       for (let i = 0; i < statements.length; i++) {
         const statement = statements[i];
         console.log(`   Ejecutando statement ${i + 1}/${statements.length}...`);
-        
-        const { error: stmtError } = await supabase.rpc('exec', { 
-          query: statement + ';' 
+
+        const { error: stmtError } = await supabase.rpc('exec', {
+          query: statement + ';'
         });
 
         if (stmtError) {
@@ -64,7 +64,7 @@ async function applyMigration() {
 
     // Verificar que las tablas se crearon
     console.log('🔍 Verificando tablas creadas...');
-    
+
     const tables = [
       'specialties',
       'doctor_details',
@@ -92,7 +92,8 @@ async function applyMigration() {
     console.log('   3. Desplegar Edge Function: supabase functions deploy verify-doctor-sacs');
     console.log('   4. Probar el flujo en /dashboard/medico/perfil/setup\n');
 
-  } catch (error: any) {
+  } catch (_error: unknown) {
+    const error = _error as Error;
     console.error('\n❌ Error aplicando migración:', error.message);
     console.error('\n💡 Solución alternativa:');
     console.error('   1. Ir a Supabase Dashboard → SQL Editor');

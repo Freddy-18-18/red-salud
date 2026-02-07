@@ -7,6 +7,8 @@ import {
   AccordionTrigger,
 } from "@red-salud/ui";
 import { HelpCircle } from 'lucide-react';
+import Link from "next/link";
+import { ROUTES } from "@/lib/constants";
 
 const faqs = [
   {
@@ -31,11 +33,11 @@ const faqs = [
     items: [
       {
         question: '¿Cuánto cuesta una consulta?',
-        answer: 'Los precios varían según la especialidad y el médico. En promedio, una consulta de medicina general cuesta entre $10-$20 USD, mientras que especialistas pueden costar entre $20-$50 USD. Todos los precios están claramente indicados en la plataforma antes de que agendes tu cita. Además, ofrecemos planes de suscripción con descuentos de hasta 40%.',
+        answer: 'Los precios son establecidos por cada médico y varían según la especialidad y el profesional. Podrás ver el costo exacto de la consulta en el perfil del médico antes de agendar tu cita.',
       },
       {
         question: '¿Qué métodos de pago aceptan?',
-        answer: 'Aceptamos múltiples métodos: tarjetas de crédito/débito (Visa, Mastercard), transferencias bancarias, y billeteras digitales. Todos los pagos son procesados de forma segura con encriptación de nivel bancario. Recibiendo un recibo digital automáticamente.',
+        answer: 'Los métodos de pago son definidos directamente por cadá médico. Al momento de agendar, podrás ver las opciones que acepta el especialista (como pago móvil, transferencias, efectivo, o divisas). El pago se realiza directamente al profesional.',
       },
       {
         question: '¿Puedo usar mi seguro médico?',
@@ -73,7 +75,7 @@ const faqs = [
       },
       {
         question: '¿Puedo obtener una segunda opinión?',
-        answer: 'Claro, es tu derecho. Puedes consultar con otros médicos para obtener una segunda opinión. Todos tus archivos anteriores están disponibles para compartir. Algunos especialistas incluso ofrecen paquetes específicos de segunda opinión.',
+        answer: 'Sí, tienes la libertad de consultar con cualquier especialista de nuestra red si deseas otra perspectiva. Tu historial médico es tuyo y puedes acceder a él para compartirlo con el profesional de tu elección.',
       },
     ],
   },
@@ -145,18 +147,18 @@ export function FAQSection() {
             Nuestro equipo de soporte está disponible 24/7 para ayudarte
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="#"
+            <Link
+              href={ROUTES.CONTACTO}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
             >
               Contactar Soporte
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              href={ROUTES.SOPORTE}
               className="px-6 py-3 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
               Ver Centro de Ayuda
-            </a>
+            </Link>
           </div>
         </div>
       </div>

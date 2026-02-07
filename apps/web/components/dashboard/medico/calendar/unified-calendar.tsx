@@ -53,7 +53,7 @@ export function UnifiedCalendar({
     if (!isDesktop && viewMode === "week") {
       setViewMode("day");
     }
-  }, [isDesktop]);
+  }, [isDesktop, viewMode]);
 
   // Estado para la hora actual
   const [now, setNow] = useState(new Date());

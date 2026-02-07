@@ -15,9 +15,13 @@ async function listModels() {
     try {
         const list = await zai.models.list();
         console.log("Models found:");
-        list.data.forEach((m: any) => console.log(`- ${m.id}`));
-    } catch (e: any) {
-        console.log(`❌ Failed to list models: ${e.message}`);
+        list.data.forEach((m: { id: string }) => console.log(`- ${m.id}`));
+    } catch (e: unknown) {
+        if (e instanceof Error) {
+            console.log(`❌ Failed to list models: ${e.message}`);
+        } else {
+            console.log(`❌ Failed to list models: ${String(e)}`);
+        }
     }
 }
 

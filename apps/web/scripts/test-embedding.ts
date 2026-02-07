@@ -32,8 +32,12 @@ async function test() {
             console.log(`✅ Success! Model '${model}' works.`);
             console.log("Vector length:", res.data[0].embedding.length);
             return; // Exit on first success
-        } catch (e: any) {
-            console.log(`❌ Failed: ${e.message}`);
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                console.log(`❌ Failed: ${e.message}`);
+            } else {
+                console.log(`❌ Failed: ${String(e)}`);
+            }
         }
     }
     console.log("\nAll models failed.");

@@ -292,10 +292,13 @@ export default function TemplateEditorPage() {
                                                             case 'tech-line': return <div className="p-2 w-full h-full"><TemplateTech {...PreviewProps} /></div>;
                                                             default:
                                                                 return (
-                                                                    <img
+                                                                    <Image
                                                                         alt={template.name}
-                                                                        className="object-cover w-full h-full"
+                                                                        className="object-cover"
                                                                         src={template.image}
+                                                                        fill
+                                                                        sizes="(max-width: 768px) 50vw, 33vw"
+                                                                        unoptimized
                                                                     />
                                                                 );
                                                         }
@@ -386,10 +389,13 @@ export default function TemplateEditorPage() {
                                                             if (wm.id === 'wm-cross') return <WatermarkCross className="w-full h-full text-gray-400" />;
 
                                                             return (
-                                                                <img
+                                                                <Image
                                                                     alt={wm.name}
-                                                                    className="object-contain w-full h-full max-h-16"
+                                                                    className="object-contain p-2"
                                                                     src={wm.image}
+                                                                    fill
+                                                                    sizes="150px"
+                                                                    unoptimized
                                                                 />
                                                             );
                                                         })()}

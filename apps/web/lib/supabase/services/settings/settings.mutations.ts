@@ -48,7 +48,7 @@ export async function uploadSignature(doctorId: string, base64Image: string) {
 
         const fileName = `${doctorId}/signature_${Date.now()}.png`;
 
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
             .from('signatures')
             .upload(fileName, blob, {
                 contentType: 'image/png',
@@ -77,7 +77,7 @@ export async function uploadLogo(doctorId: string, file: File) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${doctorId}/logo_${Date.now()}.${fileExt}`;
 
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
             .from('logos')
             .upload(fileName, file, {
                 contentType: file.type,

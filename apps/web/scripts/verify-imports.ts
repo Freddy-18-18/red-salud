@@ -73,7 +73,7 @@ function extractImports(filePath: string, content: string): ImportStatement[] {
       const matches = [...line.matchAll(pattern)];
       for (const match of matches) {
         const importPath = match[1];
-        
+
         // Skip external packages (not starting with . or @/)
         if (!importPath.startsWith('.') && !importPath.startsWith('@/')) {
           continue;
@@ -101,7 +101,7 @@ function extractImports(filePath: string, content: string): ImportStatement[] {
  */
 function resolveImportPath(fromFile: string, importPath: string): string | null {
   const rootDir = process.cwd();
-  
+
   try {
     // Handle @/ alias
     if (importPath.startsWith('@/')) {
@@ -115,7 +115,7 @@ function resolveImportPath(fromFile: string, importPath: string): string | null 
       const absolutePath = path.resolve(fromDir, importPath);
       return resolveWithExtensions(absolutePath);
     }
-  } catch (error) {
+  } catch {
     return null;
   }
 
@@ -204,7 +204,7 @@ function generateReport(imports: ImportStatement[]): ImportReport {
  */
 function formatReport(report: ImportReport): string {
   const lines: string[] = [];
-  
+
   lines.push('='.repeat(80));
   lines.push('IMPORT PATH INTEGRITY VERIFICATION REPORT');
   lines.push('='.repeat(80));

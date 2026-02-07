@@ -68,10 +68,10 @@ async function getSalesReport(warehouse_id: string | null, date_from: string | n
   }
 
   // Calculate metrics
-  const totalSalesUSD = data.reduce((sum: number, inv: any) => sum + inv.total_usd, 0);
-  const totalSalesVES = data.reduce((sum: number, inv: any) => sum + inv.total_ves, 0);
-  const totalIVACreditUSD = data.reduce((sum: number, inv: any) => sum + inv.iva_usd, 0);
-  const totalIVACreditVES = data.reduce((sum: number, inv: any) => sum + inv.iva_ves, 0);
+  const totalSalesUSD = data.reduce((sum: number, inv: { total_usd: number }) => sum + inv.total_usd, 0);
+  const totalSalesVES = data.reduce((sum: number, inv: { total_ves: number }) => sum + inv.total_ves, 0);
+  const totalIVACreditUSD = data.reduce((sum: number, inv: { iva_usd: number }) => sum + inv.iva_usd, 0);
+  const totalIVACreditVES = data.reduce((sum: number, inv: { iva_ves: number }) => sum + inv.iva_ves, 0);
 
   return NextResponse.json({
     data: {
@@ -114,9 +114,9 @@ async function getInventoryReport(warehouse_id: string | null) {
 
   // Calculate metrics
   const totalItems = data.length;
-  const totalQuantity = data.reduce((sum: number, batch: any) => sum + batch.quantity, 0);
-  const lowStockItems = data.filter((batch: any) => batch.quantity <= batch.products.min_stock);
-  const expiringSoon = data.filter((batch: any) => {
+  const totalQuantity = data.reduce((sum: number, batch: { quantity: number }) => sum + batch.quantity, 0);
+  const lowStockItems = data.filter((batch: { quantity: number; products: { min_stock: number } }) => batch.quantity <= batch.products.min_stock);
+  const expiringSoon = data.filter((batch: { expiry_date: string }) => {
     const daysUntilExpiry = Math.ceil((new Date(batch.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return daysUntilExpiry <= 90;
   });
@@ -267,8 +267,8 @@ async function getXCutReport(warehouse_id: string | null) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const totalSalesUSD = data.reduce((sum: number, inv: any) => sum + inv.total_usd, 0);
-  const totalSalesVES = data.reduce((sum: number, inv: any) => sum + inv.total_ves, 0);
+  const totalSalesUSD = data.reduce((sum: number, inv: { total_usd: number }) => sum + inv.total_usd, 0);
+  const totalSalesVES = data.reduce((sum: number, inv: { total_ves: number }) => sum + inv.total_ves, 0);
 
   return NextResponse.json({
     data: {
@@ -326,10 +326,10 @@ async function getZReport(warehouse_id: string | null) {
     });
   }
 
-  const totalSalesUSD = data.reduce((sum: number, inv: any) => sum + inv.total_usd, 0);
-  const totalSalesVES = data.reduce((sum: number, inv: any) => sum + inv.total_ves, 0);
-  const totalIVACreditUSD = data.reduce((sum: number, inv: any) => sum + inv.iva_usd, 0);
-  const totalIVACreditVES = data.reduce((sum: number, inv: any) => sum + inv.iva_ves, 0);
+  const totalSalesUSD = data.reduce((sum: number, inv: { total_usd: number }) => sum + inv.total_usd, 0);
+  const totalSalesVES = data.reduce((sum: number, inv: { total_ves: number }) => sum + inv.total_ves, 0);
+  const totalIVACreditUSD = data.reduce((sum: number, inv: { iva_usd: number }) => sum + inv.iva_usd, 0);
+  const totalIVACreditVES = data.reduce((sum: number, inv: { iva_ves: number }) => sum + inv.iva_ves, 0);
 
   return NextResponse.json({
     data: {

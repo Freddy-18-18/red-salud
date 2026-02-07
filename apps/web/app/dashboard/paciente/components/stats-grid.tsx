@@ -4,7 +4,7 @@ import { Card, CardContent } from "@red-salud/ui";
 import { Button } from "@red-salud/ui";
 import { Calendar, Pill, Beaker, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useI18n } from "@/lib/hooks/use-i18n";
+import { useI18n } from "@/hooks/use-i18n";
 import type { DashboardStats } from "../hooks/use-dashboard-stats";
 
 interface StatsGridProps {

@@ -12,7 +12,7 @@ export class TauriPDFService implements PDFService {
   /**
    * Generate a prescription PDF
    */
-  async generatePrescription(data: PrescriptionData): Promise<PDFResult> {
+  async generatePrescription(_data: PrescriptionData): Promise<PDFResult> {
     // TODO: Implement in Task 11
     throw new Error('Prescription PDF generation not yet implemented');
   }
@@ -20,7 +20,7 @@ export class TauriPDFService implements PDFService {
   /**
    * Generate a medical history PDF
    */
-  async generateMedicalHistory(data: MedicalHistoryData): Promise<PDFResult> {
+  async generateMedicalHistory(_data: MedicalHistoryData): Promise<PDFResult> {
     // TODO: Implement in Task 11
     throw new Error('Medical history PDF generation not yet implemented');
   }

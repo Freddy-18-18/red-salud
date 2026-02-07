@@ -4,7 +4,7 @@
 import { motion } from "framer-motion";
 import { Check, Star, Lock, Play } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn } from "@red-salud/core/utils";
 import { Course, Module, LessonNode } from "@/types/academy";
 
 interface LearningPathProps {

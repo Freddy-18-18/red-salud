@@ -12,7 +12,7 @@ import { searchConsultationReasons } from "@/lib/data/consultation-reasons";
 // React Hook Form & Zod
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { appointmentSchema, AppointmentFormValues } from "@/lib/validations/appointment";
+import { appointmentSchema, AppointmentFormValues } from "@/validations/appointment";
 
 // Components
 import { PatientSelector } from "@/components/citas/nueva/patient-selector";

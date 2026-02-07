@@ -31,17 +31,17 @@ export async function searchHybridKnowledge(query: string, limit = 5): Promise<K
         });
 
         if (!error && vectorDocs) {
-            vectorDocs.forEach((doc: any) => {
-                uniqueDocs.set(doc.content, {
-                    content: doc.content,
-                    metadata: doc.metadata,
-                    similarity: doc.similarity,
+            vectorDocs.forEach((doc: Record<string, unknown>) => {
+                uniqueDocs.set(doc.content as string, {
+                    content: doc.content as string,
+                    metadata: doc.metadata as KnowledgeDocument['metadata'],
+                    similarity: doc.similarity as number,
                     source: 'vector'
                 });
             });
         }
-    } catch (e) {
-        console.error("[Vector Search Error]:", e);
+    } catch (_e) {
+        console.error("[Vector Search Error]:", _e);
     }
 
     // 2. Keyword Search (Fallback and Boost)

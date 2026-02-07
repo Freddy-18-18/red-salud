@@ -8,7 +8,7 @@ async function getStats() {
     let studentsCount = 50000;
     let coursesCount = 2500;
     let specialtiesCount = 115;
-    let satisfactionRate = 98;
+    const satisfactionRate = 98;
 
     try {
         // Fetch Students (profiles count - REAL DATA)

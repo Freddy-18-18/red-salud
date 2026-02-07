@@ -1,22 +1,22 @@
 import { motion } from "framer-motion";
 import { Label } from "@red-salud/ui";
 import { usePreferences } from "@/lib/contexts/preferences-context";
-import { useI18n } from "@/lib/hooks/use-i18n";
+import { useI18n } from "@/hooks/use-i18n";
 import { Moon, Sun } from "lucide-react";
 
 export function PreferencesTab() {
   const { preferences, updatePreference } = usePreferences();
   const { t } = useI18n();
-  
-  const theme = preferences.theme === "system" 
+
+  const theme = preferences.theme === "system"
     ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
     : preferences.theme;
-  
+
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
     updatePreference("theme", newTheme);
   };
-  
+
   const setLanguage = (lang: "es" | "en" | "pt" | "fr" | "it") => {
     updatePreference("language", lang);
   };

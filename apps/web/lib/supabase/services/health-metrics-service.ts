@@ -1,4 +1,6 @@
 import { supabase } from "../client";
+import { PostgrestError } from "@supabase/supabase-js";
+
 import type {
   HealthMetricType,
   HealthMetric,
@@ -27,7 +29,7 @@ export async function getHealthMetricTypes() {
     return { success: true, data: data as HealthMetricType[] };
   } catch (error) {
     console.error("Error fetching metric types:", error);
-    return { success: false, error, data: [] };
+    return { success: false, error: error as Error, data: null };
   }
 }
 
@@ -87,7 +89,7 @@ export async function getPatientHealthMetrics(
     return { success: true, data: data as HealthMetric[] };
   } catch (error) {
     console.error("Error fetching health metrics:", error);
-    return { success: false, error, data: [] };
+    return { success: false, error: error as Error, data: null };
   }
 }
 
@@ -142,7 +144,7 @@ export async function updateHealthMetric(
   }
 }
 
-export async function deleteHealthMetric(metricId: string) {
+export async function deleteHealthMetric(metricId: string): Promise<{ success: boolean; error?: PostgrestError | Error }> {
   try {
     const { error } = await supabase
       .from("health_metrics")
@@ -153,7 +155,7 @@ export async function deleteHealthMetric(metricId: string) {
     return { success: true };
   } catch (error) {
     console.error("Error deleting health metric:", error);
-    return { success: false, error };
+    return { success: false, error: error as PostgrestError | Error };
   }
 }
 
@@ -163,7 +165,7 @@ export async function getMetricStats(
   patientId: string,
   metricTypeId: string,
   days: number = 30
-): Promise<{ success: boolean; data: MetricStats | null; error?: any }> {
+): Promise<{ success: boolean; data: MetricStats | null; error?: PostgrestError | Error }> {
   try {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -186,7 +188,7 @@ export async function getMetricStats(
     const promedio = valores.reduce((a, b) => a + b, 0) / valores.length;
     const minimo = Math.min(...valores);
     const maximo = Math.max(...valores);
-    const ultimo_valor = valores[0];
+    const ultimo_valor = valores[0]!;
 
     // Calcular tendencia
     let tendencia: 'subiendo' | 'bajando' | 'estable' = 'estable';
@@ -195,7 +197,7 @@ export async function getMetricStats(
       const segundaMitad = valores.slice(Math.floor(valores.length / 2));
       const promedioPrimera = primerosMitad.reduce((a, b) => a + b, 0) / primerosMitad.length;
       const promedioSegunda = segundaMitad.reduce((a, b) => a + b, 0) / segundaMitad.length;
-      
+
       const diferencia = ((promedioPrimera - promedioSegunda) / promedioSegunda) * 100;
       if (Math.abs(diferencia) > 5) {
         tendencia = diferencia > 0 ? 'subiendo' : 'bajando';
@@ -209,7 +211,7 @@ export async function getMetricStats(
     // Verificar si está en rango normal
     const { data: metricType } = await getHealthMetricType(metricTypeId);
     let en_rango_normal = true;
-    if (metricType && metricType.rango_normal_min && metricType.rango_normal_max) {
+    if (metricType && typeof metricType.rango_normal_min === 'number' && typeof metricType.rango_normal_max === 'number') {
       en_rango_normal = ultimo_valor >= metricType.rango_normal_min && ultimo_valor <= metricType.rango_normal_max;
     }
 
@@ -227,7 +229,7 @@ export async function getMetricStats(
     return { success: true, data: stats };
   } catch (error) {
     console.error("Error calculating metric stats:", error);
-    return { success: false, error, data: null };
+    return { success: false, error: error as PostgrestError | Error, data: null };
   }
 }
 
@@ -235,7 +237,7 @@ export async function getMetricTrend(
   patientId: string,
   metricTypeId: string,
   days: number = 30
-): Promise<{ success: boolean; data: MetricTrend[]; error?: any }> {
+): Promise<{ success: boolean; data: MetricTrend[] | null; error?: PostgrestError | Error }> {
   try {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -259,13 +261,13 @@ export async function getMetricTrend(
     return { success: true, data: trend };
   } catch (error) {
     console.error("Error fetching metric trend:", error);
-    return { success: false, error, data: [] };
+    return { success: false, error: error as PostgrestError | Error, data: null };
   }
 }
 
 // ============ METAS DE SALUD ============
 
-export async function getPatientHealthGoals(patientId: string, status?: string) {
+export async function getPatientHealthGoals(patientId: string, status?: string): Promise<{ success: boolean; data: HealthGoal[] | null; error?: PostgrestError | Error }> {
   try {
     let query = supabase
       .from("health_goals")
@@ -286,11 +288,11 @@ export async function getPatientHealthGoals(patientId: string, status?: string) 
     return { success: true, data: data as HealthGoal[] };
   } catch (error) {
     console.error("Error fetching health goals:", error);
-    return { success: false, error, data: [] };
+    return { success: false, error: error as PostgrestError | Error, data: null };
   }
 }
 
-export async function createHealthGoal(goalData: CreateHealthGoalData) {
+export async function createHealthGoal(goalData: CreateHealthGoalData): Promise<{ success: boolean; data: HealthGoal | null; error?: PostgrestError | Error }> {
   try {
     const { data, error } = await supabase
       .from("health_goals")
@@ -314,14 +316,14 @@ export async function createHealthGoal(goalData: CreateHealthGoalData) {
     return { success: true, data: data as HealthGoal };
   } catch (error) {
     console.error("Error creating health goal:", error);
-    return { success: false, error, data: null };
+    return { success: false, error: error as PostgrestError | Error, data: null };
   }
 }
 
 export async function updateHealthGoal(
   goalId: string,
   updates: Partial<HealthGoal>
-) {
+): Promise<{ success: boolean; data: HealthGoal | null; error?: PostgrestError | Error }> {
   try {
     const { data, error } = await supabase
       .from("health_goals")
@@ -337,13 +339,13 @@ export async function updateHealthGoal(
     return { success: true, data: data as HealthGoal };
   } catch (error) {
     console.error("Error updating health goal:", error);
-    return { success: false, error, data: null };
+    return { success: false, error: error as PostgrestError | Error, data: null };
   }
 }
 
 export async function getGoalProgress(
   goalId: string
-): Promise<{ success: boolean; data: GoalProgress | null; error?: any }> {
+): Promise<{ success: boolean; data: GoalProgress | null; error?: PostgrestError | Error }> {
   try {
     const { data: goal, error: goalError } = await supabase
       .from("health_goals")
@@ -370,7 +372,7 @@ export async function getGoalProgress(
 
     const valor_actual = metrics && metrics.length > 0 ? parseFloat(metrics[0].valor.toString()) : 0;
     const valor_objetivo = parseFloat(goal.valor_objetivo.toString());
-    
+
     // Calcular porcentaje (depende de si es meta de aumento o disminución)
     let porcentaje_completado = 0;
     if (metrics && metrics.length > 0) {
@@ -399,13 +401,13 @@ export async function getGoalProgress(
     return { success: true, data: progress };
   } catch (error) {
     console.error("Error calculating goal progress:", error);
-    return { success: false, error, data: null };
+    return { success: false, error: error as PostgrestError | Error, data: null };
   }
 }
 
 // ============ RECORDATORIOS ============
 
-export async function getPatientMeasurementReminders(patientId: string) {
+export async function getPatientMeasurementReminders(patientId: string): Promise<{ success: boolean; data: MeasurementReminder[] | null; error?: PostgrestError | Error }> {
   try {
     const { data, error } = await supabase
       .from("measurement_reminders")
@@ -421,11 +423,11 @@ export async function getPatientMeasurementReminders(patientId: string) {
     return { success: true, data: data as MeasurementReminder[] };
   } catch (error) {
     console.error("Error fetching measurement reminders:", error);
-    return { success: false, error, data: [] };
+    return { success: false, error: error as PostgrestError | Error, data: null };
   }
 }
 
-export async function createMeasurementReminder(reminderData: CreateMeasurementReminderData) {
+export async function createMeasurementReminder(reminderData: CreateMeasurementReminderData): Promise<{ success: boolean; data: MeasurementReminder | null; error?: PostgrestError | Error }> {
   try {
     const { data, error } = await supabase
       .from("measurement_reminders")
@@ -440,14 +442,14 @@ export async function createMeasurementReminder(reminderData: CreateMeasurementR
     return { success: true, data: data as MeasurementReminder };
   } catch (error) {
     console.error("Error creating measurement reminder:", error);
-    return { success: false, error, data: null };
+    return { success: false, error: error as PostgrestError | Error, data: null };
   }
 }
 
 export async function updateMeasurementReminder(
   reminderId: string,
   updates: Partial<MeasurementReminder>
-) {
+): Promise<{ success: boolean; data: MeasurementReminder | null; error?: PostgrestError | Error }> {
   try {
     const { data, error } = await supabase
       .from("measurement_reminders")
@@ -463,7 +465,7 @@ export async function updateMeasurementReminder(
     return { success: true, data: data as MeasurementReminder };
   } catch (error) {
     console.error("Error updating measurement reminder:", error);
-    return { success: false, error, data: null };
+    return { success: false, error: error as PostgrestError | Error, data: null };
   }
 }
 
@@ -471,7 +473,7 @@ export async function updateMeasurementReminder(
 
 export async function getHealthDashboardSummary(
   patientId: string
-): Promise<{ success: boolean; data: HealthDashboardSummary | null; error?: any }> {
+): Promise<{ success: boolean; data: HealthDashboardSummary | null; error?: PostgrestError | Error }> {
   try {
     // Obtener métricas de hoy
     const today = new Date();
@@ -520,7 +522,7 @@ export async function getHealthDashboardSummary(
       .order("fecha_medicion", { ascending: false })
       .limit(5);
 
-    const metricas_recientes = (recentMetrics || []).map((m: any) => {
+    const metricas_recientes = (recentMetrics || []).map((m: HealthMetric & { metric_type: HealthMetricType }) => {
       const valor_display = m.metric_type?.requiere_multiple_valores && m.valor_secundario
         ? `${m.valor}/${m.valor_secundario}`
         : m.valor.toString();
@@ -550,6 +552,6 @@ export async function getHealthDashboardSummary(
     return { success: true, data: summary };
   } catch (error) {
     console.error("Error fetching dashboard summary:", error);
-    return { success: false, error, data: null };
+    return { success: false, error: error as PostgrestError | Error, data: null };
   }
 }

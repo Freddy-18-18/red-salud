@@ -1,7 +1,7 @@
-import { embeddingService } from "./embedding-service";
 import { vectorStore } from "./vector-store";
 import { createZaiChatCompletion } from "@/lib/zai";
 import { RagContext } from "../../types/chat.types";
+import OpenAI from "openai";
 
 export class RagService {
     constructor() { }
@@ -40,15 +40,15 @@ export class RagService {
      * Generates a response using RAG.
      */
     async generateResponse(
-        messages: any[],
+        messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
         contextMetadata: {
             current_url?: string;
             page_title?: string;
             user_role?: string;
         }
     ) {
-        const userMessage = messages[messages.length - 1]; // Assume last message is user query
-        const query = userMessage.content;
+        const userMessage = messages[messages.length - 1] as OpenAI.Chat.Completions.ChatCompletionUserMessageParam; // Assume last message is user query
+        const query = typeof userMessage.content === 'string' ? userMessage.content : "";
 
         // 1. Retrieve Context
         const context = await this.retrieveContext(query);
@@ -58,8 +58,9 @@ export class RagService {
 
         // 3. Prepare Messages for LLM
         // Replace the original system prompt or append ours
-        const finalMessages = [
-            { role: "system", content: systemPrompt },
+        const systemMessage: OpenAI.Chat.Completions.ChatCompletionSystemMessageParam = { role: "system", content: systemPrompt };
+        const finalMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+            systemMessage,
             ...messages.filter(m => m.role !== 'system') // Filter out existing system prompts to avoid confusion
         ];
 
@@ -67,7 +68,7 @@ export class RagService {
         return createZaiChatCompletion(finalMessages, true);
     }
 
-    private buildSystemPrompt(contextText: string, metadata: any): string {
+    private buildSystemPrompt(contextText: string, metadata: { current_url?: string; page_title?: string; user_role?: string }): string {
         return `
 Eres un asistente inteligente de Red Salud.
 Tu objetivo es ayudar al usuario basándote EXCLUSIVAMENTE en el contexto proporcionado.

@@ -73,7 +73,7 @@ export async function checkSecretaryPermissions(
 ): Promise<Record<keyof SecretaryPermissions, boolean>> {
   const relation = await getSecretaryRelation(secretaryId, doctorId);
 
-  const result: any = {};
+  const result: Record<keyof SecretaryPermissions, boolean> = {} as Record<keyof SecretaryPermissions, boolean>;
 
   if (!relation || relation.status !== "active") {
     permissions.forEach(perm => {

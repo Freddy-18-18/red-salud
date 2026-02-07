@@ -3,8 +3,21 @@ import fs from "fs";
 import path from "path";
 
 // Define service variables at top level scope
-let embeddingService: any;
-let vectorStore: any;
+// let embeddingService: any;
+interface VectorStore {
+    addDocument: (doc: {
+        content: string;
+        metadata: {
+            source: string;
+            title: string;
+            url: string;
+            page: number;
+        };
+        embedding?: number[];
+    }) => Promise<void>;
+}
+
+let vectorStore: VectorStore | null = null;
 
 // Load environment variables
 const envPath = path.resolve(__dirname, "../.env.local");
@@ -113,7 +126,7 @@ async function processFile(filePath: string) {
 
             // Skip embedding generation for now as Z.ai model is unavailable
             // const embedding = await embeddingService.generateEmbedding(chunkContent);
-            const embedding = null;
+            const embedding = undefined;
 
             await vectorStore.addDocument({
                 content: chunkContent,
@@ -125,8 +138,10 @@ async function processFile(filePath: string) {
                 },
                 embedding: embedding
             });
-        } catch (err: any) {
-            console.error(`  - Failed to process chunk ${i}:`, err.message);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                console.error(`  - Failed to process chunk ${i}:`, err.message);
+            }
         }
     }
 }
@@ -140,9 +155,9 @@ async function main() {
 
     // Import services dynamically
     try {
-        const embeddingModule = await import("../lib/supabase/services/chat/embedding-service");
+        // const embeddingModule = await import("../lib/supabase/services/chat/embedding-service");
         const vectorModule = await import("../lib/supabase/services/chat/vector-store");
-        embeddingService = embeddingModule.embeddingService;
+        // embeddingService = embeddingModule.embeddingService;
         vectorStore = vectorModule.vectorStore;
         console.log("Services initialized successfully.");
     } catch (e) {

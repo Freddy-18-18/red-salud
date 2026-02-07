@@ -8,6 +8,7 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
+import { CONSULTATION_REASONS } from '@/lib/data/consultation-reasons';
 import {
     getReasonsBySpecialty,
     searchAllReasons,
@@ -61,7 +62,7 @@ function normalizeText(text: string): string {
  * Obtiene los motivos más usados por el médico
  */
 export async function getFrequentReasons(
-    supabase: SupabaseClient<any, any, any>,
+    supabase: SupabaseClient,
     doctorId: string,
     query?: string,
     limit = 5
@@ -136,8 +137,7 @@ export function searchGeneralReasons(
 
     const normalizedQuery = normalizeText(query);
 
-    // Importar el catálogo general existente
-    const { CONSULTATION_REASONS } = require('@/lib/data/consultation-reasons');
+    // Use imported catalog general existing
 
     const results = CONSULTATION_REASONS
         .filter((reason: string) => {
@@ -171,7 +171,7 @@ export function searchGeneralReasons(
  * Obtiene sugerencias inteligentes combinando todas las fuentes
  */
 export async function getSmartSuggestions(
-    supabase: SupabaseClient<any, any, any>,
+    supabase: SupabaseClient,
     params: SmartSuggestionsParams
 ): Promise<SmartSuggestionsResponse> {
     const { doctorId, specialty, query, limit = 20 } = params;
@@ -220,7 +220,7 @@ export async function getSmartSuggestions(
  * Registra el uso de un motivo de consulta
  */
 export async function trackReasonUsage(
-    supabase: SupabaseClient<any, any, any>,
+    supabase: SupabaseClient,
     doctorId: string,
     reason: string
 ): Promise<void> {
@@ -261,7 +261,7 @@ export async function trackReasonUsage(
                         reason,
                         use_count: 1,
                         last_used_at: new Date().toISOString(),
-                    } as any);
+                    });
             }
         }
     } catch (err) {
@@ -274,7 +274,7 @@ export async function trackReasonUsage(
  * Útil para mostrar las "Frecuentes" cuando el campo está vacío
  */
 export async function getInitialSuggestions(
-    supabase: SupabaseClient<any, any, any>,
+    supabase: SupabaseClient,
     doctorId: string,
     specialty: string,
     limit = 8

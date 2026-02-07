@@ -55,7 +55,7 @@ export async function verifySACSDoctor(cedula: string): Promise<VerificationResu
 
       const { data, error } = await supabase.functions.invoke('verify-doctor-sacs', {
         body: { cedula },
-        // @ts-ignore
+        // @ts-expect-error signal is supported in supabase-js v2 but type def might be missing
         signal: controller.signal
       });
 
@@ -164,7 +164,7 @@ export async function verifyAndCreateDoctorProfile(
     professional_email?: string;
     bio?: string;
   }
-): Promise<{ success: boolean; data?: any; error?: string }> {
+): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
   // Primero verificar con SACS
   const verificationResult = await verifySACSDoctor(cedula);
 

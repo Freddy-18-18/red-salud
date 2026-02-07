@@ -6,7 +6,7 @@ export interface DocumentChunk {
         title?: string;
         url?: string;
         page?: number;
-        [key: string]: any;
+        [key: string]: unknown;
     };
     embedding?: number[];
     similarity?: number;

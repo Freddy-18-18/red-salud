@@ -11,7 +11,7 @@ import React from "react";
 interface RecipeInput extends Partial<Prescription> {
     topic?: { nombre_completo?: string };
     // Allow dynamic access for backward compatibility but encourage typed usage
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 // Helper to construct consistent preview/print data
@@ -51,7 +51,7 @@ export function constructRecipeData(
 
         date: recipe.fecha_prescripcion ? new Date(recipe.fecha_prescripcion).toLocaleDateString("es-ES") : new Date().toLocaleDateString("es-ES"),
 
-        medications: (recipe.medications || []).map((m: any) => ({
+        medications: (recipe.medications as PrescriptionMedication[] || []).map((m: PrescriptionMedication) => ({
             name: (m.nombre_medicamento || m.medication?.nombre_comercial) +
                 (m.medication?.forma_farmaceutica ? ` (${m.medication.forma_farmaceutica})` : ""),
             presentation: m.medication?.concentracion || "",

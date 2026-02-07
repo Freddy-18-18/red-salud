@@ -52,8 +52,8 @@ async function executeSQL(sql: string, description: string) {
     console.log('ℹ️  Para aplicar las migraciones, ejecuta: npx supabase db push');
     return true;
 
-  } catch (err) {
-    console.error(`❌ Error ejecutando ${description}:`, err);
+  } catch (_err) {
+    console.error(`❌ Error ejecutando ${description}:`, _err);
     return false;
   }
 }
@@ -94,7 +94,7 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error('💥 Error fatal:', err);
+main().catch((_err) => {
+  console.error('💥 Error fatal:', _err);
   process.exit(1);
 });

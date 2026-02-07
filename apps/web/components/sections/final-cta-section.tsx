@@ -51,7 +51,7 @@ export function FinalCTASection() {
                 asChild
                 className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                <Link href="/auth/register?tipo=paciente">
+                <Link href="/register?tipo=paciente">
                   Registrarse Gratis Ahora
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -107,7 +107,7 @@ export function FinalCTASection() {
                   asChild
                   className="w-full bg-white text-blue-600 hover:bg-blue-50"
                 >
-                  <Link href="/auth/register?tipo=paciente">Comenzar Ahora →</Link>
+                  <Link href="/register?tipo=paciente">Comenzar Ahora →</Link>
                 </Button>
               </div>
 

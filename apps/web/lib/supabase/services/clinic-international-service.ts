@@ -162,7 +162,7 @@ export async function uploadTravelDocument(
   const fileName = `${internationalPatientId}/${documentType}_${Date.now()}.${fileExt}`;
   const filePath = `travel-documents/${fileName}`;
 
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from('clinic-documents')
     .upload(filePath, file);
 
@@ -252,8 +252,8 @@ export async function getPendingDocumentVerifications(
 
   // Filtrar por clinic_id
   return (data || []).filter(
-    (doc: any) => doc.international_patient?.clinic_id === clinicId
-  );
+    (doc: Record<string, unknown>) => (doc.international_patient as Record<string, unknown>)?.clinic_id === clinicId
+  ) as unknown as TravelDocument[];
 }
 
 // ============ Estadísticas ============
@@ -296,9 +296,8 @@ export async function getCountryRequirements(countryCode: string): Promise<{
   insurance_required: boolean;
   notes?: string;
 }> {
-  // Esta información debería venir de una tabla configurada
   // Por ahora retornamos estructura base
-  const requirements: Record<string, any> = {
+  const requirements: Record<string, Record<string, unknown>> = {
     USA: {
       required_documents: ['passport', 'visa', 'medical_clearance', 'insurance_card'],
       visa_required: true,
@@ -323,5 +322,11 @@ export async function getCountryRequirements(countryCode: string): Promise<{
       medical_clearance_required: false,
       insurance_required: false,
     }
-  );
+  ) as {
+    required_documents: string[];
+    visa_required: boolean;
+    medical_clearance_required: boolean;
+    insurance_required: boolean;
+    notes?: string;
+  };
 }

@@ -106,7 +106,21 @@ export async function POST(request: NextRequest) {
 
     // Insert invoice items
     if (body.items && body.items.length > 0) {
-      const itemsToInsert = body.items.map((item: any) => ({
+      const itemsToInsert = body.items.map((item: {
+        product_id: string;
+        batch_id?: string;
+        product_name: string;
+        generic_name?: string;
+        quantity: number;
+        unit_type: string;
+        unit_price_usd: number;
+        unit_price_ves: number;
+        total_usd: number;
+        total_ves: number;
+        iva_rate: number;
+        iva_usd: number;
+        iva_ves: number;
+      }) => ({
         invoice_id: invoice.id,
         product_id: item.product_id,
         batch_id: item.batch_id,

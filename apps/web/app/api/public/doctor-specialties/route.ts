@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let query = supabase
+    const query = supabase
       .from('doctor_details')
       .select(`
         specialties!inner(id, name, description, icon, category, active)
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Count doctors per specialty
     const specialtyCountMap = new Map<string, number>();
-    doctorSpecialties?.forEach((item: any) => {
+    doctorSpecialties?.forEach((item: { specialties: any }) => {
       const specialty = item.specialties;
       if (specialty && specialty.active) {
         const count = specialtyCountMap.get(specialty.id) || 0;
@@ -38,9 +38,26 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    interface Specialty {
+      id: string;
+      name: string;
+      description: string;
+      icon: string;
+      category: string;
+      active: boolean;
+    }
+
     // Build response with doctor counts
     const specialties = Array.from(specialtyCountMap.entries()).map(([id, count]) => {
-      const specialty = doctorSpecialties?.find((item: any) => item.specialties?.id === id)?.specialties;
+      // Force cast to unknown then Specialty to handle potential array/object mismatch from Supabase inference
+      const foundItem = doctorSpecialties?.find((item: { specialties: any }) => {
+        const s = item.specialties as any;
+        return (Array.isArray(s) ? s[0]?.id : s?.id) === id;
+      });
+
+      const rawSpecialty = foundItem?.specialties as unknown;
+      const specialty = (Array.isArray(rawSpecialty) ? rawSpecialty[0] : rawSpecialty) as Specialty;
+
       return {
         id: specialty?.id,
         name: specialty?.name,
@@ -50,6 +67,7 @@ export async function GET(request: NextRequest) {
         doctorCount: count,
       };
     });
+
 
     // If onlyWithDoctors is true, filter to only specialties with doctors
     const filteredSpecialties = onlyWithDoctors

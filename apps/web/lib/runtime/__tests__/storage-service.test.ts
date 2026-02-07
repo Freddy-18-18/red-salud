@@ -64,14 +64,14 @@ describe('Storage Service Edge Cases', () => {
     it('should handle empty array as data', async () => {
       const key = 'empty-array-key';
       await storageService.save(key, []);
-      const result = await storageService.get<any[]>(key);
+      const result = await storageService.get<unknown[]>(key);
       expect(result).toEqual([]);
     });
 
     it('should handle empty object as data', async () => {
       const key = 'empty-object-key';
       await storageService.save(key, {});
-      const result = await storageService.get<any>(key);
+      const result = await storageService.get<Record<string, unknown>>(key);
       expect(result).toEqual({});
     });
 
@@ -102,10 +102,10 @@ describe('Storage Service Edge Cases', () => {
       const key = 'large-string-key';
       // Create a 1MB string
       const largeString = 'x'.repeat(1024 * 1024);
-      
+
       await storageService.save(key, largeString);
       const result = await storageService.get<string>(key);
-      
+
       expect(result).toBe(largeString);
       expect(result?.length).toBe(1024 * 1024);
     });
@@ -118,10 +118,10 @@ describe('Storage Service Edge Cases', () => {
         name: `Item ${i}`,
         value: Math.random(),
       }));
-      
+
       await storageService.save(key, largeArray);
       const result = await storageService.get<typeof largeArray>(key);
-      
+
       expect(result).toEqual(largeArray);
       expect(result?.length).toBe(10000);
     });
@@ -129,14 +129,14 @@ describe('Storage Service Edge Cases', () => {
     it('should handle deeply nested objects', async () => {
       const key = 'nested-object-key';
       // Create a deeply nested object (10 levels)
-      let deepObject: any = { value: 'deep' };
+      let deepObject: unknown = { value: 'deep' };
       for (let i = 0; i < 10; i++) {
         deepObject = { nested: deepObject };
       }
-      
+
       await storageService.save(key, deepObject);
       const result = await storageService.get(key);
-      
+
       expect(result).toEqual(deepObject);
     });
   });
@@ -168,10 +168,10 @@ describe('Storage Service Edge Cases', () => {
         spanish: 'Médico',
         symbols: '©®™€£¥',
       };
-      
+
       await storageService.save(key, unicodeData);
       const result = await storageService.get(key);
-      
+
       expect(result).toEqual(unicodeData);
     });
 
@@ -250,7 +250,7 @@ describe('Storage Service Edge Cases', () => {
 
     it('should preserve boolean types', async () => {
       const key = 'boolean-key';
-      
+
       await storageService.save(key, true);
       let result = await storageService.get<boolean>(key);
       expect(result).toBe(true);
@@ -265,10 +265,10 @@ describe('Storage Service Edge Cases', () => {
     it('should preserve date strings', async () => {
       const key = 'date-key';
       const dateString = new Date().toISOString();
-      
+
       await storageService.save(key, dateString);
       const result = await storageService.get<string>(key);
-      
+
       expect(result).toBe(dateString);
       expect(new Date(result!).toISOString()).toBe(dateString);
     });
@@ -289,10 +289,10 @@ describe('Storage Service Edge Cases', () => {
           },
         },
       };
-      
+
       await storageService.save(key, complexData);
       const result = await storageService.get(key);
-      
+
       expect(result).toEqual(complexData);
     });
   });
@@ -307,7 +307,7 @@ describe('Storage Service Edge Cases', () => {
 
     it('should handle clear on empty storage gracefully', async () => {
       await storageService.clear();
-      
+
       // Should not throw error
       await expect(
         storageService.clear()
@@ -316,27 +316,27 @@ describe('Storage Service Edge Cases', () => {
 
     it('should handle keys() on empty storage', async () => {
       await storageService.clear();
-      
+
       const keys = await storageService.keys();
       expect(keys).toEqual([]);
     });
 
     it('should handle get after delete', async () => {
       const key = 'delete-test-key';
-      
+
       await storageService.save(key, 'test-data');
       await storageService.delete(key);
-      
+
       const result = await storageService.get(key);
       expect(result).toBeNull();
     });
 
     it('should handle get after clear', async () => {
       const key = 'clear-test-key';
-      
+
       await storageService.save(key, 'test-data');
       await storageService.clear();
-      
+
       const result = await storageService.get(key);
       expect(result).toBeNull();
     });
@@ -346,11 +346,11 @@ describe('Storage Service Edge Cases', () => {
     it('should handle storage quota exceeded gracefully', async () => {
       // This test simulates quota exceeded by trying to save very large data
       // In a real scenario, this would depend on the storage implementation
-      
+
       const key = 'quota-test-key';
       // Try to save a very large string (10MB)
       const veryLargeString = 'x'.repeat(10 * 1024 * 1024);
-      
+
       try {
         await storageService.save(key, veryLargeString);
         // If it succeeds, verify we can retrieve it
@@ -368,19 +368,19 @@ describe('Storage Service Edge Cases', () => {
     it('should handle corrupted JSON gracefully', async () => {
       // This test is more relevant for implementations that store JSON
       // For now, we test that invalid data doesn't break the system
-      
+
       const key = 'corrupted-key';
-      
+
       // Try to save and retrieve data that might cause issues
-      const problematicData = {
-        circular: null as any,
+      const problematicData: Record<string, unknown> = {
+        circular: null as unknown,
         undefined: undefined,
         function: null, // Functions can't be serialized
       };
-      
+
       // Create circular reference
       problematicData.circular = problematicData;
-      
+
       try {
         await storageService.save(key, problematicData);
         const result = await storageService.get(key);
@@ -395,12 +395,12 @@ describe('Storage Service Edge Cases', () => {
     it('should handle retrieval when storage is corrupted', async () => {
       // This test verifies that get() returns null for corrupted data
       // rather than throwing an error
-      
+
       const key = 'potentially-corrupted-key';
-      
+
       // First save valid data
       await storageService.save(key, 'valid-data');
-      
+
       // In a real scenario, data might get corrupted externally
       // For now, we just verify that get() handles errors gracefully
       const result = await storageService.get(key);
@@ -411,31 +411,31 @@ describe('Storage Service Edge Cases', () => {
   describe('Key Management', () => {
     it('should return correct keys after multiple operations', async () => {
       await storageService.clear();
-      
+
       // Save multiple items
       await storageService.save('key1', 'data1');
       await storageService.save('key2', 'data2');
       await storageService.save('key3', 'data3');
-      
+
       let keys = await storageService.keys();
       expect(keys.sort()).toEqual(['key1', 'key2', 'key3']);
-      
+
       // Delete one
       await storageService.delete('key2');
-      
+
       keys = await storageService.keys();
       expect(keys.sort()).toEqual(['key1', 'key3']);
-      
+
       // Add another
       await storageService.save('key4', 'data4');
-      
+
       keys = await storageService.keys();
       expect(keys.sort()).toEqual(['key1', 'key3', 'key4']);
     });
 
     it('should handle keys with similar prefixes', async () => {
       await storageService.clear();
-      
+
       const keys = [
         'patient',
         'patient:1',
@@ -444,11 +444,11 @@ describe('Storage Service Edge Cases', () => {
         'patients',
         'patients:all',
       ];
-      
+
       for (const key of keys) {
         await storageService.save(key, `data-${key}`);
       }
-      
+
       const retrievedKeys = await storageService.keys();
       expect(retrievedKeys.sort()).toEqual(keys.sort());
     });
@@ -457,7 +457,7 @@ describe('Storage Service Edge Cases', () => {
   describe('Performance Edge Cases', () => {
     it('should handle rapid sequential operations', async () => {
       const key = 'rapid-key';
-      
+
       // Rapidly save and retrieve
       for (let i = 0; i < 100; i++) {
         await storageService.save(key, `data-${i}`);
@@ -468,18 +468,18 @@ describe('Storage Service Edge Cases', () => {
 
     it('should handle many keys efficiently', async () => {
       await storageService.clear();
-      
+
       // Save 1000 keys
       const promises = Array.from({ length: 1000 }, (_, i) =>
         storageService.save(`key-${i}`, `data-${i}`)
       );
-      
+
       await Promise.all(promises);
-      
+
       // Verify keys count
       const keys = await storageService.keys();
       expect(keys.length).toBe(1000);
-      
+
       // Verify we can still retrieve data
       const result = await storageService.get('key-500');
       expect(result).toBe('data-500');

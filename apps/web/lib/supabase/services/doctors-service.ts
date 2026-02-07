@@ -131,9 +131,9 @@ export async function getDoctorProfile(userId: string) {
     } as DoctorProfile;
 
     return { success: true, data: doctorProfile };
-  } catch (err) {
-    console.error('Exception fetching doctor profile:', err);
-    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+  } catch (_err) {
+    console.error('Exception fetching doctor profile:', _err);
+    return { success: false, error: _err instanceof Error ? _err.message : 'Error desconocido' };
   }
 }
 
@@ -401,7 +401,7 @@ export async function getDoctorStats(doctorId: string) {
         // Contar pacientes únicos
         uniquePatients = new Set(appointmentsData.map(p => p.paciente_id)).size;
       }
-    } catch (err) {
+    } catch {
       console.log('Appointments table not available yet');
     }
 
@@ -486,9 +486,13 @@ export async function getAvailableSlots(
   }) || [];
 
   // Generar slots disponibles basados en el horario
-  const dayNames: (keyof typeof profile.schedule)[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const dayKey = dayNames[new Date(date).getDay()];
-  const daySchedule = profile.schedule[dayKey];
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+  const dayIndex = new Date(date).getDay();
+  const dayKey = isNaN(dayIndex) ? null : dayNames[dayIndex];
+
+  // Ensure schedule exists and access property safely
+  const scheduleConfig = profile.schedule as Record<string, any>; // Type assertion since we checked existence
+  const daySchedule = dayKey ? scheduleConfig?.[dayKey] : null;
 
   if (!daySchedule?.enabled) {
     return { success: true, data: [] };
@@ -501,8 +505,15 @@ export async function getAvailableSlots(
   const slotsToUse = exceptions?.custom_slots || daySchedule.slots;
 
   slotsToUse.forEach((slot: { start: string; end: string }) => {
-    const [startHour, startMinute] = slot.start.split(':').map(Number);
-    const [endHour, endMinute] = slot.end.split(':').map(Number);
+    const startParts = slot.start.split(':').map(Number);
+    const endParts = slot.end.split(':').map(Number);
+
+    if (startParts.length < 2 || endParts.length < 2) return;
+
+    const [startHour, startMinute] = startParts;
+    const [endHour, endMinute] = endParts;
+
+    if (startHour === undefined || startMinute === undefined || endHour === undefined || endMinute === undefined) return;
 
     let currentTime = startHour * 60 + startMinute;
     const endTime = endHour * 60 + endMinute;

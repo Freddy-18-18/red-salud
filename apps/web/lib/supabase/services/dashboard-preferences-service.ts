@@ -17,9 +17,9 @@ import type {
     DashboardTheme,
     DoctorTask,
     TaskPriority,
-    TaskCategory,
+    // TaskCategory, // Unused?
     DoctorNotification,
-    DEFAULT_LAYOUTS,
+    // DEFAULT_LAYOUTS, // Unused
 } from "@red-salud/types";
 import { DEFAULT_LAYOUTS as DEFAULTS } from "@red-salud/types";
 

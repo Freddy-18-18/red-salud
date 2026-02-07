@@ -10,7 +10,7 @@ import { cn } from "@red-salud/core/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { suggestedQuestions, pageSuggestions } from "@/lib/data/knowledge-base";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslation } from "@/hooks/use-translation";
 import { TranslationKey } from "@/lib/i18n/translations";
 
 interface Message {

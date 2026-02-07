@@ -34,9 +34,9 @@ async function checkModels() {
                 const result = await model.generateContent("Say Hello");
                 const response = result.response;
                 console.log(`✅ SUCCESS: ${modelName} responded: "${response.text().trim()}"`);
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.log(`❌ FAILED: ${modelName}`);
-                if (error.message) {
+                if (error instanceof Error) {
                     const status = error.message.match(/\[(\d+) /)?.[1];
                     const msg = error.message.split('\n')[0];
                     console.log(`   Status: ${status || 'Unknown'} - ${msg}`);

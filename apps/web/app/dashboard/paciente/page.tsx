@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/lib/redux/store";
 import { fetchProfile } from "@/lib/redux/profileSlice";
 import { supabase } from "@/lib/supabase/client";
-import { useI18n } from "@/lib/hooks/use-i18n";
+import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@red-salud/ui";
 import { Plus } from "lucide-react";
 import { useDashboardStats } from "./hooks/use-dashboard-stats";

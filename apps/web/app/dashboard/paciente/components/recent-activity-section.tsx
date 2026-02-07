@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@red-
 import { Activity, Calendar, Pill, Beaker, MessageSquare, Video, User } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { useI18n } from "@/lib/hooks/use-i18n";
+import { useI18n } from "@/hooks/use-i18n";
 import type { RecentActivity } from "../hooks/use-dashboard-data";
 
 interface RecentActivityProps {

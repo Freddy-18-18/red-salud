@@ -4222,6 +4222,125 @@ export const SPECIALTY_CONTENT: Record<string, SpecialtyContent> = {
         ],
         relatedSpecialties: ["medicina-general", "medicina-integrativa", "pediatria"],
     },
+    // ============================================
+    // LABORATORIO
+    // ============================================
+    "laboratorio": {
+        title: "Laboratorio Clínico",
+        description: "Diagnóstico preciso y rápido. Análisis clínicos para tu tranquilidad.",
+        whatIsIt: "Servicio esencial para el diagnóstico y seguimiento de enfermedades. Contamos con tecnología de punta para realizar desde exámenes de rutina hasta pruebas especializadas, garantizando resultados confiables.",
+        whenToGo: [
+            "Chequeos preventivos anuales",
+            "Seguimiento de enfermedades crónicas (diabetes, colesterol)",
+            "Pruebas pre-quirúrgicas",
+            "Sospecha de infecciones o anemia",
+            "Pruebas hormonales",
+        ],
+        whyItMatters: [
+            "Permite detectar enfermedades antes de que aparezcan síntomas",
+            "Es fundamental para que el médico elija el tratamiento correcto",
+            "Monitorea el funcionamiento de órganos vitales",
+            "Confirma diagnósticos médicos",
+        ],
+        treatments: [
+            "Hematología y coagulación",
+            "Química clínica y perfiles lipídicos",
+            "Inmunología y hormonas",
+            "Microbiología y parasitología",
+            "Urianálisis",
+        ],
+        relatedSpecialties: ["medicina-general", "medicina-interna", "patologia-clinica"],
+    },
+
+    // ============================================
+    // VACUNACIÓN
+    // ============================================
+    "vacunacion": {
+        title: "Vacunación",
+        description: "Protección para toda la familia. Prevención efectiva contra enfermedades infecciosas.",
+        whatIsIt: "La mejor herramienta de salud pública para prevenir enfermedades graves. Ofrecemos el esquema nacional de vacunación y vacunas complementarias para niños, adultos y viajeros, aplicadas por enfermeras expertas.",
+        whenToGo: [
+            "Cumplimiento del calendario regular en niños",
+            "Vacunación anual contra la influenza",
+            "Refuerzos en adultos (tétanos, tos ferina)",
+            "Viajes a zonas tropicales (fiebre amarilla)",
+            "Vacunas especiales (VPH, Neumococo, Herpes Zóster)",
+        ],
+        whyItMatters: [
+            "Salva vidas al prevenir enfermedades mortales",
+            "Protege a quienes no pueden vacunarse (inmunidad de rebaño)",
+            "Erradica enfermedades de la comunidad",
+            "Evita complicaciones graves de virus comunes",
+        ],
+        treatments: [
+            "Administración de vacunas del PAI",
+            "Vacunas privadas y especiales",
+            "Carnet de vacunación digital",
+            "Asesoría en vacunación del viajero",
+            "Vacunación empresarial",
+        ],
+        relatedSpecialties: ["pediatria", "medicina-familiar", "infectologia", "medicina-preventiva-y-salud-publica"],
+    },
+
+    // ============================================
+    // TELEMEDICINA
+    // ============================================
+    "telemedicina": {
+        title: "Telemedicina",
+        description: "El médico en tu casa. Consultas virtuales con especialistas desde donde estés.",
+        whatIsIt: "Atención médica a distancia utilizando tecnología segura. Conecta con nuestros doctores por videollamada para resolver dudas, revisar exámenes o hacer seguimiento de tratamientos sin tener que desplazarte.",
+        whenToGo: [
+            "Consultas de seguimiento y control",
+            "Revisión de resultados de exámenes",
+            "Dudas médicas no urgentes",
+            "Pacientes con movilidad reducida o lejos del centro",
+            "Renovación de recetas de crónicos",
+        ],
+        whyItMatters: [
+            "Ahorra tiempo y costos de traslado",
+            "Facilita el acceso a especialistas desde zonas remotas",
+            "Reduce el riesgo de contagio en salas de espera",
+            "Permite una atención continua y oportuna",
+        ],
+        treatments: [
+            "Video-consulta médica",
+            "Receta médica electrónica",
+            "Orden de exámenes digital",
+            "Orientación médica inicial",
+            "Seguimiento de enfermedades crónicas",
+        ],
+        relatedSpecialties: ["medicina-general", "medicina-familiar", "psicologia-clinica"],
+    },
+
+    // ============================================
+    // ODONTOLOGÍA
+    // ============================================
+    "odontologia": {
+        title: "Odontología General",
+        description: "Sonrisas saludables. Cuidado integral de tu salud bucal.",
+        whatIsIt: "El punto de partida para una boca sana. Se encarga del diagnóstico primario, prevención y tratamiento de los problemas dentales más comunes como caries, gingivitis y limpieza dental.",
+        whenToGo: [
+            "Dolor de muelas o sensibilidad",
+            "Sangrado de encías",
+            "Limpieza dental semestral (profilaxis)",
+            "Mal aliento",
+            "Chequeo de rutina",
+        ],
+        whyItMatters: [
+            "Previene la pérdida de dientes a largo plazo",
+            "Detecta cáncer oral y otras patologías a tiempo",
+            "Mejora la autoestima con una sonrisa limpia",
+            "La salud bucal afecta la salud del corazón y diabetes",
+        ],
+        treatments: [
+            "Profilaxis (limpieza dental)",
+            "Restauraciones (calzas de resina)",
+            "Extracciones simples",
+            "Flúor y sellantes",
+            "Blanqueamiento dental",
+        ],
+        relatedSpecialties: ["ortodoncia", "endodoncia", "periodoncia", "cirugia-oral-y-maxilofacial"],
+    },
 };
 
 /**

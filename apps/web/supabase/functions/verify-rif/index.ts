@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, handleCORS } from "./utils/cors.ts";
-import { SeniatService } from "./services/seniat.ts";
+// import { SeniatService } from "./services/seniat.ts";
 
 /**
  * 🕵️‍♂️ RED-SALUD: VERIFICADOR RIF (SENIAT)
@@ -15,7 +15,7 @@ serve(async (req) => {
     const corsRes = handleCORS(req);
     if (corsRes) return corsRes;
 
-    const url = new URL(req.url);
+    // const url = new URL(req.url);
 
     try {
         // Procesar JSON para el resto de acciones (POST)

@@ -48,8 +48,8 @@ export const tauriSyncService = {
             // Notificar éxito
             await tauriNotificationService.notifySync("success");
             console.log("Sincronización completada");
-        } catch (error) {
-            console.error("Error en sincronización:", error);
+        } catch (_error) {
+            console.error("Error en sincronización:", _error);
             await tauriNotificationService.notifySync("error");
         }
     }

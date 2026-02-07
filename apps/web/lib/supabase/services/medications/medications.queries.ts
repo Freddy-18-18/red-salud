@@ -112,7 +112,7 @@ export async function getDoctorPrescriptions(medicoId: string) {
     // 2. Enrich with data
     const enrichedPrescriptions = await Promise.all(
       prescriptions.map(async (p) => {
-        let enriched = { ...p } as any; // Using any temporarily to construct the object
+        const enriched = { ...p } as Prescription;
 
         // A. Fetch Medications (Always needed)
         const { data: meds } = await supabase

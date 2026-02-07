@@ -1,7 +1,7 @@
 import { supabase } from "../client";
 import { logActivity } from "./activity-service";
 import { PostgrestError } from "@supabase/supabase-js";
-import { UUID } from "crypto"; // Optional, purely for type correctness if used
+// import { UUID } from "crypto"; // Optional, purely for type correctness if used
 
 export interface PatientProfile {
   // Datos básicos del perfil
@@ -113,7 +113,7 @@ export async function updateBasicProfile(
 ): Promise<{ success: boolean; error?: PostgrestError | Error }> {
   try {
     // Preparar datos para actualizar
-    const updateData: Partial<PatientProfile> & { updated_at: string;[key: string]: any } = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
 
@@ -168,7 +168,7 @@ export async function updateMedicalInfo(
 ): Promise<{ success: boolean; error?: PostgrestError | Error }> {
   try {
     // Preparar datos médicos
-    const medicalData: any = {
+    const medicalData: Record<string, unknown> = {
       profile_id: userId,
       updated_at: new Date().toISOString(),
     };
@@ -223,6 +223,6 @@ export async function updateAvatar(userId: string, avatarUrl: string) {
     return { success: true };
   } catch (error) {
     console.error("Error updating avatar:", error);
-    return { success: false, error };
+    return { success: false, error: error as Error };
   }
 }

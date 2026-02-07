@@ -2,16 +2,16 @@
 // Ejecutar con: node scripts/test-sacs-scraping.js
 
 const https = require('https');
-const http = require('http');
+// const http = require('http');
 
-const SACS_URL = 'https://sistemas.sacs.gob.ve/consultas/prfsnal_salud';
+
 const TEST_CEDULA = '7983901';
 
 // Función para hacer el request
 function makeRequest(cedula) {
   return new Promise((resolve, reject) => {
     const formData = `cedula=${cedula}&tipo=V`;
-    
+
     const options = {
       hostname: 'sistemas.sacs.gob.ve',
       port: 443,
@@ -58,9 +58,9 @@ function extractData(html) {
   };
 
   // Verificar si hay resultados
-  if (html.includes('No se encontraron resultados') || 
-      html.includes('no existe') || 
-      html.includes('No existe')) {
+  if (html.includes('No se encontraron resultados') ||
+    html.includes('no existe') ||
+    html.includes('No existe')) {
     return { ...data, error: 'No se encontró registro en SACS' };
   }
 
@@ -146,7 +146,7 @@ async function testScraping() {
 
   try {
     const { statusCode, html } = await makeRequest(TEST_CEDULA);
-    
+
     console.log(`✅ Status Code: ${statusCode}\n`);
     console.log(`📄 Tamaño del HTML: ${html.length} caracteres\n`);
 
@@ -169,7 +169,7 @@ async function testScraping() {
     console.log(`✓ MPPS: ${data.mpps || 'N/A'}`);
     console.log(`✓ Colegio: ${data.colegio || 'N/A'}`);
     console.log(`✓ Estado: ${data.estado || 'N/A'}`);
-    
+
     if (data.error) {
       console.log(`\n❌ Error: ${data.error}`);
     }
@@ -181,7 +181,7 @@ async function testScraping() {
     const tableMatches = html.match(/<table[^>]*>([\s\S]*?)<\/table>/gi);
     if (tableMatches) {
       console.log(`📋 Encontradas ${tableMatches.length} tabla(s)\n`);
-      
+
       // Mostrar preview de la primera tabla
       if (tableMatches[0]) {
         const preview = tableMatches[0].substring(0, 500);

@@ -21,7 +21,7 @@ import type {
   StorageService,
   NetworkService,
 } from './types';
-import { SYNC_QUEUE, SYNC_METADATA, SYNC_ERRORS } from './storage-keys';
+import { SYNC_QUEUE, SYNC_METADATA } from './storage-keys';
 
 export class SyncService implements ISyncService {
   private syncInterval: NodeJS.Timeout | null = null;
@@ -34,7 +34,7 @@ export class SyncService implements ISyncService {
     private storage: StorageService,
     private network: NetworkService,
     private onConnectivityChange?: (online: boolean) => void
-  ) {}
+  ) { }
 
   /**
    * Start automatic synchronization
@@ -315,10 +315,10 @@ export class SyncService implements ISyncService {
           await this.network.post(endpoint, change.data);
           break;
         case 'update':
-          await this.network.patch(`${endpoint}/${change.data.id}`, change.data);
+          await this.network.patch(`${endpoint}/${(change.data as Record<string, unknown>).id}`, change.data);
           break;
         case 'delete':
-          await this.network.delete(`${endpoint}/${change.data.id}`);
+          await this.network.delete(`${endpoint}/${(change.data as Record<string, unknown>).id}`);
           break;
       }
 
@@ -362,9 +362,8 @@ export class SyncService implements ISyncService {
           result.errors.push({
             id: Date.now().toString(),
             changeId: '',
-            error: `Failed to download ${entity} updates: ${
-              error instanceof Error ? error.message : 'Unknown error'
-            }`,
+            error: `Failed to download ${entity} updates: ${error instanceof Error ? error.message : 'Unknown error'
+              }`,
             timestamp: new Date(),
             retries: 0,
           });
@@ -394,7 +393,7 @@ export class SyncService implements ISyncService {
     const params = since ? `?since=${since.toISOString()}` : '';
 
     try {
-      const updates = await this.network.get<any[]>(`${endpoint}${params}`);
+      const updates = await this.network.get<Record<string, unknown>[]>(`${endpoint}${params}`);
 
       if (!updates || updates.length === 0) {
         return 0;
@@ -402,7 +401,7 @@ export class SyncService implements ISyncService {
 
       // Save updates to local storage
       for (const item of updates) {
-        const key = this.getStorageKeyForEntity(entity, item.id);
+        const key = this.getStorageKeyForEntity(entity, (item as Record<string, unknown>).id as string);
         await this.storage.save(key, item);
       }
 
@@ -444,7 +443,7 @@ export class SyncService implements ISyncService {
    */
   private async resolveConflict(
     change: PendingChange,
-    error: any
+    error: unknown
   ): Promise<boolean> {
     // Extract server timestamp from error (if available)
     const serverTimestamp = this.extractServerTimestamp(error);
@@ -470,24 +469,35 @@ export class SyncService implements ISyncService {
   /**
    * Check if error is a conflict error
    */
-  private isConflictError(error: any): boolean {
+  private isConflictError(error: unknown): boolean {
+    const err = error as Record<string, unknown>;
     // Check for common conflict indicators
-    if (error?.status === 409) return true;
-    if (error?.code === 'CONFLICT') return true;
-    if (error?.message?.includes('conflict')) return true;
+    if (err?.status === 409) return true;
+    if (err?.code === 'CONFLICT') return true;
+    if (typeof err?.message === 'string' && err.message.includes('conflict')) return true;
     return false;
   }
 
   /**
    * Extract server timestamp from error response
    */
-  private extractServerTimestamp(error: any): number | null {
+  private extractServerTimestamp(error: unknown): number | null {
+    const err = error as Record<string, unknown>;
     try {
-      if (error?.data?.timestamp) {
-        return new Date(error.data.timestamp).getTime();
+      if (err?.data && typeof err.data === 'object') {
+        const data = err.data as Record<string, unknown>;
+        if (data.timestamp) {
+          return new Date(data.timestamp as string | number).getTime();
+        }
       }
-      if (error?.response?.data?.timestamp) {
-        return new Date(error.response.data.timestamp).getTime();
+      if (err?.response && typeof err.response === 'object') {
+        const resp = err.response as Record<string, unknown>;
+        if (resp.data && typeof resp.data === 'object') {
+          const data = resp.data as Record<string, unknown>;
+          if (data.timestamp) {
+            return new Date(data.timestamp as string | number).getTime();
+          }
+        }
       }
     } catch {
       // Ignore parsing errors

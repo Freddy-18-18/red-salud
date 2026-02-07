@@ -12,7 +12,7 @@ export type {
 export interface AppointmentServiceResponse<T> {
   success: boolean;
   data: T;
-  error?: any;
+  error?: unknown;
 }
 
 export interface DoctorScheduleData {
@@ -41,8 +41,8 @@ export interface DoctorProfileRow {
   tarifa_consulta?: string;
   consultation_price?: string;
   consultation_duration?: number;
-  horario_atencion?: any;
-  schedule?: any;
+  horario_atencion?: unknown;
+  schedule?: unknown;
   direccion_consultorio?: string;
   clinic_address?: string;
   telefono_consultorio?: string;

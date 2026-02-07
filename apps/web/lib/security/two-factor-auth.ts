@@ -99,7 +99,7 @@ export async function enable2FA(
     });
 
     return { success: true, backupCodes };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al habilitar 2FA" };
   }
 }
@@ -137,7 +137,7 @@ export async function disable2FA(
     });
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al deshabilitar 2FA" };
   }
 }
@@ -175,7 +175,7 @@ export async function sendVerificationCode(
     console.log(`Código 2FA: ${code} para ${destination}`);
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al enviar código" };
   }
 }
@@ -215,7 +215,7 @@ export async function verifyCode(
       .eq("id", codeData.id);
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al verificar código" };
   }
 }
@@ -252,7 +252,7 @@ export async function get2FASettings(): Promise<{
     }));
 
     return { success: true, data: settings };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al obtener configuración 2FA" };
   }
 }
@@ -296,7 +296,7 @@ export async function verifyBackupCode(
       .eq("user_id", user.id);
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Error al verificar código de respaldo" };
   }
 }

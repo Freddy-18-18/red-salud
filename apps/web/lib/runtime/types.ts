@@ -61,12 +61,12 @@ export interface NetworkService {
   /**
    * Perform a POST request
    */
-  post<T>(url: string, body: any, options?: RequestOptions): Promise<T>;
+  post<T>(url: string, body: unknown, options?: RequestOptions): Promise<T>;
 
   /**
    * Perform a PATCH request
    */
-  patch<T>(url: string, body: any, options?: RequestOptions): Promise<T>;
+  patch<T>(url: string, body: unknown, options?: RequestOptions): Promise<T>;
 
   /**
    * Perform a DELETE request
@@ -267,7 +267,7 @@ export interface PendingChange {
   id: string;
   type: 'create' | 'update' | 'delete';
   entity: 'patient' | 'appointment' | 'consultation' | 'message' | 'settings';
-  data: any;
+  data: unknown;
   timestamp: number;
   retries: number;
 }

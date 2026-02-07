@@ -75,11 +75,11 @@ export class SessionManager {
    */
   private async convertToTemporarySession(): Promise<void> {
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (session) {
       // Mover tokens a sessionStorage
       sessionStorage.setItem("supabase.auth.token", JSON.stringify(session));
-      
+
       // Limpiar localStorage
       const keys = Object.keys(localStorage);
       keys.forEach(key => {
@@ -113,7 +113,7 @@ export class SessionManager {
 
   private async handleInactivityTimeout(): Promise<void> {
     console.log("⏰ Sesión cerrada por inactividad");
-    
+
     await this.logSessionActivity("timeout", {
       lastActivity: new Date(this.lastActivity).toISOString(),
     });
@@ -128,7 +128,7 @@ export class SessionManager {
     if (typeof window === "undefined") return;
 
     const events = ["mousedown", "keydown", "scroll", "touchstart", "click"];
-    
+
     const handleActivity = () => {
       const config = this.getSessionConfig();
       if (config?.role) {
@@ -146,11 +146,11 @@ export class SessionManager {
    * Obtiene la configuración de la sesión actual
    */
   private getSessionConfig(): SessionConfig | null {
-    const config = localStorage.getItem("session_config") || 
-                   sessionStorage.getItem("session_config");
-    
+    const config = localStorage.getItem("session_config") ||
+      sessionStorage.getItem("session_config");
+
     if (!config) return null;
-    
+
     try {
       return JSON.parse(config);
     } catch {
@@ -166,13 +166,13 @@ export class SessionManager {
     reason?: string;
   }> {
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (!session) {
       return { valid: false, reason: "no_session" };
     }
 
     const config = this.getSessionConfig();
-    
+
     if (!config) {
       return { valid: false, reason: "no_config" };
     }
@@ -181,7 +181,7 @@ export class SessionManager {
     if (config.createdAt) {
       const sessionAge = Date.now() - config.createdAt;
       const maxAge = config.rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
-      
+
       if (sessionAge > maxAge) {
         await this.logout("expired");
         return { valid: false, reason: "expired" };
@@ -221,11 +221,11 @@ export class SessionManager {
    */
   private async logSessionActivity(
     activityType: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) return;
 
       await supabase.from("user_activity_log").insert({
@@ -239,8 +239,8 @@ export class SessionManager {
         },
         status: "info",
       });
-    } catch (error) {
-      console.error("Error logging session activity:", error);
+    } catch (_error) {
+      console.error("Error logging session activity:", _error);
     }
   }
 
@@ -276,7 +276,7 @@ export class SessionManager {
 
     const timeout = SESSION_TIMEOUTS[config.role as keyof typeof SESSION_TIMEOUTS];
     const elapsed = Date.now() - this.lastActivity;
-    
+
     return Math.max(0, timeout - elapsed);
   }
 

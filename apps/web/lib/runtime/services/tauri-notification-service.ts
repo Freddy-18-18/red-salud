@@ -13,7 +13,7 @@ export class TauriNotificationService implements NotificationService {
   /**
    * Show a notification
    */
-  async show(notification: NotificationData): Promise<void> {
+  async show(_notification: NotificationData): Promise<void> {
     // TODO: Implement in Task 12
     throw new Error('Notification show not yet implemented');
   }
@@ -21,7 +21,7 @@ export class TauriNotificationService implements NotificationService {
   /**
    * Schedule a notification for later
    */
-  async schedule(notification: NotificationData, delay: number): Promise<string> {
+  async schedule(_notification: NotificationData, _delay: number): Promise<string> {
     // TODO: Implement in Task 12
     throw new Error('Notification scheduling not yet implemented');
   }
@@ -29,7 +29,7 @@ export class TauriNotificationService implements NotificationService {
   /**
    * Cancel a scheduled notification
    */
-  async cancel(notificationId: string): Promise<void> {
+  async cancel(_notificationId: string): Promise<void> {
     // TODO: Implement in Task 12
     throw new Error('Notification cancellation not yet implemented');
   }

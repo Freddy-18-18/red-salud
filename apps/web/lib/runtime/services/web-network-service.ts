@@ -70,9 +70,9 @@ export class WebNetworkService implements NetworkService {
     return (
       error.type === NetworkErrorType.TIMEOUT ||
       error.type === NetworkErrorType.CONNECTION_FAILED ||
-      (error.type === NetworkErrorType.SERVER_ERROR && 
-       error.statusCode !== undefined && 
-       error.statusCode >= 500)
+      (error.type === NetworkErrorType.SERVER_ERROR &&
+        error.statusCode !== undefined &&
+        error.statusCode >= 500)
     );
   }
 
@@ -111,7 +111,7 @@ export class WebNetworkService implements NetworkService {
           error
         );
       }
-      
+
       if (statusCode >= 500) {
         return new NetworkError(
           `Server error: ${statusCode}`,
@@ -120,7 +120,7 @@ export class WebNetworkService implements NetworkService {
           error
         );
       }
-      
+
       if (statusCode >= 400) {
         return new NetworkError(
           `Client error: ${statusCode}`,
@@ -153,10 +153,10 @@ export class WebNetworkService implements NetworkService {
       try {
         return await operation();
       } catch (error) {
-        lastError = error instanceof NetworkError 
-          ? error 
+        lastError = error instanceof NetworkError
+          ? error
           : this.parseError(error);
-        
+
         // Don't retry on authentication or client errors
         if (
           lastError.type === NetworkErrorType.AUTHENTICATION_ERROR ||
@@ -164,13 +164,13 @@ export class WebNetworkService implements NetworkService {
         ) {
           throw lastError;
         }
-        
+
         // Check if we should retry
         const isLastAttempt = attempt === maxRetries - 1;
         if (isLastAttempt || !this.isRetryableError(lastError)) {
           throw lastError;
         }
-        
+
         // Wait before retrying with exponential backoff
         const delay = this.getRetryDelay(attempt);
         console.warn(
@@ -190,7 +190,7 @@ export class WebNetworkService implements NetworkService {
    */
   private buildFetchOptions(
     method: string,
-    body?: any,
+    body?: unknown,
     options?: RequestOptions
   ): { init: RequestInit; controller: AbortController } {
     const controller = new AbortController();
@@ -228,7 +228,7 @@ export class WebNetworkService implements NetworkService {
   private async fetchWithErrorHandling<T>(
     url: string,
     method: string,
-    body?: any,
+    body?: unknown,
     options?: RequestOptions
   ): Promise<T> {
     const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`;
@@ -236,14 +236,14 @@ export class WebNetworkService implements NetworkService {
 
     try {
       const response = await fetch(fullUrl, init);
-      
+
       if (!response.ok) {
         throw this.parseError(
           new Error(`HTTP error! status: ${response.status}`),
           response.status
         );
       }
-      
+
       return await response.json();
     } catch (error) {
       // If it's already a NetworkError, rethrow it
@@ -268,7 +268,7 @@ export class WebNetworkService implements NetworkService {
   /**
    * Perform a POST request
    */
-  async post<T>(url: string, body: any, options?: RequestOptions): Promise<T> {
+  async post<T>(url: string, body: unknown, options?: RequestOptions): Promise<T> {
     return this.executeWithRetry(
       () => this.fetchWithErrorHandling<T>(url, 'POST', body, options),
       options
@@ -278,7 +278,7 @@ export class WebNetworkService implements NetworkService {
   /**
    * Perform a PATCH request
    */
-  async patch<T>(url: string, body: any, options?: RequestOptions): Promise<T> {
+  async patch<T>(url: string, body: unknown, options?: RequestOptions): Promise<T> {
     return this.executeWithRetry(
       () => this.fetchWithErrorHandling<T>(url, 'PATCH', body, options),
       options

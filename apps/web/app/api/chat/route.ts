@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ragService } from "@/lib/supabase/services/chat/rag-service";
-import { sanitizePII } from "@/lib/utils/pii-filter";
+import { sanitizePII } from "@red-salud/core/utils";
 
 export const runtime = "edge";
 
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
         // and calling the LLM.
         const response = await ragService.generateResponse(
             [
-                ...history.slice(-6).map((m: any) => ({
+                ...history.slice(-6).map((m: { role: string; content: string }) => ({
                     role: m.role === 'assistant' || m.role === 'model' ? 'assistant' : 'user',
                     content: sanitizePII(m.content)
                 })),
@@ -65,10 +65,11 @@ export async function POST(req: NextRequest) {
                 "Connection": "keep-alive",
             },
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("[Chat API Error]:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
         return NextResponse.json(
-            { error: "Internal Server Error", details: error.message },
+            { error: "Internal Server Error", details: errorMessage },
             { status: 500 }
         );
     }

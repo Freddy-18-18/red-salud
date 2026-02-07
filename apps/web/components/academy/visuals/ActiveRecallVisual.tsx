@@ -13,6 +13,17 @@ export function ActiveRecallVisual() {
         return () => clearInterval(interval);
     }, []);
 
+    // Memoize random values for animations to ensure purity
+    const randomValues = useState(() => ({
+        pulse: Array.from({ length: 8 }).map(() => ({
+            duration: 2 + Math.random(),
+            delay: Math.random() * 2
+        })),
+        nodes: Array.from({ length: 7 }).map(() => ({
+            delay: Math.random() * 2
+        }))
+    }))[0];
+
     // Neural nodes positions
     const nodes = [
         { x: 50, y: 50 },
@@ -25,7 +36,7 @@ export function ActiveRecallVisual() {
     ];
 
     // Connections between nodes (indices)
-    const connections = [
+    const connections: [number, number][] = [
         [0, 1],
         [0, 2],
         [0, 3],
@@ -48,10 +59,10 @@ export function ActiveRecallVisual() {
                         {connections.map(([start, end], i) => (
                             <motion.line
                                 key={`line-${i}`}
-                                x1={nodes[start].x}
-                                y1={nodes[start].y}
-                                x2={nodes[end].x}
-                                y2={nodes[end].y}
+                                x1={nodes[start]!.x}
+                                y1={nodes[start]!.y}
+                                x2={nodes[end]!.x}
+                                y2={nodes[end]!.y}
                                 stroke="rgba(6,182,212,0.2)"
                                 strokeWidth="0.5"
                             />
@@ -61,7 +72,7 @@ export function ActiveRecallVisual() {
                         {connections.map(([start, end], i) => (
                             <motion.path
                                 key={`pulse-${i}`}
-                                d={`M ${nodes[start].x} ${nodes[start].y} L ${nodes[end].x} ${nodes[end].y}`}
+                                d={`M ${nodes[start]!.x} ${nodes[start]!.y} L ${nodes[end]!.x} ${nodes[end]!.y}`}
                                 stroke="#22d3ee"
                                 strokeWidth="1"
                                 fill="transparent"
@@ -72,10 +83,10 @@ export function ActiveRecallVisual() {
                                     pathOffset: [0, 1]
                                 }}
                                 transition={{
-                                    duration: 2 + Math.random(),
+                                    duration: randomValues.pulse[i]?.duration || 2,
                                     repeat: Infinity,
                                     ease: "linear",
-                                    delay: Math.random() * 2
+                                    delay: randomValues.pulse[i]?.delay || 0
                                 }}
                             />
                         ))}
@@ -97,7 +108,7 @@ export function ActiveRecallVisual() {
                                 transition={{
                                     duration: 2,
                                     repeat: Infinity,
-                                    delay: Math.random() * 2,
+                                    delay: randomValues.nodes[i]?.delay || 0,
                                     ease: "easeInOut"
                                 }}
                             />

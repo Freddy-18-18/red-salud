@@ -20,11 +20,14 @@ import {
     FlaskConical,
     Pill,
     UserCog,
-    GraduationCap
+    GraduationCap,
+    Truck,
+    Shield
 } from "lucide-react";
 
 interface MainNavProps {
     isScrolled: boolean;
+    theme?: "light" | "dark";
 }
 
 const categories = [
@@ -66,14 +69,26 @@ const categories = [
                 description: "Control de inventario.",
                 icon: Pill,
             },
+            {
+                title: "Ambulancias",
+                href: "/servicios/ambulancias",
+                description: "Gestión de flotas.",
+                icon: Truck,
+            },
+            {
+                title: "Seguros",
+                href: "/servicios/seguros",
+                description: "Gestión de pólizas.",
+                icon: Shield,
+            },
         ],
     },
     {
         title: "Educación",
         items: [
             {
-                title: "Academy",
-                href: "/academy",
+                title: "Academy (Próximamente)",
+                href: "#",
                 description: "Aprende medicina jugando.",
                 icon: GraduationCap,
             },
@@ -81,8 +96,9 @@ const categories = [
     },
 ];
 
-export function MainNav({ isScrolled }: MainNavProps) {
-    const triggerColorClass = "text-foreground hover:bg-primary/5 hover:text-primary transition-colors";
+export function MainNav({ isScrolled, theme = "light" }: MainNavProps) {
+    const textColorClass = theme === "dark" ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-primary/5 hover:text-primary";
+    const triggerColorClass = `${textColorClass} transition-colors`;
 
     return (
         <NavigationMenu>

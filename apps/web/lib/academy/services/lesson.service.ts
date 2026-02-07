@@ -117,7 +117,7 @@ export const AcademyLessonService = {
                 .map((unit: Record<string, unknown>) => ({
                     ...mapUnitFromDb(unit),
                     lessons: ((unit.lessons as Record<string, unknown>[]) || [])
-                        .sort((a: any, b: any) => a.order_index - b.order_index)
+                        .sort((a, b) => (a.order_index as number) - (b.order_index as number))
                         .map(mapLessonFromDb),
                 })),
         }));
