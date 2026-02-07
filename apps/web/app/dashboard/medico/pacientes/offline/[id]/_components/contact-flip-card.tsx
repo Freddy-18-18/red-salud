@@ -28,7 +28,7 @@ export function ContactFlipCard({ patient, onSave }: ContactFlipCardProps) {
         telefono: patient.telefono || "",
         email: patient.email || "",
         direccion: patient.direccion || "",
-        fecha_nacimiento: patient.fecha_nacimiento ? patient.fecha_nacimiento.split('T')[0] : ""
+        fecha_nacimiento: (patient.fecha_nacimiento?.split('T')[0]) ?? ""
     });
     const [loading, setLoading] = useState(false);
 
