@@ -21,6 +21,9 @@ importers:
       '@types/qrcode':
         specifier: ^1.5.6
         version: 1.5.6
+      next:
+        specifier: ^16.1.0
+        version: 16.1.5(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
 
   apps/desktop/corporativo:
     dependencies:
