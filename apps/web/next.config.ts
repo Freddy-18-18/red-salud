@@ -30,6 +30,13 @@ const nextConfig: NextConfig = {
     },
   }),
 
+  // Transpilar paquetes internos del monorepo
+  transpilePackages: [
+    "@red-salud/types",
+    "@red-salud/ui",
+    "@red-salud/core"
+  ],
+
   // Headers de seguridad
   async headers() {
     return [

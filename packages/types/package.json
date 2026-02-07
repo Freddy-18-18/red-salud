@@ -2,23 +2,23 @@
     "name": "@red-salud/types",
     "version": "0.1.0",
     "private": true,
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js",
-            "require": "./dist/index.js"
+            "types": "./src/index.ts",
+            "import": "./src/index.ts",
+            "require": "./src/index.ts"
         },
         "./pharmacy": {
-            "types": "./dist/pharmacy.d.ts",
-            "import": "./dist/pharmacy.js",
-            "require": "./dist/pharmacy.js"
+            "types": "./src/pharmacy.ts",
+            "import": "./src/pharmacy.ts",
+            "require": "./src/pharmacy.ts"
         },
         "./clinic": {
-            "types": "./dist/clinic.d.ts",
-            "import": "./dist/clinic.js",
-            "require": "./dist/clinic.js"
+            "types": "./src/clinic.ts",
+            "import": "./src/clinic.ts",
+            "require": "./src/clinic.ts"
         }
     },
     "scripts": {
