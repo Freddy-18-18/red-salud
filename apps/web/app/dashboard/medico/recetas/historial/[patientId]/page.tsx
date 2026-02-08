@@ -99,25 +99,27 @@ export default function PatientHistoryPage() {
                     if (patientRecipes.length > 0) {
                         // Extract patient info from the most recent recipe
                         const latest = patientRecipes[0];
-                        if (latest.paciente) {
-                            setPatientInfo({
-                                type: 'registered',
-                                name: latest.paciente.nombre_completo,
-                                identifier: latest.paciente.cedula,
-                                avatar: latest.paciente.avatar_url,
-                                dob: latest.paciente.fecha_nacimiento,
-                                gender: latest.paciente.genero
-                            });
-                        } else if (latest.offline_patient) {
-                            setPatientInfo({
-                                type: 'offline',
-                                name: latest.offline_patient.nombre_completo,
-                                identifier: latest.offline_patient.numero_documento,
-                                avatar: null,
-                                dob: latest.offline_patient.fecha_nacimiento,
-                                email: latest.offline_patient.email,
-                                phone: latest.offline_patient.telefono
-                            });
+                        if (latest) {
+                            if (latest.paciente) {
+                                setPatientInfo({
+                                    type: 'registered',
+                                    name: latest.paciente.nombre_completo,
+                                    identifier: latest.paciente.cedula,
+                                    avatar: latest.paciente.avatar_url,
+                                    dob: latest.paciente.fecha_nacimiento,
+                                    gender: latest.paciente.genero
+                                });
+                            } else if (latest.offline_patient) {
+                                setPatientInfo({
+                                    type: 'offline',
+                                    name: latest.offline_patient.nombre_completo,
+                                    identifier: latest.offline_patient.numero_documento,
+                                    avatar: null,
+                                    dob: latest.offline_patient.fecha_nacimiento,
+                                    email: latest.offline_patient.email,
+                                    phone: latest.offline_patient.telefono
+                                });
+                            }
                         }
                     }
                 }
@@ -157,7 +159,7 @@ export default function PatientHistoryPage() {
                 email: settings?.clinic_email || profile.email || ""
             };
 
-            const recipeData = constructRecipeData(recipe, doctorProfile, settings as any);
+            const recipeData = constructRecipeData(recipe as any, doctorProfile, settings as any);
             const recipeSettings = constructRecipeSettings(settings as any);
 
             const html = await generateRecipeHtml(recipeData, recipeSettings);
@@ -192,7 +194,7 @@ export default function PatientHistoryPage() {
                 email: settings?.clinic_email || profile.email || ""
             };
 
-            const recipeData = constructRecipeData(recipe, doctorProfile, settings as any);
+            const recipeData = constructRecipeData(recipe as any, doctorProfile, settings as any);
             const recipeSettings = constructRecipeSettings(settings as any);
 
             const fileName = `Receta-${(recipeData.patientName || 'Paciente').replace(/[^a-z0-9]/gi, '_')}.pdf`;

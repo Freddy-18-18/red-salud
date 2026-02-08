@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 export interface Specialty {
   id: string;
   name: string;
-  description: string | null;
+  description: string | undefined;
   active: boolean;
 }
 

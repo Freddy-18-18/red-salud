@@ -139,9 +139,10 @@ export default function DoctorPatientsPage() {
 
         // Calcular promedios por motivo
         Object.keys(byMotivo).forEach((motivo) => {
-          byMotivo[motivo].avg_minutes = Math.round(
-            byMotivo[motivo].total / byMotivo[motivo].count
-          );
+          const mData = byMotivo[motivo];
+          if (mData && mData.count > 0) {
+            mData.avg_minutes = Math.round(mData.total / mData.count);
+          }
         });
 
         setAvgConsultationTime(avgMinutes);

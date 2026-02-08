@@ -268,10 +268,12 @@ export default function RecipeSettingsPage() {
     const handleLogoFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
         const file = e.target.files[0];
-        const objectUrl = URL.createObjectURL(file);
-        setTempLogoUrl(objectUrl);
-        setTempLogoFile(file);
-        setIsLogoModalOpen(true);
+        if (file) {
+            const objectUrl = URL.createObjectURL(file);
+            setTempLogoUrl(objectUrl);
+            setTempLogoFile(file);
+            setIsLogoModalOpen(true);
+        }
         e.target.value = "";
     };
 

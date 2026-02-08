@@ -1,0 +1,22 @@
+
+> red-salud-web@0.1.0 build C:\Users\Fredd\Developer\red-salud\apps\web
+> next build
+
+⨯ Unable to acquire lock at C:\Users\Fredd\Developer\red-salud\apps\web\.next\lock, is another instanc✓ Compiled successfully in 5.2min
+  Running TypeScript ...
+Failed to compile.
+
+./app/dashboard/medico/recetas/historial/[patientId]/page.tsx:343:107
+Type error: Property 'estado' does not exist on type 'Prescription'.
+
+[0m [90m 341 |[39m                                                     {recipe[33m.[39mfecha_prescripcion [33m?[39m format([36mnew[39m [33mDate[39m(recipe[33m.[39mfecha_prescripcion)[33m,[39m [32m"d 'de' MMMM, yyyy"[39m[33m,[39m { locale[33m:[39m es }) [33m:[39m [32m'Sin fecha'[39m}
+ [90m 342 |[39m                                                 [33m<[39m[33m/[39m[33mspan[39m[33m>[39m
+[31m[1m>[22m[39m[90m 343 |[39m                                                 [33m<[39m[33mBadge[39m variant[33m=[39m[32m"outline"[39m className[33m=[39m{getStatusColor(recipe[33m.[39mestado [33m||[39m [32m'activa'[39m)}[33m>[39m
+ [90m     |[39m                                                                                                           [31m[1m^[22m[39m
+ [90m 344 |[39m                                                     {getStatusIcon(recipe[33m.[39mestado [33m||[39m [32m'activa'[39m)}
+ [90m 345 |[39m                                                     {(recipe[33m.[39mestado [33m||[39m [32m'activa'[39m)[33m.[39mtoUpperCase()}
+ [90m 346 |[39m                                                 [33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+C:\Users\Fredd\Developer\red-salud\apps\web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  red-salud-web@0.1.0 build: `next build`
+Exit status 1

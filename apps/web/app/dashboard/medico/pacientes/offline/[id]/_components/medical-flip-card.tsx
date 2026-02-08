@@ -8,7 +8,7 @@ import { cn } from "@red-salud/core/utils";
 
 interface MedicalFlipCardProps {
     title: string;
-    icon: React.ElementType;
+    icon: any;
     items: string[] | null;
     colorClass: string; // e.g., "text-red-600"
     bgClass: string; // e.g., "bg-red-50"
