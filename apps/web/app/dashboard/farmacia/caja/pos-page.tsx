@@ -62,6 +62,7 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
   const [activePaymentMethod, setActivePaymentMethod] = useState<string | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
