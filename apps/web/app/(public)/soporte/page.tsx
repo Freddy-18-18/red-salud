@@ -282,12 +282,11 @@ function ContactCard({ option }: { option: (typeof contactOptions)[0] }) {
   );
 }
 
-function ArticleCard({ article }: { article: KBSearchResult | (typeof popularArticles)[0] }) {
-  const isKBSearchResult = 'metadata' in article;
-  const title = isKBSearchResult ? article.metadata.title : article.title;
-  const category = isKBSearchResult ? article.category : article.category;
-  const readTime = isKBSearchResult ? (article.metadata.readTime || "2 min") : article.readTime;
-  const href = isKBSearchResult ? article.metadata.url : article.href;
+function ArticleCard({ article }: { article: KBSearchResult }) {
+  const title = article.metadata.title;
+  const category = article.category;
+  const readTime = article.metadata.readTime || "2 min";
+  const href = article.metadata.url;
 
   return (
     <Link href={href}>
