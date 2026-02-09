@@ -1,5 +1,6 @@
 {
   "buildCommand": "pnpm --filter @red-salud/types build && pnpm --filter red-salud-web build",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "outputDirectory": "apps/web/.next"
+  "rootDirectory": "apps/web",
+  "outputDirectory": ".next"
 }
