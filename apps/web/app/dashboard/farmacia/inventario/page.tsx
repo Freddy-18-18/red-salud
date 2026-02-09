@@ -61,6 +61,33 @@ export default function InventarioPage() {
   const [exchangeRate, setExchangeRate] = useState<number>(36);
   const [showUSD, setShowUSD] = useState(true);
 
+  const filterProductos = useCallback(() => {
+    let filtered = productos;
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (p) =>
+          p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.descripcion?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.laboratorio?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedCategoria) {
+      filtered = filtered.filter((p) => p.categoria === selectedCategoria);
+    }
+
+    if (selectedEstado) {
+      filtered = filtered.filter((p) => p.estado === selectedEstado);
+    }
+
+    if (selectedWarehouse) {
+      filtered = filtered.filter((p) => p.ubicacion?.includes(selectedWarehouse));
+    }
+
+    setFilteredProductos(filtered);
+  }, [productos, searchTerm, selectedCategoria, selectedEstado, selectedWarehouse]);
+
   useEffect(() => {
     loadProductos();
     loadExchangeRate();
@@ -98,33 +125,6 @@ export default function InventarioPage() {
       console.error("Error cargando tasa de cambio:", error);
     }
   };
-
-  const filterProductos = useCallback(() => {
-    let filtered = productos;
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (p) =>
-          p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.descripcion?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.laboratorio?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedCategoria) {
-      filtered = filtered.filter((p) => p.categoria === selectedCategoria);
-    }
-
-    if (selectedEstado) {
-      filtered = filtered.filter((p) => p.estado === selectedEstado);
-    }
-
-    if (selectedWarehouse) {
-      filtered = filtered.filter((p) => p.ubicacion?.includes(selectedWarehouse));
-    }
-
-    setFilteredProductos(filtered);
-  }, [productos, searchTerm, selectedCategoria, selectedEstado, selectedWarehouse]);
 
   const categorias = Array.from(
     new Set(productos.map((p) => p.categoria).filter(Boolean))
