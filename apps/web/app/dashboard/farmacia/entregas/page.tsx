@@ -48,6 +48,25 @@ export default function EntregasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEstado, setSelectedEstado] = useState("");
 
+  const filterEntregas = useCallback(() => {
+    let filtered = entregas;
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (e) =>
+          e.nombre_cliente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          e.cedula_cliente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          e.tracking_code?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedEstado) {
+      filtered = filtered.filter((e) => e.estado === selectedEstado);
+    }
+
+    setFilteredEntregas(filtered);
+  }, [entregas, searchTerm, selectedEstado]);
+
   useEffect(() => {
     loadEntregas();
   }, []);
@@ -75,25 +94,6 @@ export default function EntregasPage() {
       setLoading(false);
     }
   };
-
-  const filterEntregas = useCallback(() => {
-    let filtered = entregas;
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (e) =>
-          e.nombre_cliente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          e.cedula_cliente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          e.tracking_code?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedEstado) {
-      filtered = filtered.filter((e) => e.estado === selectedEstado);
-    }
-
-    setFilteredEntregas(filtered);
-  }, [entregas, searchTerm, selectedEstado]);
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
