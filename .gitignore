@@ -136,3 +136,4 @@ build/
 
 apps/web/build_log.txt  
 apps/web/tsc_log.txt  
+.env*.local

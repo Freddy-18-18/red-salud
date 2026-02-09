@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 
 export type ThemeColor = "blue" | "purple" | "green" | "orange" | "indigo" | "pink";
