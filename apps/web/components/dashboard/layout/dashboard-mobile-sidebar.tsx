@@ -59,7 +59,6 @@ export function DashboardMobileSidebar({
   isOpen,
   onClose,
   userName = "Usuario",
-  userName = "Usuario",
   menuGroups,
   dashboardRoute,
   onProfileClick,

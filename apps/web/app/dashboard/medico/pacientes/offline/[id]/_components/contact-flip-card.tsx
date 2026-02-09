@@ -6,7 +6,6 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Input, Label, Badge }
 import { Phone, Mail, MapPin, Calendar, Check, X, Edit2, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Badge } from "@red-salud/ui";
 
 interface ContactFlipCardProps {
     patient: {
