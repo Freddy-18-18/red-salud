@@ -1,0 +1,26 @@
+
+> red-salud-web@0.1.0 build C:\Users\Fredd\Developer\red-salud\apps\web
+> next build
+
+▲ Next.js 16.1.5 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 93s
+  Running TypeScript ...
+Failed to compile.
+
+./app/dashboard/farmacia/ventas/page.tsx:57:63
+Type error: Block-scoped variable 'filterVentas' used before its declaration.
+
+[0m [90m 55 |[39m   useEffect(() [33m=>[39m {
+ [90m 56 |[39m     filterVentas()[33m;[39m
+[31m[1m>[22m[39m[90m 57 |[39m   }[33m,[39m [ventas[33m,[39m searchTerm[33m,[39m selectedEstado[33m,[39m selectedMetodoPago[33m,[39m filterVentas])[33m;[39m
+ [90m    |[39m                                                               [31m[1m^[22m[39m
+ [90m 58 |[39m
+ [90m 59 |[39m   [36mconst[39m loadVentas [33m=[39m [36masync[39m () [33m=>[39m {
+ [90m 60 |[39m     [36mtry[39m {[0m
+Next.js build worker exited with code: 1 and signal: null
+C:\Users\Fredd\Developer\red-salud\apps\web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  red-salud-web@0.1.0 build: `next build`
+Exit status 1

@@ -54,7 +54,7 @@ export function SpecialtyMap({ doctorCount, distribution }: SpecialtyMapProps) {
     const [hoveredState, setHoveredState] = useState<{ name: string; count: number } | null>(null);
 
     // Calcular data inicial sin setState en useEffect
-    const initialData = React.useMemo(() => {
+    const initialData = useMemo(() => {
         if (distribution && Object.keys(distribution).length > 0) {
             return distribution;
         } else if (doctorCount > 0) {
@@ -64,11 +64,21 @@ export function SpecialtyMap({ doctorCount, distribution }: SpecialtyMapProps) {
     }, [distribution, doctorCount]);
 
     const [data, setData] = useState<Record<string, number>>(initialData);
+    const [mounted, setMounted] = useState(false);
 
     // Actualizar data cuando cambien initialData
     useEffect(() => {
-        setData(initialData);
-    }, [initialData]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setMounted(true);
+    }, []);
+
+    // Sincronizar data con initialData sin disparar render extra innecesario en el primer montaje
+    useEffect(() => {
+        if (mounted) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setData(initialData);
+        }
+    }, [initialData, mounted]);
 
     const colorScale = useMemo(() => {
         const values = Object.values(data).filter(v => v > 0);

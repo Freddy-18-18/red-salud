@@ -57,6 +57,7 @@ const defaultMetrics: DashboardMetrics = {
 export function HeroSection() {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics>(defaultMetrics);
+  const [isLoading, setIsLoading] = useState(true);
   const [doctors, setDoctors] = useState<Array<{
     profile?: {
       nombre_completo?: string;
@@ -91,7 +92,7 @@ export function HeroSection() {
       } catch (error) {
         console.error("Error loading hero data:", error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     }
     loadInitialData();

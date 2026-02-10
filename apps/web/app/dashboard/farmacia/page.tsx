@@ -181,37 +181,37 @@ export default function DashboardFarmaciaPage() {
           <KPICard
             title="Ventas Hoy"
             value={`$${kpis.ventasHoy.toFixed(2)}`}
-            icon={DollarSign}
+            icon={<DollarSign />}
             color="border-green-500/20"
           />
           <KPICard
             title="Ventas del Mes"
             value={`$${kpis.ventasMes.toFixed(2)}`}
-            icon={TrendingUp}
+            icon={<TrendingUp />}
             color="border-blue-500/20"
           />
           <KPICard
             title="Productos Stock Bajo"
             value={kpis.productosBajos}
-            icon={Package}
+            icon={<Package />}
             color="border-yellow-500/20"
           />
           <KPICard
             title="Productos Vencidos"
             value={kpis.productosVencidos}
-            icon={AlertTriangle}
+            icon={<AlertTriangle />}
             color="border-red-500/20"
           />
           <KPICard
             title="Recetas Pendientes"
             value={kpis.recetasPendientes}
-            icon={Pill}
+            icon={<Pill />}
             color="border-purple-500/20"
           />
           <KPICard
             title="Clientes Activos"
             value={kpis.clientesActivos}
-            icon={Users}
+            icon={<Users />}
             color="border-cyan-500/20"
           />
         </div>
@@ -272,10 +272,10 @@ export default function DashboardFarmaciaPage() {
                     <div
                       key={alerta.id}
                       className={`p-3 rounded-lg border ${alerta.prioridad === "critica"
-                          ? "bg-red-50 border-red-200"
-                          : alerta.prioridad === "alta"
-                            ? "bg-yellow-50 border-yellow-200"
-                            : "bg-blue-50 border-blue-200"
+                        ? "bg-red-50 border-red-200"
+                        : alerta.prioridad === "alta"
+                          ? "bg-yellow-50 border-yellow-200"
+                          : "bg-blue-50 border-blue-200"
                         }`}
                     >
                       <p className="font-medium">{alerta.titulo}</p>

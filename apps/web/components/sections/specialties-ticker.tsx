@@ -375,7 +375,7 @@ function SpecialtyCard({ item, isHighlighted = false }: SpecialtyCardProps) {
             isHighlighted && "from-primary to-blue-600 text-white"
           )}
         >
-          {getIconForSpecialty(item.name)({ className: "h-4 w-4" })}
+          {React.createElement(getIconForSpecialty(item.name), { className: "h-4 w-4" })}
         </div>
 
         {/* Contenido */}

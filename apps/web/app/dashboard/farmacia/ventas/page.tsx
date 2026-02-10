@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -48,34 +49,6 @@ export default function VentasPage() {
   const [selectedMetodoPago, setSelectedMetodoPago] = useState("");
   const [ventaSeleccionada, setVentaSeleccionada] = useState<Venta | null>(null);
 
-  useEffect(() => {
-    loadVentas();
-  }, []);
-
-  useEffect(() => {
-    filterVentas();
-  }, [ventas, searchTerm, selectedEstado, selectedMetodoPago, filterVentas]);
-
-  const loadVentas = async () => {
-    try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-      const { data, error } = await supabase
-        .from("farmacia_ventas")
-        .select("*")
-        .order("fecha", { ascending: false });
-
-      if (error) throw error;
-      setVentas(data || []);
-    } catch (error) {
-      console.error("Error cargando ventas:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const filterVentas = useCallback(() => {
     let filtered = ventas;
 
@@ -98,6 +71,34 @@ export default function VentasPage() {
 
     setFilteredVentas(filtered);
   }, [ventas, searchTerm, selectedEstado, selectedMetodoPago]);
+
+  useEffect(() => {
+    filterVentas();
+  }, [ventas, searchTerm, selectedEstado, selectedMetodoPago, filterVentas]);
+
+  const loadVentas = useCallback(async () => {
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+      const { data, error } = await supabase
+        .from("farmacia_ventas")
+        .select("*")
+        .order("fecha", { ascending: false });
+
+      if (error) throw error;
+      setVentas(data || []);
+    } catch (error) {
+      console.error("Error cargando ventas:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadVentas();
+  }, [loadVentas]);
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
