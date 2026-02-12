@@ -19,6 +19,7 @@ export class PettyCashManager {
       current_balance_usd: initialBalanceUsd,
       current_balance_ves: initialBalanceVes,
       custodian_id: custodianId,
+      is_active: true,
     };
   }
 
@@ -34,9 +35,9 @@ export class PettyCashManager {
     balanceAfterVes: number,
     description: string,
     category: 'supplies' | 'transport' | 'food' | 'miscellaneous' | 'replenishment' | 'other',
+    createdBy: string,
     receiptNumber?: string,
-    approvedBy?: string,
-    createdBy: string
+    approvedBy?: string
   ): Omit<PettyCashTransaction, 'id' | 'created_at'> {
     return {
       petty_cash_id: pettyCashId,
@@ -62,9 +63,9 @@ export class PettyCashManager {
     amountVes: number,
     description: string,
     category: 'supplies' | 'transport' | 'food' | 'miscellaneous' | 'replenishment' | 'other',
+    createdBy: string,
     receiptNumber?: string,
-    approvedBy?: string,
-    createdBy: string
+    approvedBy?: string
   ): { pettyCash: PettyCash; transaction: Omit<PettyCashTransaction, 'id' | 'created_at'> } {
     const newBalanceUsd = pettyCash.current_balance_usd + amountUsd;
     const newBalanceVes = pettyCash.current_balance_ves + amountVes;
@@ -85,9 +86,9 @@ export class PettyCashManager {
       newBalanceVes,
       description,
       category,
+      createdBy,
       receiptNumber,
-      approvedBy,
-      createdBy
+      approvedBy
     );
 
     return { pettyCash: updatedPettyCash, transaction };
@@ -102,9 +103,9 @@ export class PettyCashManager {
     amountVes: number,
     description: string,
     category: 'supplies' | 'transport' | 'food' | 'miscellaneous' | 'replenishment' | 'other',
+    createdBy: string,
     receiptNumber?: string,
-    approvedBy?: string,
-    createdBy: string
+    approvedBy?: string
   ): { pettyCash: PettyCash; transaction: Omit<PettyCashTransaction, 'id' | 'created_at'> } | null {
     // Check if sufficient balance
     if (amountUsd > pettyCash.current_balance_usd || amountVes > pettyCash.current_balance_ves) {
@@ -130,9 +131,9 @@ export class PettyCashManager {
       newBalanceVes,
       description,
       category,
+      createdBy,
       receiptNumber,
-      approvedBy,
-      createdBy
+      approvedBy
     );
 
     return { pettyCash: updatedPettyCash, transaction };
@@ -156,9 +157,9 @@ export class PettyCashManager {
       amountVes,
       'Replenishment',
       'replenishment',
+      createdBy,
       undefined,
-      undefined,
-      createdBy
+      undefined
     );
   }
 

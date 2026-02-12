@@ -62,8 +62,7 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(false);
+  // selectedProduct removed
   const [activePaymentMethod, setActivePaymentMethod] = useState<string | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
@@ -106,7 +105,6 @@ export default function POSPage() {
       return;
     }
 
-    setLoading(true);
     try {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -121,8 +119,6 @@ export default function POSPage() {
       setProducts(data || []);
     } catch (error) {
       console.error("Error searching products:", error);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -141,7 +137,7 @@ export default function POSPage() {
       setCart([
         ...cart,
         {
-          id: `cart-${Date.now()}`,
+          id: `cart-${crypto.randomUUID()}`,
           product_id: product.id,
           product_name: product.name,
           generic_name: product.generic_name,
@@ -161,7 +157,6 @@ export default function POSPage() {
 
     setSearchQuery("");
     setProducts([]);
-    setSelectedProduct(null);
   };
 
   // Update quantity
@@ -219,7 +214,7 @@ export default function POSPage() {
         .from("invoices")
         .insert([
           {
-            invoice_number: `INV-${Date.now()}`,
+            invoice_number: `INV-${(crypto.randomUUID().split('-')[0] ?? '').toUpperCase()}`,
             warehouse_id: "550e8400-e29b-41d4-a716-446655440001", // Default warehouse
             user_id: "cashier-001", // Default user
             status: "paid",

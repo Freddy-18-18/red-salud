@@ -32,7 +32,7 @@ export default function MobileSignaturePage() {
                 router.push("/login/medico");
                 return;
             }
-            setCurrentUser(user as Record<string, unknown>);
+            setCurrentUser(user as unknown as Record<string, unknown>);
             setIsLoading(false);
 
             if (targetUid && user.id !== targetUid) {

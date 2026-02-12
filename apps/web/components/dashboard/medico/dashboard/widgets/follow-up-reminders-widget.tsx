@@ -166,6 +166,7 @@ export function FollowUpRemindersWidget({
             if (apt.status !== "completed") return;
 
             const patientId = apt.patient_id;
+            if (!patientId) return;
             const aptDate = new Date(`${apt.appointment_date}T${apt.appointment_time || "00:00:00"}`);
 
             const existing = patientLastVisit.get(patientId);

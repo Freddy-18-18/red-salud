@@ -29,7 +29,7 @@ const modeConfig = {
   }
 };
 
-export function SidebarModeSelector(): JSX.Element {
+export function SidebarModeSelector() {
   const { mode, setMode } = useSidebarState();
   const [isOpen, setIsOpen] = useState(false);
 

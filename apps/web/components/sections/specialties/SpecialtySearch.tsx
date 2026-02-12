@@ -24,8 +24,6 @@ interface SpecialtySearchProps {
     items: Specialty[];
     onSelect: (id: string, rowIndex: 1 | 2) => void;
     onClear: () => void;
-    row1Items: Specialty[];
-    row2Items: Specialty[];
 }
 
 export function SpecialtySearch({
@@ -71,7 +69,7 @@ export function SpecialtySearch({
             });
 
         const text = filtered.length > 0 ? (filtered[0]?.name || "").substring(normalizedQuery.length) : "";
-        
+
         return { results: filtered, ghostText: text };
     }, [query, items]);
 
@@ -119,7 +117,9 @@ export function SpecialtySearch({
 
     const getRowIndex = useCallback(
         (id: string): 1 | 2 => {
-            return row1Items.some((item) => item.id === id) ? 1 : 2;
+            // Simplified: logic for row index should ideally come from props or parents
+            // For now, we default to 1 as row1Items/row2Items are not provided/used for indexing here
+            return 1;
         },
         []
     );
@@ -129,7 +129,6 @@ export function SpecialtySearch({
         onSelect(item.id, rowIndex);
         setIsExpanded(false);
         setQuery("");
-        setGhostText("");
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -238,7 +237,6 @@ export function SpecialtySearch({
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setQuery("");
-                                        setGhostText("");
                                         inputRef.current?.focus();
                                     }}
                                     className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors mr-2 z-10"

@@ -25,17 +25,16 @@ export default function DashboardPacientePage() {
   const { t } = useI18n();
 
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | undefined>();
 
   // Hooks para datos del dashboard
-  const { stats, loadAllStats } = useDashboardStats(userId);
+  const { stats, loadAllStats } = useDashboardStats();
   const {
     recentActivities,
     upcomingAppointments,
     latestMetrics,
     activeMedications,
     loadAllData,
-  } = useDashboardData(userId);
+  } = useDashboardData();
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -48,8 +47,6 @@ export default function DashboardPacientePage() {
         router.push("/login");
         return;
       }
-
-      setUserId(user.id);
 
       // Cargar perfil desde Redux si no está cargado
       if (profileState.status === "idle") {

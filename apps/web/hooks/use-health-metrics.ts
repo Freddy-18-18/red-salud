@@ -32,7 +32,7 @@ export function useHealthMetricTypes() {
   useEffect(() => {
     const loadMetricTypes = async () => {
       const result = await getHealthMetricTypes();
-      if (result.success) {
+      if (result.success && result.data) {
         setMetricTypes(result.data);
       }
       setLoading(false);
@@ -68,7 +68,7 @@ export function usePatientHealthMetrics(
       const result = await getPatientHealthMetrics(patientId, filters);
       if (!cancelled) {
         if (result.success) {
-          setMetrics(result.data);
+          setMetrics(result.data || []); // Fallback to empty array
         } else {
           setError(String(result.error) || 'Error loading metrics');
         }
@@ -159,7 +159,7 @@ export function useMetricTrend(
     const loadTrend = async () => {
       setLoading(true);
       const result = await getMetricTrend(patientId, metricTypeId, days);
-      if (result.success) {
+      if (result.success && result.data) {
         setTrend(result.data);
       }
       setLoading(false);
@@ -185,7 +185,7 @@ export function usePatientHealthGoals(patientId: string | undefined, status?: st
       setLoading(true);
       const result = await getPatientHealthGoals(patientId, status);
       if (!cancelled) {
-        if (result.success) {
+        if (result.success && result.data) {
           setGoals(result.data);
         }
         setLoading(false);
@@ -268,7 +268,7 @@ export function usePatientMeasurementReminders(patientId: string | undefined) {
       setLoading(true);
       const result = await getPatientMeasurementReminders(patientId);
       if (!cancelled) {
-        if (result.success) {
+        if (result.success && result.data) {
           setReminders(result.data);
         }
         setLoading(false);

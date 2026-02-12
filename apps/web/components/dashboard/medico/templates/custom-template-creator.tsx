@@ -116,7 +116,13 @@ export function CustomTemplateCreator({
     const newFields = [...fields];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= fields.length) return;
-    [newFields[index], newFields[targetIndex]] = [newFields[targetIndex], newFields[index]];
+    const currentField = newFields[index];
+    const targetField = newFields[targetIndex];
+
+    if (!currentField || !targetField) return;
+
+    newFields[index] = targetField;
+    newFields[targetIndex] = currentField;
     setFields(newFields);
   };
 
@@ -127,7 +133,7 @@ export function CustomTemplateCreator({
       id: getTemplateId(),
       name: templateName,
       description: templateDescription,
-      category: templateCategory as typeof StructuredTemplate.prototype.category,
+      category: templateCategory as StructuredTemplate['category'],
       icon: 'FileText',
       color: 'blue',
       author: 'custom',

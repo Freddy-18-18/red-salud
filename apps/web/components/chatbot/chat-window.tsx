@@ -235,12 +235,12 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
         setShowSuggestions(false);
         // Auto submit
         setTimeout(() => {
-            handleSubmit(new Event('submit') as React.FormEvent, question);
+            handleSubmit(null, question);
         }, 100);
     };
 
-    const handleSubmit = async (e: React.FormEvent, overrideInput?: string) => {
-        e.preventDefault();
+    const handleSubmit = async (e: React.FormEvent | null, overrideInput?: string) => {
+        if (e) e.preventDefault();
         const messageText = overrideInput || input.trim();
         if (!messageText || isLoading) return;
 
@@ -484,7 +484,7 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
                             {!isAtBottom && (
                                 <div className="sticky bottom-4 flex justify-center w-full pointer-events-none">
                                     <Button
-                                        size="xs"
+                                        size="icon-sm"
                                         variant="secondary"
                                         className="rounded-full shadow-lg pointer-events-auto h-7 text-[10px]"
                                         onClick={() => scrollBottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
@@ -505,7 +505,7 @@ export function ChatWindow({ isOpen, onClose, persona = "default", context, sugg
                             >
                                 <p className="text-xs text-muted-foreground font-medium">{t("suggestions_label")}</p>
                                 <div className="flex flex-wrap gap-2">
-                                    {effectiveSuggestions.slice(0, 4).map((question, i) => (
+                                    {effectiveSuggestions?.slice(0, 4).map((question, i) => (
                                         <button
                                             key={i}
                                             onClick={() => handleSuggestionClick(question)}

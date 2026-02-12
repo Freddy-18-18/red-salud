@@ -128,7 +128,7 @@ const QUICK_DATES = [
  */
 function parseLocalDate(dateString: string): Date {
     // Forzar interpretación local agregando T00:00:00 sin Z
-    const [year, month, day] = dateString.split('-').map(Number);
+    const [year = 0, month = 1, day = 1] = dateString.split('-').map(Number);
     return new Date(year, month - 1, day);
 }
 

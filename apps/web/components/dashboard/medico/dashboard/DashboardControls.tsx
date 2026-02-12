@@ -63,6 +63,7 @@ interface DashboardControlsProps {
  * />
  */
 export function DashboardControls({
+  mode,
   onResetLayout,
   hiddenWidgets = [],
   onToggleWidget,

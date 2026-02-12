@@ -99,7 +99,7 @@ export class BankingManager {
       closing_balance_ves: 0,
       transactions_count: accountTransactions.length,
       discrepancies: [],
-      reconciled_by,
+      reconciled_by: reconciledBy,
       reconciled_at: new Date(),
       created_at: new Date(),
     };

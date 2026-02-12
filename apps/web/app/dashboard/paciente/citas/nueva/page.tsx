@@ -63,7 +63,7 @@ export default function NuevaCitaPage() {
 
     const result = await create(userId, {
       doctor_id: selectedDoctor,
-      appointment_date: selectedDate.toISOString().split("T")[0],
+      appointment_date: selectedDate.toISOString().substring(0, 10),
       appointment_time: selectedTime,
       consultation_type: consultationType,
       reason: reason || undefined,

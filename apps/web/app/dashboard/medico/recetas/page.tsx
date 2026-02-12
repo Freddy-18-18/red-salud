@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -55,17 +55,21 @@ import {
   constructRecipeData,
   constructRecipeSettings,
   generateRecipeHtml,
-  downloadRecipePdf
+  downloadRecipePdf,
+  type RecipeInput
 } from "@/lib/recipe-utils";
 import { getDoctorRecipeSettings, DoctorRecipeSettings } from "@/lib/supabase/services/recipe-settings";
+import { type DoctorInfo } from "@/components/dashboard/recetas/recipe-preview";
 import { toast } from "sonner";
 import { printContent } from "@/lib/print-utils";
+import { cn } from "@red-salud/core/utils";
 
 export default function RecipesListPage() {
   const [recipes, setRecipes] = useState<Prescription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
+  const [isPreparingAction, setIsPreparingAction] = useState(false);
 
   // State for preview modal
   const [selectedRecipe, setSelectedRecipe] = useState<Prescription | null>(null);
@@ -82,7 +86,7 @@ export default function RecipesListPage() {
 
   // Cache for settings/profile to avoid refetching on every click
   const [recipeSettings, setRecipeSettings] = useState<DoctorRecipeSettings | null>(null);
-  const [doctorProfile, setDoctorProfile] = useState<Record<string, unknown> | null>(null);
+  const [doctorProfile, setDoctorProfile] = useState<DoctorInfo | null>(null);
 
   const fetchSettingsAndProfile = useCallback(async (uid: string) => {
     try {
@@ -248,7 +252,7 @@ export default function RecipesListPage() {
       toast.error("Cargando configuración...");
       return null;
     }
-    const data = constructRecipeData(recipe, doctorProfile, recipeSettings);
+    const data = constructRecipeData(recipe as unknown as RecipeInput, doctorProfile, recipeSettings);
     const settings = constructRecipeSettings(recipeSettings);
     return { data, settings };
   }, [recipeSettings, doctorProfile]);
@@ -521,8 +525,9 @@ export default function RecipesListPage() {
                                       className="h-9 w-9 text-gray-600 hover:text-gray-700 hover:bg-gray-100"
                                       onClick={() => handlePrint(recipe)}
                                       title="Imprimir Receta"
+                                      disabled={isPreparingAction}
                                     >
-                                      <Printer className="h-5 w-5" />
+                                      <Printer className={cn("h-5 w-5", isPreparingAction && "animate-pulse")} />
                                     </Button>
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
@@ -639,7 +644,7 @@ export default function RecipesListPage() {
         <RecipeViewerModal
           open={isViewModalOpen}
           onOpenChange={setIsViewModalOpen}
-          data={selectedRecipe && recipeSettings && doctorProfile ? constructRecipeData(selectedRecipe, doctorProfile, recipeSettings) : null}
+          data={selectedRecipe && recipeSettings && doctorProfile ? constructRecipeData(selectedRecipe as unknown as RecipeInput, doctorProfile, recipeSettings) : null}
           settings={recipeSettings ? constructRecipeSettings(recipeSettings) : null}
         />
       </div>

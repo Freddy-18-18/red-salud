@@ -144,8 +144,11 @@ export function SecurityQuestionsModal({ isOpen, onClose }: SecurityQuestionsMod
                         value={q.question}
                         onChange={(e) => {
                           const newQuestions = [...questions];
-                          newQuestions[index].question = e.target.value;
-                          setQuestions(newQuestions);
+                          const target = newQuestions[index];
+                          if (target) {
+                            target.question = e.target.value;
+                            setQuestions(newQuestions);
+                          }
                         }}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                         required
@@ -168,8 +171,11 @@ export function SecurityQuestionsModal({ isOpen, onClose }: SecurityQuestionsMod
                         value={q.answer}
                         onChange={(e) => {
                           const newQuestions = [...questions];
-                          newQuestions[index].answer = e.target.value;
-                          setQuestions(newQuestions);
+                          const target = newQuestions[index];
+                          if (target) {
+                            target.answer = e.target.value;
+                            setQuestions(newQuestions);
+                          }
                         }}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                         placeholder="Tu respuesta"

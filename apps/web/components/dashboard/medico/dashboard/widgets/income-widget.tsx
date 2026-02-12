@@ -195,7 +195,7 @@ export function IncomeWidget({
             });
 
             data.push({
-                name: monthNames[monthDate.getMonth()],
+                name: monthNames[monthDate.getMonth()] ?? '',
                 total: monthCompleted.length * consultaPrice,
             });
         }

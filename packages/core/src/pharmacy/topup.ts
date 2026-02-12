@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   TopupTransaction,
   TopupOperator,
+  TopupOperatorSchema,
   TopupStatus,
 } from '@red-salud/types';
 
@@ -21,7 +22,7 @@ export interface TopupResult {
 }
 
 export class TopupManager {
-  private operators: TopupOperator[] = [];
+  private operators: TopupOperatorSchema[] = [];
   private transactions: TopupTransaction[] = [];
 
   constructor() {
@@ -33,7 +34,7 @@ export class TopupManager {
   async loadOperators(): Promise<void> {
     const stored = localStorage.getItem('topup_operators');
     if (stored) {
-      this.operators = JSON.parse(stored) as TopupOperator[];
+      this.operators = JSON.parse(stored) as TopupOperatorSchema[];
     }
   }
 
@@ -176,11 +177,11 @@ export class TopupManager {
     return { success: true, transaction };
   }
 
-  getOperators(): TopupOperator[] {
+  getOperators(): TopupOperatorSchema[] {
     return this.operators.filter((o) => o.is_active);
   }
 
-  getOperator(operatorId: string): TopupOperator | undefined {
+  getOperator(operatorId: string): TopupOperatorSchema | undefined {
     return this.operators.find((o) => o.id === operatorId);
   }
 

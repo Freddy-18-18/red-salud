@@ -1,11 +1,22 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
 
-export default function CallbackPage() {
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+        <p className="text-muted-foreground">Procesando inicio de sesión...</p>
+      </div>
+    </div>
+  );
+}
+
+function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -70,14 +81,7 @@ export default function CallbackPage() {
   }, [handleOAuthCallback]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Procesando inicio de sesión...</p>
-        </div>
-      </div>
-    );
+    return <LoadingFallback />;
   }
 
   if (error) {
@@ -113,4 +117,12 @@ export default function CallbackPage() {
   }
 
   return null;
+}
+
+export default function CallbackPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <CallbackContent />
+    </Suspense>
+  );
 }

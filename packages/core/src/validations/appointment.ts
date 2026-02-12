@@ -51,7 +51,7 @@ const baseAppointmentSchema = z.object({
     enviar_recordatorio: z.boolean().default(true),
 
     // Campos avanzados
-    diagnostico_preliminar: z.string().optional().or(z.literal("")).default(""),
+    diagnostico_preliminar: z.string().default(""),
     antecedentes_relevantes: z.string().optional().or(z.literal("")).default(""),
     medicamentos_actuales: z.string().optional().or(z.literal("")).default(""),
     alergias: z.string().optional().or(z.literal("")).default(""),
@@ -67,9 +67,16 @@ export const appointmentSchema = baseAppointmentSchema.refine((data) => {
     const todayStr = now.toISOString().split("T")[0];
 
     if (data.fecha === todayStr) {
-        const [hours, minutes] = data.hora.split(":").map(Number);
+        const [hoursStr = "0", minutesStr = "0"] = data.hora.split(":");
+        const hours = Number(hoursStr);
+        const minutes = Number(minutesStr);
         const selectedTime = new Date(now);
-        selectedTime.setHours(hours, minutes, 0, 0);
+        selectedTime.setHours(
+            Number.isFinite(hours) ? hours : 0,
+            Number.isFinite(minutes) ? minutes : 0,
+            0,
+            0,
+        );
 
         return selectedTime > new Date(now.getTime() - 60000);
     }
@@ -93,9 +100,16 @@ export const appointmentSchemaSimple = baseAppointmentSchema
         const todayStr = now.toISOString().split("T")[0];
 
         if (data.fecha === todayStr) {
-            const [hours, minutes] = data.hora.split(":").map(Number);
+            const [hoursStr = "0", minutesStr = "0"] = data.hora.split(":");
+            const hours = Number(hoursStr);
+            const minutes = Number(minutesStr);
             const selectedTime = new Date(now);
-            selectedTime.setHours(hours, minutes, 0, 0);
+            selectedTime.setHours(
+                Number.isFinite(hours) ? hours : 0,
+                Number.isFinite(minutes) ? minutes : 0,
+                0,
+                0,
+            );
 
             return selectedTime > new Date(now.getTime() - 60000);
         }

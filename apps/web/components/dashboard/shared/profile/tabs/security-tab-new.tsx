@@ -394,14 +394,12 @@ export function SecurityTabNew({ userEmail, userId }: SecurityTabProps) {
       <ChangePasswordModal
         isOpen={activeModal === "password"}
         onClose={() => setActiveModal(null)}
-        userEmail={userEmail}
       />
       <Setup2FAModal
         isOpen={activeModal === "2fa"}
         onClose={() => {
           setActiveModal(null);
         }}
-        has2FA={securityState.has2FA}
       />
       <VerifyPhoneModal
         isOpen={activeModal === "phone"}

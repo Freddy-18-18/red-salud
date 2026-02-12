@@ -204,14 +204,19 @@ export async function getMetricStats(
       }
     }
 
-    const cambio_porcentual = valores.length >= 2
-      ? ((valores[0] - valores[valores.length - 1]) / valores[valores.length - 1]) * 100
-      : 0;
+    let cambio_porcentual = 0;
+    if (valores.length >= 2) {
+      const primerValor = valores[0];
+      const ultimoValorArray = valores[valores.length - 1];
+      if (primerValor !== undefined && ultimoValorArray !== undefined && ultimoValorArray !== 0) {
+        cambio_porcentual = ((primerValor - ultimoValorArray) / ultimoValorArray) * 100;
+      }
+    }
 
     // Verificar si está en rango normal
     const { data: metricType } = await getHealthMetricType(metricTypeId);
     let en_rango_normal = true;
-    if (metricType && typeof metricType.rango_normal_min === 'number' && typeof metricType.rango_normal_max === 'number') {
+    if (metricType && typeof metricType.rango_normal_min === 'number' && typeof metricType.rango_normal_max === 'number' && ultimo_valor !== undefined) {
       en_rango_normal = ultimo_valor >= metricType.rango_normal_min && ultimo_valor <= metricType.rango_normal_max;
     }
 

@@ -116,17 +116,24 @@ const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasProps>(
             canvas: HTMLCanvasElement
         ) => {
             const rect = canvas.getBoundingClientRect();
-            let clientX, clientY;
+            let clientX = 0;
+            let clientY = 0;
 
-            if ("touches" in e && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else if (!("touches" in e)) { // Ensure it's not a touch event if accessing as MouseEvent, though TS handle this via type narrowing usually
-                // Simplify logic
-                clientX = (e as React.MouseEvent).clientX;
-                clientY = (e as React.MouseEvent).clientY;
+            if ("touches" in e) {
+                const touchEvent = e as unknown as React.TouchEvent;
+                if (touchEvent.touches && touchEvent.touches.length > 0) {
+                    const touch = touchEvent.touches[0];
+                    if (touch) {
+                        clientX = touch.clientX;
+                        clientY = touch.clientY;
+                    }
+                } else {
+                    return { x: 0, y: 0 };
+                }
             } else {
-                return { x: 0, y: 0 };
+                const mouseEvent = e as React.MouseEvent;
+                clientX = mouseEvent.clientX;
+                clientY = mouseEvent.clientY;
             }
 
             return {

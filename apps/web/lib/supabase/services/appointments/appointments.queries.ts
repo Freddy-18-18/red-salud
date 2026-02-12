@@ -257,7 +257,11 @@ export async function getAvailableTimeSlots(
     if (blocksError) throw blocksError;
 
     const toMinutes = (value: string) => {
-      const [hours, minutes] = value.split(":").map((part) => Number(part));
+      const [hoursStr = '0', minutesStr = '0'] = value.split(':');
+      const parsedHours = Number(hoursStr);
+      const parsedMinutes = Number(minutesStr);
+      const hours = Number.isFinite(parsedHours) ? parsedHours : 0;
+      const minutes = Number.isFinite(parsedMinutes) ? parsedMinutes : 0;
       return hours * 60 + minutes;
     };
 

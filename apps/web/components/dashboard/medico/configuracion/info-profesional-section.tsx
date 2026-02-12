@@ -214,7 +214,7 @@ export function InfoProfesionalSection() {
                 condiciones_tratadas: [...prev.condiciones_tratadas, condicion.trim()]
             }));
         }
-        setCondicionInput(""); // Clear input if it was used
+
     };
 
     const removeCondicion = (condicion: string) => {
@@ -534,6 +534,7 @@ export function InfoProfesionalSection() {
                                     platform.id === 'facebook' ? Facebook :
                                         platform.id === 'linkedin' ? Linkedin :
                                             platform.id === 'twitter' ? Twitter : Globe;
+                                const socialUrl = data.redes_sociales[platform.id];
 
                                 return (
                                     <div key={platform.id} className="flex items-center gap-3">
@@ -541,19 +542,19 @@ export function InfoProfesionalSection() {
                                         {isEditing ? (
                                             <Input
                                                 placeholder={platform.placeholder}
-                                                value={data.redes_sociales[platform.id] || ""}
+                                                value={socialUrl || ""}
                                                 onChange={(e) => handleSocialChange(platform.id, e.target.value)}
                                                 className="h-8 text-sm dark:bg-gray-800"
                                             />
                                         ) : (
-                                            data.redes_sociales[platform.id] ? (
+                                            socialUrl ? (
                                                 <a
-                                                    href={data.redes_sociales[platform.id].startsWith('http') ? data.redes_sociales[platform.id] : `https://${platform.prefix}${data.redes_sociales[platform.id]}`}
+                                                    href={socialUrl.startsWith('http') ? socialUrl : `https://${platform.prefix}${socialUrl}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-sm text-blue-600 hover:underline truncate"
                                                 >
-                                                    {data.redes_sociales[platform.id]}
+                                                    {socialUrl}
                                                 </a>
                                             ) : (
                                                 <span className="text-sm text-gray-400 italic">No agregado</span>

@@ -74,7 +74,7 @@ export default function VentasPage() {
 
   useEffect(() => {
     filterVentas();
-  }, [ventas, searchTerm, selectedEstado, selectedMetodoPago, filterVentas]);
+  }, [filterVentas]);
 
   const loadVentas = useCallback(async () => {
     try {

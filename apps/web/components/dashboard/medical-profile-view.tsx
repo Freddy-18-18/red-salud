@@ -24,6 +24,14 @@ interface MedicalProfileViewProps {
   isShared?: boolean;
 }
 
+interface MedicalDocument {
+  id: string;
+  document_name: string;
+  document_type: string;
+  document_url?: string;
+  created_at?: string;
+}
+
 export default function MedicalProfileView({
   userId,
   isOwner,
@@ -289,7 +297,7 @@ export default function MedicalProfileView({
             <CardContent>
               {documents && documents.length > 0 ? (
                 <div className="space-y-3">
-                  {documents.map((doc: { id: string; document_name: string; document_type: string; document_url?: string; created_at?: string }) => (
+                  {(documents as MedicalDocument[]).map((doc) => (
                     <div
                       key={doc.id}
                       className="flex items-center justify-between p-3 border rounded-lg"
@@ -300,7 +308,7 @@ export default function MedicalProfileView({
                           <p className="font-medium">{doc.document_name}</p>
                           <p className="text-sm text-muted-foreground">
                             {doc.document_type} •{" "}
-                            {new Date(doc.created_at).toLocaleDateString("es-ES")}
+                            {doc.created_at ? new Date(doc.created_at).toLocaleDateString("es-ES") : ""}
                           </p>
                         </div>
                       </div>

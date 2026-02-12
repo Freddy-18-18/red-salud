@@ -7,11 +7,10 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Save, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@red-salud/ui";
-import { supabase } from "@/lib/supabase/client";
 import { cn } from "@red-salud/core/utils";
 
 // Componentes especializados
@@ -23,233 +22,25 @@ import { FieldWithContext } from "./FieldWithContext";
 import { ProfileImpactMetrics } from "./ProfileImpactMetrics";
 import { ProfileLevelBadge } from "./ProfileLevelBadge";
 
-import type { ProfileData, ProfileCompleteness } from "./types";
+// Hook
+import { useProfileSectionV2 } from "./use-profile-section-v2";
 
 /**
  * Sección de Perfil Médico V2 - Experiencia Profesional Premium
  */
 export function ProfileSectionV2() {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const {
+    profile,
+    completeness,
+    loading,
+    saving,
+    updateProfile,
+    handleSave,
+    uploadAvatar,
+    removeAvatar,
+  } = useProfileSectionV2();
+
   const [showPreview, setShowPreview] = useState(true);
-  const [profile, setProfile] = useState<ProfileData>({
-    nombre_completo: "",
-    email: "",
-    telefono: "+58 ",
-    cedula: "",
-    especialidad: "",
-    especialidades_adicionales: [],
-    biografia: "",
-    avatar_url: null,
-    is_verified: false,
-    especialidades_permitidas: [],
-  });
-
-  const [completeness, setCompleteness] = useState<ProfileCompleteness>({
-    percentage: 0,
-    level: "basic",
-    missingFields: [],
-    nextLevelRequirements: [],
-  });
-
-  /**
-   * Calcula la completitud del perfil
-   * Nota: Especialidades adicionales son opcionales y no afectan el 100%
-   */
-  const calculateCompleteness = useCallback((data: ProfileData): ProfileCompleteness => {
-    const fields = {
-      avatar_url: { weight: 20, label: "Foto profesional", required: true },
-      nombre_completo: { weight: 10, label: "Nombre completo", required: true },
-      email: { weight: 5, label: "Correo electrónico", required: true },
-      telefono: { weight: 15, label: "Teléfono", required: true },
-      cedula: { weight: 10, label: "Cédula", required: true },
-      biografia: { weight: 40, label: "Biografía profesional", required: true },
-      // Especialidades adicionales son opcionales (no requeridas para 100%)
-      especialidades_adicionales: { weight: 0, label: "Especialidades adicionales", required: false },
-    };
-
-    let totalWeight = 0;
-    const missing: string[] = [];
-
-    Object.entries(fields).forEach(([key, config]) => {
-      const value = data[key as keyof ProfileData];
-
-      if (key === "biografia") {
-        if (value && typeof value === "string" && value.length >= 150) {
-          totalWeight += config.weight;
-        } else if (config.required) {
-          missing.push(config.label);
-        }
-      } else if (key === "especialidades_adicionales") {
-        // Opcional: no suma al peso total ni se marca como faltante
-        return;
-      } else if (value) {
-        totalWeight += config.weight;
-      } else if (config.required) {
-        missing.push(config.label);
-      }
-    });
-
-    // Determinar nivel
-    let level: "basic" | "complete" | "professional" | "elite" = "basic";
-    if (totalWeight >= 95) level = "elite";
-    else if (totalWeight >= 80) level = "professional";
-    else if (totalWeight >= 60) level = "complete";
-
-    // Requisitos para siguiente nivel
-    const nextRequirements: string[] = [];
-    if (level === "basic") {
-      nextRequirements.push("Completa tu biografía (mín. 150 caracteres)");
-      nextRequirements.push("Agrega una foto profesional");
-    } else if (level === "complete") {
-      nextRequirements.push("Agrega especialidades adicionales (opcional)");
-      nextRequirements.push("Mejora tu biografía");
-    } else if (level === "professional") {
-      nextRequirements.push("Agrega especialidades adicionales (opcional)");
-      nextRequirements.push("Mantén tu perfil actualizado");
-    }
-
-    return {
-      percentage: totalWeight,
-      level,
-      missingFields: missing,
-      nextLevelRequirements: nextRequirements,
-    };
-  }, []);
-
-  /**
-   * Carga el perfil del médico
-   */
-  const loadProfile = useCallback(async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      const { data: doctorData } = await supabase
-        .from("doctor_details")
-        .select(`
-          *,
-          especialidad:specialties!fk_doctor_specialty(id, name)
-        `)
-        .eq("profile_id", user.id)
-        .single();
-
-      // Extraer especialidades adicionales del SACS
-      const sacsPostgrados = doctorData?.sacs_data?.postgrados || [];
-      const especialidadesAdicionales = sacsPostgrados
-        .map((pg: { postgrado: string }) => pg.postgrado)
-        .filter((pg: string) => pg !== doctorData?.sacs_data?.especialidad_display);
-
-      const profileState: ProfileData = {
-        nombre_completo: profileData?.nombre_completo || "",
-        email: user.email || "",
-        telefono: profileData?.telefono || "+58 ",
-        cedula: profileData?.cedula || "",
-        especialidad: doctorData?.especialidad?.name || "",
-        especialidades_adicionales: especialidadesAdicionales,
-        biografia: doctorData?.biografia || "",
-        avatar_url: profileData?.avatar_url || null,
-        is_verified: doctorData?.verified || false,
-        especialidades_permitidas: [
-          doctorData?.sacs_data?.especialidad_display,
-          ...(doctorData?.sacs_data?.postgrados?.map((pg: { postgrado: string }) => pg.postgrado) || [])
-        ].filter(Boolean) || [],
-      };
-
-      setProfile(profileState);
-      setCompleteness(calculateCompleteness(profileState));
-    } catch (error) {
-      console.error("[ProfileSectionV2] Error loading profile:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [calculateCompleteness]);
-
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
-
-  /**
-   * Actualiza el perfil y recalcula completitud
-   */
-  const updateProfile = (updates: Partial<ProfileData>) => {
-    const newProfile = { ...profile, ...updates };
-    setProfile(newProfile);
-    setCompleteness(calculateCompleteness(newProfile));
-  };
-
-  /**
-   * Guarda los cambios
-   */
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No hay usuario autenticado");
-
-      // Actualizar perfil básico
-      const profileUpdate: Record<string, string | boolean> = {
-        telefono: profile.telefono,
-      };
-
-      if (!profile.is_verified) {
-        profileUpdate.nombre_completo = profile.nombre_completo;
-      }
-
-      await supabase
-        .from("profiles")
-        .update(profileUpdate)
-        .eq("id", user.id);
-
-      // Preparar actualización de doctor_details
-      const doctorUpdate: Record<string, string | number | boolean | null> = {
-        biografia: profile.biografia,
-      };
-
-      // Solo actualizar especialidades si el médico NO está verificado con SACS
-      if (!profile.is_verified) {
-        // Buscar el ID de la especialidad principal
-        if (profile.especialidad) {
-          const { data: specialtyData } = await supabase
-            .from("specialties")
-            .select("id")
-            .eq("name", profile.especialidad)
-            .maybeSingle();
-
-          if (specialtyData) {
-            doctorUpdate.specialty_id = specialtyData.id;
-          }
-        }
-
-        // Guardar especialidades adicionales
-        if (profile.especialidades_adicionales?.length > 0) {
-          doctorUpdate.subespecialidades = profile.especialidades_adicionales;
-        } else {
-          doctorUpdate.subespecialidades = [];
-        }
-      }
-
-      // Actualizar detalles del médico
-      await supabase
-        .from("doctor_details")
-        .update(doctorUpdate)
-        .eq("profile_id", user.id);
-
-      // Mostrar éxito
-      // TODO: Agregar toast de éxito
-    } catch (error) {
-      console.error("[ProfileSectionV2] Error saving:", error);
-      // TODO: Agregar toast de error
-    } finally {
-      setSaving(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -344,7 +135,8 @@ export function ProfileSectionV2() {
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-800">
               <ProfessionalAvatarUpload
                 currentUrl={profile.avatar_url}
-                onUpload={(url) => updateProfile({ avatar_url: url })}
+                onUpload={uploadAvatar}
+                onRemove={removeAvatar}
                 userName={profile.nombre_completo}
               />
             </div>

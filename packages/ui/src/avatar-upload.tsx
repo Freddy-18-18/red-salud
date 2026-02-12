@@ -1,13 +1,14 @@
 /**
  * @file avatar-upload.tsx
  * @description Componente de subida de avatar con preview, recorte y validación.
- * Sube imágenes a Supabase Storage.
+ * La función de subida se inyecta vía prop `uploadImage` para desacoplar del backend.
  * @module UI/AvatarUpload
  * 
  * @example
  * <AvatarUpload 
  *   currentUrl="/path/to/avatar.jpg"
  *   onUpload={(url) => console.log('New URL:', url)}
+ *   uploadImage={async (file) => { // upload to your backend; return public URL }}
  *   userName="Dr. García"
  * />
  */
@@ -17,7 +18,6 @@
 import { useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Camera, Loader2, X } from "lucide-react";
-import { supabase } from "./lib/supabase/client";
 import { cn } from "./lib/utils";
 
 /**
@@ -26,8 +26,14 @@ import { cn } from "./lib/utils";
 interface AvatarUploadProps {
     /** URL actual del avatar */
     currentUrl?: string | null;
-    /** Callback cuando se sube una nueva imagen */
+    /** Callback cuando se sube una nueva imagen (recibe la URL pública) */
     onUpload?: (url: string) => void;
+    /**
+     * Función inyectada para subir la imagen al backend.
+     * Recibe el File y debe devolver la URL pública resultante.
+     * Si no se provee, el botón de subida se deshabilita.
+     */
+    uploadImage?: (file: File) => Promise<string>;
     /** Nombre del usuario (para el fallback) */
     userName?: string;
     /** Tamaño del avatar */
@@ -53,11 +59,13 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 /**
- * Componente de subida de avatar con preview
+ * Componente de subida de avatar con preview.
+ * Requiere `uploadImage` para funcionar — si no se pasa, el botón queda deshabilitado.
  */
 export function AvatarUpload({
     currentUrl,
     onUpload,
+    uploadImage,
     userName = "Usuario",
     size = "lg",
     disabled = false,
@@ -67,6 +75,8 @@ export function AvatarUpload({
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    const isUploadDisabled = disabled || uploading || !uploadImage;
 
     /** Obtiene las iniciales del nombre */
     const getInitials = (name: string): string => {
@@ -96,7 +106,7 @@ export function AvatarUpload({
      */
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        if (!file || !uploadImage) return;
 
         // Validar archivo
         const validationError = validateFile(file);
@@ -111,57 +121,10 @@ export function AvatarUpload({
         const objectUrl = URL.createObjectURL(file);
         setPreviewUrl(objectUrl);
 
-        // Subir a Supabase
-        await uploadFile(file);
-    };
-
-    /**
-     * Sube el archivo a Supabase Storage
-     */
-    const uploadFile = async (file: File) => {
+        // Subir usando la función inyectada
         setUploading(true);
-        setError(null);
-
         try {
-            // Obtener usuario actual
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                throw new Error("No hay usuario autenticado");
-            }
-
-            // Generar nombre archivo único
-            const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
-            const fileName = `${Date.now()}.${fileExt}`;
-            // Usar estructura de carpetas: avatars/USER_ID/filename
-            // Esto coincide con la política RLS: (storage.foldername(name))[2] = auth.uid()
-            const filePath = `avatars/${user.id}/${fileName}`;
-
-            // Subir a Supabase Storage
-            const { error: uploadError } = await supabase.storage
-                .from("profiles")
-                .upload(filePath, file, {
-                    cacheControl: "3600",
-                    upsert: true,
-                });
-
-            if (uploadError) {
-                throw uploadError;
-            }
-
-            // Obtener URL pública
-            const { data: { publicUrl } } = supabase.storage
-                .from("profiles")
-                .getPublicUrl(filePath);
-
-            // Actualizar perfil en la base de datos
-            const { error: updateError } = await supabase
-                .from("profiles")
-                .update({ avatar_url: publicUrl })
-                .eq("id", user.id);
-
-            if (updateError) {
-                console.error("Error updating profile:", updateError);
-            }
+            const publicUrl = await uploadImage(file);
 
             // Notificar al padre
             onUpload?.(publicUrl);
@@ -171,7 +134,6 @@ export function AvatarUpload({
                 URL.revokeObjectURL(previewUrl);
             }
             setPreviewUrl(null);
-
         } catch (err) {
             console.error("Error uploading avatar:", err);
             setError(err instanceof Error ? err.message : "Error al subir la imagen");
@@ -189,15 +151,10 @@ export function AvatarUpload({
      * Abre el selector de archivos
      */
     const handleClick = () => {
-        if (!disabled && !uploading) {
+        if (!isUploadDisabled) {
             inputRef.current?.click();
         }
     };
-
-    /**
-     * Cancela la preview actual
-     */
-
 
     // URL a mostrar (preview > current)
     const displayUrl = previewUrl || currentUrl;
@@ -224,13 +181,13 @@ export function AvatarUpload({
                 <button
                     type="button"
                     onClick={handleClick}
-                    disabled={disabled || uploading}
+                    disabled={isUploadDisabled}
                     className={cn(
                         "absolute bottom-0 right-0 p-2 rounded-full transition-all",
                         "bg-blue-600 text-white hover:bg-blue-700",
                         "shadow-lg border-2 border-white dark:border-gray-900",
-                        disabled && "opacity-50 cursor-not-allowed",
-                        uploading && "opacity-50 cursor-wait"
+                        isUploadDisabled && "opacity-50 cursor-not-allowed",
+                        uploading && "cursor-wait"
                     )}
                     aria-label="Cambiar foto de perfil"
                 >
@@ -245,7 +202,7 @@ export function AvatarUpload({
                 accept={ALLOWED_TYPES.join(",")}
                 onChange={handleFileSelect}
                 className="hidden"
-                disabled={disabled || uploading}
+                disabled={isUploadDisabled}
                 aria-label="Seleccionar imagen de perfil"
             />
 
@@ -258,9 +215,15 @@ export function AvatarUpload({
             )}
 
             {/* Texto de ayuda */}
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                JPG, PNG o WebP • Máx. 5MB
-            </p>
+            {!uploadImage ? (
+                <p className="text-xs text-amber-500 dark:text-amber-400 text-center">
+                    Subida de imagen no configurada
+                </p>
+            ) : (
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    JPG, PNG o WebP • Máx. 5MB
+                </p>
+            )}
         </div>
     );
 }

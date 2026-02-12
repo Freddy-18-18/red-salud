@@ -44,17 +44,6 @@ export function CurrentLocationWidget() {
     const [todaySchedules, setTodaySchedules] = useState<TodaySchedule[]>([]);
     const [currentTime, setCurrentTime] = useState(new Date());
 
-    useEffect(() => {
-        loadTodaySchedules();
-
-        // Actualizar cada minuto para mantener el estado activo correcto
-        const interval = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 60000);
-
-        return () => clearInterval(interval);
-    }, [loadTodaySchedules]);
-
     /**
      * Verifica si algún horario está activo en este momento
      */
@@ -62,10 +51,10 @@ export function CurrentLocationWidget() {
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
         return slots.some(slot => {
-            const [startH, startM] = slot.inicio.split(':').map(Number);
-            const [endH, endM] = slot.fin.split(':').map(Number);
-            const startMinutes = startH * 60 + startM;
-            const endMinutes = endH * 60 + endM;
+            const parts1 = slot.inicio.split(':').map(Number);
+            const parts2 = slot.fin.split(':').map(Number);
+            const startMinutes = (parts1[0] ?? 0) * 60 + (parts1[1] ?? 0);
+            const endMinutes = (parts2[0] ?? 0) * 60 + (parts2[1] ?? 0);
 
             return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
         });
@@ -80,7 +69,7 @@ export function CurrentLocationWidget() {
             if (!user) return;
 
             const today = new Date();
-            const dayKey = DAYS_MAP[today.getDay()];
+            const dayKey = DAYS_MAP[today.getDay()] ?? 'lunes';
 
             // Cargar todos los consultorios con horarios
             const { data: schedulesData, error: schedulesError } = await supabase
@@ -121,13 +110,24 @@ export function CurrentLocationWidget() {
         }
     }, [checkIfCurrentlyActive]);
 
+    useEffect(() => {
+        loadTodaySchedules();
+
+        // Actualizar cada minuto para mantener el estado activo correcto
+        const interval = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000);
+
+        return () => clearInterval(interval);
+    }, [loadTodaySchedules]);
+
     /**
      * Formatea la hora para mostrar
      */
     const formatTime = (time: string) => {
-        const [h, m] = time.split(':');
-        const hour = parseInt(h);
-        return `${hour}:${m}`;
+        const parts = time.split(':');
+        const hour = parseInt(parts[0] ?? '0');
+        return `${hour}:${parts[1] ?? '00'}`;
     };
 
     if (loading) {
@@ -154,6 +154,8 @@ export function CurrentLocationWidget() {
 
     const activeSchedule = todaySchedules.find(s => s.isCurrentlyActive);
     const displaySchedule = activeSchedule || todaySchedules[0];
+
+    if (!displaySchedule) return null;
 
     return (
         <div className="space-y-4">
@@ -206,12 +208,12 @@ export function CurrentLocationWidget() {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         {displaySchedule.slots.map((slot, idx) => {
-                            const isMorning = parseInt(slot.inicio.split(':')[0]) < 14;
+                            const isMorning = parseInt(slot.inicio.split(':')[0] ?? '0') < 14;
                             const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
-                            const [startH, startM] = slot.inicio.split(':').map(Number);
-                            const [endH, endM] = slot.fin.split(':').map(Number);
-                            const startMinutes = startH * 60 + startM;
-                            const endMinutes = endH * 60 + endM;
+                            const sParts = slot.inicio.split(':').map(Number);
+                            const eParts = slot.fin.split(':').map(Number);
+                            const startMinutes = (sParts[0] ?? 0) * 60 + (sParts[1] ?? 0);
+                            const endMinutes = (eParts[0] ?? 0) * 60 + (eParts[1] ?? 0);
                             const isNowActive = currentMinutes >= startMinutes && currentMinutes <= endMinutes;
 
                             return (

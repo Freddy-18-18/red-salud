@@ -11,9 +11,9 @@ export interface CreateTemplateOptions {
   label_size: LabelSize;
   width_mm?: number;
   height_mm?: number;
-  barcode_type: string;
+  barcode_type: LabelTemplate['barcode_type'];
   show_barcode?: boolean;
-  barcode_position?: string;
+  barcode_position?: LabelTemplate['barcode_position'];
   show_product_name?: boolean;
   show_price?: boolean;
   show_expiry_date?: boolean;
@@ -25,7 +25,7 @@ export interface CreateTemplateOptions {
   font_family?: string;
   border_width?: number;
   margin?: number;
-  custom_fields?: Array<{ name: string; position: string; value: string }>;
+  custom_fields?: LabelTemplate['custom_fields'];
   is_default?: boolean;
   warehouse_id?: string;
   created_by: string;
@@ -91,9 +91,9 @@ export class LabelManager {
       label_size: options.label_size,
       width_mm: options.width_mm,
       height_mm: options.height_mm,
-      barcode_type: options.barcode_type as any,
+      barcode_type: options.barcode_type,
       show_barcode: options.show_barcode ?? true,
-      barcode_position: (options.barcode_position as any) || 'bottom',
+      barcode_position: options.barcode_position || 'bottom',
       show_product_name: options.show_product_name ?? true,
       show_price: options.show_price ?? true,
       show_expiry_date: options.show_expiry_date ?? true,
@@ -190,7 +190,7 @@ export class LabelManager {
       printer_name: options.printer_name,
       printer_ip: options.printer_ip,
       status: 'pending',
-      total_items,
+      total_items: totalItems,
       printed_items: 0,
       failed_items: 0,
       created_by: options.created_by,

@@ -245,7 +245,7 @@ export function PerformanceChartWidget({
     // RENDER
     // ------------------------------------------------------------------------
 
-    const renderTabTrigger = (value: TabType, label: string, Icon: React.ElementType) => (
+    const renderTabTrigger = (value: TabType, label: string, Icon: React.ComponentType<{ className?: string }>) => (
         <TabsTrigger
             value={value}
             className="flex items-center gap-1.5 text-[10px] sm:text-xs py-1.5 h-8 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"

@@ -109,7 +109,7 @@ export function UserProfileModalDoctor({
         universidad?: string;
       };
 
-      setFormData({
+      const newFormData: DoctorProfileData = {
         nombre_completo: profile.nombre_completo || sacsData.nombre_completo || userName,
         email: profile.email || userEmail,
         telefono: doctorProfile.professional_phone || "",
@@ -122,8 +122,16 @@ export function UserProfileModalDoctor({
         subespecialidades: "",
         certificaciones: "",
         idiomas: Array.isArray(doctorProfile.languages) ? doctorProfile.languages.join(", ") : "",
-      });
+      };
+
+      // Only update if data changed to prevent infinite loops
+      if (JSON.stringify(formData) !== JSON.stringify(newFormData)) {
+        // Use setTimeout to avoid 'setState synchronously within an effect' warning
+        const timer = setTimeout(() => setFormData(newFormData), 0);
+        return () => clearTimeout(timer);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctorProfile, userName, userEmail]);
 
   const {
@@ -158,7 +166,6 @@ export function UserProfileModalDoctor({
       return { success: false, error: "Usuario no identificado" };
     }
 
-    setIsSaving(true);
     try {
       const response = await fetch("/api/doctor/profile/update", {
         method: "POST",
@@ -194,8 +201,6 @@ export function UserProfileModalDoctor({
           : "Error al conectar con el servidor";
       showNotification(errorMessage, "error");
       return { success: false, error: errorMessage };
-    } finally {
-      setIsSaving(false);
     }
   };
 

@@ -76,7 +76,7 @@ export function PatientSummaryModal({
   const [loading, setLoading] = useState(true);
   const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [medicalHistory, setMedicalHistory] = useState<MedicalHistory | null>(null);
-  const [appointmentHistory, setAppointmentHistory] = useState<Array<{ id: string; fecha: string; tipo_cita: string; estado: string }>>([]);
+  const [appointmentHistory, setAppointmentHistory] = useState<Array<{ id: string; fecha_hora: string; tipo_cita: string; status: string; motivo: string; duracion_minutos?: number; notas_internas?: string }>>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -189,7 +189,16 @@ export function PatientSummaryModal({
         }
 
         console.log("Loaded appointment history:", appointments);
-        setAppointmentHistory(appointments || []);
+        const processedHistory = (appointments || []).map((apt: { id: string; fecha_hora: string; tipo_cita: string; status: string; motivo: string; duracion_minutos?: number; notas_internas?: string }) => ({
+          id: apt.id,
+          fecha_hora: apt.fecha_hora,
+          tipo_cita: apt.tipo_cita,
+          status: apt.status,
+          motivo: apt.motivo,
+          duracion_minutos: apt.duracion_minutos,
+          notas_internas: apt.notas_internas
+        }));
+        setAppointmentHistory(processedHistory);
 
         // Cargar resumen de historial médico
         const { data: records, error: recordsError } = await supabase
@@ -547,7 +556,7 @@ export function PatientSummaryModal({
                           <div>
                             <p className="text-xs text-gray-500">Última Cita</p>
                             <p className="text-sm font-medium">
-                              {format(new Date(appointmentHistory[0].fecha_hora), "dd/MM/yyyy", { locale: es })}
+                              {appointmentHistory[0]?.fecha_hora ? format(new Date(appointmentHistory[0].fecha_hora), "dd/MM/yyyy", { locale: es }) : "N/A"}
                             </p>
                           </div>
                         </>

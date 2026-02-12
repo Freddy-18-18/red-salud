@@ -14,6 +14,7 @@ export interface VenezuelaMapSVGProps {
     onStateSelect?: (stateName: string) => void;
     height?: string;
     className?: string;
+    isLoading?: boolean;
 }
 
 export function VenezuelaMapSVG({
@@ -21,6 +22,7 @@ export function VenezuelaMapSVG({
     onStateSelect,
     height = "500px",
     className,
+    isLoading = false,
 }: VenezuelaMapSVGProps) {
     const [selectedStateId, setSelectedStateId] = useState<string | null>(null);
     const [hoveredStateId, setHoveredStateId] = useState<string | null>(null);

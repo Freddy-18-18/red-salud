@@ -66,11 +66,13 @@ export function useSecretaryPermissions() {
         ? doctors.find(d => d.id === savedDoctorId) || firstDoctor
         : firstDoctor;
 
-      setContext({
-        currentDoctorId: selectedDoctor.id,
-        availableDoctors: doctors,
-        permissions: selectedDoctor.permissions,
-      });
+      if (selectedDoctor) {
+        setContext({
+          currentDoctorId: selectedDoctor.id,
+          availableDoctors: doctors,
+          permissions: selectedDoctor.permissions,
+        });
+      }
 
     } catch (err) {
       console.error("Error loading secretary context:", err);

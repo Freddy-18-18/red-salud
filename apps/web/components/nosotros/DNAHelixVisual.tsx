@@ -226,9 +226,10 @@ function FloatingParticle({ index }: { index: number }) {
         { x: 50, y: 85 },
         { x: 10, y: 45 },
         { x: 90, y: 60 },
-    ];
+    ] as const;
 
-    const pos = positions[index % positions.length];
+    const safeIndex = ((index % positions.length) + positions.length) % positions.length;
+    const pos = positions[safeIndex] ?? positions[0];
     const size = 4 + (index % 3) * 2;
 
     return (
@@ -341,7 +342,7 @@ export function DNAHelixVisual() {
                         key={`right-${i}`}
                         index={i}
                         isRightStrand={true}
-                        iconData={dnaIcons[(i + 5) % dnaIcons.length]}
+                        iconData={dnaIcons[(i + 5) % dnaIcons.length]!}
                     />
                 ))}
 

@@ -4311,36 +4311,6 @@ export const SPECIALTY_CONTENT: Record<string, SpecialtyContent> = {
         ],
         relatedSpecialties: ["medicina-general", "medicina-familiar", "psicologia-clinica"],
     },
-
-    // ============================================
-    // ODONTOLOGÍA
-    // ============================================
-    "odontologia": {
-        title: "Odontología General",
-        description: "Sonrisas saludables. Cuidado integral de tu salud bucal.",
-        whatIsIt: "El punto de partida para una boca sana. Se encarga del diagnóstico primario, prevención y tratamiento de los problemas dentales más comunes como caries, gingivitis y limpieza dental.",
-        whenToGo: [
-            "Dolor de muelas o sensibilidad",
-            "Sangrado de encías",
-            "Limpieza dental semestral (profilaxis)",
-            "Mal aliento",
-            "Chequeo de rutina",
-        ],
-        whyItMatters: [
-            "Previene la pérdida de dientes a largo plazo",
-            "Detecta cáncer oral y otras patologías a tiempo",
-            "Mejora la autoestima con una sonrisa limpia",
-            "La salud bucal afecta la salud del corazón y diabetes",
-        ],
-        treatments: [
-            "Profilaxis (limpieza dental)",
-            "Restauraciones (calzas de resina)",
-            "Extracciones simples",
-            "Flúor y sellantes",
-            "Blanqueamiento dental",
-        ],
-        relatedSpecialties: ["ortodoncia", "endodoncia", "periodoncia", "cirugia-oral-y-maxilofacial"],
-    },
 };
 
 /**

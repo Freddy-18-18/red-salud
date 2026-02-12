@@ -61,7 +61,7 @@ const FieldWithContext = ({
   const renderInput = () => {
     const commonProps = {
       value: Array.isArray(value) ? "" : value,
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target?.value || e),
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value),
       disabled: locked,
       placeholder,
       onFocus: () => setIsFocused(true),

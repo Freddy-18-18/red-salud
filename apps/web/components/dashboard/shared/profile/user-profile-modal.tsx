@@ -59,6 +59,7 @@ export function UserProfileModal({
   const [showToast, setShowToast] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const showNotification = (message: string, type: ToastType = "info") => {
     setToastMessage(message);

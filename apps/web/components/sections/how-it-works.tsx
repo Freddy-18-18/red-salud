@@ -135,7 +135,7 @@ export function HowItWorksSection() {
   );
 }
 
-function StepCard({ step }: { step: typeof steps[0] }) {
+function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
   const ref = useRef(null);
 
   return (

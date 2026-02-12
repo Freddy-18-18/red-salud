@@ -99,7 +99,7 @@ export function MedicalWorkspace({
 
   const handleFreeNotesChange = (value: string) => {
     setFreeNotesContent(value);
-    setIsTemplateGenerated(false);
+
     if (activeTab === "notas") {
       setNotasMedicas(value);
     }
@@ -107,7 +107,7 @@ export function MedicalWorkspace({
 
   const handleStructuredNotesChange = (value: string) => {
     setStructuredNotesContent(value);
-    setIsTemplateGenerated(true);
+
     if (activeTab === "estructurado") {
       setNotasMedicas(value);
     }
@@ -159,7 +159,11 @@ export function MedicalWorkspace({
                   <StructuredTemplateEditor
                     template={selectedStructuredTemplate}
                     onChange={handleStructuredNotesChange}
-                    paciente={paciente}
+                    paciente={{
+                      ...paciente,
+                      genero: paciente.genero || "Desconocido",
+                      edad: paciente.edad || 0
+                    }}
                     medications={medicamentosActuales}
                     onMedicationsChange={setMedicamentosActuales}
                   />

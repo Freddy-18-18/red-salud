@@ -10,7 +10,7 @@ import { VerificationGuard } from "@/components/dashboard/medico/features/verifi
 import { searchConsultationReasons } from "@/lib/data/consultation-reasons";
 
 // React Hook Form & Zod
-import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
+import { useForm, FormProvider, SubmitHandler, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { appointmentSchema, AppointmentFormValues } from "@/validations/appointment";
 
@@ -90,7 +90,7 @@ function NuevaCitaContent() {
   const pacienteParam = searchParams.get("paciente");
 
   const form = useForm<AppointmentFormValues>({
-    resolver: zodResolver(appointmentSchema),
+    resolver: zodResolver(appointmentSchema) as unknown as Resolver<AppointmentFormValues>,
     defaultValues: {
       paciente_id: pacienteParam || "",
       fecha: dateParam ? format(new Date(dateParam), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),

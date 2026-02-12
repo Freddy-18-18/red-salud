@@ -273,13 +273,13 @@ export async function getDailyMetricsSummary(
   }
 
   return {
-    total_appointments: data.reduce((sum, m) => sum + m.total_appointments, 0),
-    completed_appointments: data.reduce((sum, m) => sum + m.completed_appointments, 0),
-    cancelled_appointments: data.reduce((sum, m) => sum + m.cancelled_appointments, 0),
+    total_appointments: data.reduce((sum: number, m: OperationalMetrics) => sum + m.total_appointments, 0),
+    completed_appointments: data.reduce((sum: number, m: OperationalMetrics) => sum + m.completed_appointments, 0),
+    cancelled_appointments: data.reduce((sum: number, m: OperationalMetrics) => sum + m.cancelled_appointments, 0),
     average_occupancy:
-      data.reduce((sum, m) => sum + (m.occupancy_rate || 0), 0) / data.length,
-    total_revenue: data.reduce((sum, m) => sum + m.revenue_amount, 0),
-    total_patients: data.reduce((sum, m) => sum + m.patient_count, 0),
+      data.reduce((sum: number, m: OperationalMetrics) => sum + (m.occupancy_rate || 0), 0) / data.length,
+    total_revenue: data.reduce((sum: number, m: OperationalMetrics) => sum + m.revenue_amount, 0),
+    total_patients: data.reduce((sum: number, m: OperationalMetrics) => sum + m.patient_count, 0),
   };
 }
 

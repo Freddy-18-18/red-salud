@@ -27,10 +27,10 @@ export function Testimonials({ data }: TestimonialsProps) {
             Profesionales de la salud que ya están transformando sus consultorios
           </p>
         </div>
-        
+
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {data.map((testimonial) => (
-            <div 
+            <div
               key={testimonial.id}
               className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 dark:border-gray-700"
             >
@@ -45,7 +45,8 @@ export function Testimonials({ data }: TestimonialsProps) {
               <div className="flex items-center gap-3">
                 <div className="bg-blue-100 dark:bg-blue-900 w-12 h-12 rounded-full flex items-center justify-center">
                   <span className="text-blue-600 dark:text-blue-400 font-bold text-lg">
-                    {testimonial.name.split(' ')[0].charAt(0)}{testimonial.name.split(' ')[1]?.charAt(0)}
+                    {testimonial.name?.split(' ')[0]?.charAt(0) || 'M'}
+                    {testimonial.name?.split(' ')[1]?.charAt(0) || ''}
                   </span>
                 </div>
                 <div>

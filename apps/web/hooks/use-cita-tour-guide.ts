@@ -4,7 +4,23 @@
  */
 
 import { useCallback, useEffect, useRef } from "react";
-import { citaTourSteps } from "@/components/citas/nueva/tour-guide";
+// Mock definition since the original file is missing
+const citaTourSteps = [
+  {
+    id: "step-1",
+    title: "Seleccionar Paciente",
+    text: "Comienza seleccionando al paciente para la cita.",
+    attachTo: { element: "[data-tour='patient-selector']", on: "bottom" as const },
+    buttons: [{ text: "Siguiente", action: "next" }],
+  },
+  {
+    id: "step-2",
+    title: "Fecha y Hora",
+    text: "Elige el momento adecuado para la consulta.",
+    attachTo: { element: "[data-tour='date-time-picker']", on: "bottom" as const },
+    buttons: [{ text: "Atrás", action: "back" }, { text: "Finalizar", action: "complete" }],
+  }
+];
 
 type TourInstance = {
   start: () => void;

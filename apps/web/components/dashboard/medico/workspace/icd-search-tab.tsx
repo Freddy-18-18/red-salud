@@ -144,20 +144,6 @@ export function ICDSearchTab({
     });
   }, []);
 
-  // Búsqueda con debounce
-  useEffect(() => {
-    if (!icdSearchQuery.trim() || icdSearchQuery.length < 2) {
-      setIcdResults([]);
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      handleSearchICD();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [icdSearchQuery, handleSearchICD]);
-
   const handleSearchICD = useCallback(async (query?: string) => {
     const searchQuery = query || icdSearchQuery;
     if (!searchQuery.trim()) return;
@@ -190,9 +176,23 @@ export function ICDSearchTab({
     }
   }, [icdSearchQuery, saveRecentSearch]);
 
+  // Búsqueda con debounce
+  useEffect(() => {
+    if (!icdSearchQuery.trim() || icdSearchQuery.length < 2) {
+      setIcdResults([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      handleSearchICD();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [icdSearchQuery, handleSearchICD]);
+
   const handleCategoryClick = (searches: string[]) => {
-    setSelectedCategory(searches[0]);
-    setIcdSearchQuery(searches[0]);
+    const term = searches[0] || "";
+    setIcdSearchQuery(term);
   };
 
   return (
@@ -218,7 +218,6 @@ export function ICDSearchTab({
                 onClick={() => {
                   setIcdSearchQuery("");
                   setIcdResults([]);
-                  setSelectedCategory(null);
                 }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >

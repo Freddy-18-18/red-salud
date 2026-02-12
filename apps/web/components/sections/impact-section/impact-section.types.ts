@@ -3,7 +3,7 @@
  * @description Tipos compartidos para las variantes de la sección de impacto
  */
 
-import { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 /**
  * Datos de cobertura geográfica obtenidos del API

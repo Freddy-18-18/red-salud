@@ -80,13 +80,26 @@ export const supportService = {
 
             if (error) throw error;
 
-            const articles = (data || []).map((doc: KBSearchResult) => ({
-                ...doc,
+            type RawDocumentRow = {
+                id: number;
+                content: string;
+                metadata?: KBSearchResult['metadata'] | null;
+            };
+
+            const articles: KBSearchResult[] = ((data || []) as RawDocumentRow[]).map((doc) => ({
+                id: doc.id,
+                content: doc.content,
+                metadata: doc.metadata ?? {
+                    title: 'Sin título',
+                    url: '#',
+                    category: 'General',
+                    keywords: [],
+                },
                 category: doc.metadata?.category || 'General',
-                similarity: 1 // Default for popular articles
+                similarity: 1,
             }));
 
-            return { success: true, data: articles as KBSearchResult[] };
+            return { success: true, data: articles };
         } catch (_error) {
             console.error("Error fetching popular articles:", JSON.stringify(_error, null, 2));
             return { success: false, error: _error, data: [] };

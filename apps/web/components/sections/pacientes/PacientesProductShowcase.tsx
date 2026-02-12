@@ -228,6 +228,7 @@ export function PacientesProductShowcase() {
     const [activeFeature, setActiveFeature] = useState("buscar");
     const [realDoctors, setRealDoctors] = useState<Doctor[]>([]);
     const [pharmacyCount, setPharmacyCount] = useState<number | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         async function fetchData() {
@@ -248,12 +249,13 @@ export function PacientesProductShowcase() {
                 if (doctorsError) throw doctorsError;
 
                 if (doctorsData) {
-                    setRealDoctors(doctorsData.map((d: DoctorData) => ({
+                    const mappedDoctors: Doctor[] = (doctorsData as unknown as DoctorData[]).map((d) => ({
                         name: d.profile?.full_name || 'Médico Verificado',
                         specialty: d.specialty?.name || 'Medicina General',
-                        rating: d.average_rating || '5.0',
+                        rating: String(d.average_rating || '5.0'),
                         available: true
-                    })));
+                    }));
+                    setRealDoctors(mappedDoctors);
                 }
 
                 // Fetch pharmacy count

@@ -252,7 +252,7 @@ export function DashboardSidebar({
               data-sidebar="group"
               className="relative flex w-full min-w-0 flex-col p-0"
             >
-              <SidebarModeSelector isCollapsed={!isExpanded} />
+              <SidebarModeSelector />
             </div>
           </div>
         </div>

@@ -4,7 +4,6 @@ import { cn } from "./lib/utils";
 interface LogoProps {
     className?: string;
     size?: "sm" | "md" | "lg" | "xl";
-    size?: "sm" | "md" | "lg" | "xl";
 }
 
 export function Logo({ className, size = "md" }: LogoProps) {

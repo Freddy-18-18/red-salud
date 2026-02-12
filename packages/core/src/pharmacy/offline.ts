@@ -240,7 +240,8 @@ export class MobileInventoryScanner {
           '7500000000002',
           '7500000000003',
         ];
-        resolve(mockBarcodes[Math.floor(Math.random() * mockBarcodes.length)]);
+        const selected = mockBarcodes[Math.floor(Math.random() * mockBarcodes.length)] ?? null;
+        resolve(selected);
       }, 1000);
     });
   };
@@ -383,6 +384,10 @@ export class MobileInventoryScanner {
       // Create canvas to capture frame
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
+      if (!context) {
+        stream.getTracks().forEach((track) => track.stop());
+        return null;
+      }
       
       // Wait for video to be ready
       await new Promise((resolve) => {

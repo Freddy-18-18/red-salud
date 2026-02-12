@@ -215,10 +215,12 @@ export const AcademyGamificationService = {
 function calculateLevel(totalXp: number): { level: number; xpToNext: number } {
     let level = 1;
     for (let i = 1; i < XP_PER_LEVEL.length; i++) {
-        if (totalXp >= XP_PER_LEVEL[i]) level = i + 1;
+        const requiredXp = XP_PER_LEVEL[i] ?? Number.POSITIVE_INFINITY;
+        if (totalXp >= requiredXp) level = i + 1;
         else break;
     }
-    const nextLevelXp = XP_PER_LEVEL[level] ?? XP_PER_LEVEL[level - 1] + 600;
+    const currentLevelXp = XP_PER_LEVEL[level - 1] ?? XP_PER_LEVEL[XP_PER_LEVEL.length - 1] ?? 0;
+    const nextLevelXp = XP_PER_LEVEL[level] ?? currentLevelXp + 600;
     return { level, xpToNext: nextLevelXp - totalXp };
 }
 

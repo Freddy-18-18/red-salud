@@ -15,7 +15,7 @@ export class DeliveryManager {
     createdBy: string
   ): Omit<DeliveryOrder, 'id' | 'created_at' | 'updated_at'> {
     const orderNumber = `DEL-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
-    
+
     // Calculate estimated delivery time (30 minutes from now by default)
     const estimatedDeliveryTime = new Date(Date.now() + 30 * 60 * 1000);
 
@@ -37,6 +37,7 @@ export class DeliveryManager {
       delivery_commission_ves: 0,
       warehouse_id: warehouseId,
       created_by: createdBy,
+      tracking_notes: [],
     };
   }
 

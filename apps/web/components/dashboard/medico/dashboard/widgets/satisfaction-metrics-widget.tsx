@@ -48,6 +48,10 @@ interface ReviewData {
     created_at: string;
     /** Nombre del paciente */
     patient_name?: string;
+    /** Relación con paciente de Supabase */
+    patient?: {
+        full_name: string;
+    };
 }
 
 interface SatisfactionStats {
@@ -305,10 +309,19 @@ export function SatisfactionMetricsWidget({
 // HELPERS
 // ============================================================================
 
+interface RawRating {
+    rating: number;
+    comment?: string;
+    created_at: string;
+    patient?: { full_name: string } | { full_name: string }[];
+    patient_name?: string;
+    id: string;
+}
+
 /**
  * Procesa ratings reales de Supabase.
  */
-function processRatings(ratings: ReviewData[]): SatisfactionStats {
+function processRatings(ratings: RawRating[]): SatisfactionStats {
     const total = ratings.length;
     const sum = ratings.reduce((acc, r) => acc + (r.rating || 0), 0);
     const average = total > 0 ? sum / total : 0;
@@ -349,13 +362,16 @@ function processRatings(ratings: ReviewData[]): SatisfactionStats {
     const recentReviews = ratings
         .filter(r => r.comment && r.comment.trim().length > 0)
         .slice(0, 3)
-        .map(r => ({
-            id: r.id,
-            rating: r.rating,
-            comment: r.comment,
-            created_at: r.created_at,
-            patient_name: r.patient?.full_name || "Paciente Anónimo"
-        }));
+        .map(r => {
+            const p = Array.isArray(r.patient) ? r.patient[0] : r.patient;
+            return {
+                id: r.id,
+                rating: r.rating,
+                comment: r.comment,
+                created_at: r.created_at,
+                patient_name: p?.full_name || r.patient_name || "Paciente Anónimo"
+            };
+        });
 
     return {
         average,

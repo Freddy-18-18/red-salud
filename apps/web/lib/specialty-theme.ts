@@ -27,7 +27,7 @@ const DEFAULT_THEME: SpecialtyTheme = {
     colorName: "blue"
 };
 
-export const CATEGORY_THEMES: Record<string, SpecialtyTheme> = {
+export const CATEGORY_THEMES = {
     cardiovascular: {
         primary: "text-rose-600 dark:text-rose-400",
         secondary: "text-rose-500",
@@ -215,12 +215,15 @@ export const CATEGORY_THEMES: Record<string, SpecialtyTheme> = {
         textDark: "text-red-800 dark:text-red-200",
         colorName: "red"
     }
-};
+} satisfies Record<string, SpecialtyTheme>;
 
 export function getSpecialtyTheme(category?: string): SpecialtyTheme {
     if (!category) return DEFAULT_THEME;
     // Try direct match
-    if (CATEGORY_THEMES[category]) return CATEGORY_THEMES[category];
+    if (category in CATEGORY_THEMES) {
+        const key = category as keyof typeof CATEGORY_THEMES;
+        return CATEGORY_THEMES[key];
+    }
 
     // Try partial mapping or fallbacks based on keywords
     // General check by known keywords in category if no direct match

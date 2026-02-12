@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { Loader2, Check, Upload, CircleCheckBig, Palette, ArrowLeft } from "luci
 import { supabase } from "@/lib/supabase/client";
 import {
     getDoctorRecipeSettings,
+    updateDoctorRecipeSettings,
     uploadRecipeAsset
 } from "@/lib/supabase/services/recipe-settings";
 import { Button, Label, Card, Tabs, TabsContent, TabsList, TabsTrigger } from "@red-salud/ui";

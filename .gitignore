@@ -24,6 +24,8 @@
 # misc
 .DS_Store
 *.pem
+*.bak
+*.old
 
 # debug
 npm-debug.log*
@@ -59,9 +61,11 @@ informe-*.json
 # IDE and AI assistant folders
 .claude/
 .cursor/
+.kilocode/
 .kiro/
 .trae/
 .agent/
+opencode.json
 
 # Documentation and reports (temporary)
 *_CORRECCION*.md
@@ -84,7 +88,12 @@ RED_SALUD_MOBILE_*.md
 eslint-*.json
 eslint-*.txt
 lint-*.txt
+lint_*.txt
 ts-errors*.txt
+ts_errors*.txt
+tsc_output*.txt
+build_output*.txt
+*_output.txt
 
 # Test files
 nul

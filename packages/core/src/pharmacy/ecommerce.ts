@@ -28,7 +28,6 @@ export class ECommerceManager {
       id: uuidv4(),
       order_number: `WEB-${Date.now()}`,
       created_at: new Date(),
-      updated_at: new Date(),
     };
 
     this.orders.push(newOrder);
@@ -42,7 +41,6 @@ export class ECommerceManager {
     if (!order) return null;
 
     order.status = status;
-    order.updated_at = new Date();
 
     if (status === OnlineOrderStatus.CONFIRMED) {
       order.confirmed_at = new Date();

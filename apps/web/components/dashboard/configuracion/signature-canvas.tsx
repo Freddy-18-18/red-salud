@@ -59,12 +59,23 @@ export function SignatureCanvas({
         if (!ctx) return;
 
         const rect = canvas.getBoundingClientRect();
-        const x = "touches" in e
-            ? e.touches[0].clientX - rect.left
-            : e.clientX - rect.left;
-        const y = "touches" in e
-            ? e.touches[0].clientY - rect.top
-            : e.clientY - rect.top;
+        let clientX = 0;
+        let clientY = 0;
+
+        if ("touches" in e) {
+            if (e.touches.length > 0) {
+                clientX = e.touches[0]!.clientX;
+                clientY = e.touches[0]!.clientY;
+            } else {
+                return;
+            }
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
 
         setIsDrawing(true);
         ctx.beginPath();
@@ -84,12 +95,23 @@ export function SignatureCanvas({
         if (!ctx) return;
 
         const rect = canvas.getBoundingClientRect();
-        const x = "touches" in e
-            ? e.touches[0].clientX - rect.left
-            : e.clientX - rect.left;
-        const y = "touches" in e
-            ? e.touches[0].clientY - rect.top
-            : e.clientY - rect.top;
+        let clientX = 0;
+        let clientY = 0;
+
+        if ("touches" in e) {
+            if (e.touches.length > 0) {
+                clientX = e.touches[0]!.clientX;
+                clientY = e.touches[0]!.clientY;
+            } else {
+                return;
+            }
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
 
         ctx.lineTo(x * (canvas.width / rect.width), y * (canvas.height / rect.height));
         ctx.stroke();

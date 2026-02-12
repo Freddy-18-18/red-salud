@@ -80,7 +80,7 @@ export class BarcodeManager {
     // Calculate checksum
     let sum = 0;
     for (let i = 0; i < 12; i++) {
-      const digit = parseInt(digits[i]);
+      const digit = parseInt(digits[i] as string);
       sum += i % 2 === 0 ? digit : digit * 3;
     }
     const checksum = (10 - (sum % 10)) % 10;
@@ -123,7 +123,7 @@ export class BarcodeManager {
     // Calculate checksum
     let sum = 0;
     for (let i = 0; i < 11; i++) {
-      const digit = parseInt(digits[i]);
+      const digit = parseInt(digits[i] as string);
       sum += i % 2 === 0 ? digit * 3 : digit;
     }
     const checksum = (10 - (sum % 10)) % 10;

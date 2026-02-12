@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { FormData } from '@/components/dashboard/profile/types';
+import type { FormData } from '@/components/dashboard/shared/profile/types';
 
 export interface ProfileState {
   data: FormData | null;

@@ -25,6 +25,7 @@ import { ThemeToggle } from "@red-salud/ui";
 import { useCurrentOffice } from "@/hooks/use-current-office";
 import { OfficeQuickSelectorDropdown } from "@/components/dashboard/medico/office-quick-selector-dropdown";
 import { FullDashboardSkeleton } from "@/components/dashboard/medico/dashboard/dashboard-skeleton";
+import { useTourGuide } from "@/hooks/use-tour-guide";
 
 export default function DoctorDashboardPage() {
   const router = useRouter();
@@ -41,7 +42,10 @@ export default function DoctorDashboardPage() {
   } = useDashboardWidgets(userId || undefined);
 
   // Current office state
-  const { currentOffice, updateCurrentOffice } = useCurrentOffice();
+  const { currentOffice, allOffices, updateCurrentOffice } = useCurrentOffice();
+
+  // Tour guide
+  const { startTour } = useTourGuide();
 
   // Si no hay perfil de médico, necesita completar setup
   const needsSetup = !loading && !profile && !!userId;
@@ -292,7 +296,6 @@ export default function DoctorDashboardPage() {
           {/* Dashboard V2 - Unified Experience */}
           <motion.div variants={fadeInUp}>
             <DashboardV2
-              profile={profile}
               userId={userId || undefined}
             />
           </motion.div>

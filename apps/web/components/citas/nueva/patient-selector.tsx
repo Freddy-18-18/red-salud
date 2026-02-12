@@ -23,9 +23,9 @@ interface PatientSelectorProps {
 export function PatientSelector({ patients, selectedPatientId, onPatientSelect }: PatientSelectorProps) {
     const formContext = useFormContext();
     const pacienteId = selectedPatientId ?? (formContext ? formContext.watch("paciente_id") : "");
-    const setValue = (name: string, value: string | number) => {
+    const setValue = (name: string, value: unknown) => {
         if (formContext) formContext.setValue(name, value);
-        if (name === "paciente_id" && onPatientSelect) onPatientSelect(value);
+        if (name === "paciente_id" && onPatientSelect) onPatientSelect(String(value));
     };
     const [cedulaInput, setCedulaInput] = useState("");
     const [nacionalidad, setNacionalidad] = useState("V");
@@ -79,8 +79,8 @@ export function PatientSelector({ patients, selectedPatientId, onPatientSelect }
                 });
             }
 
-        } catch (err: Error) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Error desconocido");
         } finally {
             setLoading(false);
         }

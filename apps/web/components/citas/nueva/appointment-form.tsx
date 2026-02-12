@@ -32,6 +32,13 @@ import {
 } from "@red-salud/ui";
 import { cn } from "@red-salud/core/utils";
 import { format, getDay } from "date-fns";
+import { searchAllReasons, getTopReasons } from "@/lib/data/specialty-reasons-data";
+
+type CalendarDayButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    date?: Date;
+    day?: Date | { date?: Date } | null;
+};
+
 interface TimeRange {
     inicio: string;
     fin: string;
@@ -48,6 +55,8 @@ interface Schedule {
         [key: string]: DaySchedule;
     };
 }
+
+
 
 interface Office {
     id: string;
@@ -122,7 +131,7 @@ export function AppointmentForm({
         let baseSuggestions: string[] = [];
 
         if (searchTerm.length >= 2) {
-            baseSuggestions = smartSuggestions.map((s: { reason: string } | string) => typeof s === 'string' ? s : s.reason || s);
+            baseSuggestions = smartSuggestions.map((s: { reason: string } | string) => typeof s === 'string' ? s : s.reason || String(s));
         } else {
             baseSuggestions = initialSuggestions;
         }
@@ -166,7 +175,7 @@ export function AppointmentForm({
         // which contains the 'horarios' JSON column.
 
         const availableSchedules = schedules.filter((schedule: Schedule) => {
-            const dayConfig = schedule.horarios?.[dayName];
+            const dayConfig = schedule.horarios?.[dayName as keyof typeof schedule.horarios];
             return dayConfig && dayConfig.activo === true;
         });
 
@@ -178,7 +187,7 @@ export function AppointmentForm({
         if (selectedOfficeId) {
             // Try exact match first
             const exactMatch = availableSchedules.find((s: Schedule) => s.office_id === selectedOfficeId);
-            const dayConfig = exactMatch?.horarios?.[dayName];
+            const dayConfig = exactMatch?.horarios?.[dayName as keyof typeof exactMatch.horarios];
 
             // If exact match exists AND has ranges, we are good
             if (dayConfig && dayConfig.activo && dayConfig.horarios?.length > 0) {
@@ -187,7 +196,7 @@ export function AppointmentForm({
         }
 
         // Fallback: If no ranges in current office, check for global or ANY other valid schedule
-        const validFallback = availableSchedules.find((s: Schedule) => s.horarios?.[dayName]?.horarios?.length > 0);
+        const validFallback = availableSchedules.find((s: Schedule) => (s.horarios?.[dayName as keyof typeof s.horarios]?.horarios?.length ?? 0) > 0);
 
         if (validFallback) {
             if (selectedOfficeId && validFallback.office_id !== selectedOfficeId) {
@@ -259,27 +268,48 @@ export function AppointmentForm({
                                                 }}
                                                 initialFocus
                                                 components={{
-                                                    DayContent: ({ date }) => {
+                                                    DayButton: (props: CalendarDayButtonProps) => {
+                                                        const { date: dateProp, day, ...buttonProps } = props;
+                                                        const date = dateProp || (day instanceof Date ? day : day?.date);
+                                                        if (!date) {
+                                                            return <button {...buttonProps} />;
+                                                        }
+
                                                         const status = getDateStatus(date);
                                                         const isPast = date < new Date(new Date().setHours(0, 0, 0, 0));
 
-                                                        if (isPast) return <span className="text-muted-foreground opacity-30">{date.getDate()}</span>;
+                                                        if (isPast) {
+                                                            return (
+                                                                <button {...buttonProps} className={cn(buttonProps.className, "text-muted-foreground opacity-30")}>
+                                                                    {date.getDate()}
+                                                                </button>
+                                                            );
+                                                        }
 
-                                                        if (status.status === 'available') return <span>{date.getDate()}</span>;
+                                                        if (status.status === 'available') {
+                                                            return <button {...buttonProps}>{date.getDate()}</button>;
+                                                        }
 
                                                         return (
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <div
-                                                                        className="w-full h-full flex items-center justify-center relative cursor-not-allowed hover:bg-destructive/10 hover:text-destructive transition-colors rounded-md"
-                                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                                                    <button
+                                                                        {...buttonProps}
+                                                                        className={cn(
+                                                                            buttonProps.className,
+                                                                            "cursor-not-allowed hover:bg-destructive/10 hover:text-destructive transition-colors relative"
+                                                                        )}
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                        }}
                                                                     >
                                                                         {date.getDate()}
                                                                         <span className="sr-only">{status.message}</span>
                                                                         {status.status === 'other_office' && (
                                                                             <span className="absolute bottom-1.5 w-1 h-1 bg-amber-400 rounded-full" />
                                                                         )}
-                                                                    </div>
+                                                                    </button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent side="top" className="z-[9999] bg-zinc-900/95 text-white border-zinc-800 text-xs px-2 py-1 shadow-xl backdrop-blur-sm">
                                                                     <div className="flex flex-col gap-0.5 max-w-[150px] text-center">
@@ -363,34 +393,36 @@ export function AppointmentForm({
                                         const dayIndex = getDay(new Date(selectedDate + "T12:00:00"));
                                         const daysMap = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
                                         const dayName = daysMap[dayIndex];
+                                        if (!dayName) return [];
 
                                         let activeSchedule: Schedule | undefined = undefined;
                                         if (selectedOfficeId) {
                                             // 1. Try exact office match with valid ranges
                                             activeSchedule = schedules.find((s: Schedule) =>
                                                 s.office_id === selectedOfficeId &&
-                                                s.horarios?.[dayName]?.activo &&
-                                                s.horarios?.[dayName]?.horarios?.length > 0
+                                                s.horarios?.[dayName as keyof typeof s.horarios]?.activo &&
+                                                (s.horarios?.[dayName as keyof typeof s.horarios]?.horarios?.length ?? 0) > 0
                                             );
 
                                             // 2. Fallback to global schedule with valid ranges
                                             if (!activeSchedule) {
                                                 activeSchedule = schedules.find((s: Schedule) =>
                                                     !s.office_id &&
-                                                    s.horarios?.[dayName]?.activo &&
-                                                    s.horarios?.[dayName]?.horarios?.length > 0
+                                                    s.horarios?.[dayName as keyof typeof s.horarios]?.activo &&
+                                                    (s.horarios?.[dayName as keyof typeof s.horarios]?.horarios?.length ?? 0) > 0
                                                 );
                                             }
                                         } else {
                                             // Default: use first valid schedule
                                             activeSchedule = schedules.find((s: Schedule) =>
-                                                s.horarios?.[dayName]?.activo &&
-                                                s.horarios?.[dayName]?.horarios?.length > 0
+                                                s.horarios?.[dayName as keyof typeof s.horarios]?.activo &&
+                                                (s.horarios?.[dayName as keyof typeof s.horarios]?.horarios?.length ?? 0) > 0
                                             );
                                         }
 
                                         if (!activeSchedule) return [];
-                                        const dayConfig = activeSchedule.horarios[dayName];
+                                        const dayConfig = activeSchedule.horarios?.[dayName];
+                                        if (!dayConfig) return [];
                                         const ranges = dayConfig.horarios || [];
                                         const slots: string[] = [];
                                         const now = new Date();
@@ -399,8 +431,8 @@ export function AppointmentForm({
 
                                         ranges.forEach((range: { inicio: string; fin: string }) => {
                                             if (!range.inicio || !range.fin) return;
-                                            const [startH, startM] = range.inicio.split(':').map(Number);
-                                            const [endH, endM] = range.fin.split(':').map(Number);
+                                            const [startH = 0, startM = 0] = range.inicio.split(':').map(Number);
+                                            const [endH = 0, endM = 0] = range.fin.split(':').map(Number);
                                             let startTotal = startH * 60 + startM;
                                             const endTotal = endH * 60 + endM;
                                             while (startTotal + duration <= endTotal) {

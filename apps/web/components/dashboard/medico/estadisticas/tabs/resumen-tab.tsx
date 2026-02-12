@@ -34,11 +34,13 @@ interface TrendData {
   date: string;
   Citas: number;
   Ingresos: number;
+  [key: string]: string | number;
 }
 
 interface StatusData {
   name: string;
   value: number;
+  [key: string]: string | number;
 }
 
 interface RecentActivity {
@@ -134,7 +136,7 @@ export const ResumenTab = forwardRef<ResumenTabRef, ResumenTabProps>(({ doctorId
         };
       });
       trendData[5] = {
-        date: months[5],
+        date: months[5] || "",
         Citas: citasMes || 0,
         Ingresos: ingresosEsteMes || 0
       };
@@ -173,7 +175,10 @@ export const ResumenTab = forwardRef<ResumenTabRef, ResumenTabProps>(({ doctorId
         consultasPendientes: consultasPendientes || 0,
         trendData,
         statusData,
-        recentActivity: recentActivity || []
+        recentActivity: (recentActivity || []).map((a) => ({
+          ...a,
+          patients: Array.isArray(a.patients) ? a.patients[0] : a.patients
+        }))
       });
     } catch (error) {
       console.error("Error loading stats:", error);
@@ -322,7 +327,7 @@ ${stats.recentActivity.map(a => `- ${format(new Date(a.appointment_date), "dd/MM
                   <div key={activity.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-2 h-2 rounded-full ${activity.status === 'completed' ? 'bg-green-500' :
-                          activity.status === 'scheduled' ? 'bg-blue-500' : 'bg-gray-300'
+                        activity.status === 'scheduled' ? 'bg-blue-500' : 'bg-gray-300'
                         }`} />
                       <div className="text-sm">
                         <p className="font-medium text-slate-900 dark:text-slate-100">
@@ -354,7 +359,7 @@ interface KPICardProps {
   title: string;
   value: string | number;
   icon: React.ComponentType<{ className?: string }>;
-  trend?: number;
+  trend?: string | number;
   trendUp?: boolean;
   color: 'blue' | 'emerald' | 'purple' | 'teal';
 }

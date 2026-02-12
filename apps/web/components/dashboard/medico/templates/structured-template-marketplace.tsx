@@ -21,6 +21,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  Input,
 } from "@red-salud/ui";
 import {
   FileText,
@@ -47,6 +48,7 @@ import {
   Star,
   Info,
   Trash2,
+  Search,
 } from "lucide-react";
 import { StructuredTemplate } from "@/lib/templates/structured-templates";
 import { getAllTemplates } from "@/lib/templates/extended-templates";
@@ -92,6 +94,7 @@ export function StructuredTemplateMarketplace({
   const [favorites, setFavorites] = useState<string[]>([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const loadCustomTemplates = (): StructuredTemplate[] => {
     if (typeof window === 'undefined') return [];
@@ -121,7 +124,6 @@ export function StructuredTemplateMarketplace({
     const custom = saved ? JSON.parse(saved) : [];
     const updated = custom.filter((t: StructuredTemplate) => t.id !== templateToDelete);
 
-    setCustomTemplates(updated);
     // Reload all templates to reflect system + remaining custom
     setAllTemplates([...getAllTemplates(), ...updated]);
     localStorage.setItem('customTemplates', JSON.stringify(updated));
@@ -139,7 +141,6 @@ export function StructuredTemplateMarketplace({
         setFavorites(JSON.parse(savedFavorites));
       }
 
-      setCustomTemplates(savedCustomTemplates);
       setAllTemplates([...systemTemplates, ...savedCustomTemplates]);
     };
 
@@ -195,6 +196,15 @@ export function StructuredTemplateMarketplace({
 
           <div className="flex-1 flex flex-col overflow-hidden min-h-0">
             <div className="px-6 py-4 border-b space-y-4 bg-gray-50/50">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar plantillas por nombre, descripción o etiquetas..."
+                  className="pl-10 bg-white border-gray-200 focus:ring-2 focus:ring-blue-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
               <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
                 <TabsList className="w-full justify-start h-auto p-1 bg-gray-200/50 flex flex-wrap gap-1">
                   <TabsTrigger value="all" className="flex-1 min-w-[100px] text-xs py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">Todos</TabsTrigger>

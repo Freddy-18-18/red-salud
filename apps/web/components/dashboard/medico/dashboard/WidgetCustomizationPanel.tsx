@@ -175,8 +175,10 @@ export function WidgetCustomizationPanel({
     hiddenWidgets,
     onToggleWidget,
     onResetLayout,
+    onSave,
 }: WidgetCustomizationPanelProps) {
     const [activeTab, setActiveTab] = useState<"widgets" | "layout">("widgets");
+    const [searchQuery] = useState("");
 
     // Obtener widgets disponibles para el modo actual ordenados por categoría
     const widgetsByCategory = useMemo(() => {
@@ -229,7 +231,7 @@ export function WidgetCustomizationPanel({
     const handleSave = useCallback(() => {
         onSave?.();
         onClose();
-    }, [onClose]);
+    }, [onSave, onClose]);
 
     // Función para filtrar widgets según búsqueda
     const doesMatchSearch = (widget: WidgetConfig) => {

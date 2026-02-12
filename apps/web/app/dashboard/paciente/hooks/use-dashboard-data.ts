@@ -11,14 +11,43 @@ export interface RecentActivity {
   created_at: string;
 }
 
+export interface Appointment {
+  id: string;
+  fecha_hora: string;
+  motivo?: string;
+  status: string;
+  doctor?: {
+    nombre_completo?: string;
+  };
+}
+
+export interface HealthMetric {
+  id: string;
+  valor: number;
+  valor_secundario?: number;
+  fecha_medicion: string;
+  metric_type?: {
+    nombre: string;
+    unidad_medida: string;
+  };
+}
+
+export interface Medication {
+  id: string;
+  nombre_medicamento: string;
+  dosis: string;
+  frecuencia: string;
+  activo: boolean;
+}
+
 /**
  * Hook para cargar actividades recientes y citas próximas
  */
 export function useDashboardData() {
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
-  const [upcomingAppointments, setUpcomingAppointments] = useState<unknown[]>([]);
-  const [latestMetrics, setLatestMetrics] = useState<unknown[]>([]);
-  const [activeMedications, setActiveMedications] = useState<unknown[]>([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [latestMetrics, setLatestMetrics] = useState<HealthMetric[]>([]);
+  const [activeMedications, setActiveMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

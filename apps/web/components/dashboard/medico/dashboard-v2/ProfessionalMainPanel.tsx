@@ -23,9 +23,27 @@ interface ProfessionalMainPanelProps {
     userId?: string;
 }
 
+interface Appointment {
+    status: string;
+    appointment_date: string;
+    appointment_time: string;
+    patient_id: string;
+    consultation_type: string;
+    reason?: string;
+    patient?: {
+        nombre_completo: string;
+    };
+}
+
+interface Activity {
+    id: string;
+    description: string;
+    created_at: string;
+}
+
 export function ProfessionalMainPanel({ userId }: ProfessionalMainPanelProps) {
-    const [appointments, setAppointments] = useState<Array<{ id: string; fecha_hora: string; paciente?: { nombre_completo: string } }>>([]);
-    const [activities, setActivities] = useState<Array<{ id: string; action: string; timestamp: string }>>([]);
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -39,15 +57,15 @@ export function ProfessionalMainPanel({ userId }: ProfessionalMainPanelProps) {
                 ]);
 
                 if (appointmentsRes.success && appointmentsRes.data) {
-                    const nextOnes = appointmentsRes.data
-                        .filter((apt: { status: string }) => apt.status !== 'cancelled' && apt.status !== 'completed')
-                        .sort((a: { appointment_date: string; appointment_time: string }, b: { appointment_date: string; appointment_time: string }) => new Date(`${a.appointment_date}T${a.appointment_time}`).getTime() - new Date(`${b.appointment_date}T${b.appointment_time}`).getTime());
+                    const nextOnes = (appointmentsRes.data as Appointment[])
+                        .filter((apt) => apt.status !== 'cancelled' && apt.status !== 'completed')
+                        .sort((a, b) => new Date(`${a.appointment_date}T${a.appointment_time}`).getTime() - new Date(`${b.appointment_date}T${b.appointment_time}`).getTime());
 
                     setAppointments(nextOnes);
                 }
 
                 if (activityRes.success && activityRes.data) {
-                    setActivities(activityRes.data);
+                    setActivities(activityRes.data as Activity[]);
                 }
             } catch (error) {
                 console.error("Error fetching panel data:", error);

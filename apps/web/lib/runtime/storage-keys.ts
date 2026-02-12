@@ -148,7 +148,7 @@ export function parseStorageKey(key: string): {
 } {
   const parts = key.split(':');
   return {
-    entity: parts[0],
+    entity: parts[0] ?? '',
     id: parts[1],
     type: parts[2],
   };

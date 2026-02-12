@@ -13,10 +13,24 @@ import { Search, CheckCircle2, XCircle, Loader2, Info } from "lucide-react";
  */
 
 interface ICD11SearchResult {
+  id: string | number;
+  code?: string;
+  score?: number;
+  title?: string;
+  chapter?: string;
+  [key: string]: unknown;
+}
+
+interface ICD11ValidationData {
+  code: string;
+  title: string;
+  chapter?: string;
   [key: string]: unknown;
 }
 
 interface ICD11ValidationResult {
+  valid: boolean;
+  data?: ICD11ValidationData;
   [key: string]: unknown;
 }
 
@@ -24,21 +38,21 @@ export function ICD11Demo() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ICD11SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  
+
   const [validateCode, setValidateCode] = useState("");
   const [validationResult, setValidationResult] = useState<ICD11ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
 
   const handleSearch = async () => {
     if (!searchQuery) return;
-    
+
     setIsSearching(true);
     try {
       const response = await fetch(
         `/api/icd11/search?q=${encodeURIComponent(searchQuery)}`
       );
       const data = await response.json();
-      
+
       if (data.success) {
         setSearchResults(data.data);
       }
@@ -51,7 +65,7 @@ export function ICD11Demo() {
 
   const handleValidate = async () => {
     if (!validateCode) return;
-    
+
     setIsValidating(true);
     try {
       const response = await fetch(

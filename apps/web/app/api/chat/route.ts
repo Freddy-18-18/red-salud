@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ragService } from "@/lib/supabase/services/chat/rag-service";
 import { sanitizePII } from "@red-salud/core/utils";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 /**
  * Chat API Endpoint

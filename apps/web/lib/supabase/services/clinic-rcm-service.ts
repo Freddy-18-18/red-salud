@@ -276,7 +276,7 @@ export async function addClaimItem(
     .order('line_number', { ascending: false })
     .limit(1);
 
-  const nextLineNumber = items && items.length > 0 ? items[0].line_number + 1 : 1;
+  const nextLineNumber = items && items.length > 0 ? ((items[0]?.line_number ?? 0) + 1) : 1;
 
   const { data, error } = await supabase
     .from('rcm_claim_items')

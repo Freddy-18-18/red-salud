@@ -59,6 +59,7 @@ export class UpdateManager {
         channel: UpdateChannel.STABLE,
         release_date: new Date(),
         is_latest: true,
+        is_critical: false,
         created_at: new Date(),
       });
       this.saveVersions();
@@ -83,6 +84,13 @@ export class UpdateManager {
     const latestVersion = availableVersions.sort((a, b) =>
       b.version_number.localeCompare(a.version_number),
     )[0];
+
+    if (!latestVersion) {
+      return {
+        success: true,
+        version: this.versions.find((v) => v.is_latest),
+      };
+    }
 
     const isNewer = latestVersion.version_number.localeCompare(currentVersion) > 0;
 
@@ -111,6 +119,7 @@ export class UpdateManager {
       version: version.version,
       status: UpdateStatus.DOWNLOADING,
       started_at: new Date(),
+      rollback_available: false,
       created_at: new Date(),
     };
 
@@ -140,6 +149,7 @@ export class UpdateManager {
       version: version.version,
       status: UpdateStatus.INSTALLING,
       started_at: new Date(),
+      rollback_available: false,
       created_at: new Date(),
     };
 

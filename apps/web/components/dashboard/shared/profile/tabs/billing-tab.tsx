@@ -14,16 +14,22 @@ import { getPaymentMethods, getTransactions } from "@/lib/supabase/services/bill
 interface PaymentMethod {
   id: string;
   user_id: string;
+  card_brand: string;
+  last_four: string;
+  exp_month: number;
+  exp_year: number;
+  is_default: boolean;
   type?: string;
-  last_four?: string;
   expires_at?: string;
 }
 
 interface Transaction {
   id: string;
   user_id: string;
+  description: string;
   amount: number;
-  status: "pending" | "paid" | "failed";
+  status: "paid" | "pending" | "failed";
+  invoice_number?: string;
   created_at: string;
 }
 

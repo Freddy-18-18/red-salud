@@ -574,7 +574,6 @@ export function OfficesSection() {
                                 {/* TAB: PRICING */}
                                 <TabsContent value="pricing" className="mt-0 space-y-6">
                                     <OfficePricing
-                                        officeId={formData.id}
                                         value={formData.price_info}
                                         onChange={(val) => setFormData({ ...formData, price_info: val })}
                                     />

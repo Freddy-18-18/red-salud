@@ -66,6 +66,9 @@ export class POSManager {
     if (existingItemIndex >= 0) {
       // Update existing item
       const existingItem = this.cart[existingItemIndex];
+      if (!existingItem) {
+        throw new Error('Item not found in cart');
+      }
       this.cart[existingItemIndex] = {
         ...existingItem,
         quantity: existingItem.quantity + quantity,
@@ -88,6 +91,8 @@ export class POSManager {
         unit_price_ves: unitPriceVes,
         subtotal_usd: subtotalUsd,
         subtotal_ves: subtotalVes,
+        discount_usd: 0,
+        discount_ves: 0,
         iva_rate: product.iva_rate,
         iva_usd: ivaAmountUsd,
         iva_ves: ivaAmountVes,

@@ -50,6 +50,8 @@ export enum PharmacyPaymentMethod {
   CRYPTO = 'crypto',
   TRANSFER = 'transfer',
   MIXED = 'mixed',
+  EFECTIVO_DIVISAS = 'efectivo_divisas',
+  TARJETA_INTERNACIONAL = 'tarjeta_internacional',
 }
 
 export enum InvoiceStatus {
@@ -312,12 +314,16 @@ export const invoiceItemSchema = z.object({
   total_ves: z.number().min(0),
 });
 
+export type InvoiceItem = z.infer<typeof invoiceItemSchema>;
+
 export const paymentSchema = z.object({
   method: z.nativeEnum(PharmacyPaymentMethod),
   amount_usd: z.number().min(0),
   amount_ves: z.number().min(0),
   reference: z.string().optional(),
 });
+
+export type Payment = z.infer<typeof paymentSchema>;
 
 export const invoiceSchema = z.object({
   id: z.string().uuid(),
@@ -1803,6 +1809,7 @@ export type PharmacyChartData = z.infer<typeof chartDataSchema>;
 // ============================================================================
 
 export enum UpdateStatus {
+  PENDING = 'pending',
   AVAILABLE = 'available',
   DOWNLOADING = 'downloading',
   INSTALLING = 'installing',

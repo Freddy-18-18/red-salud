@@ -73,9 +73,13 @@ export default function NewPrescriptionPage() {
 
     const handleMedicationChange = useCallback((index: number, field: keyof MedicationItemData, value: string) => {
         setMedications(prev => {
-            const next = [...prev];
-            next[index] = { ...next[index], [field]: value };
-            return next;
+            const newMedications = [...prev];
+            const item = { ...newMedications[index] };
+            if (field in item) {
+                (item as Record<string, string | number | undefined>)[field] = value || "";
+            }
+            newMedications[index] = item as MedicationItemData;
+            return newMedications;
         });
     }, []);
 
@@ -150,7 +154,7 @@ export default function NewPrescriptionPage() {
                 diagnostico: diagnosis,
                 notas: notes,
                 medications: medications.map(m => ({
-                    medication_id: m.medicationId,
+                    medication_id: m.medicamentoId,
                     nombre_medicamento: m.medicamento,
                     dosis: m.dosis,
                     frecuencia: m.frecuencia,
@@ -184,18 +188,18 @@ export default function NewPrescriptionPage() {
             nombre_completo: p.patient.nombre_completo,
             cedula: p.patient.cedula || null,
             type: "registered" as const,
-            email: p.patient.email,
-            fecha_nacimiento: p.patient.fecha_nacimiento,
-            genero: p.patient.genero
+            email: p.patient.email || null,
+            fecha_nacimiento: p.patient.fecha_nacimiento || undefined,
+            genero: p.patient.genero || undefined
         })),
         ...patientsState.offlinePatients.map(p => ({
             id: p.id,
             nombre_completo: p.nombre_completo,
             cedula: p.cedula,
             type: "offline" as const,
-            email: p.email,
-            fecha_nacimiento: p.fecha_nacimiento,
-            genero: p.genero
+            email: p.email || null,
+            fecha_nacimiento: p.fecha_nacimiento || undefined,
+            genero: p.genero || undefined
         }))
     ];
 

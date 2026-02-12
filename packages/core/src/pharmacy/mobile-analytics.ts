@@ -106,17 +106,31 @@ export class MobileAnalyticsManager {
   private calculateGrowthRate(currentSalesUSD: number, comparisonData: MobileReport['comparison_data']): number {
     if (!comparisonData || comparisonData.length === 0) return 0;
 
-    const previousYearSales = comparisonData[comparisonData.length - 1].sales_usd;
+    const previousYearSales = comparisonData.at(-1)?.sales_usd ?? 0;
     return previousYearSales > 0 ? ((currentSalesUSD - previousYearSales) / previousYearSales) * 100 : 0;
   }
 
   private generateCharts(salesData: MobileReport['sales_data']): MobileReport['charts'] {
+    const cumulativeData: Array<{ date: string; cumulative_usd: number; cumulative_ves: number }> = [];
+    let runningUSD = 0;
+    let runningVES = 0;
+
+    for (const day of salesData) {
+      runningUSD += day.sales_usd;
+      runningVES += day.sales_ves;
+      cumulativeData.push({
+        date: day.date.toISOString().split('T')[0] ?? '',
+        cumulative_usd: runningUSD,
+        cumulative_ves: runningVES,
+      });
+    }
+
     return [
       {
         chart_type: ChartType.LINE,
         title: 'Ventas Diarias',
         data: salesData.map((d) => ({
-          date: d.date.toISOString().split('T')[0],
+          date: d.date.toISOString().split('T')[0] ?? '',
           sales_usd: d.sales_usd,
           sales_ves: d.sales_ves,
         })),
@@ -125,25 +139,14 @@ export class MobileAnalyticsManager {
         chart_type: ChartType.BAR,
         title: 'Transacciones',
         data: salesData.map((d) => ({
-          date: d.date.toISOString().split('T')[0],
+          date: d.date.toISOString().split('T')[0] ?? '',
           transactions: d.transactions,
         })),
       },
       {
         chart_type: ChartType.AREA,
         title: 'Ventas Acumuladas',
-        data: salesData.reduce((acc, d, i) => {
-          const prevUSD = i > 0 ? acc[i - 1].cumulative_usd : 0;
-          const prevVES = i > 0 ? acc[i - 1].cumulative_ves : 0;
-          return [
-            ...acc,
-            {
-              date: d.date.toISOString().split('T')[0],
-              cumulative_usd: prevUSD + d.sales_usd,
-              cumulative_ves: prevVES + d.sales_ves,
-            },
-          ];
-        }, [] as Array<{ date: string; cumulative_usd: number; cumulative_ves: number }>),
+        data: cumulativeData,
       },
     ];
   }

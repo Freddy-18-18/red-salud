@@ -18,6 +18,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   const passwordStrength = (password: string) => {
     let strength = 0;
@@ -181,9 +182,8 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
                         {[...Array(6)].map((_, i) => (
                           <div
                             key={i}
-                            className={`h-1 flex-1 rounded-full ${
-                              i < strength ? strengthColors[strength] : "bg-gray-200"
-                            }`}
+                            className={`h-1 flex-1 rounded-full ${i < strength ? strengthColors[strength] : "bg-gray-200"
+                              }`}
                           />
                         ))}
                       </div>

@@ -39,7 +39,7 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
           const isOwn = message.sender_id === currentUserId;
           const showAvatar =
             index === 0 ||
-            messages[index - 1].sender_id !== message.sender_id;
+            messages[index - 1]?.sender_id !== message.sender_id;
 
           const initials = message.sender?.nombre_completo
             ?.split(" ")

@@ -1,12 +1,13 @@
 "use client";
 
 import { Label } from "@red-salud/ui";
+import type { FormData } from "../../types";
 
 interface WomenHealthProps {
   isEditing: boolean;
-  localData: Record<string, unknown>;
-  setLocalData: (data: Record<string, unknown>) => void;
-  formData: Record<string, unknown>;
+  localData: FormData;
+  setLocalData: (data: FormData) => void;
+  formData: FormData;
 }
 
 export function WomenHealthSection({

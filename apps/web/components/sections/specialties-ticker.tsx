@@ -189,10 +189,7 @@ export function SpecialtiesTicker() {
   const router = useRouter(); // Asegúrate de importar useRouter de next/navigation
 
   const handleSearchSelect = useCallback(
-    (id: string) => {
-      // Encontrar el item para obtener el slug
-      // Como optimization, podríamos pasar el nombre directo desde el Search,
-      // pero aquí buscamos en items por seguridad.
+    (id: string, rowIndex: 1 | 2) => {
       const item = items.find(i => i.id === id);
       if (item) {
         const slug = slugify(item.name);
@@ -252,8 +249,6 @@ export function SpecialtiesTicker() {
           {/* Buscador Centrado */}
           <SpecialtySearch
             items={items}
-            row1Items={rawRow1}
-            row2Items={rawRow2}
             onSelect={handleSearchSelect}
             onClear={handleSearchClear}
           />

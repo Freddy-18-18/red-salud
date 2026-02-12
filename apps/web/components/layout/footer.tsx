@@ -53,10 +53,10 @@ export function Footer() {
               <span className="font-bold text-2xl text-white">{APP_NAME}</span>
             </Link>
             <p className="text-[hsl(220,15%,60%)] mb-6 max-w-md">
-              Transformamos la atención médica con tecnología innovadora, 
+              Transformamos la atención médica con tecnología innovadora,
               conectando pacientes y profesionales de la salud de manera eficiente y segura.
             </p>
-            
+
             {/* Contact Info */}
             <div className="space-y-3">
               <div className="flex items-center space-x-3 text-sm">
@@ -147,7 +147,7 @@ export function Footer() {
           whileInView="animate"
           viewport={{ once: true }}
         >
-          <motion.p variants={fadeInUp} className="text-sm text-[hsl(220,15%,55%)]">
+          <motion.p variants={fadeInUp} className="text-sm text-[hsl(220,15%,55%)]" suppressHydrationWarning>
             © {currentYear} {APP_NAME}. Todos los derechos reservados.
           </motion.p>
 

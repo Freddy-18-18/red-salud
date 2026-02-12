@@ -23,7 +23,7 @@ export class FEFOManager {
           batch.quantity > 0 &&
           new Date(batch.expiry_date) > new Date()
       )
-      .sort((a, b) => 
+      .sort((a, b) =>
         new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime()
       );
 
@@ -105,9 +105,11 @@ export class FEFOManager {
 
     if (availableBatches.length === 0) return null;
 
-    return availableBatches.sort((a, b) =>
+    const sorted = availableBatches.sort((a, b) =>
       new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime()
-    )[0];
+    );
+
+    return sorted[0] || null;
   }
 
   /**
@@ -145,7 +147,7 @@ export class InventoryAlertGenerator {
         const available = FEFOManager.getTotalAvailableQuantity(
           batches.filter((b) => b.product_id === product.id)
         );
-        
+
         if (FEFOManager.isLowStock(product, available)) {
           return {
             productId: product.id,
@@ -164,7 +166,7 @@ export class InventoryAlertGenerator {
     warningDays: number = 90
   ): Array<{ batchId: string; expiryDate: Date; daysUntilExpiry: number }> {
     const expiringBatches = FEFOManager.getExpiringBatches(batches, warningDays);
-    
+
     return expiringBatches.map((batch) => ({
       batchId: batch.id,
       expiryDate: new Date(batch.expiry_date),

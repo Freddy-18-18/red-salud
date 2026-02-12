@@ -40,9 +40,17 @@ export function Header() {
   const pathname = usePathname();
   const { theme } = useTheme();
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Timeout to avoid synchronous state update warning
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Compute effective theme based on system preference
   const getEffectiveTheme = (): "light" | "dark" => {
-    if (theme === "system") {
+    if (theme === "system" && mounted) {
       if (typeof window === "undefined") return "light";
       return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
@@ -59,7 +67,7 @@ export function Header() {
     pathname.startsWith("/servicios") ||
     pathname.startsWith("/academy");
 
-  const isDarkTheme = isDarkHeroPage && !isScrolled;
+  const isDarkTheme = mounted && isDarkHeroPage && !isScrolled;
 
   useEffect(() => {
     const handleScroll = () => {

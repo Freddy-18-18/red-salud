@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { scaleQuantile } from "d3-scale";
-import { Loader2, MapPin, Users, Activity } from "lucide-react";
+import { MapPin, Users, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@red-salud/core/utils";
 
@@ -63,26 +63,11 @@ export function SpecialtyMap({ doctorCount, distribution }: SpecialtyMapProps) {
         return {};
     }, [distribution, doctorCount]);
 
-    const [data, setData] = useState<Record<string, number>>(initialData);
-    const [mounted, setMounted] = useState(false);
-
-    // Actualizar data cuando cambien initialData
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setMounted(true);
-    }, []);
-
-    // Sincronizar data con initialData sin disparar render extra innecesario en el primer montaje
-    useEffect(() => {
-        if (mounted) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setData(initialData);
-        }
-    }, [initialData, mounted]);
+    const data = initialData;
 
     const colorScale = useMemo(() => {
         const values = Object.values(data).filter(v => v > 0);
-        return scaleQuantile<string>()
+        return scaleQuantile()
             .domain(values.length > 0 ? values : [0])
             .range([
                 "#eff6ff", // blue-50
@@ -95,12 +80,6 @@ export function SpecialtyMap({ doctorCount, distribution }: SpecialtyMapProps) {
                 "#1d4ed8", // blue-700
             ]);
     }, [data]);
-
-    if (!mounted) return (
-        <div className="h-full w-full flex items-center justify-center bg-muted/20">
-            <Loader2 className="animate-spin text-primary w-8 h-8" />
-        </div>
-    );
 
     return (
         <motion.div

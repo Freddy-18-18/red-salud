@@ -21,11 +21,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/ui";
 import { Button } from "@red-salud/ui";
 import { Badge } from "@red-salud/ui";
 import { cn } from "@red-salud/core/utils";
-import { supabase } from "@/lib/supabase/client";
 
 interface ProfessionalAvatarUploadProps {
   currentUrl: string | null;
-  onUpload: (url: string) => void;
+  onUpload: (file: File) => Promise<string>;
+  onRemove?: () => Promise<void>;
   userName: string;
 }
 
@@ -39,6 +39,7 @@ interface ValidationResult {
 export function ProfessionalAvatarUpload({
   currentUrl,
   onUpload,
+  onRemove,
   userName,
 }: ProfessionalAvatarUploadProps) {
   const [uploading, setUploading] = useState(false);
@@ -115,6 +116,23 @@ export function ProfessionalAvatarUpload({
   };
 
   /**
+   * Maneja la subida de imagen usando la función inyectada
+   */
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      await onUpload(file);
+      setPreview(null);
+      setValidation(null);
+    } catch (error) {
+      console.error("[ProfessionalAvatarUpload] Error:", error);
+      alert("Error al subir la imagen. Por favor intenta de nuevo.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  /**
    * Maneja la selección de archivo
    */
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,52 +158,7 @@ export function ProfessionalAvatarUpload({
 
     // Si es válida, subir automáticamente
     if (validationResult.isValid) {
-      await uploadImage(file);
-    }
-  };
-
-  /**
-   * Sube la imagen a Supabase Storage
-   */
-  const uploadImage = async (file: File) => {
-    setUploading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No hay usuario autenticado");
-
-      // Generar nombre único
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-
-      // Subir archivo
-      const { error: uploadError } = await supabase.storage
-        .from("profiles")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // Obtener URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from("profiles")
-        .getPublicUrl(filePath);
-
-      // Actualizar perfil
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ avatar_url: publicUrl })
-        .eq("id", user.id);
-
-      if (updateError) throw updateError;
-
-      onUpload(publicUrl);
-      setPreview(null);
-      setValidation(null);
-    } catch (error) {
-      console.error("[ProfessionalAvatarUpload] Error:", error);
-      alert("Error al subir la imagen. Por favor intenta de nuevo.");
-    } finally {
-      setUploading(false);
+      await handleUpload(file);
     }
   };
 
@@ -195,20 +168,19 @@ export function ProfessionalAvatarUpload({
   const handleRemove = async () => {
     if (!confirm("¿Estás seguro de eliminar tu foto de perfil?")) return;
 
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      await supabase
-        .from("profiles")
-        .update({ avatar_url: null })
-        .eq("id", user.id);
-
-      onUpload("");
-    } catch (error) {
-      console.error("[ProfessionalAvatarUpload] Error removing:", error);
+    if (onRemove) {
+      setUploading(true);
+      try {
+        await onRemove();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setUploading(false);
+      }
     }
   };
+
+
 
   const displayUrl = preview || currentUrl;
 

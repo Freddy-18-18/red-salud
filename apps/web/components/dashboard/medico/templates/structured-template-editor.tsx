@@ -84,11 +84,11 @@ export function StructuredTemplateEditor({
     activeTemplate.fields.forEach((field) => {
       if (field.type === 'vitals') {
         content += `\n${field.label}:\n`;
-        content += `- PA: ${vitalSigns.pa.value || "___"} mmHg\n`;
-        content += `- FC: ${vitalSigns.fc.value || "___"} lpm\n`;
-        content += `- FR: ${vitalSigns.fr.value || "___"} rpm\n`;
-        content += `- Temp: ${vitalSigns.temp.value || "___"} °C\n`;
-        content += `- Sat O2: ${vitalSigns.satO2.value || "___"} %\n`;
+        content += `- PA: ${vitalSigns.pa?.value || "___"} mmHg\n`;
+        content += `- FC: ${vitalSigns.fc?.value || "___"} lpm\n`;
+        content += `- FR: ${vitalSigns.fr?.value || "___"} rpm\n`;
+        content += `- Temp: ${vitalSigns.temp?.value || "___"} °C\n`;
+        content += `- Sat O2: ${vitalSigns.satO2?.value || "___"} %\n`;
         if (fields.peso) content += `- Peso: ${fields.peso} kg\n`;
         if (fields.talla) content += `- Talla: ${fields.talla} cm\n`;
       } else if (field.type === 'medications') {
@@ -128,21 +128,29 @@ export function StructuredTemplateEditor({
     // Solo permitir números y punto decimal
     const numericValue = value.replace(/[^0-9./]/g, "");
 
-    setVitalSigns((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], value: numericValue },
-    }));
+    setVitalSigns((prev) => {
+      const currentVital = prev[key];
+      if (!currentVital) return prev;
+
+      return {
+        ...prev,
+        [key]: { ...currentVital, value: numericValue },
+      };
+    });
   };
 
   const getVitalSignStatus = (key: string): "normal" | "warning" | "danger" | null => {
     const vital = vitalSigns[key];
-    if (!vital.value) return null;
+    if (!vital || !vital.value) return null;
 
     let numValue: number;
 
     // Para PA, tomar el valor sistólico (primer número)
     if (key === "pa") {
-      const systolic = parseInt(vital.value.split("/")[0]);
+      const parts = vital.value.split("/");
+      const systolicStr = parts[0];
+      if (!systolicStr) return null;
+      const systolic = parseInt(systolicStr);
       if (isNaN(systolic)) return null;
       numValue = systolic;
     } else {
@@ -211,7 +219,7 @@ export function StructuredTemplateEditor({
                   <Label className="text-xs text-gray-600">Presión Arterial</Label>
                   <div className="relative">
                     <Input
-                      value={vitalSigns.pa.value}
+                      value={vitalSigns.pa?.value || ""}
                       onChange={(e) => handleVitalSignChange("pa", e.target.value)}
                       placeholder="120/80"
                       className={`pr-16 ${getStatusColor(getVitalSignStatus("pa"))}`}
@@ -223,7 +231,7 @@ export function StructuredTemplateEditor({
                   </div>
                   {getVitalSignStatus("pa") && (
                     <p className="text-xs text-gray-500">
-                      Normal: {vitalSigns.pa.normalRange.min}-{vitalSigns.pa.normalRange.max} mmHg
+                      Normal: {vitalSigns.pa?.normalRange.min}-{vitalSigns.pa?.normalRange.max} mmHg
                     </p>
                   )}
                 </div>
@@ -233,7 +241,7 @@ export function StructuredTemplateEditor({
                   <Label className="text-xs text-gray-600">Frecuencia Cardíaca</Label>
                   <div className="relative">
                     <Input
-                      value={vitalSigns.fc.value}
+                      value={vitalSigns.fc?.value || ""}
                       onChange={(e) => handleVitalSignChange("fc", e.target.value)}
                       placeholder="72"
                       type="number"
@@ -246,7 +254,7 @@ export function StructuredTemplateEditor({
                   </div>
                   {getVitalSignStatus("fc") && (
                     <p className="text-xs text-gray-500">
-                      Normal: {vitalSigns.fc.normalRange.min}-{vitalSigns.fc.normalRange.max} lpm
+                      Normal: {vitalSigns.fc?.normalRange.min}-{vitalSigns.fc?.normalRange.max} lpm
                     </p>
                   )}
                 </div>
@@ -256,7 +264,7 @@ export function StructuredTemplateEditor({
                   <Label className="text-xs text-gray-600">Frecuencia Respiratoria</Label>
                   <div className="relative">
                     <Input
-                      value={vitalSigns.fr.value}
+                      value={vitalSigns.fr?.value || ""}
                       onChange={(e) => handleVitalSignChange("fr", e.target.value)}
                       placeholder="16"
                       type="number"
@@ -269,7 +277,7 @@ export function StructuredTemplateEditor({
                   </div>
                   {getVitalSignStatus("fr") && (
                     <p className="text-xs text-gray-500">
-                      Normal: {vitalSigns.fr.normalRange.min}-{vitalSigns.fr.normalRange.max} rpm
+                      Normal: {vitalSigns.fr?.normalRange.min}-{vitalSigns.fr?.normalRange.max} rpm
                     </p>
                   )}
                 </div>
@@ -279,7 +287,7 @@ export function StructuredTemplateEditor({
                   <Label className="text-xs text-gray-600">Temperatura</Label>
                   <div className="relative">
                     <Input
-                      value={vitalSigns.temp.value}
+                      value={vitalSigns.temp?.value || ""}
                       onChange={(e) => handleVitalSignChange("temp", e.target.value)}
                       placeholder="36.5"
                       type="number"
@@ -293,7 +301,7 @@ export function StructuredTemplateEditor({
                   </div>
                   {getVitalSignStatus("temp") && (
                     <p className="text-xs text-gray-500">
-                      Normal: {vitalSigns.temp.normalRange.min}-{vitalSigns.temp.normalRange.max} °C
+                      Normal: {vitalSigns.temp?.normalRange.min}-{vitalSigns.temp?.normalRange.max} °C
                     </p>
                   )}
                 </div>
@@ -303,7 +311,7 @@ export function StructuredTemplateEditor({
                   <Label className="text-xs text-gray-600">Saturación O2</Label>
                   <div className="relative">
                     <Input
-                      value={vitalSigns.satO2.value}
+                      value={vitalSigns.satO2?.value || ""}
                       onChange={(e) => handleVitalSignChange("satO2", e.target.value)}
                       placeholder="98"
                       type="number"
@@ -316,7 +324,7 @@ export function StructuredTemplateEditor({
                   </div>
                   {getVitalSignStatus("satO2") && (
                     <p className="text-xs text-gray-500">
-                      Normal: {vitalSigns.satO2.normalRange.min}-{vitalSigns.satO2.normalRange.max} %
+                      Normal: {vitalSigns.satO2?.normalRange.min}-{vitalSigns.satO2?.normalRange.max} %
                     </p>
                   )}
                 </div>

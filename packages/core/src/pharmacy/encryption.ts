@@ -6,6 +6,7 @@ import { EncryptionKey, EncryptionAlgorithm } from '@red-salud/types';
 export interface EncryptionOptions {
   algorithm?: EncryptionAlgorithm;
   keyId?: string;
+  purpose?: EncryptionKey['purpose'];
 }
 
 export interface EncryptionResult {
@@ -243,12 +244,14 @@ export class EncryptionManager {
     if (purpose) {
       const purposeKeys = activeKeys.filter((key) => key.purpose === purpose);
       if (purposeKeys.length > 0) {
-        return purposeKeys[0].id;
+        const firstPurposeKey = purposeKeys[0];
+        if (firstPurposeKey) return firstPurposeKey.id;
       }
     }
 
     if (activeKeys.length > 0) {
-      return activeKeys[0].id;
+      const firstActiveKey = activeKeys[0];
+      if (firstActiveKey) return firstActiveKey.id;
     }
 
     throw new Error('No active encryption key found');
@@ -298,7 +301,7 @@ export class EncryptionManager {
 
   async generateKeyReport(): Promise<{
     keys: EncryptionKey[];
-    stats: ReturnType<typeof this.getKeyStats>;
+    stats: ReturnType<EncryptionManager['getKeyStats']>;
     recommendations: string[];
   }> {
     const keys = Array.from(this.keys.values());

@@ -124,11 +124,10 @@ export function ActiveSessionsModal({ isOpen, onClose }: ActiveSessionsModalProp
                 {sessions.map((session) => (
                   <div
                     key={session.id}
-                    className={`p-4 rounded-lg border-2 ${
-                      session.is_current
+                    className={`p-4 rounded-lg border-2 ${session.is_current
                         ? "border-indigo-200 bg-indigo-50"
                         : "border-gray-200 bg-white"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
@@ -140,7 +139,7 @@ export function ActiveSessionsModal({ isOpen, onClose }: ActiveSessionsModalProp
                             <p className="font-medium text-gray-900">
                               {session.device_name || session.browser}
                             </p>
-                            {session.is_current && (
+                            {session?.is_current && (
                               <span className="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
                                 Actual
                               </span>

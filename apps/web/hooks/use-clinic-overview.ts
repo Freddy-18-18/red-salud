@@ -12,9 +12,20 @@ import {
   getClinicById,
   getClinicLocations,
   getClinicOverviewStats,
+  getUserClinicRoles,
 } from '@/lib/supabase/services/clinics-service';
 import { generateOperationalAlerts } from '@/lib/supabase/services/clinic-operations-service';
-import type { ClinicLocation } from '@red-salud/types';
+import type { ClinicAlert, ClinicLocation } from '@red-salud/types';
+
+type UserClinicRole = {
+  clinic_id: string;
+  role: string;
+};
+
+type ClinicRow = {
+  id: string;
+  is_main?: boolean;
+};
 
 export function useClinicOverview(clinicId?: string, locationIds?: string[]) {
   const queryClient = useQueryClient();
@@ -27,6 +38,15 @@ export function useClinicOverview(clinicId?: string, locationIds?: string[]) {
   } = useQuery({
     queryKey: ['user-clinics'],
     queryFn: getUserClinics,
+  });
+
+  // Obtener roles de clínicas
+  const {
+    data: userRoles,
+    isLoading: loadingRoles,
+  } = useQuery({
+    queryKey: ['user-clinic-roles'],
+    queryFn: getUserClinicRoles,
   });
 
   // Obtener roles del usuario
@@ -84,15 +104,16 @@ export function useClinicOverview(clinicId?: string, locationIds?: string[]) {
   const getActiveLocation = (locationId?: string): ClinicLocation | undefined => {
     if (!locations) return undefined;
     if (locationId) {
-      return locations.find((l) => l.id === locationId);
+      return (locations as ClinicLocation[]).find((l: ClinicLocation) => l.id === locationId);
     }
-    return locations.find((l) => l.is_main) || locations[0];
+    const locationList = locations as ClinicLocation[];
+    return locationList.find((l: ClinicLocation) => !!l.is_main) || locationList[0];
   };
 
   const hasRole = (roles: string[]): boolean => {
     if (!userRoles || !clinicId) return false;
     return userRoles.some(
-      (ur) => ur.clinic_id === clinicId && roles.includes(ur.role)
+      (ur: UserClinicRole) => ur.clinic_id === clinicId && roles.includes(ur.role)
     );
   };
 
@@ -100,8 +121,8 @@ export function useClinicOverview(clinicId?: string, locationIds?: string[]) {
   const canManageOperations = () => hasRole(['owner', 'admin', 'manager', 'operations']);
   const canViewReports = () => hasRole(['owner', 'admin', 'finance', 'manager', 'auditor']);
 
-  const criticalAlerts = alerts?.filter((a) => a.severity === 'critical') || [];
-  const warningAlerts = alerts?.filter((a) => a.severity === 'warning') || [];
+  const criticalAlerts = ((alerts as ClinicAlert[] | undefined)?.filter((a) => a.severity === 'critical')) || [];
+  const warningAlerts = ((alerts as ClinicAlert[] | undefined)?.filter((a) => a.severity === 'warning')) || [];
 
   return {
     // Data
@@ -113,7 +134,7 @@ export function useClinicOverview(clinicId?: string, locationIds?: string[]) {
     userRoles,
 
     // Loading states
-    isLoading: loadingClinics || loadingClinic || loadingLocations || loadingStats,
+    isLoading: loadingClinics || loadingClinic || loadingLocations || loadingStats || loadingRoles,
     loadingClinics,
     loadingClinic,
     loadingLocations,
@@ -147,10 +168,12 @@ export function useClinicSelector() {
 
   const getClinicsByRole = (role: string) => {
     if (!clinics || !userRoles) return [];
-    const clinicIds = userRoles
-      .filter((ur) => ur.role === role)
-      .map((ur) => ur.clinic_id);
-    return clinics.filter((c) => clinicIds.includes(c.id));
+    const roleList = userRoles as UserClinicRole[];
+    const clinicsList = clinics as ClinicRow[];
+    const clinicIds = roleList
+      .filter((ur: UserClinicRole) => ur.role === role)
+      .map((ur: UserClinicRole) => ur.clinic_id);
+    return clinicsList.filter((c: ClinicRow) => clinicIds.includes(c.id));
   };
 
   const getOwnedClinics = () => getClinicsByRole('owner');

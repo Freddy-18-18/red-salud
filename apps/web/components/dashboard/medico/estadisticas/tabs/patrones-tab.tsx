@@ -54,7 +54,9 @@ export function PatronesTab({ doctorId, dateRange }: PatronesTabProps) {
           const dia = diasSemana[fecha.getDay()];
 
           horariosMap.set(hora, (horariosMap.get(hora) || 0) + 1);
-          diasMap.set(dia, (diasMap.get(dia) || 0) + 1);
+          if (dia) {
+            diasMap.set(dia, (diasMap.get(dia) || 0) + 1);
+          }
         });
 
         const horarios = Array.from(horariosMap.entries())

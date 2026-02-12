@@ -6,11 +6,19 @@ import { Upload, CheckCircle, AlertCircle, Loader2, Camera } from "lucide-react"
 import { Button } from "@red-salud/ui";
 import { Label } from "@red-salud/ui";
 
-interface CedulaVerificationData {
+export interface CedulaVerificationData {
   success: boolean;
   cedula?: string;
   nombre?: string;
   error?: string;
+  verified?: boolean;
+  message?: string;
+  requestId?: string;
+  extractedData?: {
+    documentNumber: string;
+    fullName: string;
+    dateOfBirth?: string;
+  };
 }
 
 interface CedulaPhotoUploadProps {
@@ -258,11 +266,10 @@ export function CedulaPhotoUpload({
       {/* Resultado de la Verificación */}
       {verificationStatus !== "idle" && (
         <div
-          className={`rounded-lg p-4 ${
-            verificationStatus === "success"
-              ? "bg-green-50 border border-green-200"
-              : "bg-red-50 border border-red-200"
-          }`}
+          className={`rounded-lg p-4 ${verificationStatus === "success"
+            ? "bg-green-50 border border-green-200"
+            : "bg-red-50 border border-red-200"
+            }`}
         >
           <div className="flex items-start gap-3">
             {verificationStatus === "success" ? (
@@ -272,22 +279,20 @@ export function CedulaPhotoUpload({
             )}
             <div className="flex-1">
               <p
-                className={`font-semibold ${
-                  verificationStatus === "success"
-                    ? "text-green-900"
-                    : "text-red-900"
-                }`}
+                className={`font-semibold ${verificationStatus === "success"
+                  ? "text-green-900"
+                  : "text-red-900"
+                  }`}
               >
                 {verificationStatus === "success"
                   ? "✅ Verificación Exitosa"
                   : "❌ Verificación Fallida"}
               </p>
               <p
-                className={`text-sm mt-1 ${
-                  verificationStatus === "success"
-                    ? "text-green-800"
-                    : "text-red-800"
-                }`}
+                className={`text-sm mt-1 ${verificationStatus === "success"
+                  ? "text-green-800"
+                  : "text-red-800"
+                  }`}
               >
                 {verificationMessage}
               </p>

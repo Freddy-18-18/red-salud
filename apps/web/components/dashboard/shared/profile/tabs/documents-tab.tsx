@@ -7,7 +7,7 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
-import { CedulaPhotoUpload } from "../components/cedula-photo-upload";
+import { CedulaPhotoUpload, type CedulaVerificationData } from "../components/cedula-photo-upload";
 
 interface DocumentsTabProps {
   userId?: string;
@@ -22,10 +22,7 @@ interface ProfileData {
   photoUploadDeadline?: string;
 }
 
-interface VerificationResult {
-  verified: boolean;
-  requestId: string;
-}
+
 
 export function DocumentsTab({ userId }: DocumentsTabProps) {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -62,7 +59,7 @@ export function DocumentsTab({ userId }: DocumentsTabProps) {
     }
   };
 
-  const handleVerificationComplete = async (data: VerificationResult) => {
+  const handleVerificationComplete = async (data: CedulaVerificationData) => {
     if (data.verified) {
       // Actualizar el perfil con la verificación de foto
       try {
@@ -74,7 +71,7 @@ export function DocumentsTab({ userId }: DocumentsTabProps) {
           body: JSON.stringify({
             userId,
             photoVerified: true,
-            diditRequestId: data.requestId,
+            diditRequestId: data.requestId || "",
           }),
         });
 
@@ -181,8 +178,8 @@ export function DocumentsTab({ userId }: DocumentsTabProps) {
       {/* Deadline Warning */}
       {profileData?.cedulaVerificada && !profileData?.photoVerified && daysRemaining !== null && (
         <aside className={`border rounded-lg p-4 mb-6 ${daysRemaining <= 7
-            ? "bg-red-50 border-red-200"
-            : "bg-yellow-50 border-yellow-200"
+          ? "bg-red-50 border-red-200"
+          : "bg-yellow-50 border-yellow-200"
           }`}>
           <div className="flex items-start gap-3">
             <AlertCircle className={`h-5 w-5 mt-0.5 ${daysRemaining <= 7 ? "text-red-600" : "text-yellow-600"

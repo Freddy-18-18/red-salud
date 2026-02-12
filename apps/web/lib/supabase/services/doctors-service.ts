@@ -214,7 +214,21 @@ export async function searchDoctors(filters: DoctorSearchFilters = {}) {
     return { success: false, error: error.message };
   }
 
-  return { success: true, data: data as DoctorSearchResult[] };
+  const results = (data || []).map(d => ({
+    ...d,
+    specialty: d.especialidad ? {
+      id: d.especialidad.id,
+      name: d.especialidad.name,
+      icon: d.especialidad.icon,
+      description: d.especialidad.description,
+    } : null,
+    nombre_completo: d.profile?.nombre_completo,
+    email: d.profile?.email,
+    telefono: d.profile?.telefono,
+    avatar_url: d.profile?.avatar_url,
+  }));
+
+  return { success: true, data: results };
 }
 
 export async function getFeaturedDoctors(limit: number = 10) {
@@ -235,7 +249,27 @@ export async function getFeaturedDoctors(limit: number = 10) {
     return { success: false, error: error.message };
   }
 
-  return { success: true, data: data as DoctorProfile[] };
+  const results = (data || []).map(d => ({
+    profile_id: d.profile_id,
+    specialty_id: d.especialidad_id,
+    specialty: d.especialidad ? {
+      id: d.especialidad.id,
+      name: d.especialidad.name,
+      icon: d.especialidad.icon,
+      description: d.especialidad.description,
+    } : null,
+    license_number: d.licencia_medica,
+    years_experience: d.anos_experiencia,
+    consultation_price: d.tarifa_consulta ? Number(d.tarifa_consulta) : null,
+    bio: d.biografia,
+    is_verified: d.verified,
+    nombre_completo: d.profile?.nombre_completo,
+    email: d.profile?.email,
+    avatar_url: d.profile?.avatar_url,
+    telefono: d.profile?.telefono,
+  }));
+
+  return { success: true, data: results };
 }
 
 // ============================================
@@ -491,7 +525,7 @@ export async function getAvailableSlots(
   const dayKey = isNaN(dayIndex) ? null : dayNames[dayIndex];
 
   // Ensure schedule exists and access property safely
-  const scheduleConfig = profile.schedule as Record<string, { enabled: boolean; slots?: Array<{ start: string; end: string }> }>;
+  const scheduleConfig = profile.schedule as unknown as Record<string, { enabled: boolean; slots?: Array<{ start: string; end: string }> }>;
   const daySchedule = dayKey ? scheduleConfig?.[dayKey] : null;
 
   if (!daySchedule?.enabled) {

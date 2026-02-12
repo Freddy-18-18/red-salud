@@ -213,7 +213,7 @@ export function OfficePhotos({ officeId, onChange }: OfficePhotosProps) {
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
                                 <div className="flex justify-end">
                                     <button
-                                        onClick={() => handleDelete(photo.id, photo.url)}
+                                        onClick={() => handleDelete(photo.id)}
                                         className="text-white hover:text-red-400 p-1 bg-black/20 rounded-full"
                                     >
                                         <Trash2 className="h-4 w-4" />

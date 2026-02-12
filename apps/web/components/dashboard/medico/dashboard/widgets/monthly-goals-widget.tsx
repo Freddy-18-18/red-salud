@@ -282,6 +282,7 @@ export function MonthlyGoalsWidget({
             };
 
             const columnName = columnMap[editingGoal.type];
+            if (!columnName) return;
 
             // 1. Obtener registro actual si existe
             const { data: existing } = await supabase
@@ -292,11 +293,11 @@ export function MonthlyGoalsWidget({
                 .eq('month', month)
                 .single();
 
-            const upsertData = {
+            const upsertData: Record<string, unknown> = {
                 doctor_id: doctorId,
                 year,
                 month,
-                [columnName]: newTarget,
+                [columnName as string]: newTarget,
                 // Mantener otros valores si existen
                 ...(existing ? {} : {
                     target_appointments: 0,

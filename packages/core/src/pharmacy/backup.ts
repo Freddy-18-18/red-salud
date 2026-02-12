@@ -2,7 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { createHash } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { compressToGzip } from 'lzutf8';
+// @ts-ignore
+import * as LZUTF8 from 'lzutf8';
 import {
   BackupConfig,
   BackupLog,
@@ -94,7 +95,7 @@ export class BackupManager {
     if (!config) {
       return {
         success: false,
-        log: this.createLog(configId, BackupStatus.FAILED, 'Configuration not found'),
+        log: this.createLog(configId, BackupStatus.FAILED, BackupType.FULL),
         error: 'Configuration not found',
       };
     }
@@ -102,7 +103,7 @@ export class BackupManager {
     if (!config.is_active) {
       return {
         success: false,
-        log: this.createLog(configId, BackupStatus.FAILED, 'Backup configuration is inactive'),
+        log: this.createLog(configId, BackupStatus.FAILED, config.backup_type),
         error: 'Backup configuration is inactive',
       };
     }
@@ -119,6 +120,8 @@ export class BackupManager {
       log.duration_seconds = Math.floor((log.completed_at.getTime() - log.started_at.getTime()) / 1000);
       log.size_bytes = Math.floor(Math.random() * 1000000000); // Simulated size
       log.size_compressed_bytes = Math.floor(log.size_bytes * 0.3); // 70% compression
+      // Note: LZUTF8 might need additional setup for Node.js if being used there
+      // log.size_compressed_bytes = LZUTF8.compressToGzip(new Uint8Array(log.size_bytes)).length;
       log.tables_backed_up = ['products', 'patients', 'invoices', 'batches', 'suppliers'];
       log.records_count = Math.floor(Math.random() * 100000);
       log.verified = true;
@@ -162,6 +165,7 @@ export class BackupManager {
       backup_type: backupType,
       started_at: new Date(),
       created_at: new Date(),
+      verified: false,
     };
   }
 
@@ -261,8 +265,8 @@ export class BackupManager {
     const avgDuration =
       completed > 0
         ? logs
-            .filter((l) => l.duration_seconds)
-            .reduce((sum, log) => sum + (log.duration_seconds || 0), 0) / completed
+          .filter((l) => l.duration_seconds)
+          .reduce((sum, log) => sum + (log.duration_seconds || 0), 0) / completed
         : 0;
 
     const lastSuccessfulBackup = logs

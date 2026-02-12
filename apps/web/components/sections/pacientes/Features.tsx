@@ -44,15 +44,20 @@ export function Features({ data }: { data?: Feature[] }) {
   // Use data from props if available, otherwise use default features but we need to map icons
   // Since icons are components, we need a way to map string names to components if data comes from DB
   // For now, let's assume the order matches or use the default features as structure and override content
-  
-  const featuresToDisplay = data && data.length > 0 ? data.map((item, index) => ({
-    ...item,
-    // Keep the hardcoded icon/style for now based on index, as DB only has text
-    icon: features[index % features.length].icon,
-    color: features[index % features.length].color,
-    bgColor: features[index % features.length].bgColor,
-    image: features[index % features.length].image,
-  })) : features;
+
+  const featuresToDisplay = data && data.length > 0 ? data.map((item, index) => {
+    const defaultFeature = features[index % features.length] || features[0];
+    if (!defaultFeature) return item; // Fallback if features is somehow empty
+
+    return {
+      ...item,
+      // Keep the hardcoded icon/style for now based on index, as DB only has text
+      icon: defaultFeature.icon,
+      color: defaultFeature.color,
+      bgColor: defaultFeature.bgColor,
+      image: defaultFeature.image,
+    };
+  }) : features;
 
   return (
     <section className="py-24 bg-white dark:bg-slate-950 overflow-hidden">
@@ -60,7 +65,7 @@ export function Features({ data }: { data?: Feature[] }) {
         {featuresToDisplay.map((feature, index) => (
           <div key={index} className={`flex flex-col lg:flex-row gap-12 items-center ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
             {/* Text Content */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -88,7 +93,7 @@ export function Features({ data }: { data?: Feature[] }) {
               )}
               {/* Fallback if no benefits array in data object but we are using default features array structure */}
               {!feature.benefits && (
-                 <ul className="space-y-3 pt-4">
+                <ul className="space-y-3 pt-4">
                   {[1, 2, 3].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                       <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
@@ -100,7 +105,7 @@ export function Features({ data }: { data?: Feature[] }) {
             </motion.div>
 
             {/* Visual/Image Placeholder */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -108,15 +113,15 @@ export function Features({ data }: { data?: Feature[] }) {
               className="flex-1 w-full"
             >
               <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl group">
-                 {/* Abstract representation since we don't have real images yet */}
-                 <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-200 dark:from-slate-900 dark:to-slate-800" />
-                 <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity duration-500">
-                    <feature.icon className="w-32 h-32" />
-                 </div>
-                 
-                 {/* Decorative elements */}
-                 <div className="absolute top-4 left-4 w-20 h-2 bg-slate-300 dark:bg-slate-700 rounded-full" />
-                 <div className="absolute top-8 left-4 w-12 h-2 bg-slate-300 dark:bg-slate-700 rounded-full" />
+                {/* Abstract representation since we don't have real images yet */}
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-200 dark:from-slate-900 dark:to-slate-800" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity duration-500">
+                  <feature.icon className="w-32 h-32" />
+                </div>
+
+                {/* Decorative elements */}
+                <div className="absolute top-4 left-4 w-20 h-2 bg-slate-300 dark:bg-slate-700 rounded-full" />
+                <div className="absolute top-8 left-4 w-12 h-2 bg-slate-300 dark:bg-slate-700 rounded-full" />
               </div>
             </motion.div>
           </div>

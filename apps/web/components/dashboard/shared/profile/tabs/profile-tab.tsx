@@ -41,7 +41,7 @@ export function ProfileTab({
   useEffect(() => {
     if (localData.cedula) {
       const match = localData.cedula.match(/^([VE])-?(\d+)$/i);
-      if (match) {
+      if (match && match[1] && match[2]) {
         setNacionalidadCedula(match[1].toUpperCase() as "V" | "E");
         setNumeroCedula(match[2]);
       }

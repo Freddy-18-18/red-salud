@@ -15,9 +15,11 @@ import { getUserActivity, getUserSessions } from "@/lib/supabase/services/activi
 interface ActivityRecord {
   id: string;
   user_id: string;
-  action: string;
-  timestamp: string;
-  details?: Record<string, unknown>;
+  activity_type: string;
+  description: string;
+  status: string;
+  created_at: string;
+  metadata?: Record<string, unknown>;
 }
 
 interface SessionRecord {
@@ -26,6 +28,7 @@ interface SessionRecord {
   device?: string;
   location?: string;
   last_active_at?: string;
+  is_current?: boolean;
 }
 
 interface ActivityTabProps {
@@ -183,11 +186,10 @@ export function ActivityTab({ userId }: ActivityTabProps) {
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      className={`p-2 rounded-lg ${
-                        activity.status === "success"
-                          ? "bg-green-100 dark:bg-green-900/30"
-                          : "bg-red-100 dark:bg-red-900/30"
-                      }`}
+                      className={`p-2 rounded-lg ${activity.status === "success"
+                        ? "bg-green-100 dark:bg-green-900/30"
+                        : "bg-red-100 dark:bg-red-900/30"
+                        }`}
                     >
                       {activity.status === "success" ? (
                         <Check className="h-4 w-4 text-green-600 dark:text-green-400" />

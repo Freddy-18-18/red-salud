@@ -81,7 +81,7 @@ export const PacientesTab = forwardRef<PacientesTabRef, PacientesTabProps>(
           return {
             patient_id: apt.paciente_id || apt.offline_patient_id,
             created_at: apt.created_at,
-            appointment_date: apt.fecha_hora,
+            appointment_date: apt.fecha_hora as string,
             patients: p ? {
               id: p.id,
               gender: null, // No hay genero en profiles
@@ -149,8 +149,11 @@ export const PacientesTab = forwardRef<PacientesTabRef, PacientesTabProps>(
             else if (edad <= 45) range = "31-45";
             else if (edad <= 60) range = "46-60";
 
-            if (p.gender === "male") porEdadMap[range].Masculino++;
-            else if (p.gender === "female") porEdadMap[range].Femenino++;
+            const rangeData = porEdadMap[range];
+            if (rangeData) {
+              if (p.gender === "male") rangeData.Masculino++;
+              else if (p.gender === "female") rangeData.Femenino++;
+            }
           }
         });
 

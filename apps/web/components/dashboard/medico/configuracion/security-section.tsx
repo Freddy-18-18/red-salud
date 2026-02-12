@@ -52,7 +52,7 @@ export function SecuritySection() {
   const [deleteOTP, setDeleteOTP] = useState("");
   const [verifyingStep, setVerifyingStep] = useState(false);
 
-  const [profile, setProfile] = useState<{ id: string; nombre_completo: string; telefono: string; cedula: string } | null>(null);
+  const [profile, setProfile] = useState<{ scheduled_deletion_at: string | null; deletion_initiated_at: string | null; email: string | null; two_factor_enabled: boolean | null } | null>(null);
   const [cancellingDeletion, setCancellingDeletion] = useState(false);
 
   // 2FA State
@@ -280,7 +280,7 @@ export function SecuritySection() {
       // Recargar perfil
       const { data } = await supabase
         .from('profiles')
-        .select('scheduled_deletion_at, deletion_initiated_at, email')
+        .select('scheduled_deletion_at, deletion_initiated_at, email, two_factor_enabled')
         .eq('id', (await supabase.auth.getUser()).data.user?.id)
         .single();
       setProfile(data);

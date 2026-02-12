@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { TabComponentProps, FormData } from '@/components/dashboard/profile/types';
+import type { TabComponentProps, FormData } from '@/components/dashboard/shared/profile/types';
 
 export function useMedicalForm(
   formData: FormData,

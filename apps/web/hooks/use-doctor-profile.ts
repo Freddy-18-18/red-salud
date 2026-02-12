@@ -6,7 +6,7 @@ import {
   updateDoctorProfile,
   getDoctorStats,
 } from '@/lib/supabase/services/doctors-service';
-import type { DoctorProfile, MedicalSpecialty, DoctorProfileFormData } from '@/lib/supabase/types/doctors';
+import type { DoctorProfile, DoctorProfileFormData } from '@/lib/supabase/types/doctors';
 
 export function useDoctorProfile(userId?: string) {
   const [profile, setProfile] = useState<DoctorProfile | null>(null);
@@ -34,11 +34,11 @@ export function useDoctorProfile(userId?: string) {
 
   useEffect(() => {
     if (!userId) return;
-    
+
     const loadData = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         const profileResult = await getDoctorProfile(userId);
         if (profileResult.success && profileResult.data) {
@@ -61,10 +61,10 @@ export function useDoctorProfile(userId?: string) {
         console.error('Error loading stats:', error);
         setError('Error loading stats');
       }
-      
+
       setLoading(false);
     };
-    
+
     loadData();
   }, [userId]);
 
@@ -78,7 +78,7 @@ export function useDoctorProfile(userId?: string) {
       'professional_phone', 'professional_email', 'clinic_address',
       'consultation_duration', 'consultation_price', 'accepts_insurance', 'bio', 'languages'
     ];
-    
+
     Object.keys(updates).forEach(key => {
       if (allowedFields.includes(key as keyof DoctorProfile)) {
         const value = updates[key as keyof DoctorProfile];

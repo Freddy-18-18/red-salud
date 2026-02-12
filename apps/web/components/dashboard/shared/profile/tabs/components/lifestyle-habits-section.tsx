@@ -1,6 +1,7 @@
 "use client";
 
 import { Label } from "@red-salud/ui";
+import type { FormData } from "../../types";
 
 const OPCIONES_FUMA = [
   { value: "no", label: "No fumo" },
@@ -22,20 +23,11 @@ const OPCIONES_ACTIVIDAD = [
   { value: "intensa", label: "Intensa" },
 ];
 
-interface LifestyleData {
-  fumar: boolean | null;
-  beber_alcohol: boolean | null;
-  ejercicio: string | null;
-  horas_sueno: number | null;
-  estres_nivel: string | null;
-  notas: string | null;
-}
-
 interface LifestyleHabitsProps {
   isEditing: boolean;
-  localData: LifestyleData;
-  setLocalData: (data: LifestyleData) => void;
-  formData: LifestyleData;
+  localData: FormData;
+  setLocalData: (data: FormData) => void;
+  formData: FormData;
 }
 
 export function LifestyleHabitsSection({
@@ -64,11 +56,10 @@ export function LifestyleHabitsSection({
                 onClick={() =>
                   setLocalData({ ...localData, fuma: opt.value })
                 }
-                className={`px-2 py-1.5 rounded-md border-2 transition-all text-xs font-medium ${
-                  localData.fuma === opt.value
-                    ? "border-orange-600 bg-orange-100 text-orange-900"
-                    : "border-gray-300 hover:border-gray-400 text-gray-700"
-                }`}
+                className={`px-2 py-1.5 rounded-md border-2 transition-all text-xs font-medium ${localData.fuma === opt.value
+                  ? "border-orange-600 bg-orange-100 text-orange-900"
+                  : "border-gray-300 hover:border-gray-400 text-gray-700"
+                  }`}
               >
                 {opt.label}
               </button>
@@ -99,11 +90,10 @@ export function LifestyleHabitsSection({
                     consumeAlcohol: opt.value,
                   })
                 }
-                className={`px-2 py-1.5 rounded-md border-2 transition-all text-xs font-medium ${
-                  localData.consumeAlcohol === opt.value
-                    ? "border-orange-600 bg-orange-100 text-orange-900"
-                    : "border-gray-300 hover:border-gray-400 text-gray-700"
-                }`}
+                className={`px-2 py-1.5 rounded-md border-2 transition-all text-xs font-medium ${localData.consumeAlcohol === opt.value
+                  ? "border-orange-600 bg-orange-100 text-orange-900"
+                  : "border-gray-300 hover:border-gray-400 text-gray-700"
+                  }`}
               >
                 {opt.label}
               </button>
@@ -135,11 +125,10 @@ export function LifestyleHabitsSection({
                     actividadFisica: opt.value,
                   })
                 }
-                className={`px-2 py-1.5 rounded-md border-2 transition-all text-xs font-medium ${
-                  localData.actividadFisica === opt.value
-                    ? "border-orange-600 bg-orange-100 text-orange-900"
-                    : "border-gray-300 hover:border-gray-400 text-gray-700"
-                }`}
+                className={`px-2 py-1.5 rounded-md border-2 transition-all text-xs font-medium ${localData.actividadFisica === opt.value
+                  ? "border-orange-600 bg-orange-100 text-orange-900"
+                  : "border-gray-300 hover:border-gray-400 text-gray-700"
+                  }`}
               >
                 {opt.label}
               </button>

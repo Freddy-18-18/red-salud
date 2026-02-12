@@ -46,21 +46,18 @@ export function generateSessionTokens(
 ) {
   const expiration = config.expirationInSeconds || 3600;
   const expiresAt = new Date(Date.now() + expiration * 1000);
-  
+
   return {
     rtcToken: generateRTCToken(
       config.appId,
       config.appCertificate,
       config.channelName,
-      config.uid,
-      role,
-      expiration
+      config.uid
     ),
     rtmToken: generateRTMToken(
       config.appId,
       config.appCertificate,
-      config.uid.toString(),
-      expiration
+      config.uid.toString()
     ),
     expiresAt,
   };

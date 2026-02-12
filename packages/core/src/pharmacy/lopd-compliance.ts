@@ -264,7 +264,7 @@ export class LOPDComplianceManager {
 
   async generateComplianceReport(
     options: ComplianceReportOptions,
-  ): Promise<LOPDAuditLog> {
+  ): Promise<LOPDComplianceReport> {
     const periodLogs = this.getAuditLogs({
       start_date: options.period_start,
       end_date: options.period_end,
@@ -419,9 +419,9 @@ export class LOPDComplianceManager {
 
     if (backupLogs.length === 0) return undefined;
 
-    return backupLogs
-      .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())[0]
-      .created_at;
+    const latest = backupLogs
+      .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())[0];
+    return latest?.created_at;
   }
 
   getReports(limit?: number): LOPDComplianceReport[] {

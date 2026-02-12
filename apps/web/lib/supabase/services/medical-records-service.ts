@@ -250,8 +250,9 @@ export async function getMedicalHistorySummary(
       // Doctores consultados
       if (record.medico) {
         const doctorId = record.medico.id;
-        if (doctoresMap.has(doctorId)) {
-          doctoresMap.get(doctorId).consultas++;
+        const doctorData = doctoresMap.get(doctorId);
+        if (doctorData) {
+          doctorData.consultas++;
         } else {
           doctoresMap.set(doctorId, {
             id: doctorId,

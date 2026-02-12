@@ -31,15 +31,16 @@ function TimelineCard({
     isLeft: boolean;
 }) {
     // Parsear valores para efectos visuales
-    const isPercentage = stat.value.toString().includes("%");
-    const isRatio = stat.value.toString().includes("/") && !stat.value.toString().includes("24/7");
-    const isNumeric = !isNaN(Number(stat.value));
+    const valueString = String(stat.value);
+    const isPercentage = valueString.includes("%");
+    const isRatio = valueString.includes("/") && !valueString.includes("24/7");
+    const isNumeric = !isNaN(Number(valueString)) && !isRatio && !isPercentage;
     const numericValue = isPercentage
-        ? parseInt(stat.value.replace("%", ""))
+        ? parseInt(valueString.replace("%", ""))
         : isNumeric
-            ? parseInt(stat.value)
+            ? parseInt(valueString)
             : null;
-    const ratioParts = isRatio ? stat.value.toString().split("/") : null;
+    const ratioParts = isRatio ? valueString.split("/") : null;
 
     const Icon = stat.icon;
 
@@ -71,7 +72,7 @@ function TimelineCard({
                                     <Counter value={numericValue} />
                                     {isPercentage && <span className="text-2xl sm:text-3xl">%</span>}
                                 </div>
-                            ) : isRatio && ratioParts ? (
+                            ) : isRatio && ratioParts && ratioParts[0] !== undefined && ratioParts[1] !== undefined ? (
                                 <div className="flex items-baseline gap-1">
                                     <Counter value={parseInt(ratioParts[0])} />
                                     <span className="text-2xl sm:text-3xl text-muted-foreground/60">
@@ -133,7 +134,7 @@ function TimelineCard({
 }
 
 export function ImpactSectionTimeline() {
-    const { stats } = useImpactData();
+    const { stats, loading } = useImpactData();
     const containerRef = useRef<HTMLElement>(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,

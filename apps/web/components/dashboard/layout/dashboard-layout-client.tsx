@@ -8,8 +8,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { PATIENT_MODULE_CONFIG } from "@/lib/constants";
+import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/supabase/auth";
 import { UserProfileModal } from "@/components/dashboard/shared/profile";
 import { DashboardSidebar } from "./dashboard-sidebar";
@@ -21,8 +20,8 @@ import { useSessionSetup, useSessionValidation } from "@/hooks/auth";
 import { ChatWidget } from "@/components/chatbot/chat-widget";
 import { useDoctorProfile } from "@/hooks/use-doctor-profile";
 import { useTourGuide } from "@/components/dashboard/shared/tour-guide/tour-guide-provider";
-import { CONFIGURACION_MEGA_MENU } from "@/components/dashboard/medico/configuracion/configuracion-mega-menu-config";
-import { ESTADISTICAS_MEGA_MENU } from "@/components/dashboard/medico/estadisticas/estadisticas-mega-menu-config";
+import { useMegaMenuConfig } from "@/hooks/dashboard/use-mega-menu-config";
+import { useDashboardMenuGroups } from "@/hooks/dashboard/use-dashboard-menu-groups";
 
 interface SecretaryPermissions {
   can_view_agenda?: boolean;
@@ -48,8 +47,6 @@ export function DashboardLayoutClient({
   secretaryPermissions,
 }: DashboardLayoutClientProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
@@ -57,36 +54,9 @@ export function DashboardLayoutClient({
   useSessionSetup();
   useSessionValidation();
 
-  // Detectar si estamos en la página de configuración, estadísticas o citas y configurar mega menú
-  const isConfiguracionPage = pathname?.includes("/configuracion");
-  const isEstadisticasPage = pathname?.includes("/estadisticas");
-  const activeTab = (searchParams?.get("tab") as string) || (isConfiguracionPage ? "perfil" : "resumen");
-
-  const megaMenuConfig = isConfiguracionPage
-    ? {
-      sections: CONFIGURACION_MEGA_MENU,
-      activeItem: activeTab,
-      onItemClick: (itemId: string) => {
-        const newUrl =
-          itemId === "perfil"
-            ? "/dashboard/medico/configuracion"
-            : `/dashboard/medico/configuracion?tab=${itemId}`;
-        router.push(newUrl, { scroll: false });
-      },
-    }
-    : isEstadisticasPage
-      ? {
-        sections: ESTADISTICAS_MEGA_MENU,
-        activeItem: activeTab,
-        onItemClick: (itemId: string) => {
-          const newUrl =
-            itemId === "resumen"
-              ? "/dashboard/medico/estadisticas"
-              : `/dashboard/medico/estadisticas?tab=${itemId}`;
-          router.push(newUrl, { scroll: false });
-        },
-      }
-      : undefined;
+  // Hooks de configuración de menú
+  const megaMenuConfig = useMegaMenuConfig();
+  const { menuGroups, dashboardRoute } = useDashboardMenuGroups(userRole, secretaryPermissions);
 
   // Hooks para médicos
   const { profile: doctorProfile } = useDoctorProfile(
@@ -120,57 +90,6 @@ export function DashboardLayoutClient({
       setProfileModalOpen(true);
     }
   };
-
-  // Configurar menú según el rol
-  const dashboardRoute = userRole === "secretaria"
-    ? "/dashboard/secretaria"
-    : userRole === "medico"
-      ? "/dashboard/medico"
-      : "/dashboard/paciente";
-
-  const menuGroups = userRole === "secretaria"
-    ? [
-      {
-        label: "Principal",
-        items: [
-          ...(secretaryPermissions?.can_view_agenda ? [
-            { key: "agenda", label: "Agenda", icon: "Calendar", route: "/dashboard/secretaria/agenda" }
-          ] : []),
-          ...(secretaryPermissions?.can_view_patients ? [
-            { key: "pacientes", label: "Pacientes", icon: "User", route: "/dashboard/secretaria/pacientes" }
-          ] : []),
-          ...(secretaryPermissions?.can_send_messages ? [
-            { key: "mensajes", label: "Mensajes", icon: "MessageSquare", route: "/dashboard/secretaria/mensajes" }
-          ] : []),
-        ],
-      },
-    ].filter(group => group.items.length > 0)
-    : userRole === "medico"
-      ? [
-        {
-          label: "Principal",
-          items: [
-            { key: "citas", label: "Agenda", icon: "Calendar", route: "/dashboard/medico/citas" },
-            { key: "consulta", label: "Consulta", icon: "Stethoscope", route: "/dashboard/medico/consulta" },
-            { key: "pacientes", label: "Pacientes", icon: "User", route: "/dashboard/medico/pacientes" },
-            { key: "mensajeria", label: "Mensajes", icon: "MessageSquare", route: "/dashboard/medico/mensajeria" },
-            { key: "telemedicina", label: "Telemedicina", icon: "Video", route: "/dashboard/medico/telemedicina" },
-            { key: "recipes", label: "Recipes", icon: "Pill", route: "/dashboard/medico/recetas" },
-            { key: "estadisticas", label: "Estadísticas", icon: "Activity", route: "/dashboard/medico/estadisticas" },
-          ],
-        },
-      ]
-      : [
-        {
-          label: "Principal",
-          items: Object.entries(PATIENT_MODULE_CONFIG)
-            .filter(([key]) => key !== "configuracion") // Excluir configuración del menú
-            .map(([key, config]) => ({
-              key,
-              ...config,
-            })),
-        },
-      ];
 
   const handleLogout = async () => {
     await signOut();

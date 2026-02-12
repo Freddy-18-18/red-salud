@@ -5,12 +5,12 @@ import { Button } from "@red-salud/ui";
 import { Input } from "@red-salud/ui";
 import { Badge } from "@red-salud/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/ui";
-import { 
-  UserPlus, 
-  Mail, 
-  Loader2, 
-  Trash2, 
-  Shield, 
+import {
+  UserPlus,
+  Mail,
+  Loader2,
+  Trash2,
+  Shield,
   CheckCircle2,
   XCircle,
   Clock
@@ -61,14 +61,31 @@ export function SecretariesSection() {
       if (error) throw error;
 
       if (data) {
-        const formattedSecretaries: Secretary[] = data.map((item: { id: string; secretary?: { email?: string; nombre_completo?: string; avatar_url?: string } | null; status: string; created_at: string }) => ({
-          id: item.id,
-          email: item.secretary?.email || "",
-          nombre_completo: item.secretary?.nombre_completo || "Sin nombre",
-          avatar_url: item.secretary?.avatar_url || null,
-          status: item.status,
-          created_at: item.created_at,
-        }));
+        type SecretaryProfileRow = {
+          email?: string | null;
+          nombre_completo?: string | null;
+          avatar_url?: string | null;
+        };
+
+        type DoctorSecretaryRow = {
+          id: string;
+          secretary?: SecretaryProfileRow | SecretaryProfileRow[] | null;
+          status: Secretary["status"] | string;
+          created_at: string;
+        };
+
+        const formattedSecretaries: Secretary[] = (data as unknown[]).map((row) => {
+          const item = row as DoctorSecretaryRow;
+          const sec = Array.isArray(item.secretary) ? item.secretary[0] : item.secretary;
+          return {
+            id: item.id,
+            email: sec?.email || "",
+            nombre_completo: sec?.nombre_completo || "Sin nombre",
+            avatar_url: sec?.avatar_url || null,
+            status: item.status as Secretary["status"],
+            created_at: item.created_at,
+          };
+        });
         setSecretaries(formattedSecretaries);
       }
     } catch (error) {
@@ -169,7 +186,7 @@ export function SecretariesSection() {
     };
     const variant = variants[status as keyof typeof variants] || variants.pending;
     const Icon = variant.icon;
-    
+
     return (
       <Badge variant="outline" className={variant.className}>
         <Icon className="h-3 w-3 mr-1" />

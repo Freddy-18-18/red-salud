@@ -35,12 +35,6 @@ export function RevenueAnalyticsWidget({ doctorId }: RevenueAnalyticsWidgetProps
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (doctorId) {
-      loadRevenueData();
-    }
-  }, [doctorId, loadRevenueData]);
-
   const loadRevenueData = useCallback(async () => {
     try {
       setLoading(true);
@@ -117,6 +111,12 @@ export function RevenueAnalyticsWidget({ doctorId }: RevenueAnalyticsWidgetProps
       setLoading(false);
     }
   }, [doctorId]);
+
+  useEffect(() => {
+    if (doctorId) {
+      loadRevenueData();
+    }
+  }, [doctorId, loadRevenueData]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-VE', {

@@ -1,4 +1,5 @@
-import type { SMSTemplate, SMSMessage, SMSTemplateType } from '@red-salud/types';
+import { SMSTemplateType } from '@red-salud/types';
+import type { SMSTemplate, SMSMessage } from '@red-salud/types';
 
 export class NotificationManager {
   /**
@@ -14,6 +15,7 @@ export class NotificationManager {
       name,
       template_type: templateType,
       content,
+      is_active: true,
       variables,
     };
   }
@@ -43,7 +45,7 @@ export class NotificationManager {
     patientId?: string,
     relatedEntityType?: string,
     relatedEntityId?: string,
-    createdBy: string
+    createdBy: string = 'system'
   ): Omit<SMSMessage, 'id' | 'created_at' | 'updated_at'> {
     return {
       template_id: templateId,
@@ -251,7 +253,7 @@ export class NotificationManager {
     totalUsd: number,
     createdBy: string
   ): Omit<SMSMessage, 'id' | 'created_at' | 'updated_at'> | null {
-    const template = this.getTemplateByType(templates, 'order_confirmation');
+    const template = this.getTemplateByType(templates, SMSTemplateType.ORDER_CONFIRMATION);
     if (!template) return null;
 
     const message = this.renderTemplate(template, {
@@ -282,7 +284,7 @@ export class NotificationManager {
     status: string,
     createdBy: string
   ): Omit<SMSMessage, 'id' | 'created_at' | 'updated_at'> | null {
-    const template = this.getTemplateByType(templates, 'delivery_update');
+    const template = this.getTemplateByType(templates, SMSTemplateType.DELIVERY_UPDATE);
     if (!template) return null;
 
     const message = this.renderTemplate(template, {

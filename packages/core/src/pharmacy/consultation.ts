@@ -18,6 +18,7 @@ export class ConsultationManager {
       symptoms: [],
       consulted_by: consultedBy,
       warehouse_id: warehouseId,
+      prescribed_medications: [],
     };
   }
 

@@ -28,13 +28,18 @@ export class SupplierComparisonManager {
   }> {
     return supplierPrices
       .filter(price => price.product_id === productId)
-      .map(price => ({
-        supplier: suppliers.find(s => s.id === price.supplier_id)!,
-        price_usd: price.price_usd,
-        price_ves: price.price_ves,
-        availability: price.availability,
-        last_updated: price.last_updated,
-      }))
+      .map(price => {
+        const supplier = suppliers.find(s => s.id === price.supplier_id);
+        if (!supplier) return null;
+        return {
+          supplier,
+          price_usd: price.price_usd,
+          price_ves: price.price_ves,
+          availability: price.availability,
+          last_updated: price.last_updated,
+        };
+      })
+      .filter((c): c is NonNullable<typeof c> => c !== null)
       .sort((a, b) => a.price_usd - b.price_usd);
   }
 
@@ -55,19 +60,22 @@ export class SupplierComparisonManager {
     quantity: number
   ): { supplier: Supplier; price_usd: number; price_ves: number } | null {
     const comparisons = this.compareProductPrices(productId, suppliers, supplierPrices);
-    
+
     // Filter suppliers with sufficient availability
     const available = comparisons.filter(c => c.availability >= quantity);
-    
+
     if (available.length === 0) {
       return null;
     }
 
+    const best = available[0];
+    if (!best) return null;
+
     // Return the cheapest available supplier
     return {
-      supplier: available[0].supplier,
-      price_usd: available[0].price_usd,
-      price_ves: available[0].price_ves,
+      supplier: best.supplier,
+      price_usd: best.price_usd,
+      price_ves: best.price_ves,
     };
   }
 
@@ -88,7 +96,7 @@ export class SupplierComparisonManager {
   ) {
     return products.map(product => {
       const comparisons = this.compareProductPrices(product.id, suppliers, supplierPrices);
-      
+
       return {
         product_id: product.id,
         product_name: product.name,
@@ -100,8 +108,8 @@ export class SupplierComparisonManager {
           availability: c.availability,
           last_updated: c.last_updated,
         })),
-        best_price_usd: comparisons.length > 0 ? comparisons[0].price_usd : null,
-        best_supplier: comparisons.length > 0 ? comparisons[0].supplier.name : null,
+        best_price_usd: comparisons[0]?.price_usd ?? null,
+        best_supplier: comparisons[0]?.supplier.name ?? null,
       };
     });
   }
@@ -121,7 +129,7 @@ export class PurchaseOrderManager {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const sequence = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    
+
     return `PO-${year}${month}${day}-${sequence}`;
   }
 
@@ -195,23 +203,26 @@ export class PurchaseOrderManager {
 
     products.forEach(product => {
       const stock = currentStock.get(product.id) || 0;
-      
+
       // Check if reordering is needed
       if (stock <= product.reorder_point) {
         const suggestedQuantity = product.max_stock - stock;
         const prices = supplierPrices.get(product.id) || [];
-        
+
         if (prices.length > 0) {
-          const bestPrice = prices.sort((a, b) => a.price_usd - b.price_usd)[0];
-          
-          suggestions.push({
-            product_id: product.id,
-            product_name: product.name,
-            suggested_quantity: suggestedQuantity,
-            best_supplier_id: bestPrice.supplier_id,
-            estimated_cost_usd: bestPrice.price_usd * suggestedQuantity,
-            estimated_cost_ves: bestPrice.price_ves * suggestedQuantity,
-          });
+          const sortedPrices = [...prices].sort((a, b) => a.price_usd - b.price_usd);
+          const bestPrice = sortedPrices[0];
+
+          if (bestPrice) {
+            suggestions.push({
+              product_id: product.id,
+              product_name: product.name,
+              suggested_quantity: suggestedQuantity,
+              best_supplier_id: bestPrice.supplier_id,
+              estimated_cost_usd: bestPrice.price_usd * suggestedQuantity,
+              estimated_cost_ves: bestPrice.price_ves * suggestedQuantity,
+            });
+          }
         }
       }
     });
@@ -267,7 +278,7 @@ export class SupplierPerformanceManager {
     orders: PurchaseOrder[]
   ): number {
     const supplierOrders = orders.filter(o => o.supplier_id === supplierId && o.status === 'received');
-    
+
     if (supplierOrders.length === 0) {
       return 0;
     }
@@ -291,7 +302,7 @@ export class SupplierPerformanceManager {
     defectiveItems: Map<string, number>
   ): number {
     const supplierOrders = orders.filter(o => o.supplier_id === supplierId && o.status === 'received');
-    
+
     if (supplierOrders.length === 0) {
       return 0;
     }
@@ -322,8 +333,8 @@ export class SupplierPerformanceManager {
     defectiveItems: Map<string, number>
   ) {
     return suppliers.map(supplier => {
-      const supplierOrders = orders.filter(o => o.supplier_id === supplierId);
-      
+      const supplierOrders = orders.filter(o => o.supplier_id === supplier.id);
+
       return {
         supplier_id: supplier.id,
         supplier_name: supplier.name,

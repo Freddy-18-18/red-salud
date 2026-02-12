@@ -5,12 +5,13 @@ import { Input } from "@red-salud/ui";
 import { Label } from "@red-salud/ui";
 import { TIPOS_SANGRE } from "../../constants";
 import { useImcCalculation } from "../hooks/use-imc-calculation";
+import type { FormData } from "../../types";
 
 interface VitalDataProps {
   isEditing: boolean;
-  localData: Record<string, unknown>;
-  setLocalData: (data: Record<string, unknown>) => void;
-  formData: Record<string, unknown>;
+  localData: FormData;
+  setLocalData: (data: FormData) => void;
+  formData: FormData;
 }
 
 export function VitalDataSection({
@@ -41,11 +42,10 @@ export function VitalDataSection({
               onClick={() =>
                 setLocalData({ ...localData, sexoBiologico: "masculino" })
               }
-              className={`flex-1 px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${
-                localData.sexoBiologico === "masculino"
-                  ? "border-blue-600 bg-blue-50 text-blue-900"
-                  : "border-gray-300 hover:border-gray-400 text-gray-700"
-              }`}
+              className={`flex-1 px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${localData.sexoBiologico === "masculino"
+                ? "border-blue-600 bg-blue-50 text-blue-900"
+                : "border-gray-300 hover:border-gray-400 text-gray-700"
+                }`}
             >
               Masculino
             </button>
@@ -54,11 +54,10 @@ export function VitalDataSection({
               onClick={() =>
                 setLocalData({ ...localData, sexoBiologico: "femenino" })
               }
-              className={`flex-1 px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${
-                localData.sexoBiologico === "femenino"
-                  ? "border-pink-600 bg-pink-50 text-pink-900"
-                  : "border-gray-300 hover:border-gray-400 text-gray-700"
-              }`}
+              className={`flex-1 px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${localData.sexoBiologico === "femenino"
+                ? "border-pink-600 bg-pink-50 text-pink-900"
+                : "border-gray-300 hover:border-gray-400 text-gray-700"
+                }`}
             >
               Femenino
             </button>
@@ -67,7 +66,7 @@ export function VitalDataSection({
           <p className="text-base font-medium text-gray-900 mt-1">
             {localData.sexoBiologico
               ? localData.sexoBiologico.charAt(0).toUpperCase() +
-                localData.sexoBiologico.slice(1)
+              localData.sexoBiologico.slice(1)
               : "No registrado"}
           </p>
         )}
@@ -88,11 +87,10 @@ export function VitalDataSection({
                 onClick={() =>
                   setLocalData({ ...localData, tipoSangre: tipo })
                 }
-                className={`px-2 py-1.5 rounded-md border-2 font-semibold text-sm transition-all ${
-                  localData.tipoSangre === tipo
-                    ? "border-red-600 bg-red-50 text-red-900"
-                    : "border-gray-300 hover:border-gray-400 text-gray-700"
-                }`}
+                className={`px-2 py-1.5 rounded-md border-2 font-semibold text-sm transition-all ${localData.tipoSangre === tipo
+                  ? "border-red-600 bg-red-50 text-red-900"
+                  : "border-gray-300 hover:border-gray-400 text-gray-700"
+                  }`}
               >
                 {tipo}
               </button>
@@ -115,11 +113,10 @@ export function VitalDataSection({
               onClick={() =>
                 setLocalData({ ...localData, donanteSangre: "si" })
               }
-              className={`flex-1 px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${
-                localData.donanteSangre === "si"
-                  ? "border-green-600 bg-green-50 text-green-900"
-                  : "border-gray-300 hover:border-gray-400 text-gray-700"
-              }`}
+              className={`flex-1 px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${localData.donanteSangre === "si"
+                ? "border-green-600 bg-green-50 text-green-900"
+                : "border-gray-300 hover:border-gray-400 text-gray-700"
+                }`}
             >
               Sí
             </button>
@@ -128,11 +125,10 @@ export function VitalDataSection({
               onClick={() =>
                 setLocalData({ ...localData, donanteSangre: "no" })
               }
-              className={`flex-1 px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${
-                localData.donanteSangre === "no"
-                  ? "border-gray-600 bg-gray-50 text-gray-900"
-                  : "border-gray-300 hover:border-gray-400 text-gray-700"
-              }`}
+              className={`flex-1 px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${localData.donanteSangre === "no"
+                ? "border-gray-600 bg-gray-50 text-gray-900"
+                : "border-gray-300 hover:border-gray-400 text-gray-700"
+                }`}
             >
               No
             </button>
@@ -142,8 +138,8 @@ export function VitalDataSection({
             {localData.donanteSangre === "si"
               ? "Sí"
               : localData.donanteSangre === "no"
-              ? "No"
-              : "No especificado"}
+                ? "No"
+                : "No especificado"}
           </p>
         )}
       </div>
@@ -202,13 +198,12 @@ export function VitalDataSection({
               </p>
             </div>
             <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                imcCategoria === "Normal"
-                  ? "bg-green-100 text-green-800"
-                  : imcCategoria === "Bajo peso"
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${imcCategoria === "Normal"
+                ? "bg-green-100 text-green-800"
+                : imcCategoria === "Bajo peso"
                   ? "bg-yellow-100 text-yellow-800"
                   : "bg-orange-100 text-orange-800"
-              }`}
+                }`}
             >
               {imcCategoria}
             </span>
@@ -273,11 +268,10 @@ export function VitalDataSection({
               onClick={() =>
                 setLocalData({ ...localData, donanteOrganos: "si" })
               }
-              className={`px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${
-                localData.donanteOrganos === "si"
-                  ? "border-green-600 bg-green-50 text-green-900"
-                  : "border-gray-300 hover:border-gray-400 text-gray-700"
-              }`}
+              className={`px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${localData.donanteOrganos === "si"
+                ? "border-green-600 bg-green-50 text-green-900"
+                : "border-gray-300 hover:border-gray-400 text-gray-700"
+                }`}
             >
               Sí
             </button>
@@ -286,11 +280,10 @@ export function VitalDataSection({
               onClick={() =>
                 setLocalData({ ...localData, donanteOrganos: "no" })
               }
-              className={`px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${
-                localData.donanteOrganos === "no"
-                  ? "border-gray-600 bg-gray-50 text-gray-900"
-                  : "border-gray-300 hover:border-gray-400 text-gray-700"
-              }`}
+              className={`px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${localData.donanteOrganos === "no"
+                ? "border-gray-600 bg-gray-50 text-gray-900"
+                : "border-gray-300 hover:border-gray-400 text-gray-700"
+                }`}
             >
               No
             </button>
@@ -302,11 +295,10 @@ export function VitalDataSection({
                   donanteOrganos: "no_especificado",
                 })
               }
-              className={`px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${
-                localData.donanteOrganos === "no_especificado"
-                  ? "border-gray-600 bg-gray-50 text-gray-900"
-                  : "border-gray-300 hover:border-gray-400 text-gray-700"
-              }`}
+              className={`px-3 py-2 rounded-md border-2 transition-all text-sm font-medium ${localData.donanteOrganos === "no_especificado"
+                ? "border-gray-600 bg-gray-50 text-gray-900"
+                : "border-gray-300 hover:border-gray-400 text-gray-700"
+                }`}
             >
               No especificar
             </button>
@@ -316,8 +308,8 @@ export function VitalDataSection({
             {localData.donanteOrganos === "si"
               ? "Sí"
               : localData.donanteOrganos === "no"
-              ? "No"
-              : "No especificado"}
+                ? "No"
+                : "No especificado"}
           </p>
         )}
       </div>

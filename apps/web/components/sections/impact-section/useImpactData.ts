@@ -62,12 +62,12 @@ export function useImpactData(): UseImpactDataReturn {
             ...baseStats[0],
             value: "8",
             description: "en un ecosistema unificado",
-        },
+        } as StatItem,
         {
             ...baseStats[1],
             value: loading
                 ? "..."
-                : coverage?.estadosConCobertura
+                : (coverage?.estadosConCobertura !== undefined && coverage?.totalEstados !== undefined)
                     ? `${coverage.estadosConCobertura}/${coverage.totalEstados}`
                     : "0/24",
             description: loading
@@ -75,17 +75,17 @@ export function useImpactData(): UseImpactDataReturn {
                 : coverage
                     ? `${coverage.porcentajePenetracion}% en Venezuela`
                     : "en Venezuela",
-        },
+        } as StatItem,
         {
             ...baseStats[2],
             value: "24/7",
             description: "para atención continua",
-        },
+        } as StatItem,
         {
             ...baseStats[3],
             value: "100%",
             description: "profesionales certificados",
-        },
+        } as StatItem,
     ];
 
     return { coverage, loading, stats };

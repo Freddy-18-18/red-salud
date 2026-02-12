@@ -384,17 +384,33 @@ export function PatientBirthdaysWidget({
 // HELPERS DE DATOS
 // ============================================================================
 
+interface RawPatientData {
+    patient: {
+        id: string;
+        nombre_completo: string;
+        avatar_url?: string;
+        fecha_nacimiento: string;
+    } | {
+        id: string;
+        nombre_completo: string;
+        avatar_url?: string;
+        fecha_nacimiento: string;
+    }[];
+}
+
 /**
  * Procesa pacientes de Supabase.
  */
-function processPatients(patients: Array<{ patient?: { id?: string; fecha_nacimiento?: string } }>): BirthdayPatient[] {
-    // Eliminar duplicados por ID
-    const uniquePatients = new Map<string, { id?: string; fecha_nacimiento?: string }>();
+function processPatients(patients: RawPatientData[]): BirthdayPatient[] {
+    // Eliminar duplicados por ID e inferir tipo correcto
+    const uniquePatients = new Map<string, { id: string; nombre_completo: string; avatar_url?: string; fecha_nacimiento: string }>();
+
     patients.forEach(p => {
-        if (p.patient?.id && p.patient.fecha_nacimiento) {
-            uniquePatients.set(p.patient.id, {
-                ...p.patient
-            });
+        // Supabase a veces devuelve el join como un array aunque sea 1:1
+        const patientData = Array.isArray(p.patient) ? p.patient[0] : p.patient;
+
+        if (patientData?.id && patientData.fecha_nacimiento) {
+            uniquePatients.set(patientData.id, patientData);
         }
     });
 
@@ -404,9 +420,9 @@ function processPatients(patients: Array<{ patient?: { id?: string; fecha_nacimi
         const turningAge = calculateTurningAge(birthDate, daysUntil);
 
         return {
-            id: patient.id,
-            name: patient.nombre_completo || "Paciente",
-            avatar: patient.avatar_url,
+            id: String(patient.id),
+            name: String(patient.nombre_completo || "Paciente"),
+            avatar: patient.avatar_url as string | undefined,
             birthDate,
             turningAge,
             daysUntil

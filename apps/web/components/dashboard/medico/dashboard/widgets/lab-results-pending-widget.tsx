@@ -356,17 +356,18 @@ function processLabOrders(orders: unknown[]): PendingLabResult[] {
     return orders.map((order: unknown) => {
         const orderData = order as Record<string, unknown>;
         const labResults = orderData.lab_results as Array<Record<string, unknown>> | undefined;
-        const testTypes = labResults?.map((r: Record<string, unknown>) => (r.test_type as Record<string, unknown>)?.nombre).filter(Boolean) || [];
+        const testTypes: string[] = labResults?.map((r: Record<string, unknown>) => String((r.test_type as Record<string, unknown>)?.nombre ?? '')).filter(Boolean) || [];
         const allValues = labResults?.flatMap((r: Record<string, unknown>) => (r.lab_result_values as Array<Record<string, unknown>>) || []) || [];
         const abnormalValues = allValues.filter((v: Record<string, unknown>) => v.es_anormal);
+        const patient = orderData.patient as Record<string, unknown> | undefined;
 
         return {
-            id: order.id,
-            patientId: order.paciente_id,
-            patientName: order.patient?.nombre_completo || "Paciente",
-            patientAvatar: order.patient?.avatar_url,
+            id: String(orderData.id ?? ''),
+            patientId: String(orderData.paciente_id ?? ''),
+            patientName: String(patient?.nombre_completo ?? 'Paciente'),
+            patientAvatar: patient?.avatar_url as string | undefined,
             testTypes: testTypes.length > 0 ? testTypes : ["Exámenes"],
-            resultDate: new Date(order.created_at),
+            resultDate: new Date(String(orderData.created_at ?? '')),
             hasAbnormal: abnormalValues.length > 0,
             abnormalCount: abnormalValues.length,
             status: "new" as const

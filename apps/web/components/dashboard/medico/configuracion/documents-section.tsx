@@ -173,7 +173,7 @@ export function DocumentsSection() {
                     filePath: doc.file_path,
                     fileSize: doc.file_size,
                     mimeType: doc.mime_type,
-                    extractedData: doc.extracted_data,
+                    extractedData: (doc.extracted_data || {}) as Record<string, unknown>,
                 })));
             }
         } catch (error) {
@@ -237,8 +237,8 @@ export function DocumentsSection() {
 
                 toast.success("Completa la verificación en la ventana emergente");
             }
-        } catch (error: Error) {
-            toast.error(error.message || "Error al iniciar verificación");
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Error al iniciar verificación");
             setIsVerifyingIdentity(false);
         }
     };
@@ -289,8 +289,8 @@ export function DocumentsSection() {
             } else {
                 toast.error(result.error || "Error al subir");
             }
-        } catch (error: Error) {
-            toast.error(error.message || "Error al subir");
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Error al subir");
         } finally {
             setUploadingType(null);
         }
@@ -367,8 +367,8 @@ export function DocumentsSection() {
             } else {
                 toast.error(result.error || "Error al analizar");
             }
-        } catch (error: Error) {
-            toast.error(error.message || "Error al analizar");
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Error al recibir respuesta");
         } finally {
             setAnalyzingId(null);
         }
@@ -643,35 +643,35 @@ export function DocumentsSection() {
                                         Información extraída automáticamente:
                                     </p>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                        {doc.extractedData.institution && (
+                                        {!!doc.extractedData.institution && (
                                             <div>
                                                 <span className="text-gray-500 dark:text-gray-400 text-xs">Institución</span>
                                                 <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                    {doc.extractedData.institution}
+                                                    {doc.extractedData.institution as string}
                                                 </p>
                                             </div>
                                         )}
-                                        {doc.extractedData.full_name && (
+                                        {!!doc.extractedData.full_name && (
                                             <div>
                                                 <span className="text-gray-500 dark:text-gray-400 text-xs">Nombre</span>
                                                 <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                    {doc.extractedData.full_name}
+                                                    {doc.extractedData.full_name as string}
                                                 </p>
                                             </div>
                                         )}
-                                        {doc.extractedData.specialty && (
+                                        {!!doc.extractedData.specialty && (
                                             <div>
                                                 <span className="text-gray-500 dark:text-gray-400 text-xs">Especialidad</span>
                                                 <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                    {doc.extractedData.specialty}
+                                                    {doc.extractedData.specialty as string}
                                                 </p>
                                             </div>
                                         )}
-                                        {doc.extractedData.issue_date && (
+                                        {!!doc.extractedData.issue_date && (
                                             <div>
                                                 <span className="text-gray-500 dark:text-gray-400 text-xs">Fecha</span>
                                                 <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {doc.extractedData.issue_date}
+                                                    {doc.extractedData.issue_date as string}
                                                 </p>
                                             </div>
                                         )}

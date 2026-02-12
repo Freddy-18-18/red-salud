@@ -6,11 +6,10 @@ import { StatsBentoGrid } from "./StatsBentoGrid";
 import { ProfessionalMainPanel } from "./ProfessionalMainPanel";
 
 interface DashboardV2Props {
-    profile: { nombre_completo: string; especialidad?: string };
     userId?: string;
 }
 
-export function DashboardV2({ profile, userId }: DashboardV2Props) {
+export function DashboardV2({ userId }: DashboardV2Props) {
     return (
         <div className="space-y-8 pb-12">
             <motion.div
@@ -26,7 +25,7 @@ export function DashboardV2({ profile, userId }: DashboardV2Props) {
 
                 {/* Main Content Area */}
                 <motion.div variants={fadeInUp}>
-                    <ProfessionalMainPanel profile={profile} userId={userId} />
+                    <ProfessionalMainPanel userId={userId} />
                 </motion.div>
             </motion.div>
         </div>

@@ -141,7 +141,11 @@ async function generateIntakeSchedule(reminderId: string, reminderData: CreateRe
 
     // Crear entrada para cada horario del día
     for (const time of reminderData.horarios) {
-      const [hours, minutes] = time.split(':');
+      const parts = time.split(':');
+      const hours = parts[0];
+      const minutes = parts[1];
+      if (hours === undefined || minutes === undefined) continue;
+
       const scheduledDate = new Date(date);
       scheduledDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 

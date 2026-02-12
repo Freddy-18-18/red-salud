@@ -84,7 +84,19 @@ const PRIORITY_ORDER: Record<TaskPriority, number> = {
  * resulta en "2025-12-29" en zonas horarias negativas.
  */
 function parseLocalDate(dateString: string): Date {
-    const [year, month, day] = dateString.split('-').map(Number);
+    const [yearStr, monthStr, dayStr] = dateString.split('-');
+    if (!yearStr || !monthStr || !dayStr) {
+        return new Date(Number.NaN);
+    }
+
+    const year = Number(yearStr);
+    const month = Number(monthStr);
+    const day = Number(dayStr);
+
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+        return new Date(Number.NaN);
+    }
+
     return new Date(year, month - 1, day);
 }
 

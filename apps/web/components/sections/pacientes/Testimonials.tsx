@@ -65,9 +65,9 @@ export function Testimonials({ data }: { data?: Testimonial[] }) {
           Lo que dicen nuestros pacientes
         </h2>
         <div className="flex justify-center gap-1 text-yellow-400 mb-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star key={star} className="w-5 h-5 fill-current" />
-            ))}
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star key={star} className="w-5 h-5 fill-current" />
+          ))}
         </div>
         <p className="text-slate-600 dark:text-slate-400">
           Calificación promedio de 4.9/5 basada en usuarios reales
@@ -76,115 +76,118 @@ export function Testimonials({ data }: { data?: Testimonial[] }) {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="flex justify-center items-center gap-4 md:gap-8">
-           {/* Prev Button (Desktop) */}
-           <Button
-             variant="outline"
-             size="icon"
-             className="hidden md:flex rounded-full h-12 w-12 border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 shadow-sm"
-             onClick={() => {
-               setIsAutoPlaying(false);
-               handlePrev();
-             }}
-             aria-label="Anterior testimonio"
-           >
-             <ChevronLeft className="h-6 w-6" />
-           </Button>
+          {/* Prev Button (Desktop) */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="hidden md:flex rounded-full h-12 w-12 border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 shadow-sm"
+            onClick={() => {
+              setIsAutoPlaying(false);
+              handlePrev();
+            }}
+            aria-label="Anterior testimonio"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
 
-           {/* Card Display */}
-           <div className="w-full max-w-2xl">
-             <AnimatePresence mode="wait">
-               <motion.div
-                 key={currentIndex}
-                 initial={{ opacity: 0, x: 20 }}
-                 animate={{ opacity: 1, x: 0 }}
-                 exit={{ opacity: 0, x: -20 }}
-                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                 className="bg-white dark:bg-slate-950 p-8 md:p-12 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-800 relative min-h-[300px] flex flex-col items-center text-center"
-               >
-                 <Quote className="w-10 h-10 text-blue-100 dark:text-blue-900/30 mb-6" />
-                 
-                 <div className="flex gap-1 text-yellow-400 mb-6">
-                   {[...Array(currentTestimonial.rating || 5)].map((_, i) => (
-                     <Star key={i} className="w-5 h-5 fill-current" />
-                   ))}
-                 </div>
-                 
-                 <p className="text-xl text-slate-700 dark:text-slate-300 mb-8 italic leading-relaxed flex-grow">
-                   &ldquo;{currentTestimonial.content}&rdquo;
-                 </p>
-                 
-                 <div className="flex items-center gap-4 mt-auto">
-                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                     {currentTestimonial.name ? currentTestimonial.name.charAt(0) : (currentTestimonial.author?.charAt(0) || 'A')}
-                   </div>
-                   <div className="text-left">
-                     <div className="font-bold text-slate-900 dark:text-white text-lg">
-                       {currentTestimonial.name || currentTestimonial.author}
-                     </div>
-                     <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                       {currentTestimonial.role}
-                     </div>
-                   </div>
-                 </div>
-               </motion.div>
-             </AnimatePresence>
-           </div>
+          {/* Card Display */}
+          <div className="w-full max-w-2xl">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="bg-white dark:bg-slate-950 p-8 md:p-12 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-800 relative min-h-[300px] flex flex-col items-center text-center"
+              >
+                {currentTestimonial && (
+                  <>
+                    <Quote className="w-10 h-10 text-blue-100 dark:text-blue-900/30 mb-6" />
 
-           {/* Next Button (Desktop) */}
-           <Button
-             variant="outline"
-             size="icon"
-             className="hidden md:flex rounded-full h-12 w-12 border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 shadow-sm"
-             onClick={() => {
-               setIsAutoPlaying(false);
-               handleNext();
-             }}
-             aria-label="Siguiente testimonio"
-           >
-             <ChevronRight className="h-6 w-6" />
-           </Button>
+                    <div className="flex gap-1 text-yellow-400 mb-6">
+                      {[...Array(currentTestimonial.rating || 5)].map((_, i) => (
+                        <Star key={i} className="w-5 h-5 fill-current" />
+                      ))}
+                    </div>
+
+                    <p className="text-xl text-slate-700 dark:text-slate-300 mb-8 italic leading-relaxed flex-grow">
+                      &ldquo;{currentTestimonial.content}&rdquo;
+                    </p>
+
+                    <div className="flex items-center gap-4 mt-auto">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                        {currentTestimonial.name ? currentTestimonial.name.charAt(0) : (currentTestimonial.author?.charAt(0) || 'A')}
+                      </div>
+                      <div className="text-left">
+                        <div className="font-bold text-slate-900 dark:text-white text-lg">
+                          {currentTestimonial.name || currentTestimonial.author}
+                        </div>
+                        <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                          {currentTestimonial.role}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Next Button (Desktop) */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="hidden md:flex rounded-full h-12 w-12 border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 shadow-sm"
+            onClick={() => {
+              setIsAutoPlaying(false);
+              handleNext();
+            }}
+            aria-label="Siguiente testimonio"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
         </div>
 
         {/* Mobile Controls */}
         <div className="flex md:hidden justify-center gap-6 mt-8">
-           <Button 
-            variant="outline" 
-            size="icon" 
+          <Button
+            variant="outline"
+            size="icon"
             className="rounded-full h-10 w-10"
             onClick={() => { setIsAutoPlaying(false); handlePrev(); }}
             aria-label="Anterior testimonio"
-           >
-             <ChevronLeft className="h-5 w-5" />
-           </Button>
-           
-           {/* Pagination Indicators */}
-           <div className="flex items-center gap-2">
-             {testimonialsToDisplay.map((_, idx) => (
-               <button
-                 key={idx}
-                 onClick={() => {
-                   setIsAutoPlaying(false);
-                   setCurrentIndex(idx);
-                 }}
-                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                   idx === currentIndex 
-                     ? "w-6 bg-blue-600" 
-                     : "bg-slate-300 dark:bg-slate-700 hover:bg-blue-400"
-                 }`}
-                 aria-label={`Ir al testimonio ${idx + 1}`}
-               />
-             ))}
-           </div>
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
 
-           <Button 
-            variant="outline" 
-            size="icon" 
+          {/* Pagination Indicators */}
+          <div className="flex items-center gap-2">
+            {testimonialsToDisplay.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setIsAutoPlaying(false);
+                  setCurrentIndex(idx);
+                }}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentIndex
+                    ? "w-6 bg-blue-600"
+                    : "bg-slate-300 dark:bg-slate-700 hover:bg-blue-400"
+                  }`}
+                aria-label={`Ir al testimonio ${idx + 1}`}
+              />
+            ))}
+          </div>
+
+          <Button
+            variant="outline"
+            size="icon"
             className="rounded-full h-10 w-10"
             onClick={() => { setIsAutoPlaying(false); handleNext(); }}
             aria-label="Siguiente testimonio"
-           >
-             <ChevronRight className="h-5 w-5" />
-           </Button>
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
         </div>
       </div>
     </section>

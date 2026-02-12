@@ -24,7 +24,12 @@ export class EmbeddingService {
                 input: cleanText,
             });
 
-            return response.data[0].embedding;
+            const embedding = response.data[0]?.embedding;
+            if (!embedding) {
+                throw new Error("Embedding response is empty");
+            }
+
+            return embedding;
         } catch (error) {
             console.error("Error generating embedding:", error);
             throw new Error(`Failed to generate embedding: ${error instanceof Error ? error.message : "Unknown error"}`);

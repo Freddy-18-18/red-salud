@@ -76,19 +76,19 @@ export function MedicationInput({
     // Auto-fill presentation, dosage, and frequency when medication is selected
     useEffect(() => {
         if (selectedMedication && presentaciones.length > 0 && !data.presentacion) {
-            onChange(index, "presentacion", presentaciones[0]);
+            onChange(index, "presentacion", presentaciones[0] || "");
         }
     }, [selectedMedication, presentaciones, data.presentacion, index, onChange]);
 
     useEffect(() => {
         if (selectedMedication && dosisComunes.length > 0 && !data.dosis) {
-            onChange(index, "dosis", dosisComunes[0]);
+            onChange(index, "dosis", dosisComunes[0] || "");
         }
     }, [selectedMedication, dosisComunes, data.dosis, index, onChange]);
 
     useEffect(() => {
         if (selectedMedication && frecuenciasComunes.length > 0 && !data.frecuencia) {
-            onChange(index, "frecuencia", frecuenciasComunes[0]);
+            onChange(index, "frecuencia", frecuenciasComunes[0] || "");
         }
     }, [selectedMedication, frecuenciasComunes, data.frecuencia, index, onChange]);
 

@@ -7,7 +7,7 @@ import { modulesData, ModuleSelector, PreviewPanel } from "./product-showcase";
 
 export function ProductShowcase() {
     const [activeModule, setActiveModule] = useState("agenda");
-    const currentModule = modulesData.find(m => m.id === activeModule) || modulesData[0];
+    const currentModule = modulesData.find(m => m.id === activeModule) || modulesData[0]!;
 
     return (
         <section id="demo" className="py-24 relative overflow-hidden">

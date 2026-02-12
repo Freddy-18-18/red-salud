@@ -16,10 +16,13 @@ import {
   getOperationalMetrics,
   getDailyMetricsSummary,
   getClinicDepartments,
+  createStaffShift as createStaffShiftFn,
 } from '@/lib/supabase/services/clinic-operations-service';
 import type {
   ResourceFilters,
   ClinicResource,
+  StaffShift,
+  OperationalMetrics,
 } from '@red-salud/types';
 
 export function useClinicOperations(locationIds?: string[]) {
@@ -75,7 +78,7 @@ export function useClinicOperations(locationIds?: string[]) {
     queryKey: ['daily-metrics', locationIds],
     queryFn: () => {
       if (!locationIds || locationIds.length === 0) return null;
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split('T')[0]!;
       return getDailyMetricsSummary(locationIds!, today);
     },
     enabled: !!locationIds && locationIds.length > 0,
@@ -98,7 +101,7 @@ export function useClinicOperations(locationIds?: string[]) {
 
   // Mutation: Crear turno
   const createShiftMutation = useMutation({
-    mutationFn: createStaffShift,
+    mutationFn: (shift: Parameters<typeof createStaffShiftFn>[0]) => createStaffShiftFn(shift),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-shifts'] });
       queryClient.invalidateQueries({ queryKey: ['staff-shifts'] });
@@ -116,15 +119,15 @@ export function useClinicOperations(locationIds?: string[]) {
 
   // Helpers
   const getResourcesByType = (type: ClinicResource['type']) => {
-    return resources?.filter((r) => r.type === type) || [];
+    return resources?.filter((r: ClinicResource) => r.type === type) || [];
   };
 
   const getAvailableResourcesByType = (type: ClinicResource['type']) => {
-    return resources?.filter((r) => r.type === type && r.status === 'available') || [];
+    return resources?.filter((r: ClinicResource) => r.type === type && r.status === 'available') || [];
   };
 
   const getResourcesByDepartment = (department: string) => {
-    return resources?.filter((r) => r.department === department) || [];
+    return resources?.filter((r: ClinicResource) => r.department === department) || [];
   };
 
   const beds = getResourcesByType('bed');
@@ -216,13 +219,13 @@ export function useOperationalMetrics(
   });
 
   // Calcular promedios
-  const averages = metrics
+  const averages = metrics && metrics.length > 0
     ? {
       avgAppointments:
-        metrics.reduce((sum, m) => sum + m.total_appointments, 0) / metrics.length,
+        metrics.reduce((sum: number, m: OperationalMetrics) => sum + m.total_appointments, 0) / metrics.length,
       avgCompletionRate:
         metrics.reduce(
-          (sum, m) =>
+          (sum: number, m: OperationalMetrics) =>
             sum +
             (m.total_appointments > 0
               ? (m.completed_appointments / m.total_appointments) * 100
@@ -230,9 +233,9 @@ export function useOperationalMetrics(
           0
         ) / metrics.length,
       avgOccupancy:
-        metrics.reduce((sum, m) => sum + (m.occupancy_rate || 0), 0) / metrics.length,
-      totalRevenue: metrics.reduce((sum, m) => sum + m.revenue_amount, 0),
-      totalPatients: metrics.reduce((sum, m) => sum + m.patient_count, 0),
+        metrics.reduce((sum: number, m: OperationalMetrics) => sum + (m.occupancy_rate || 0), 0) / metrics.length,
+      totalRevenue: metrics.reduce((sum: number, m: OperationalMetrics) => sum + m.revenue_amount, 0),
+      totalPatients: metrics.reduce((sum: number, m: OperationalMetrics) => sum + m.patient_count, 0),
     }
     : null;
 

@@ -427,7 +427,7 @@ export class EPrescriptionManager {
     endDate: Date,
   ): Promise<{
     prescriptions: EPrescription[];
-    stats: ReturnType<typeof this.getPrescriptionStats>;
+    stats: any;
     byStatus: Record<string, number>;
   }> {
     const prescriptions = this.prescriptions.filter(

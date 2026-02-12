@@ -24,6 +24,7 @@ interface TooltipProps {
 const CustomTooltip = ({ active, payload, formatter }: TooltipProps) => {
     if (active && payload && payload.length) {
         const data = payload[0];
+        if (!data) return null;
         return (
             <div className="bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 p-3 rounded-lg shadow-lg backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-sm">

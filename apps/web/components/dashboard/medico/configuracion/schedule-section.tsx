@@ -76,8 +76,8 @@ const DURACIONES = [
  * Determina si un horario es de mañana o tarde
  */
 const getTimeLabel = (inicio: string | undefined): "morning" | "afternoon" => {
-  if (!inicio) return "morning";
-  const hour = parseInt(inicio.split(':')[0]);
+  if (typeof inicio !== "string") return "morning";
+  const hour = parseInt(inicio.split(":")[0] || "0");
   return hour < 14 ? "morning" : "afternoon";
 };
 
@@ -96,9 +96,7 @@ export function ScheduleSection() {
   // Estado para Toast
   const [toast, setToast] = useState({ visible: false, message: "", type: "info" as "success" | "error" | "info" });
 
-  useEffect(() => {
-    loadOfficesAndSchedules();
-  }, [loadOfficesAndSchedules]);
+  // Se movió el useEffect para evitar error de hoisting (loadOfficesAndSchedules)
 
   /**
    * Retorna el horario predeterminado (lunes a viernes activos)
@@ -208,6 +206,10 @@ export function ScheduleSection() {
     }
   }, [loadScheduleForOffice, createDefaultOffice]);
 
+  useEffect(() => {
+    loadOfficesAndSchedules();
+  }, [loadOfficesAndSchedules]);
+
   /**
    * Cambia el consultorio seleccionado
    */
@@ -259,13 +261,16 @@ export function ScheduleSection() {
    * Alterna el estado activo/inactivo de un día
    */
   const toggleDay = (dia: string) => {
-    setSchedule(prev => ({
-      ...prev,
-      [dia]: {
-        ...prev[dia],
-        activo: !prev[dia]?.activo,
-      },
-    }));
+    setSchedule(prev => {
+      const current = prev[dia] || { activo: false, horarios: [] };
+      return {
+        ...prev,
+        [dia]: {
+          ...current,
+          activo: !current.activo,
+        },
+      };
+    });
   };
 
   /**
@@ -273,7 +278,7 @@ export function ScheduleSection() {
    */
   const addTimeSlot = (dia: string, type: "morning" | "afternoon") => {
     setSchedule(prev => {
-      const currentSlots = prev[dia]?.horarios || [];
+      const current = prev[dia] || { activo: false, horarios: [] };
       const newSlot = type === "morning"
         ? { inicio: "09:00", fin: "13:00" }
         : { inicio: "15:00", fin: "19:00" };
@@ -281,9 +286,9 @@ export function ScheduleSection() {
       return {
         ...prev,
         [dia]: {
-          ...prev[dia],
+          ...current,
           activo: true,
-          horarios: [...currentSlots, newSlot],
+          horarios: [...current.horarios, newSlot],
         },
       };
     });
@@ -294,12 +299,12 @@ export function ScheduleSection() {
    */
   const removeTimeSlot = (dia: string, index: number) => {
     setSchedule(prev => {
-      const currentSlots = prev[dia]?.horarios || [];
+      const current = prev[dia] || { activo: false, horarios: [] };
       return {
         ...prev,
         [dia]: {
-          ...prev[dia],
-          horarios: currentSlots.filter((_, i) => i !== index),
+          ...current,
+          horarios: current.horarios.filter((_, i) => i !== index),
         },
       };
     });
@@ -310,12 +315,14 @@ export function ScheduleSection() {
    */
   const updateTimeSlot = (dia: string, index: number, field: "inicio" | "fin", value: string) => {
     setSchedule(prev => {
-      const currentSlots = [...(prev[dia]?.horarios || [])];
-      currentSlots[index] = { ...currentSlots[index], [field]: value };
+      const current = prev[dia] || { activo: true, horarios: [] };
+      const currentSlots = [...current.horarios];
+      const existingSlot = currentSlots[index] || { inicio: "09:00", fin: "13:00" };
+      currentSlots[index] = { ...existingSlot, [field]: value };
       return {
         ...prev,
         [dia]: {
-          ...prev[dia],
+          ...current,
           horarios: currentSlots,
         },
       };
@@ -375,9 +382,9 @@ export function ScheduleSection() {
 
       {/* Duration Selector - Visual Radio Buttons */}
       <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-4 border border-gray-200 dark:border-gray-800">
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                Duración por Consulta
-              </h4>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          Duración por Consulta
+        </h4>
         <div className="grid grid-cols-4 gap-2">
           {DURACIONES.map((dur) => (
             <button
@@ -412,11 +419,10 @@ export function ScheduleSection() {
             return (
               <div
                 key={dia.key}
-                className={`border rounded-lg overflow-hidden transition-all flex flex-col min-w-0 ${
-                  daySchedule.activo
-                    ? 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/10'
-                    : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30'
-                }`}
+                className={`border rounded-lg overflow-hidden transition-all flex flex-col min-w-0 ${daySchedule.activo
+                  ? 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/10'
+                  : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30'
+                  }`}
               >
                 {/* Day Header */}
                 <div className="p-3 text-center border-b border-gray-200 dark:border-gray-800">

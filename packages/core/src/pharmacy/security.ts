@@ -99,7 +99,7 @@ export class RBACManager {
    */
   static hasPermission(user: User, permission: string): boolean {
     const permissions = this.rolePermissions[user.role] || [];
-    
+
     // Admin has all permissions
     if (user.role === UserRole.ADMIN) {
       return true;
@@ -197,17 +197,17 @@ export class RBACManager {
    * Check if user can view costs
    */
   static canViewCosts(user: User): boolean {
-    return this.hasPermission(user, 'inventory:read') && 
-           (user.role === UserRole.MANAGER || user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR);
+    return this.hasPermission(user, 'inventory:read') &&
+      (user.role === UserRole.MANAGER || user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR);
   }
 
   /**
    * Check if user can manage users
    */
   static canManageUsers(user: User): boolean {
-    return this.hasPermission(user, 'users:create') || 
-           this.hasPermission(user, 'users:update') || 
-           this.hasPermission(user, 'users:delete');
+    return this.hasPermission(user, 'users:create') ||
+      this.hasPermission(user, 'users:update') ||
+      this.hasPermission(user, 'users:delete');
   }
 
   /**
@@ -481,7 +481,7 @@ export class ImmutableAuditLogManager {
   static async log(data: Omit<AuditLog, 'id' | 'created_at'>): Promise<ImmutableAuditLog> {
     const previousLog = this.logs[this.logs.length - 1];
     const previousHash = previousLog ? previousLog.current_hash : 'GENESIS';
-    
+
     const sequenceNumber = this.currentSequence;
     this.currentSequence++;
 
@@ -525,7 +525,10 @@ export class ImmutableAuditLogManager {
   }> {
     for (let i = 0; i < this.logs.length; i++) {
       const current = this.logs[i];
-      const expectedPreviousHash = i === 0 ? 'GENESIS' : this.logs[i - 1].current_hash;
+      if (!current) continue;
+
+      const previous = i === 0 ? null : this.logs[i - 1];
+      const expectedPreviousHash = i === 0 ? 'GENESIS' : (previous?.current_hash || '');
 
       if (current.previous_hash !== expectedPreviousHash) {
         return {
@@ -655,7 +658,10 @@ export class ImmutableAuditLogManager {
 
         // Update sequence counter
         if (this.logs.length > 0) {
-          this.currentSequence = this.logs[this.logs.length - 1].sequence_number + 1;
+          const lastLog = this.logs[this.logs.length - 1];
+          if (lastLog) {
+            this.currentSequence = lastLog.sequence_number + 1;
+          }
         }
 
         return { success: true, integrityValid: true };

@@ -18,19 +18,26 @@ import { useBCVRate } from "@/hooks/use-bcv-rate";
 interface OfficePricingProps {
     value: {
         consultation_fee?: number;
-        currency?: string;
-        payment_methods?: string[];
-        insurance_accepted?: boolean;
+        price_currency: string;
+        payment_methods: string[];
+        accepts_insurance: boolean;
+        insurance_companies: string[];
     } | undefined;
-    onChange: (value: { consultation_fee?: number; currency?: string; payment_methods?: string[]; insurance_accepted?: boolean }) => void;
+    onChange: (value: {
+        consultation_fee?: number;
+        price_currency: string;
+        payment_methods: string[];
+        accepts_insurance: boolean;
+        insurance_companies: string[];
+    }) => void;
 }
 
-export function OfficePricing({ value = {}, onChange }: OfficePricingProps) {
-    const handleChange = (field: string, val: string | boolean | number) => {
+export function OfficePricing({ value = { price_currency: "USD", payment_methods: [], accepts_insurance: false, insurance_companies: [] }, onChange }: OfficePricingProps) {
+    const handleChange = (field: string, val: string | boolean | number | string[]) => {
         onChange({
             ...value,
             [field]: val
-        });
+        } as NonNullable<OfficePricingProps['value']>);
     };
 
     const togglePaymentMethod = (methodId: string) => {
@@ -47,8 +54,8 @@ export function OfficePricing({ value = {}, onChange }: OfficePricingProps) {
     const getConversionDisplay = (amount: number | undefined, currency: string | undefined) => {
         if (!amount || !bcvResponse?.rates) return null;
 
-        const usdRate = bcvResponse.rates.find(r => r.currency === 'USD')?.rate;
-        const eurRate = bcvResponse.rates.find(r => r.currency === 'EUR')?.rate;
+        const usdRate = bcvResponse.rates.find((r: { currency: string; rate: number }) => r.currency === 'USD')?.rate;
+        const eurRate = bcvResponse.rates.find((r: { currency: string; rate: number }) => r.currency === 'EUR')?.rate;
 
         if (currency === 'USD' && usdRate) {
             return (
@@ -89,7 +96,7 @@ export function OfficePricing({ value = {}, onChange }: OfficePricingProps) {
                     </p>
                     {bcvResponse?.rates && (
                         <div className="flex gap-1">
-                            {bcvResponse.rates.map(rate => (
+                            {bcvResponse.rates.map((rate: { currency: string; rate: number }) => (
                                 <Badge key={rate.currency} variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">
                                     {rate.currency}: {rate.rate.toLocaleString("es-VE")}
                                 </Badge>
@@ -117,7 +124,7 @@ export function OfficePricing({ value = {}, onChange }: OfficePricingProps) {
                             placeholder="0.00"
                         />
                     </div>
-                    {getConversionDisplay(value.consultation_fee, value.currency)}
+                    {getConversionDisplay(value.consultation_fee, value.price_currency)}
                 </div>
 
                 {/* Moneda */}
@@ -126,8 +133,8 @@ export function OfficePricing({ value = {}, onChange }: OfficePricingProps) {
                         Moneda
                     </Label>
                     <Select
-                        value={value.currency || "USD"}
-                        onValueChange={(val) => handleChange("currency", val)}
+                        value={value.price_currency || "USD"}
+                        onValueChange={(val: string) => handleChange("price_currency", val)}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Seleccionar Moneda" />
@@ -147,8 +154,8 @@ export function OfficePricing({ value = {}, onChange }: OfficePricingProps) {
             <div className="flex items-center space-x-2 border rounded-lg p-3 bg-gray-50 dark:bg-gray-800/50">
                 <Checkbox
                     id="insurance"
-                    checked={value.insurance_accepted || false}
-                    onCheckedChange={(checked) => handleChange("insurance_accepted", checked)}
+                    checked={value.accepts_insurance || false}
+                    onCheckedChange={(checked: boolean) => handleChange("accepts_insurance", !!checked)}
                 />
                 <Label htmlFor="insurance" className="text-sm cursor-pointer">
                     Acepta Seguros Médicos en esta sede

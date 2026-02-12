@@ -50,7 +50,8 @@ export default function TelemedicinePage() {
       failed: { variant: "destructive", icon: AlertCircle },
     };
 
-    const config = variants[status] || variants.scheduled;
+    const config = variants[status] ?? variants.scheduled;
+    if (!config) return null;
     const Icon = config.icon;
 
     return (
