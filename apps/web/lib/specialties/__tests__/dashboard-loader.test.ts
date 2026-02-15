@@ -61,15 +61,20 @@ import {
 // ============================================================================
 
 describe('Dashboard Loader — getAvailableDashboards', () => {
-  it('should return odontologia and cardiologia', () => {
+  it('should return all specialty dashboards', () => {
     const available = getAvailableDashboards();
     expect(available).toContain('odontologia');
     expect(available).toContain('cardiologia');
+    expect(available).toContain('neurologia');
+    expect(available).toContain('pediatria');
+    expect(available).toContain('traumatologia');
+    expect(available).toContain('oftalmologia');
+    expect(available).toContain('ginecologia');
   });
 
-  it('should return exactly 2 dashboards', () => {
+  it('should return 7 dashboards', () => {
     const available = getAvailableDashboards();
-    expect(available).toHaveLength(2);
+    expect(available).toHaveLength(7);
   });
 });
 
@@ -102,9 +107,16 @@ describe('Dashboard Loader — hasCustomDashboard', () => {
 
   it('should return false for specialties without custom dashboards', () => {
     expect(hasCustomDashboard('medicina-general')).toBe(false);
-    expect(hasCustomDashboard('neurologia')).toBe(false);
     expect(hasCustomDashboard('psiquiatria')).toBe(false);
-    expect(hasCustomDashboard('pediatria')).toBe(false); // Has override but no custom dashboard
+    expect(hasCustomDashboard('dermatologia')).toBe(false);
+  });
+
+  it('should return true for new Phase 4 dashboards', () => {
+    expect(hasCustomDashboard('neurologia')).toBe(true);
+    expect(hasCustomDashboard('pediatria')).toBe(true);
+    expect(hasCustomDashboard('traumatologia')).toBe(true);
+    expect(hasCustomDashboard('oftalmologia')).toBe(true);
+    expect(hasCustomDashboard('ginecologia')).toBe(true);
   });
 
   it('should return false for unknown slugs', () => {

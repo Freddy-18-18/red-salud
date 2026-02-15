@@ -38,10 +38,45 @@ const DentalDashboard = lazy(() =>
   }))
 );
 
-// Cardiology dashboard - to be created
+// Cardiology dashboard
 const CardiologyDashboard = lazy(() =>
   import('@/components/dashboard/medico/cardiology/cardiologia-dashboard').then(m => ({
     default: m.default || m.CardiologyDashboard
+  }))
+);
+
+// Neurology dashboard
+const NeurologyDashboard = lazy(() =>
+  import('@/components/dashboard/medico/neurologia/neurologia-dashboard').then(m => ({
+    default: m.default || m.NeurologiaDashboard
+  }))
+);
+
+// Pediatrics dashboard
+const PediatricsDashboard = lazy(() =>
+  import('@/components/dashboard/medico/pediatria/pediatria-dashboard').then(m => ({
+    default: m.default || m.PediatriaDashboard
+  }))
+);
+
+// Traumatology dashboard
+const TraumatologyDashboard = lazy(() =>
+  import('@/components/dashboard/medico/traumatologia/traumatologia-dashboard').then(m => ({
+    default: m.default || m.TraumatologiaDashboard
+  }))
+);
+
+// Ophthalmology dashboard
+const OphthalmologyDashboard = lazy(() =>
+  import('@/components/dashboard/medico/oftalmologia/oftalmologia-dashboard').then(m => ({
+    default: m.default || m.OftalmologiaDashboard
+  }))
+);
+
+// Gynecology dashboard
+const GynecologyDashboard = lazy(() =>
+  import('@/components/dashboard/medico/ginecologia/ginecologia-dashboard').then(m => ({
+    default: m.default || m.GinecologiaDashboard
   }))
 );
 
@@ -55,6 +90,11 @@ const LegacyFallbackDashboard = DashboardV2;
 const DASHBOARD_MAP: Record<string, React.ComponentType<any>> = {
   odontologia: DentalDashboard,
   cardiologia: CardiologyDashboard,
+  neurologia: NeurologyDashboard,
+  pediatria: PediatricsDashboard,
+  traumatologia: TraumatologyDashboard,
+  oftalmologia: OphthalmologyDashboard,
+  ginecologia: GynecologyDashboard,
 };
 
 /**
