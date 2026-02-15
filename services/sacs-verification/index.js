@@ -90,8 +90,8 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
     browser = await puppeteer.launch(PUPPETEER_CONFIG);
     const page = await browser.newPage();
 
-    // Configurar timeout y user agent
-    page.setDefaultTimeout(30000);
+    // Configurar timeout y user agent - AUMENTAR TIMEOUT por lentitud del SACS
+    page.setDefaultTimeout(60000); // 60 segundos
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
 
     // Navegar al SACS
@@ -149,21 +149,22 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
 
     // Esperar resultados
     try {
-      // Aumentar timeout a 25s por lentitud del SACS
-      await page.waitForSelector('#tableUser table', { timeout: 25000 });
+      // Aumentar timeout a 45s por lentitud extrema del SACS gubernamental
+      await page.waitForSelector('#tableUser table', { timeout: 45000 });
       console.log('[SACS] Tabla de datos básicos cargada');
 
       // Esperar adicional para tabla de profesiones (servidor lento)
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
       try {
-        await page.waitForSelector('#profesional tbody tr', { timeout: 5000 });
+        await page.waitForSelector('#profesional tbody tr', { timeout: 10000 });
         console.log('[SACS] Tabla de profesiones cargada');
       } catch (err) {
-        console.log('[SACS] Tabla de profesiones no encontrada');
+        console.log('[SACS] Tabla de profesiones no encontrada - puede que no tenga o esté cargando');
+        // No fallar aquí, intentar extraer de todos modos
       }
     } catch (err) {
-      console.log('[SACS] No se encontraron resultados');
+      console.log('[SACS] No se encontraron resultados - timeout o cédula no existe');
       await browser.close();
 
       return {
@@ -280,14 +281,30 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
     console.log('[SACS] - Datos básicos:', JSON.stringify(datosExtraidos.datosBasicos));
     console.log('[SACS] - Profesiones encontradas:', datosExtraidos.profesiones.length);
 
-    // Construir resultado
-    const nombreCompleto = datosExtraidos.datosBasicos['NOMBRE Y APELLIDO'] || null;
+    // Construir resultado - BUSCAR EL NOMBRE DE FORMA MÁS FLEXIBLE
+    let nombreCompleto = datosExtraidos.datosBasicos['NOMBRE Y APELLIDO'] || 
+                         datosExtraidos.datosBasicos['NOMBRE'] ||
+                         datosExtraidos.datosBasicos['Nombre y Apellido'] ||
+                         datosExtraidos.datosBasicos['Nombre'] ||
+                         null;
+    
+    // Si no encontramos el nombre con las keys esperadas, buscar cualquier key que contenga "nombre"
+    if (!nombreCompleto) {
+      const nombreKey = Object.keys(datosExtraidos.datosBasicos).find(key => 
+        key.toLowerCase().includes('nombre')
+      );
+      if (nombreKey) {
+        nombreCompleto = datosExtraidos.datosBasicos[nombreKey];
+        console.log(`[SACS] Nombre encontrado con key alternativa: "${nombreKey}"`);
+      }
+    }
 
     // CASO 1: No se encontró nombre o profesiones
     if (!nombreCompleto || datosExtraidos.profesiones.length === 0) {
       console.log('[SACS] ERROR: No se encontró nombre o profesiones');
       console.log('[SACS] - nombreCompleto:', nombreCompleto);
       console.log('[SACS] - profesiones.length:', datosExtraidos.profesiones.length);
+      console.log('[SACS] - Keys disponibles:', Object.keys(datosExtraidos.datosBasicos));
       return {
         success: false,
         verified: false,
