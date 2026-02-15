@@ -13,7 +13,7 @@ import { Card, CardContent } from "@red-salud/ui";
 import { cn } from "@red-salud/core/utils";
 import { ArrowRight, Lock } from "lucide-react";
 import type { SpecialtyModule } from "@/lib/specialties";
-import { LucideIconRenderer } from "./lucide-icon-renderer";
+import { DynamicIcon } from "@/components/ui/dynamic-icon";
 
 // ============================================================================
 // TYPES
@@ -70,7 +70,7 @@ export function SpecialtyModuleCard({
             {isLocked ? (
               <Lock className="h-4 w-4 text-muted-foreground" />
             ) : (
-              <LucideIconRenderer
+              <DynamicIcon
                 name={module.icon}
                 className="h-4 w-4"
                 style={{ color: primaryColor }}

@@ -34,7 +34,7 @@ import {
 import { cn } from "@red-salud/core/utils";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 import type { SpecialtyConfig, SpecialtyModule, ModuleGroup } from "@/lib/specialties";
-import { LucideIconRenderer } from "./lucide-icon-renderer";
+import { DynamicIcon } from "@/components/ui/dynamic-icon";
 import { SpecialtyKpiGrid } from "./specialty-kpi-grid";
 import { SpecialtyModuleCard } from "./specialty-module-card";
 
@@ -167,7 +167,7 @@ export function SpecialtyDashboardShell({
                     className="flex items-center justify-center w-10 h-10 rounded-xl"
                     style={{ backgroundColor: `${config.theme.primaryColor}20` }}
                   >
-                    <LucideIconRenderer
+                    <DynamicIcon
                       name={config.theme.icon}
                       className="h-5 w-5"
                       style={{ color: config.theme.primaryColor }}
@@ -244,7 +244,7 @@ export function SpecialtyDashboardShell({
                   onClick={() => toggleGroup(group.key)}
                   className="flex items-center gap-2 w-full text-left group"
                 >
-                  <LucideIconRenderer
+                  <DynamicIcon
                     name={group.meta.icon}
                     className="h-4 w-4 text-muted-foreground"
                   />

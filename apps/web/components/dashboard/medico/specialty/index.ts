@@ -12,3 +12,5 @@ export { SpecialtyKpiGrid } from "./specialty-kpi-grid";
 export { SpecialtyModuleCard } from "./specialty-module-card";
 export { SpecialtyWidgetGrid } from "./specialty-widget-grid";
 export { LucideIconRenderer } from "./lucide-icon-renderer";
+/** @deprecated Use DynamicIcon from @/components/ui/dynamic-icon instead */
+export { DynamicIcon } from "@/components/ui/dynamic-icon";
