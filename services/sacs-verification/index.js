@@ -176,6 +176,17 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
 
     console.log('[SACS] Extrayendo datos...');
 
+    // DEBUG: Guardar HTML de la página para debugging
+    const pageHTML = await page.content();
+    console.log('[SACS] HTML length:', pageHTML.length, 'caracteres');
+    
+    // Buscar indicadores de error o no encontrado
+    if (pageHTML.includes('No se encontraron resultados') || 
+        pageHTML.includes('no encontrado') ||
+        pageHTML.includes('sin resultados')) {
+      console.log('[SACS] ⚠️ Página indica que NO se encontraron resultados');
+    }
+
     // Extraer datos básicos y profesiones
     const datosExtraidos = await page.evaluate(() => {
       const datos = {
@@ -224,6 +235,9 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
       return datos;
     });
 
+    console.log('[SACS] Datos extraídos - keys en datosBasicos:', Object.keys(datosExtraidos.datosBasicos));
+    console.log('[SACS] Datos extraídos - profesiones encontradas:', datosExtraidos.profesiones.length);
+
     // Extraer postgrados si existen
     let postgrados = [];
     if (datosExtraidos.profesiones.length > 0 && datosExtraidos.profesiones[0].tiene_postgrado_btn) {
@@ -261,11 +275,19 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
 
     await browser.close();
 
+    // DEBUG: Ver qué datos se extrajeron
+    console.log('[SACS] Datos extraídos del SACS:');
+    console.log('[SACS] - Datos básicos:', JSON.stringify(datosExtraidos.datosBasicos));
+    console.log('[SACS] - Profesiones encontradas:', datosExtraidos.profesiones.length);
+
     // Construir resultado
     const nombreCompleto = datosExtraidos.datosBasicos['NOMBRE Y APELLIDO'] || null;
 
     // CASO 1: No se encontró nombre o profesiones
     if (!nombreCompleto || datosExtraidos.profesiones.length === 0) {
+      console.log('[SACS] ERROR: No se encontró nombre o profesiones');
+      console.log('[SACS] - nombreCompleto:', nombreCompleto);
+      console.log('[SACS] - profesiones.length:', datosExtraidos.profesiones.length);
       return {
         success: false,
         verified: false,
