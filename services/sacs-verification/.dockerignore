@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+package-lock.json
+.env
+.git
+.gitignore
+README.md
+test.js
+test-local.js
+test-quick.js
