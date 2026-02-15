@@ -25,6 +25,7 @@ app.use(express.json());
 // Configuración de Puppeteer
 const PUPPETEER_CONFIG = {
   headless: 'new',
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable',
   args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
