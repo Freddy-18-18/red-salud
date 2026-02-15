@@ -1,0 +1,346 @@
+/* ============================================================================
+   Red Salud Messenger - CSS Animations & Micro-interactions
+   ============================================================================ */
+
+/* --- Message Bubble Entrance --- */
+@keyframes msg-slide-in-right {
+  0% {
+    opacity: 0;
+    transform: translateX(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes msg-slide-in-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes msg-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.msg-bubble-own {
+  animation: msg-slide-in-right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.msg-bubble-other {
+  animation: msg-slide-in-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.msg-bubble-system {
+  animation: msg-fade-in 0.3s ease-out;
+}
+
+/* --- Typing Indicator Dots --- */
+@keyframes typing-dot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.typing-dot {
+  animation: typing-dot 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* --- Presence Pulse --- */
+@keyframes presence-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0);
+  }
+}
+
+.presence-online {
+  animation: presence-pulse 2s infinite;
+}
+
+/* --- Unread Badge Pop --- */
+@keyframes badge-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.unread-badge {
+  animation: badge-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --- Reaction Pop --- */
+@keyframes reaction-pop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.reaction-pop {
+  animation: reaction-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --- Emoji Picker Appear --- */
+@keyframes emoji-picker-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.emoji-picker-enter {
+  animation: emoji-picker-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Send Button Pulse --- */
+@keyframes send-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.send-btn-press {
+  animation: send-pulse 0.2s ease-in-out;
+}
+
+/* --- Conversation Item Hover --- */
+@keyframes conv-hover-bg {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+/* --- Slide panel animations --- */
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-right {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.panel-slide-in {
+  animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Attachment Menu --- */
+@keyframes attachment-menu-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.attachment-menu-enter {
+  animation: attachment-menu-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- New Chat Dialog Overlay --- */
+@keyframes overlay-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.dialog-overlay-enter {
+  animation: overlay-in 0.2s ease-out;
+}
+
+.dialog-content-enter {
+  animation: dialog-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Shimmer/Skeleton Loading --- */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    rgba(0, 0, 0, 0.04) 50%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* --- Date Separator Fade --- */
+@keyframes date-fade {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.date-separator {
+  animation: date-fade 0.3s ease-out;
+}
+
+/* --- Scroll to Bottom Button --- */
+@keyframes scroll-btn-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.scroll-btn-enter {
+  animation: scroll-btn-in 0.2s ease-out;
+}
+
+/* --- Custom Scrollbar for messaging panels --- */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 5px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 20px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Dark mode scrollbar */
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Plus button rotation --- */
+.rotate-45 {
+  transform: rotate(45deg);
+}
+
+/* --- Smooth transitions --- */
+.transition-messaging {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- WhatsApp-style chat background --- */
+.chat-bg-pattern {
+  background-color: #efeae2;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill:%23d4cfc6;opacity:0.06%7D%3C/style%3E%3C/defs%3E%3Cpath class='a' d='M20 20h4v4h-4zM40 40h4v4h-4zM60 20h4v4h-4zM80 40h4v4h-4zM100 20h4v4h-4zM120 40h4v4h-4zM140 20h4v4h-4zM160 40h4v4h-4zM180 20h4v4h-4z'/%3E%3Cpath class='a' d='M30 50h4v4h-4zM50 70h4v4h-4zM70 50h4v4h-4zM90 70h4v4h-4zM110 50h4v4h-4zM130 70h4v4h-4zM150 50h4v4h-4zM170 70h4v4h-4z'/%3E%3Cpath class='a' d='M20 100h4v4h-4zM40 120h4v4h-4zM60 100h4v4h-4zM80 120h4v4h-4zM100 100h4v4h-4zM120 120h4v4h-4zM140 100h4v4h-4zM160 120h4v4h-4zM180 100h4v4h-4z'/%3E%3Cpath class='a' d='M30 130h4v4h-4zM50 150h4v4h-4zM70 130h4v4h-4zM90 150h4v4h-4zM110 130h4v4h-4zM130 150h4v4h-4zM150 130h4v4h-4zM170 150h4v4h-4z'/%3E%3Cpath class='a' d='M20 180h4v4h-4zM60 180h4v4h-4zM100 180h4v4h-4zM140 180h4v4h-4zM180 180h4v4h-4z'/%3E%3C/svg%3E");
+}
+
+.dark .chat-bg-pattern {
+  background-color: #0b141a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill:%23ffffff;opacity:0.02%7D%3C/style%3E%3C/defs%3E%3Cpath class='a' d='M20 20h4v4h-4zM40 40h4v4h-4zM60 20h4v4h-4zM80 40h4v4h-4zM100 20h4v4h-4zM120 40h4v4h-4zM140 20h4v4h-4zM160 40h4v4h-4zM180 20h4v4h-4z'/%3E%3Cpath class='a' d='M30 50h4v4h-4zM50 70h4v4h-4zM70 50h4v4h-4zM90 70h4v4h-4zM110 50h4v4h-4zM130 70h4v4h-4zM150 50h4v4h-4zM170 70h4v4h-4z'/%3E%3C/svg%3E");
+}

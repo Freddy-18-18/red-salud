@@ -1,4 +1,3 @@
-
 /**
  * @file info-profesional-section.tsx
  * @description Sección de configuración para información profesional extendida del médico.
@@ -13,6 +12,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@red-salud/ui";
 import { Input } from "@red-salud/ui";
 import { Label } from "@red-salud/ui";
@@ -31,7 +31,8 @@ import {
     Twitter,
     Instagram,
     Stethoscope,
-    X
+    X,
+    Briefcase
 } from "lucide-react";
 
 import { SearchableSelect } from "@red-salud/ui";
@@ -40,6 +41,7 @@ import { SOCIAL_PLATFORMS } from "./constants/profile-data";
 import { MEDICAL_CONDITIONS_OPTIONS } from "./constants/medical-conditions";
 
 import { supabase } from "@/lib/supabase/client";
+import "./info-profesional-animations.css";
 
 /**
  * Datos del perfil profesional extendido
@@ -185,9 +187,22 @@ export function InfoProfesionalSection() {
             if (error) throw error;
 
             setIsEditing(false);
+            
+            // Success feedback (puedes reemplazar con un toast si tienes uno configurado)
+            const successMessage = document.createElement('div');
+            successMessage.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-in slide-in-from-bottom-5';
+            successMessage.textContent = '✓ Cambios guardados exitosamente';
+            document.body.appendChild(successMessage);
+            setTimeout(() => successMessage.remove(), 3000);
         } catch (error) {
             console.error("Error saving profile:", error);
-            alert("Error al guardar los cambios");
+            
+            // Error feedback
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-in slide-in-from-bottom-5';
+            errorMessage.textContent = '✕ Error al guardar los cambios';
+            document.body.appendChild(errorMessage);
+            setTimeout(() => errorMessage.remove(), 3000);
         } finally {
             setSaving(false);
         }
@@ -238,35 +253,94 @@ export function InfoProfesionalSection() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <div className="space-y-6">
+                {/* Header Skeleton */}
+                <div className="flex items-center justify-between mb-10">
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <div className="h-12 w-12 bg-gradient-to-br from-emerald-200 to-teal-300 rounded-xl animate-pulse" />
+                        </div>
+                        <div className="space-y-2">
+                            <div className="h-7 w-64 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+                            <div className="h-4 w-48 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+                        </div>
+                    </div>
+                    <div className="h-10 w-40 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+                </div>
+
+                {/* Grid Skeleton */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div 
+                            key={i}
+                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg"
+                        >
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="h-11 w-11 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-xl animate-pulse" />
+                                <div className="space-y-2 flex-1">
+                                    <div className="h-5 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                                    <div className="h-3 w-32 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="h-11 w-full bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+                                <div className="h-11 w-full bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+                                <div className="h-20 w-full bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
-            {/* Header con botón de editar */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                        Información Profesional
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Detalles sobre tu práctica médica, formación y servicios
-                    </p>
+        <div>
+            {/* Header Premium con botón de editar */}
+            <div className="flex items-center justify-between mb-10">
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl blur opacity-25" />
+                        <div className="relative p-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
+                            <Briefcase className="h-5 w-5 text-white" />
+                        </div>
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                            Información Profesional
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5 font-medium">
+                            Detalles sobre tu práctica médica, formación y servicios
+                        </p>
+                    </div>
                 </div>
                 {!isEditing ? (
-                    <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                    <Button 
+                        variant="outline" 
+                        size="lg"
+                        onClick={() => setIsEditing(true)}
+                        className="shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500"
+                    >
                         <Pen className="h-4 w-4 mr-2" />
-                        Editar
+                        Editar Información
                     </Button>
                 ) : (
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} disabled={saving}>
+                    <div className="flex gap-3">
+                        <Button 
+                            variant="outline" 
+                            size="lg"
+                            onClick={() => setIsEditing(false)} 
+                            disabled={saving}
+                            className="shadow-md hover:shadow-lg transition-all"
+                        >
                             Cancelar
                         </Button>
-                        <Button size="sm" onClick={handleSave} disabled={saving}>
+                        <Button 
+                            size="lg"
+                            onClick={handleSave} 
+                            disabled={saving}
+                            className="shadow-lg hover:shadow-xl transition-all bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                        >
                             {saving ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -275,7 +349,7 @@ export function InfoProfesionalSection() {
                             ) : (
                                 <>
                                     <Save className="h-4 w-4 mr-2" />
-                                    Guardar
+                                    Guardar Cambios
                                 </>
                             )}
                         </Button>
@@ -283,330 +357,441 @@ export function InfoProfesionalSection() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
-                {/* Columna Principal: Formación, Bio, Credenciales */}
+            {/* Grid Layout Profesional - 2 columnas en pantallas grandes */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {/* Columna Izquierda: Formación y Certificaciones */}
                 <div className="space-y-6">
                     {/* Universidad y Credenciales */}
-                    <div className="border dark:border-gray-700 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                                <GraduationCap className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <Label className="font-semibold text-gray-900 dark:text-gray-100">
-                                Formación y Credenciales
-                            </Label>
-                        </div>
-
-                        <div className="space-y-4">
-                            {/* Universidad */}
-                            <div>
-                                <Label className="text-xs text-gray-500 mb-1.5 block">Universidad de Egreso</Label>
-                                {isEditing ? (
-                                    <SearchableSelect
-                                        options={VENEZUELAN_UNIVERSITIES}
-                                        value={data.universidad}
-                                        onValueChange={(val) => setData({ ...data, universidad: val })}
-                                        placeholder="Seleccionar universidad..."
-                                        searchPlaceholder="Buscar universidad..."
-                                        emptyMessage="No se encontró la universidad"
-                                        className="w-full"
-                                    />
-                                ) : (
-                                    <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                                        {data.universidad || "No especificado"}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.1 }}
+                        className="group relative bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-purple-300 dark:hover:border-purple-700"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="relative">
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+                                    <GraduationCap className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <Label className="text-lg font-bold text-gray-900 dark:text-white">
+                                        Formación y Credenciales
+                                    </Label>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Información académica oficial
                                     </p>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Año Graduación */}
-                                <div>
-                                    <Label className="text-xs text-gray-500 mb-1.5 block">Año de Graduación</Label>
-                                    {isEditing ? (
-                                        <Input
-                                            type="number"
-                                            placeholder="Ej: 2010"
-                                            value={data.anio_graduacion || ""}
-                                            onChange={(e) => setData({ ...data, anio_graduacion: parseInt(e.target.value) || null })}
-                                            className="dark:bg-gray-800"
-                                        />
-                                    ) : (
-                                        <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                                            {data.anio_graduacion || "No especificado"}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Años de Experiencia */}
-                                <div>
-                                    <Label className="text-xs text-gray-500 mb-1.5 block">Años de Experiencia</Label>
-                                    {isEditing ? (
-                                        <Input
-                                            type="number"
-                                            min="0"
-                                            placeholder="Ej: 5"
-                                            value={data.anios_experiencia || ""}
-                                            onChange={(e) => setData({ ...data, anios_experiencia: parseInt(e.target.value) || 0 })}
-                                            className="dark:bg-gray-800"
-                                        />
-                                    ) : (
-                                        <Badge variant="outline" className="text-xs text-purple-600 border-purple-200 bg-purple-50">
-                                            {data.anios_experiencia} años de exp.
-                                        </Badge>
-                                    )}
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* N° Matrícula (SACS) */}
+                            <div className="space-y-5">
+                                {/* Universidad */}
                                 <div>
-                                    <Label className="text-xs text-gray-500 mb-1.5 block">Nº MPPS (Matrícula)</Label>
-                                    <div className="relative">
-                                        <Input
-                                            value={data.matricula || "Sin matrícula"}
-                                            disabled={true}
-                                            className="dark:bg-gray-800 bg-gray-50 text-gray-500"
-                                            readOnly
+                                    <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+                                        Universidad de Egreso
+                                    </Label>
+                                    {isEditing ? (
+                                        <SearchableSelect
+                                            options={VENEZUELAN_UNIVERSITIES}
+                                            value={data.universidad}
+                                            onValueChange={(val) => setData({ ...data, universidad: val })}
+                                            placeholder="Seleccionar universidad..."
+                                            searchPlaceholder="Buscar universidad..."
+                                            emptyMessage="No se encontró la universidad"
+                                            className="w-full"
                                         />
-                                        {data.matricula && (
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                                <Badge variant="secondary" className="h-5 px-1.5 text-[10px] bg-green-100 text-green-700 hover:bg-green-100 border-0">
-                                                    SACS VALIDADO
-                                                </Badge>
+                                    ) : (
+                                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <p className="text-sm text-gray-900 dark:text-white font-medium">
+                                                {data.universidad || "No especificado"}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    {/* Año Graduación */}
+                                    <div>
+                                        <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+                                            Año de Graduación
+                                        </Label>
+                                        {isEditing ? (
+                                            <Input
+                                                type="number"
+                                                placeholder="Ej: 2010"
+                                                value={data.anio_graduacion || ""}
+                                                onChange={(e) => setData({ ...data, anio_graduacion: parseInt(e.target.value) || null })}
+                                                className="dark:bg-gray-800 h-11"
+                                            />
+                                        ) : (
+                                            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                                <p className="text-sm text-gray-900 dark:text-white font-medium">
+                                                    {data.anio_graduacion || "No especificado"}
+                                                </p>
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-[10px] text-gray-500 mt-1">
-                                        Validado por SACS. No editable.
-                                    </p>
+
+                                    {/* Años de Experiencia */}
+                                    <div>
+                                        <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+                                            Experiencia
+                                        </Label>
+                                        {isEditing ? (
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                placeholder="Ej: 5"
+                                                value={data.anios_experiencia || ""}
+                                                onChange={(e) => setData({ ...data, anios_experiencia: parseInt(e.target.value) || 0 })}
+                                                className="dark:bg-gray-800 h-11"
+                                            />
+                                        ) : (
+                                            <Badge 
+                                                variant="outline" 
+                                                className="px-4 py-2 text-sm font-bold text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                                            >
+                                                {data.anios_experiencia} años
+                                            </Badge>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* N° Colegio */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    {/* N° Matrícula (SACS) */}
+                                    <div>
+                                        <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+                                            Nº MPPS (Matrícula)
+                                        </Label>
+                                        <div className="relative">
+                                            <Input
+                                                value={data.matricula || "Sin matrícula"}
+                                                disabled={true}
+                                                className="dark:bg-gray-800 bg-gray-50 text-gray-600 dark:text-gray-400 font-medium h-11 pr-32"
+                                                readOnly
+                                            />
+                                            {data.matricula && (
+                                                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                                    <Badge 
+                                                        variant="secondary" 
+                                                        className="h-6 px-2 text-[10px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200"
+                                                    >
+                                                        ✓ VALIDADO
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-1">
+                                            <span className="inline-block w-1 h-1 rounded-full bg-gray-400" />
+                                            Validado por SACS. No editable.
+                                        </p>
+                                    </div>
+
+                                    {/* N° Colegio */}
+                                    <div>
+                                        <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+                                            Nº Colegio Médicos
+                                        </Label>
+                                        {isEditing ? (
+                                            <Input
+                                                placeholder="Ej: 12345"
+                                                value={data.numero_colegio}
+                                                onChange={(e) => setData({ ...data, numero_colegio: e.target.value })}
+                                                className="dark:bg-gray-800 h-11"
+                                            />
+                                        ) : (
+                                            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                                <p className="text-sm text-gray-900 dark:text-white font-medium">
+                                                    {data.numero_colegio || "No especificado"}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Certificaciones y Subespecialidades */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.2 }}
+                        className="group relative bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-amber-300 dark:hover:border-amber-700"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="relative">
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="p-3 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg">
+                                    <Award className="h-5 w-5 text-white" />
+                                </div>
                                 <div>
-                                    <Label className="text-xs text-gray-500 mb-1.5 block">Nº Colegio de Médicos</Label>
+                                    <Label className="text-lg font-bold text-gray-900 dark:text-white">
+                                        Especialización y Logros
+                                    </Label>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Certificaciones profesionales
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-5">
+                                <div>
+                                    <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+                                        Certificaciones y Diplomados
+                                    </Label>
                                     {isEditing ? (
-                                        <Input
-                                            placeholder="Ej: 12345"
-                                            value={data.numero_colegio}
-                                            onChange={(e) => setData({ ...data, numero_colegio: e.target.value })}
-                                            className="dark:bg-gray-800"
+                                        <Textarea
+                                            rows={4}
+                                            value={data.certificaciones}
+                                            onChange={(e) => setData({ ...data, certificaciones: e.target.value })}
+                                            placeholder="Ej: Diplomado en Enfermedades Tropicales (2015)&#10;Certificación en Medicina de Emergencia (2018)"
+                                            className="dark:bg-gray-800 resize-none"
                                         />
                                     ) : (
-                                        <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                                            {data.numero_colegio || "No especificado"}
-                                        </p>
+                                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 min-h-[100px]">
+                                            <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">
+                                                {data.certificaciones || "No especificado"}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+                                        Subespecialidades / Áreas de Enfoque
+                                    </Label>
+                                    {isEditing ? (
+                                        <Textarea
+                                            rows={3}
+                                            value={data.subespecialidades}
+                                            onChange={(e) => setData({ ...data, subespecialidades: e.target.value })}
+                                            placeholder="Ej: Cardiología Intervencionista, Electrofisiología"
+                                            className="dark:bg-gray-800 resize-none"
+                                        />
+                                    ) : (
+                                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <p className="text-sm text-gray-900 dark:text-white">
+                                                {data.subespecialidades || "No especificado"}
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Certificaciones y Subespecialidades */}
-                    <div className="border dark:border-gray-700 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-                                <Award className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                            </div>
-                            <Label className="font-semibold text-gray-900 dark:text-gray-100">
-                                Especialización y Logros
-                            </Label>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <Label className="text-xs text-gray-500 mb-1.5 block">Certificaciones y Diplomados</Label>
-                                {isEditing ? (
-                                    <Textarea
-                                        rows={3}
-                                        value={data.certificaciones}
-                                        onChange={(e) => setData({ ...data, certificaciones: e.target.value })}
-                                        placeholder="Ej: Diplomado en Enfermedades Tropicales (2015)&#10;Certificación en Medicina de Emergencia (2018)"
-                                        className="dark:bg-gray-800"
-                                    />
-                                ) : (
-                                    <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                                        {data.certificaciones || "No especificado"}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <Label className="text-xs text-gray-500 mb-1.5 block">Subespecialidades / Áreas de Enfoque</Label>
-                                {isEditing ? (
-                                    <Textarea
-                                        rows={2}
-                                        value={data.subespecialidades}
-                                        onChange={(e) => setData({ ...data, subespecialidades: e.target.value })}
-                                        placeholder="Ej: Cardiología Intervencionista, Electrofisiología"
-                                        className="dark:bg-gray-800"
-                                    />
-                                ) : (
-                                    <p className="text-sm text-gray-700 dark:text-gray-300">
-                                        {data.subespecialidades || "No especificado"}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Enfermedades y Condiciones */}
-                    <div className="border dark:border-gray-700 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="p-2 bg-rose-100 dark:bg-rose-900/30 rounded-lg">
-                                <Stethoscope className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-                            </div>
-                            <div>
-                                <Label className="font-semibold text-gray-900 dark:text-gray-100">
-                                    Enfermedades y Condiciones
-                                </Label>
-                                <p className="text-[10px] text-gray-500 font-normal">
-                                    Ayuda a los pacientes a encontrarte cuando busquen sus síntomas.
-                                </p>
-                            </div>
-                        </div>
-
-                        {isEditing ? (
-                            <div className="space-y-3">
-                                <SearchableSelect
-                                    options={MEDICAL_CONDITIONS_OPTIONS}
-                                    value=""
-                                    onValueChange={(val) => {
-                                        if (val && !data.condiciones_tratadas.includes(val)) {
-                                            addCondicion(val);
-                                        }
-                                    }}
-                                    placeholder="Buscar enfermedad o condición..."
-                                    searchPlaceholder="Escribe para buscar..."
-                                    emptyMessage="No encontrado. Presiona Enter para agregar."
-                                    className="w-full"
-                                />
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                    {data.condiciones_tratadas.map((condicion, index) => (
-                                        <Badge
-                                            key={index}
-                                            variant="secondary"
-                                            className="pl-2 pr-1 py-0.5 gap-1 hover:bg-rose-100 bg-rose-50 text-rose-700 border-rose-200"
-                                        >
-                                            {condicion}
-                                            <button
-                                                type="button"
-                                                onClick={() => removeCondicion(condicion)}
-                                                className="h-3 w-3 rounded-full hover:bg-rose-200 flex items-center justify-center transition-colors"
-                                            >
-                                                <X className="h-2.5 w-2.5" />
-                                            </button>
-                                        </Badge>
-                                    ))}
-                                </div>
-                                <p className="text-xs text-gray-400">
-                                    Selecciona de la lista
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="flex flex-wrap gap-2">
-                                {data.condiciones_tratadas.length > 0 ? (
-                                    data.condiciones_tratadas.map((condicion, index) => (
-                                        <Badge key={index} variant="outline" className="border-rose-200 text-rose-700 bg-rose-50">
-                                            {condicion}
-                                        </Badge>
-                                    ))
-                                ) : (
-                                    <span className="text-sm text-gray-500">No especificado</span>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Redes Sociales */}
-                    <div className="border dark:border-gray-700 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="p-2 bg-pink-100 dark:bg-pink-900/30 rounded-lg">
-                                <Globe className="h-4 w-4 text-pink-600 dark:text-pink-400" />
-                            </div>
-                            <Label className="font-semibold text-gray-900 dark:text-gray-100">
-                                Presencia Digital
-                            </Label>
-                        </div>
-
-                        <div className="space-y-3">
-                            {SOCIAL_PLATFORMS.map((platform) => {
-                                const Icon = platform.id === 'instagram' ? Instagram :
-                                    platform.id === 'facebook' ? Facebook :
-                                        platform.id === 'linkedin' ? Linkedin :
-                                            platform.id === 'twitter' ? Twitter : Globe;
-                                const socialUrl = data.redes_sociales[platform.id];
-
-                                return (
-                                    <div key={platform.id} className="flex items-center gap-3">
-                                        <Icon className="h-4 w-4 text-gray-400 shrink-0" />
-                                        {isEditing ? (
-                                            <Input
-                                                placeholder={platform.placeholder}
-                                                value={socialUrl || ""}
-                                                onChange={(e) => handleSocialChange(platform.id, e.target.value)}
-                                                className="h-8 text-sm dark:bg-gray-800"
-                                            />
-                                        ) : (
-                                            socialUrl ? (
-                                                <a
-                                                    href={socialUrl.startsWith('http') ? socialUrl : `https://${platform.prefix}${socialUrl}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-sm text-blue-600 hover:underline truncate"
-                                                >
-                                                    {socialUrl}
-                                                </a>
-                                            ) : (
-                                                <span className="text-sm text-gray-400 italic">No agregado</span>
-                                            )
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                    </div>
+                    </motion.div>
 
                     {/* Idiomas */}
-                    <div className="border dark:border-gray-700 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                                <Languages className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.3 }}
+                        className="group relative bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-indigo-300 dark:hover:border-indigo-700"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="relative">
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="p-3 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg">
+                                    <Languages className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <Label className="text-lg font-bold text-gray-900 dark:text-white">
+                                        Idiomas
+                                    </Label>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Lenguajes de comunicación
+                                    </p>
+                                </div>
                             </div>
-                            <Label className="font-semibold text-gray-900 dark:text-gray-100">
-                                Idiomas
-                            </Label>
-                        </div>
-                        {isEditing ? (
-                            <div className="flex flex-wrap gap-2">
-                                {IDIOMAS_DISPONIBLES.map((idioma) => (
-                                    <button
-                                        key={idioma}
-                                        type="button"
-                                        onClick={() => toggleIdioma(idioma)}
-                                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${data.idiomas.includes(idioma)
-                                            ? "bg-indigo-600 text-white"
-                                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            {isEditing ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {IDIOMAS_DISPONIBLES.map((idioma) => (
+                                        <button
+                                            key={idioma}
+                                            type="button"
+                                            onClick={() => toggleIdioma(idioma)}
+                                            className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${data.idiomas.includes(idioma)
+                                                ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg scale-105"
+                                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-105"
                                             }`}
-                                    >
-                                        {idioma}
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="flex flex-wrap gap-2">
-                                {data.idiomas.length > 0 ? (
-                                    data.idiomas.map((idioma) => (
-                                        <Badge key={idioma} variant="secondary">
+                                        >
                                             {idioma}
-                                        </Badge>
-                                    ))
-                                ) : (
-                                    <span className="text-sm text-gray-500">No especificado</span>
-                                )}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-wrap gap-2">
+                                    {data.idiomas.length > 0 ? (
+                                        data.idiomas.map((idioma) => (
+                                            <Badge 
+                                                key={idioma} 
+                                                variant="secondary"
+                                                className="px-4 py-2 text-sm font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                                            >
+                                                {idioma}
+                                            </Badge>
+                                        ))
+                                    ) : (
+                                        <span className="text-sm text-gray-500">No especificado</span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                </div>
+
+                {/* Columna Derecha: Enfermedades y Redes Sociales */}
+                <div className="space-y-6">
+                    {/* Enfermedades y Condiciones */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.4 }}
+                        className="group relative bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-rose-300 dark:hover:border-rose-700"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="relative">
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="p-3 bg-gradient-to-br from-rose-500 to-rose-600 rounded-xl shadow-lg">
+                                    <Stethoscope className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <Label className="text-lg font-bold text-gray-900 dark:text-white">
+                                        Enfermedades y Condiciones
+                                    </Label>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Mejora tu visibilidad en búsquedas
+                                    </p>
+                                </div>
                             </div>
-                        )}
-                    </div>
+
+                            {isEditing ? (
+                                <div className="space-y-4">
+                                    <SearchableSelect
+                                        options={MEDICAL_CONDITIONS_OPTIONS}
+                                        value=""
+                                        onValueChange={(val) => {
+                                            if (val && !data.condiciones_tratadas.includes(val)) {
+                                                addCondicion(val);
+                                            }
+                                        }}
+                                        placeholder="Buscar enfermedad o condición..."
+                                        searchPlaceholder="Escribe para buscar..."
+                                        emptyMessage="No encontrado. Presiona Enter para agregar."
+                                        className="w-full"
+                                    />
+                                    <div className="flex flex-wrap gap-2 min-h-[80px] p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        {data.condiciones_tratadas.length > 0 ? (
+                                            data.condiciones_tratadas.map((condicion, index) => (
+                                                <Badge
+                                                    key={index}
+                                                    variant="secondary"
+                                                    className="pl-3 pr-2 py-1.5 gap-1.5 hover:bg-rose-200 dark:hover:bg-rose-900/40 bg-rose-100 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800 font-semibold"
+                                                >
+                                                    {condicion}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeCondicion(condicion)}
+                                                        className="h-4 w-4 rounded-full hover:bg-rose-300 dark:hover:bg-rose-800 flex items-center justify-center transition-colors ml-1"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <span className="text-sm text-gray-400 italic">
+                                                Selecciona condiciones del menú
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                        <span className="inline-block w-1 h-1 rounded-full bg-gray-400" />
+                                        Selecciona de la lista para agregar
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="flex flex-wrap gap-2 min-h-[80px] p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    {data.condiciones_tratadas.length > 0 ? (
+                                        data.condiciones_tratadas.map((condicion, index) => (
+                                            <Badge 
+                                                key={index} 
+                                                variant="outline" 
+                                                className="border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/20 font-semibold px-3 py-1.5"
+                                            >
+                                                {condicion}
+                                            </Badge>
+                                        ))
+                                    ) : (
+                                        <span className="text-sm text-gray-500 italic">No especificado</span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+
+                    {/* Redes Sociales */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.5 }}
+                        className="group relative bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-pink-300 dark:hover:border-pink-700"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="relative">
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="p-3 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow-lg">
+                                    <Globe className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <Label className="text-lg font-bold text-gray-900 dark:text-white">
+                                        Presencia Digital
+                                    </Label>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Conecta con tus pacientes
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                {SOCIAL_PLATFORMS.map((platform) => {
+                                    const Icon = platform.id === 'instagram' ? Instagram :
+                                        platform.id === 'facebook' ? Facebook :
+                                            platform.id === 'linkedin' ? Linkedin :
+                                                platform.id === 'twitter' ? Twitter : Globe;
+                                    const socialUrl = data.redes_sociales[platform.id];
+
+                                    return (
+                                        <div key={platform.id} className="flex items-center gap-3 group/social">
+                                            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg group-hover/social:bg-pink-100 dark:group-hover/social:bg-pink-900/20 transition-colors">
+                                                <Icon className="h-4 w-4 text-gray-500 dark:text-gray-400 group-hover/social:text-pink-600 dark:group-hover/social:text-pink-400 transition-colors" />
+                                            </div>
+                                            {isEditing ? (
+                                                <Input
+                                                    placeholder={platform.placeholder}
+                                                    value={socialUrl || ""}
+                                                    onChange={(e) => handleSocialChange(platform.id, e.target.value)}
+                                                    className="h-10 text-sm dark:bg-gray-800 flex-1"
+                                                />
+                                            ) : (
+                                                socialUrl ? (
+                                                    <a
+                                                        href={socialUrl.startsWith('http') ? socialUrl : `https://${platform.prefix}${socialUrl}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate font-medium flex-1"
+                                                    >
+                                                        {socialUrl}
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-sm text-gray-400 italic flex-1">No agregado</span>
+                                                )
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             </div>
         </div>

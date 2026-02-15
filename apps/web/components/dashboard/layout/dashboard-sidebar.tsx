@@ -12,11 +12,30 @@ import {
   Video,
   Stethoscope,
   Home,
+  LayoutDashboard,
+  BookOpen,
+  Users,
+  UserPlus,
+  Clipboard,
+  Shield,
+  FlaskConical,
+  Package,
+  Scan,
+  Box,
+  Phone,
+  CreditCard,
+  TrendingUp,
+  DollarSign,
+  Sunrise,
+  Sparkles,
+  MessageCircle,
+  ChevronDown,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@red-salud/ui";
 import { cn } from "@red-salud/core/utils";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { SidebarModeSelector } from "./sidebar-mode-selector";
+import { useState } from "react";
 
 // Mapa de iconos
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -29,6 +48,25 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Video,
   Stethoscope,
   Home,
+  LayoutDashboard,
+  BookOpen,
+  Gum: BookOpen, // Fallback para icono de periodoncia
+  Users,
+  UserPlus,
+  Clipboard,
+  Shield,
+  Flask: FlaskConical,
+  FlaskConical,
+  Package,
+  Scan,
+  Box,
+  Phone,
+  CreditCard,
+  TrendingUp,
+  DollarSign,
+  Sunrise,
+  Sparkles,
+  MessageCircle,
 };
 
 export interface MenuItem {
@@ -37,10 +75,12 @@ export interface MenuItem {
   icon: string;
   route: string;
   color?: string;
+  description?: string; // Descripción opcional para tooltips extendidos
 }
 
 export interface MenuGroup {
   label: string;
+  icon?: string; // Icono opcional para el grupo
   items: MenuItem[];
 }
 
@@ -59,13 +99,23 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const { mode, isExpanded, handleMouseEnter, handleMouseLeave } = useSidebarState();
   const pathname = usePathname();
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const isActive = (route: string) => {
     return pathname === route;
   };
 
-  // Aplanar todos los items de todos los grupos
-  const allItems = menuGroups.flatMap(group => group.items);
+  const toggleGroup = (groupLabel: string) => {
+    setCollapsedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupLabel)) {
+        newSet.delete(groupLabel);
+      } else {
+        newSet.add(groupLabel);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <>
@@ -161,53 +211,95 @@ export function DashboardSidebar({
                     )}
                   </li>
 
-                  {/* Menu Items */}
-                  {allItems.map((item) => {
-                    const Icon = iconMap[item.icon];
-                    const active = isActive(item.route);
+                  {/* Menu Groups */}
+                  {menuGroups.map((group, groupIndex) => {
+                    const GroupIcon = group.icon ? iconMap[group.icon] : null;
+                    const isGroupCollapsed = collapsedGroups.has(group.label);
+                    const isFirstGroup = groupIndex === 0;
 
                     return (
-                      <li
-                        key={item.key}
-                        data-sidebar="menu-item"
-                        className="group/menu-item relative"
-                      >
-                        <Link href={item.route}>
-                          <button
-                            data-sidebar="menu-button"
-                            data-size="default"
-                            data-active={active}
-                            data-has-icon="true"
-                            tabIndex={0}
-                            title={!isExpanded ? item.label : undefined}
-                            className={cn(
-                              "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md py-2 px-1.5 text-left outline-none ring-sidebar-ring",
-                              "transition-[width,height,padding] transition-colors duration-200 ease-out focus-visible:ring-2",
-                              "active:bg-sidebar-accent active:text-sidebar-accent-foreground",
-                              "disabled:pointer-events-none disabled:opacity-50",
-                              "group-has-[[data-sidebar=menu-action]]/menu-item:pr-8",
-                              "aria-disabled:pointer-events-none aria-disabled:opacity-50",
-                              "data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground",
-                              "data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground",
-                              "[&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0",
-                              "text-sidebar-foreground/60 data-[active=true]:text-sidebar-foreground",
-                              "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                              "h-8 text-sm",
-                              !isExpanded && "!size-8 !pl-1.5 !pr-2 justify-center"
-                            )}
-                          >
-                            {Icon && <Icon />}
-                            {isExpanded && <span>{item.label}</span>}
-                          </button>
-                        </Link>
-
-                        {/* Tooltip para sidebar colapsado */}
-                        {!isExpanded && (
-                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded-md shadow-md border opacity-0 pointer-events-none group-hover/menu-item:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
-                            {item.label}
+                      <div key={group.label} className={cn(!isFirstGroup && "mt-4")}>
+                        {/* Group Header - Solo mostrar si no es el primer grupo o si está expandido */}
+                        {(!isFirstGroup || GroupIcon) && isExpanded && (
+                          <div className="px-2 pt-2 pb-1">
+                            <button
+                              onClick={() => !isFirstGroup && toggleGroup(group.label)}
+                              className={cn(
+                                "flex w-full items-center gap-2 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider",
+                                !isFirstGroup && "hover:text-sidebar-foreground/70 cursor-pointer"
+                              )}
+                            >
+                              {GroupIcon && <GroupIcon className="size-3.5" />}
+                              <span className="flex-1">{group.label}</span>
+                              {!isFirstGroup && (
+                                <ChevronDown
+                                  className={cn(
+                                    "size-3.5 transition-transform duration-200",
+                                    isGroupCollapsed && "-rotate-90"
+                                  )}
+                                />
+                              )}
+                            </button>
                           </div>
                         )}
-                      </li>
+
+                        {/* Group Items */}
+                        {(!isGroupCollapsed || isFirstGroup) && (
+                          <>
+                            {group.items.map((item) => {
+                              const Icon = iconMap[item.icon];
+                              const active = isActive(item.route);
+
+                              return (
+                                <li
+                                  key={item.key}
+                                  data-sidebar="menu-item"
+                                  className="group/menu-item relative"
+                                >
+                                  <Link href={item.route}>
+                                    <button
+                                      data-sidebar="menu-button"
+                                      data-size="default"
+                                      data-active={active}
+                                      data-has-icon="true"
+                                      tabIndex={0}
+                                      title={!isExpanded ? item.label : undefined}
+                                      className={cn(
+                                        "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md py-2 px-1.5 text-left outline-none ring-sidebar-ring",
+                                        "transition-[width,height,padding] transition-colors duration-200 ease-out focus-visible:ring-2",
+                                        "active:bg-sidebar-accent active:text-sidebar-accent-foreground",
+                                        "disabled:pointer-events-none disabled:opacity-50",
+                                        "group-has-[[data-sidebar=menu-action]]/menu-item:pr-8",
+                                        "aria-disabled:pointer-events-none aria-disabled:opacity-50",
+                                        "data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground",
+                                        "data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground",
+                                        "[&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0",
+                                        "text-sidebar-foreground/60 data-[active=true]:text-sidebar-foreground",
+                                        "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                        "h-8 text-sm",
+                                        !isExpanded && "!size-8 !pl-1.5 !pr-2 justify-center"
+                                      )}
+                                    >
+                                      {Icon && <Icon />}
+                                      {isExpanded && <span>{item.label}</span>}
+                                    </button>
+                                  </Link>
+
+                                  {/* Tooltip para sidebar colapsado */}
+                                  {!isExpanded && (
+                                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded-md shadow-md border opacity-0 pointer-events-none group-hover/menu-item:opacity-100 transition-opacity duration-200 z-50 max-w-xs">
+                                      <div className="font-medium">{item.label}</div>
+                                      {item.description && (
+                                        <div className="text-[10px] text-muted-foreground mt-0.5">{item.description}</div>
+                                      )}
+                                    </div>
+                                  )}
+                                </li>
+                              );
+                            })}
+                          </>
+                        )}
+                      </div>
                     );
                   })}
                 </div>

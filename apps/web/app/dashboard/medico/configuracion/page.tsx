@@ -15,7 +15,6 @@ import {
   Users,
   Bell,
   Shield,
-  Settings,
   Keyboard,
   Briefcase,
   FileText,
@@ -24,6 +23,7 @@ import {
   Activity,
   CreditCard,
   MapPin,
+  Calendar,
 } from "lucide-react";
 import { VerificationGuard } from "@/components/dashboard/medico/features/verification-guard";
 import { ProfileSectionV2 } from "@/components/dashboard/medico/configuracion/profile-section-v2";
@@ -36,7 +36,7 @@ const LoadingFallback = () => <div className="w-full h-[400px] rounded-xl bg-gra
 const RecipeSettingsSection = dynamic(() => import("@/components/dashboard/medico/configuracion/recipe-settings-section").then(mod => mod.RecipeSettingsSection), {
   loading: () => <LoadingFallback />
 });
-const InfoProfesionalSection = dynamic(() => import("@/components/dashboard/medico/configuracion/info-profesional-section").then(mod => mod.InfoProfesionalSection), {
+const InfoProfesionalSection = dynamic(() => import("@/components/dashboard/medico/configuracion/info-profesional-section-v2").then(mod => mod.InfoProfesionalSectionV2), {
   loading: () => <LoadingFallback />
 });
 const DocumentsSection = dynamic(() => import("@/components/dashboard/medico/configuracion/documents-section").then(mod => mod.DocumentsSection), {
@@ -72,6 +72,9 @@ const BillingSection = dynamic(() => import("@/components/dashboard/medico/confi
 const ShortcutsSection = dynamic(() => import("@/components/dashboard/medico/configuracion/shortcuts-section").then(mod => mod.ShortcutsSection), {
   loading: () => <Skeleton className="w-full h-[400px] rounded-xl" />
 });
+const IntegrationsSection = dynamic(() => import("@/components/dashboard/medico/configuracion/integrations-section").then(mod => mod.IntegrationsSection), {
+  loading: () => <Skeleton className="w-full h-[400px] rounded-xl" />
+});
 // ProfileSection removed from list to avoid duplicate imports (it is imported statically)
 
 /**
@@ -89,6 +92,7 @@ type TabType =
   | "preferencias"
   | "seguridad"
   | "privacidad"
+  | "integraciones"
   | "actividad"
   | "facturacion"
   | "shortcuts";
@@ -114,6 +118,7 @@ const TABS: TabConfig[] = [
   { id: "recetas", label: "Recetas", icon: FileText, description: "Plantillas", category: "perfil" },
   { id: "consultorios", label: "Consultorios", icon: MapPin, description: "Ubicaciones", category: "consultorio" },
   { id: "horarios", label: "Horarios", icon: Clock, description: "Atención", category: "consultorio" },
+  { id: "integraciones", label: "Integraciones", icon: Calendar, description: "Google Calendar", category: "consultorio" },
   { id: "secretarias", label: "Secretarias", icon: Users, description: "Equipo", category: "consultorio" },
   { id: "notificaciones", label: "Notificaciones", icon: Bell, description: "Alertas", category: "sistema" },
   { id: "preferencias", label: "Preferencias", icon: Palette, description: "Tema e idioma", category: "sistema" },
@@ -154,6 +159,7 @@ function ConfiguracionContent() {
       case "recetas": return <RecipeSettingsSection />;
       case "consultorios": return <OfficesSection />;
       case "horarios": return <ScheduleSection />;
+      case "integraciones": return <IntegrationsSection />;
       case "secretarias": return <SecretariesSection />;
       case "notificaciones": return <NotificationsSection />;
       case "preferencias": return <PreferencesSection />;
@@ -172,36 +178,23 @@ function ConfiguracionContent() {
         // Perfil V2 usa su propio layout completo
         <ProfileSectionV2 />
       ) : (
-        // Otras secciones usan el layout tradicional
-        <div className="min-h-screen bg-white dark:bg-gray-950">
-          <div className="container mx-auto px-6 py-10 max-w-[1400px]">
-            {/* Header Minimalista */}
-            <div className="flex items-center gap-4 mb-10">
-              <div className="p-2 bg-gray-50 dark:bg-gray-900 rounded-lg border dark:border-gray-800">
-                <Settings className="h-5 w-5 text-gray-500" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight">
-                  Configuración
-                </h1>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  Gestiona tu perfil y sistema
-                </p>
-              </div>
-            </div>
-
+        // Otras secciones usan el layout profesional full-width
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+          <div className="w-full h-full px-8 py-8">
+            {/* Content Area con animaciones fluidas */}
             <div className="relative">
-              <div className="w-full">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-8 shadow-sm min-h-[800px]"
-                >
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-xl shadow-gray-200/20 dark:shadow-none overflow-hidden"
+              >
+                <div className="p-10">
                   {renderTabContent()}
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>

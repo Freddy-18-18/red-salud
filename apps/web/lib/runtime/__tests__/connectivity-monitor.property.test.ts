@@ -80,6 +80,20 @@ describe('Property 5: Connectivity State Propagation', () => {
         // Generate number of listeners (1-10)
         fc.integer({ min: 1, max: 10 }),
         async (statusSequence, listenerCount) => {
+          resetConnectivityMonitor();
+          vi.restoreAllMocks();
+
+          const isolatedNetworkService: NetworkService = {
+            checkConnectivity: vi.fn().mockResolvedValue(true),
+            get: vi.fn(),
+            post: vi.fn(),
+            patch: vi.fn(),
+            delete: vi.fn(),
+          };
+
+          vi.spyOn(RuntimeService, 'getNetworkService').mockReturnValue(isolatedNetworkService);
+          const isolatedMonitor = new ConnectivityMonitorImpl();
+
           // Create multiple listeners
           const listeners: Array<{ callback: ConnectivityCallback; calls: boolean[] }> = [];
           
@@ -89,14 +103,14 @@ describe('Property 5: Connectivity State Propagation', () => {
               calls.push(status);
             });
             
-            monitor.onStatusChange(callback);
+            isolatedMonitor.onStatusChange(callback);
             listeners.push({ callback, calls });
           }
 
           // Apply the sequence of status changes
           for (const status of statusSequence) {
-            mockNetworkService.checkConnectivity = vi.fn().mockResolvedValue(status);
-            await monitor.forceCheck();
+            isolatedNetworkService.checkConnectivity = vi.fn().mockResolvedValue(status);
+            await isolatedMonitor.forceCheck();
           }
 
           // Calculate expected transitions (only when status actually changes)
@@ -118,11 +132,13 @@ describe('Property 5: Connectivity State Propagation', () => {
 
           // Verify all listeners received identical sequences
           if (listeners.length > 1) {
-            const firstListenerCalls = listeners[0].calls;
+            const firstListenerCalls = listeners[0]!.calls;
             for (let i = 1; i < listeners.length; i++) {
-              expect(listeners[i].calls).toEqual(firstListenerCalls);
+              expect(listeners[i]!.calls).toEqual(firstListenerCalls);
             }
           }
+
+          isolatedMonitor.stop();
         }
       ),
       { numRuns: 100 }
@@ -315,16 +331,30 @@ describe('Property 5: Connectivity State Propagation', () => {
       fc.asyncProperty(
         fc.array(fc.boolean(), { minLength: 5, maxLength: 20 }),
         async (rapidChanges) => {
+          resetConnectivityMonitor();
+          vi.restoreAllMocks();
+
+          const isolatedNetworkService: NetworkService = {
+            checkConnectivity: vi.fn().mockResolvedValue(true),
+            get: vi.fn(),
+            post: vi.fn(),
+            patch: vi.fn(),
+            delete: vi.fn(),
+          };
+
+          vi.spyOn(RuntimeService, 'getNetworkService').mockReturnValue(isolatedNetworkService);
+          const isolatedMonitor = new ConnectivityMonitorImpl();
+
           const receivedStatuses: boolean[] = [];
 
-          monitor.onStatusChange((status) => {
+          isolatedMonitor.onStatusChange((status) => {
             receivedStatuses.push(status);
           });
 
           // Apply rapid changes
           for (const status of rapidChanges) {
-            mockNetworkService.checkConnectivity = vi.fn().mockResolvedValue(status);
-            await monitor.forceCheck();
+            isolatedNetworkService.checkConnectivity = vi.fn().mockResolvedValue(status);
+            await isolatedMonitor.forceCheck();
           }
 
           // Calculate expected transitions
@@ -340,6 +370,8 @@ describe('Property 5: Connectivity State Propagation', () => {
 
           // Verify all transitions were captured
           expect(receivedStatuses).toEqual(expectedTransitions);
+
+          isolatedMonitor.stop();
         }
       ),
       { numRuns: 100 }

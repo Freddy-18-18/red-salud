@@ -45,7 +45,7 @@ export function SidebarAwareContent({
   return (
     <main
       className={cn(
-        "flex-1 min-h-full transition-all duration-200 ease-out",
+        "flex-1 transition-all duration-200 ease-out",
         // En mobile: ancho completo, sin margen
         "w-full ml-0",
         // En desktop: margen y ancho ajustados según el sidebar
@@ -53,10 +53,14 @@ export function SidebarAwareContent({
         className
       )}
       style={{
-        "--sidebar-width": `${sidebarWidth}px`
+        "--sidebar-width": `${sidebarWidth}px`,
+        height: userRole === "medico" ? "calc(100vh - 48px)" : "calc(100vh - 3.5rem)"
       } as React.CSSProperties}
     >
-      <div className={userRole === "medico" ? "" : "pt-14 md:pt-0"}>
+      <div className={cn(
+        "h-full",
+        userRole === "medico" ? "" : "pt-14 md:pt-0"
+      )}>
         {children}
       </div>
     </main>

@@ -9,7 +9,8 @@ import {
   Download,
 } from "lucide-react";
 import { Button } from "@red-salud/ui";
-import { getPaymentMethods, getTransactions } from "@/lib/supabase/services/billing-service";
+import { getPaymentMethods, getTransactions, getUserPayments } from "@/lib/supabase/services/billing-service";
+import { PaymentModal } from "@/components/dashboard/shared/payments/payment-modal";
 
 interface PaymentMethod {
   id: string;
@@ -49,18 +50,40 @@ export function BillingTab({ userId }: BillingTabProps) {
 
     const loadData = async () => {
       setLoading(true);
-      const [methodsResult, transactionsResult] = await Promise.all([
+      const [methodsResult, transactionsResult, paymentsResult] = await Promise.all([
         getPaymentMethods(userId),
         getTransactions(userId, 10),
+        getUserPayments(userId)
       ]);
 
       if (isMounted) {
         if (methodsResult.success) {
           setPaymentMethods(methodsResult.data || []);
         }
-        if (transactionsResult.success) {
-          setTransactions(transactionsResult.data || []);
+
+        let allTransactions: Transaction[] = [];
+
+        if (transactionsResult.success && transactionsResult.data) {
+          allTransactions = [...transactionsResult.data];
         }
+
+        if (paymentsResult.success && paymentsResult.data) {
+          const mappedPayments: Transaction[] = paymentsResult.data.map((p: any) => ({
+            id: p.id,
+            user_id: p.user_id,
+            description: `Pago ${p.reference_number} - ${p.bank_origin}`,
+            amount: p.amount,
+            status: p.status === 'approved' ? 'paid' : p.status === 'rejected' ? 'failed' : 'pending',
+            created_at: p.created_at,
+            invoice_number: undefined
+          }));
+          allTransactions = [...allTransactions, ...mappedPayments];
+        }
+
+        // Ordenar por fecha descendente
+        allTransactions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        setTransactions(allTransactions);
         setLoading(false);
       }
     };
@@ -103,10 +126,21 @@ export function BillingTab({ userId }: BillingTabProps) {
             <h3 className="font-semibold text-gray-900 dark:text-gray-100">
               Métodos de Pago
             </h3>
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Agregar
-            </Button>
+            <PaymentModal onSuccess={() => {
+              // Trigger reload nicely? 
+              // Since loadData is inside useEffect, we might need to expose it or reload metadata.
+              // For now, let's just trigger a re-render or similar if possible, or accept that it might not auto-refresh this component without a prop.
+              // But wait, loadData depends on userId. We can extract it?
+              // Ideally pass a refresh function. 
+              // But loadData is inside useEffect.
+              // We can rely on parent to refresh or just ignore for now as this tab might re-mount.
+              // Let's copy the logic or simpler:
+              window.location.reload(); // Crude but effective for now? No, better to not do anything and let user refresh manually or navigate.
+              // Actually, we can't easily call loadData here as it's scoped. 
+              // I'll leave onSuccess empty for now or try to move loadData out?
+              // Moving loadData out is better but requires refactoring.
+              // Let's just pass empty function for now. The PaymentModal handles its own state.
+            }} />
           </div>
 
           {loading ? (
@@ -118,10 +152,9 @@ export function BillingTab({ userId }: BillingTabProps) {
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 No tienes métodos de pago registrados
               </p>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Agregar Método de Pago
-              </Button>
+              <div className="flex justify-center">
+                <PaymentModal />
+              </div>
             </div>
           ) : (
             paymentMethods.map((method) => (
@@ -160,15 +193,12 @@ export function BillingTab({ userId }: BillingTabProps) {
             ))
           )}
 
-          <button className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
-            <Plus className="h-6 w-6 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Agregar Método de Pago
-            </p>
+          <div className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex flex-col items-center justify-center gap-2">
+            <PaymentModal />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Tarjeta de crédito, débito o transferencia
             </p>
-          </button>
+          </div>
 
           <aside className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">

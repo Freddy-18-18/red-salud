@@ -31,6 +31,8 @@ pnpm tauri:dev
 
 - [API Reference](./docs/api.md)
 - [Architecture](./docs/architecture.md)
+- [Development Guide](./docs/development.md)
+- [Periodontograma Implementation](./docs/PERIODONTOGRAMA-RESUMEN.md)
 
 ## License
 

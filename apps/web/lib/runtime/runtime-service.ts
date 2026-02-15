@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Runtime Service - Singleton for Runtime Detection
  * 
@@ -16,6 +15,14 @@ import type {
   PDFService,
   NotificationService,
 } from './types';
+import { TauriStorageService } from './services/tauri-storage-service';
+import { WebStorageService } from './services/web-storage-service';
+import { TauriNetworkService } from './services/tauri-network-service';
+import { WebNetworkService } from './services/web-network-service';
+import { TauriPDFService } from './services/tauri-pdf-service';
+import { WebPDFService } from './services/web-pdf-service';
+import { TauriNotificationService } from './services/tauri-notification-service';
+import { WebNotificationService } from './services/web-notification-service';
 
 class RuntimeServiceImpl implements IRuntimeService {
   private static instance: RuntimeServiceImpl | null = null;
@@ -44,7 +51,12 @@ class RuntimeServiceImpl implements IRuntimeService {
    * Detect the runtime environment
    */
   private detectEnvironment(): RuntimeEnvironment {
-    if (typeof window !== 'undefined' && '__TAURI__' in window) {
+    const tauriBridge =
+      typeof window !== 'undefined'
+        ? (window as unknown as { __TAURI__?: { invoke?: unknown } }).__TAURI__
+        : undefined;
+
+    if (typeof tauriBridge?.invoke === 'function') {
       return 'tauri';
     }
     return 'web';
@@ -77,12 +89,8 @@ class RuntimeServiceImpl implements IRuntimeService {
   public getStorageService(): StorageService {
     if (!this.storageService) {
       if (this.isTauri()) {
-        // Lazy load Tauri storage service
-        const { TauriStorageService } = require('./services/tauri-storage-service');
         this.storageService = new TauriStorageService();
       } else {
-        // Lazy load Web storage service
-        const { WebStorageService } = require('./services/web-storage-service');
         this.storageService = new WebStorageService();
       }
     }
@@ -95,12 +103,8 @@ class RuntimeServiceImpl implements IRuntimeService {
   public getNetworkService(): NetworkService {
     if (!this.networkService) {
       if (this.isTauri()) {
-        // Lazy load Tauri network service
-        const { TauriNetworkService } = require('./services/tauri-network-service');
         this.networkService = new TauriNetworkService();
       } else {
-        // Lazy load Web network service
-        const { WebNetworkService } = require('./services/web-network-service');
         this.networkService = new WebNetworkService();
       }
     }
@@ -113,12 +117,8 @@ class RuntimeServiceImpl implements IRuntimeService {
   public getPDFService(): PDFService {
     if (!this.pdfService) {
       if (this.isTauri()) {
-        // Lazy load Tauri PDF service
-        const { TauriPDFService } = require('./services/tauri-pdf-service');
         this.pdfService = new TauriPDFService();
       } else {
-        // Lazy load Web PDF service
-        const { WebPDFService } = require('./services/web-pdf-service');
         this.pdfService = new WebPDFService();
       }
     }
@@ -131,12 +131,8 @@ class RuntimeServiceImpl implements IRuntimeService {
   public getNotificationService(): NotificationService {
     if (!this.notificationService) {
       if (this.isTauri()) {
-        // Lazy load Tauri notification service
-        const { TauriNotificationService } = require('./services/tauri-notification-service');
         this.notificationService = new TauriNotificationService();
       } else {
-        // Lazy load Web notification service
-        const { WebNotificationService } = require('./services/web-notification-service');
         this.notificationService = new WebNotificationService();
       }
     }
@@ -163,8 +159,17 @@ class RuntimeServiceImpl implements IRuntimeService {
   }
 }
 
-// Export singleton instance
-export const RuntimeService = RuntimeServiceImpl.getInstance();
+// Export delegating facade so tests that reset the singleton always observe a fresh instance
+export const RuntimeService = {
+  isTauri: () => RuntimeServiceImpl.getInstance().isTauri(),
+  isWeb: () => RuntimeServiceImpl.getInstance().isWeb(),
+  getEnvironment: () => RuntimeServiceImpl.getInstance().getEnvironment(),
+  getStorageService: () => RuntimeServiceImpl.getInstance().getStorageService(),
+  getNetworkService: () => RuntimeServiceImpl.getInstance().getNetworkService(),
+  getPDFService: () => RuntimeServiceImpl.getInstance().getPDFService(),
+  getNotificationService: () => RuntimeServiceImpl.getInstance().getNotificationService(),
+  resetServices: () => RuntimeServiceImpl.getInstance().resetServices(),
+} satisfies IRuntimeService & { resetServices(): void };
 
 // Export class for testing
 export { RuntimeServiceImpl };

@@ -172,6 +172,15 @@ export default function BlogPage() {
               variants={fadeInUp}
               className="flex flex-wrap justify-center gap-3 mt-6"
             >
+              <Link href="/blog/cientifico">
+                <Button
+                  variant="outline"
+                  className="border-white/30 text-white hover:bg-white/10"
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Artículos Científicos
+                </Button>
+              </Link>
               <Link href="/blog/preguntas">
                 <Button
                   variant="outline"

@@ -25,6 +25,8 @@ import {
     Receipt
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import { PaymentModal } from "@/components/dashboard/shared/payments/payment-modal";
+import { getUserPayments } from "@/lib/supabase/services/billing-service";
 
 /**
  * Representa un método de pago del usuario
@@ -80,7 +82,7 @@ export function BillingSection() {
                 setPaymentMethods(methodsData);
             }
 
-            // Cargar transacciones
+            // Cargar transacciones existentes
             const { data: transactionsData } = await supabase
                 .from("transactions")
                 .select("*")
@@ -88,9 +90,31 @@ export function BillingSection() {
                 .order("created_at", { ascending: false })
                 .limit(10);
 
+            // Cargar pagos reportados
+            const { data: paymentsData } = await getUserPayments(user.id);
+
+            let allTransactions: Transaction[] = [];
+
             if (transactionsData) {
-                setTransactions(transactionsData);
+                allTransactions = [...transactionsData];
             }
+
+            if (paymentsData) {
+                const mappedPayments: Transaction[] = paymentsData.map((p: any) => ({
+                    id: p.id,
+                    description: `Pago ${p.reference_number} - ${p.bank_origin}`,
+                    amount: p.amount,
+                    status: p.status === 'approved' ? 'paid' : p.status === 'rejected' ? 'failed' : 'pending',
+                    created_at: p.created_at,
+                    invoice_number: undefined
+                }));
+                allTransactions = [...allTransactions, ...mappedPayments];
+            }
+
+            // Ordenar por fecha descendente
+            allTransactions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+            setTransactions(allTransactions);
         } catch (error) {
             console.error("Error loading billing data:", error);
         } finally {
@@ -149,10 +173,7 @@ export function BillingSection() {
                                 Métodos de Pago
                             </h3>
                         </div>
-                        <Button size="sm">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Agregar
-                        </Button>
+                        <PaymentModal onSuccess={loadData} />
                     </div>
 
                     {paymentMethods.length === 0 ? (
@@ -161,10 +182,9 @@ export function BillingSection() {
                             <p className="text-gray-500 dark:text-gray-400 mb-4">
                                 No tienes métodos de pago registrados
                             </p>
-                            <Button>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Agregar Método de Pago
-                            </Button>
+                            <div className="flex justify-center">
+                                <PaymentModal onSuccess={loadData} />
+                            </div>
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -206,15 +226,12 @@ export function BillingSection() {
                     )}
 
                     {/* Botón para agregar nuevo método */}
-                    <button className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
-                        <Plus className="h-6 w-6 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Agregar Método de Pago
-                        </p>
+                    <div className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex flex-col items-center justify-center gap-2">
+                        <PaymentModal onSuccess={loadData} />
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             Tarjeta de crédito, débito o transferencia
                         </p>
-                    </button>
+                    </div>
 
                     {/* Información de seguridad */}
                     <aside className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">

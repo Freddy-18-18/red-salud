@@ -52,7 +52,7 @@ export async function generateMedicalNote(
 ): Promise<GeneratedMedicalNote> {
   try {
     const client = getGeminiClient();
-    const model = client.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = client.getGenerativeModel({ model: "gemini-flash-latest" });
 
     const prompt = `Eres un asistente médico experto. Genera una nota médica profesional en español basada en la siguiente información del paciente:
 
@@ -114,7 +114,7 @@ export async function suggestICD11Codes(
 ): Promise<Array<{ codigo: string; descripcion: string; confianza: number }>> {
   try {
     const client = getGeminiClient();
-    const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = client.getGenerativeModel({ model: "gemini-flash-latest" });
 
     const prompt = `Eres un experto en codificación médica ICD-11. Basándote en el siguiente diagnóstico o descripción médica, sugiere los códigos ICD-11 más apropiados:
 
@@ -160,7 +160,7 @@ export async function improveMedicalNote(
 ): Promise<string> {
   try {
     const client = getGeminiClient();
-    const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = client.getGenerativeModel({ model: "gemini-flash-latest" });
 
     const prompt = `Eres un asistente médico experto. Mejora y estructura la siguiente nota médica manteniendo toda la información original pero organizándola profesionalmente:
 
@@ -197,7 +197,7 @@ export async function extractMedicalInfo(
 }> {
   try {
     const client = getGeminiClient();
-    const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = client.getGenerativeModel({ model: "gemini-flash-latest" });
 
     const prompt = `Extrae información estructurada de la siguiente nota médica:
 

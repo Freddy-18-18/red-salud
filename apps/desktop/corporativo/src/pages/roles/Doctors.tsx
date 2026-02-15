@@ -10,10 +10,19 @@ import {
     ArrowLeft,
     Filter,
     Award,
-    ShieldCheck
+    ShieldCheck,
+    Clock,
+    CheckCircle2,
+    XCircle,
+    AlertCircle,
+    FileText,
+    Mail,
+    Phone,
+    User
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getDoctors, type DoctorProfile } from '../../services/supabase.queries';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 interface Profile {
@@ -26,16 +35,39 @@ interface Profile {
     created_at: string;
 }
 
+interface VerificationRequest {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    status: string;
+    created_at: string;
+    metadata: {
+        cedula?: string;
+        especialidad?: string;
+        anos_experiencia?: number;
+        profile_id?: string;
+        documentos_pendientes?: string[];
+    } | null;
+}
+
 const DoctorsPage: React.FC = () => {
     const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState<'list' | 'verifications'>('list');
     const [users, setUsers] = useState<DoctorProfile[]>([]);
+    const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
     const premiumEasing: any = [0.16, 1, 0.3, 1];
 
     useEffect(() => {
-        fetchDoctors();
-    }, []);
+        if (activeTab === 'list') {
+            fetchDoctors();
+        } else {
+            fetchVerificationRequests();
+        }
+    }, [activeTab]);
 
     const fetchDoctors = async () => {
         setLoading(true);
@@ -52,6 +84,87 @@ const DoctorsPage: React.FC = () => {
             toast.error('Error al cargar el escuadrón médico');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchVerificationRequests = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('support_tickets')
+                .select('*')
+                .eq('ticket_type', 'verification_medico')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setVerificationRequests(data || []);
+        } catch (error) {
+            console.error('[DoctorsPage] Error fetching verification requests:', error);
+            toast.error('Error al cargar solicitudes de verificación');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleApproveVerification = async (requestId: string) => {
+        try {
+            const request = verificationRequests.find(r => r.id === requestId);
+            if (!request || !request.metadata?.profile_id) {
+                throw new Error('Solicitud inválida');
+            }
+
+            // Actualizar el perfil del médico como verificado
+            const { error: doctorError } = await supabase
+                .from('doctor_details')
+                .update({
+                    verified: true,
+                })
+                .eq('profile_id', request.metadata.profile_id);
+
+            if (doctorError) throw doctorError;
+
+            // Actualizar el perfil principal
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .update({
+                    cedula_verificada: true,
+                })
+                .eq('id', request.metadata.profile_id);
+
+            if (profileError) throw profileError;
+
+            // Actualizar el ticket
+            const { error: ticketError } = await supabase
+                .from('support_tickets')
+                .update({ status: 'APROBADO' })
+                .eq('id', requestId);
+
+            if (ticketError) throw ticketError;
+
+            toast.success('Profesional verificado exitosamente');
+            fetchVerificationRequests();
+            setSelectedRequest(null);
+        } catch (error: any) {
+            console.error('[DoctorsPage] Error approving verification:', error);
+            toast.error(error.message || 'Error al aprobar verificación');
+        }
+    };
+
+    const handleRejectVerification = async (requestId: string) => {
+        try {
+            const { error } = await supabase
+                .from('support_tickets')
+                .update({ status: 'RECHAZADO' })
+                .eq('id', requestId);
+
+            if (error) throw error;
+
+            toast.success('Solicitud rechazada');
+            fetchVerificationRequests();
+            setSelectedRequest(null);
+        } catch (error: any) {
+            console.error('[DoctorsPage] Error rejecting verification:', error);
+            toast.error(error.message || 'Error al rechazar verificación');
         }
     };
 
@@ -117,7 +230,46 @@ const DoctorsPage: React.FC = () => {
                 </motion.div>
             </div>
 
-            {/* Tactical Control Bar */}
+            {/* Tab Switcher */}
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="flex gap-3 bg-slate-900/40 backdrop-blur-2xl border border-white/[0.05] rounded-[2rem] p-3"
+            >
+                <button
+                    onClick={() => setActiveTab('list')}
+                    className={`flex-1 px-8 py-4 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all ${
+                        activeTab === 'list'
+                            ? 'bg-blue-600 text-white shadow-lg'
+                            : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.02]'
+                    }`}
+                >
+                    <Stethoscope className="h-4 w-4 inline-block mr-2" />
+                    Médicos Activos
+                </button>
+                <button
+                    onClick={() => setActiveTab('verifications')}
+                    className={`flex-1 px-8 py-4 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all relative ${
+                        activeTab === 'verifications'
+                            ? 'bg-blue-600 text-white shadow-lg'
+                            : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.02]'
+                    }`}
+                >
+                    <Clock className="h-4 w-4 inline-block mr-2" />
+                    Solicitudes de Verificación
+                    {verificationRequests.filter(r => r.status === 'NUEVO').length > 0 && (
+                        <span className="ml-2 px-2 py-0.5 rounded-full bg-yellow-500 text-black text-[9px] font-bold">
+                            {verificationRequests.filter(r => r.status === 'NUEVO').length}
+                        </span>
+                    )}
+                </button>
+            </motion.div>
+
+            {/* Content based on active tab */}
+            {activeTab === 'list' ? (
+                <>
+                    {/* Tactical Control Bar */}
             <div className="bg-slate-900/40 backdrop-blur-2xl border border-white/[0.05] rounded-[2rem] p-6 flex flex-col md:flex-row gap-6 items-center shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-30" />
 
@@ -255,6 +407,126 @@ const DoctorsPage: React.FC = () => {
                     </table>
                 </div>
             </div>
+                </>
+            ) : (
+                /* Verification Requests View */
+                <div className="space-y-6">
+                    {loading ? (
+                        <div className="py-40 text-center">
+                            <div className="flex flex-col items-center gap-6">
+                                <div className="h-1 w-48 bg-slate-800 rounded-full overflow-hidden relative">
+                                    <motion.div
+                                        animate={{ left: ['-100%', '100%'] }}
+                                        transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                                        className="absolute inset-0 w-1/2 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8)]"
+                                    />
+                                </div>
+                                <p className="text-[12px] font-black text-slate-500 uppercase tracking-[0.5em] animate-pulse">Cargando Solicitudes...</p>
+                            </div>
+                        </div>
+                    ) : verificationRequests.length === 0 ? (
+                        <div className="py-40 text-center">
+                            <div className="flex flex-col items-center gap-4 opacity-30">
+                                <CheckCircle2 className="h-16 w-16 text-green-600 mb-2" />
+                                <p className="text-[14px] font-black text-slate-500 uppercase tracking-[0.4em]">No hay solicitudes pendientes</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid gap-6">
+                            {verificationRequests.map((request, idx) => (
+                                <motion.div
+                                    key={request.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: idx * 0.05 }}
+                                    className="bg-slate-900/40 backdrop-blur-2xl border border-white/[0.05] rounded-[2rem] p-8 hover:border-blue-500/20 transition-all"
+                                >
+                                    <div className="flex items-start justify-between mb-6">
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-16 w-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                                                <User className="h-8 w-8 text-blue-500" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl font-black text-white uppercase tracking-tighter">{request.name}</h3>
+                                                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">
+                                                    {request.metadata?.especialidad || 'Especialidad no especificada'}
+                                                </p>
+                                                <p className="text-[10px] text-slate-600 uppercase tracking-widest mt-2">
+                                                    Solicitado: {new Date(request.created_at).toLocaleDateString('es-VE', { 
+                                                        year: 'numeric', month: 'long', day: 'numeric' 
+                                                    })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] ${
+                                            request.status === 'NUEVO' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' :
+                                            request.status === 'APROBADO' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                                            'bg-red-500/10 text-red-500 border border-red-500/20'
+                                        }`}>
+                                            {request.status}
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-6 bg-white/[0.02] rounded-xl border border-white/[0.03]">
+                                        <div>
+                                            <p className="text-[10px] text-slate-600 uppercase tracking-widest mb-1">Cédula</p>
+                                            <p className="text-sm font-bold text-white">{request.metadata?.cedula || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-600 uppercase tracking-widest mb-1">Email</p>
+                                            <p className="text-sm font-bold text-white truncate">{request.email}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-600 uppercase tracking-widest mb-1">Teléfono</p>
+                                            <p className="text-sm font-bold text-white">{request.phone || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-600 uppercase tracking-widest mb-1">Experiencia</p>
+                                            <p className="text-sm font-bold text-white">{request.metadata?.anos_experiencia || 0} años</p>
+                                        </div>
+                                    </div>
+
+                                    {request.metadata?.documentos_pendientes && (
+                                        <div className="mb-6 p-6 bg-amber-500/5 border border-amber-500/20 rounded-xl">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <FileText className="h-4 w-4 text-amber-500" />
+                                                <p className="text-xs font-black text-amber-500 uppercase tracking-wider">Documentos Requeridos</p>
+                                            </div>
+                                            <ul className="space-y-2">
+                                                {request.metadata.documentos_pendientes.map((doc: string, i: number) => (
+                                                    <li key={i} className="text-xs text-slate-400 flex items-center gap-2">
+                                                        <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                                        {doc}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {request.status === 'NUEVO' && (
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={() => handleApproveVerification(request.id)}
+                                                className="flex-1 px-6 py-4 bg-green-600 hover:bg-green-500 text-white rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <CheckCircle2 className="h-4 w-4" />
+                                                Aprobar Verificación
+                                            </button>
+                                            <button
+                                                onClick={() => handleRejectVerification(request.id)}
+                                                className="flex-1 px-6 py-4 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <XCircle className="h-4 w-4" />
+                                                Rechazar
+                                            </button>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

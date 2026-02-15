@@ -146,7 +146,9 @@ export default function SecretariaAgendaPage() {
       alert("No tienes permiso para crear citas");
       return;
     }
-    router.push("/dashboard/secretaria/agenda/nueva");
+    const officeId = typeof window !== "undefined" ? localStorage.getItem("selectedOfficeId") : null;
+    const query = officeId ? `?officeId=${officeId}` : "";
+    router.push(`/dashboard/secretaria/agenda/nueva${query}`);
   };
 
   const handleAppointmentClick = (appointment: CalendarAppointment) => {
@@ -180,8 +182,10 @@ export default function SecretariaAgendaPage() {
 
     const dateParam = date.toISOString();
     const hourParam = hour !== undefined ? `&hour=${hour}` : "";
+    const officeId = typeof window !== "undefined" ? localStorage.getItem("selectedOfficeId") : null;
+    const officeParam = officeId ? `&officeId=${officeId}` : "";
     router.push(
-      `/dashboard/secretaria/agenda/nueva?date=${dateParam}${hourParam}`
+      `/dashboard/secretaria/agenda/nueva?date=${dateParam}${hourParam}${officeParam}`
     );
   };
 

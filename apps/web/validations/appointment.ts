@@ -16,8 +16,30 @@ export const appointmentSchema = z.object({
         cedula: z.string(),
         email: z.string().optional().nullable(),
     }).optional(),
-
-
+    // Campos odontológicos (opcionales)
+    dental_details: z.object({
+        chairId: z.string().optional(),
+        hygienistId: z.string().optional(),
+        assistantId: z.string().optional(),
+        procedureCode: z.string().optional(),
+        procedureName: z.string().optional(),
+        toothNumbers: z.array(z.number()).default([]),
+        surfaces: z.array(z.string()).default([]),
+        quadrant: z.number().min(1).max(4).optional(),
+        requiresAnesthesia: z.boolean().default(false),
+        anesthesiaType: z.string().optional(),
+        requiresSedation: z.boolean().default(false),
+        sedationType: z.string().optional(),
+        materialsNeeded: z.array(z.string()).default([]),
+        materialsPrepared: z.boolean().default(false),
+        specialEquipment: z.array(z.string()).default([]),
+        estimatedCost: z.number().optional(),
+        insuranceAuthorization: z.string().optional(),
+        preopNotes: z.string().default(""),
+        postopNotes: z.string().default(""),
+        complications: z.string().default(""),
+    }).optional(),
 });
 
 export type AppointmentFormValues = z.infer<typeof appointmentSchema>;
+

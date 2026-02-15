@@ -36,6 +36,11 @@ interface OfflinePatientResult {
   cedula: string;
 }
 
+interface Office {
+  id: string;
+  nombre: string;
+}
+
 function NuevaCitaSecretariaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,6 +52,7 @@ function NuevaCitaSecretariaContent() {
 
   const dateParam = searchParams.get("date");
   const hourParam = searchParams.get("hour");
+  const officeParam = searchParams.get("officeId");
 
   const getMinDate = () => format(new Date(), "yyyy-MM-dd");
 
@@ -61,6 +67,8 @@ function NuevaCitaSecretariaContent() {
     motivo: "",
     notas_internas: "",
   });
+  const [offices, setOffices] = useState<Office[]>([]);
+  const [selectedOfficeId, setSelectedOfficeId] = useState<string>(officeParam || "");
 
   useEffect(() => {
     const loadPatients = async (id: string) => {
@@ -112,6 +120,22 @@ function NuevaCitaSecretariaContent() {
       }
     };
 
+    const loadOffices = async (id: string): Promise<Office[]> => {
+      const { data: officesData, error: officesError } = await supabase
+        .from("doctor_offices")
+        .select("id, nombre")
+        .eq("doctor_id", id);
+
+      if (officesError) {
+        console.error("Error loading offices:", officesError);
+        return [];
+      }
+
+      const resolvedOffices = (officesData || []) as Office[];
+      setOffices(resolvedOffices);
+      return resolvedOffices;
+    };
+
     const loadData = async () => {
       try {
         const {
@@ -133,13 +157,23 @@ function NuevaCitaSecretariaContent() {
 
         setDoctorId(relation.doctor_id);
         await loadPatients(relation.doctor_id);
+        const availableOffices = await loadOffices(relation.doctor_id);
+
+        const storedOfficeId = typeof window !== "undefined" ? localStorage.getItem("selectedOfficeId") : null;
+        const resolvedOfficeId = officeParam || storedOfficeId || availableOffices[0]?.id || "";
+
+        if (resolvedOfficeId && availableOffices.some((office) => office.id === resolvedOfficeId)) {
+          setSelectedOfficeId(resolvedOfficeId);
+        } else {
+          setSelectedOfficeId("");
+        }
       } catch (err) {
         console.error("Error:", err);
       }
     };
 
     loadData();
-  }, [router]);
+  }, [officeParam, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,6 +185,12 @@ function NuevaCitaSecretariaContent() {
     try {
       if (!formData.paciente_id) {
         setError("Debes seleccionar un paciente");
+        setLoading(false);
+        return;
+      }
+
+      if (!selectedOfficeId) {
+        setError("Debes seleccionar un consultorio antes de crear la cita");
         setLoading(false);
         return;
       }
@@ -176,6 +216,7 @@ function NuevaCitaSecretariaContent() {
           notas_internas: formData.notas_internas || null,
           status: "pendiente",
           color: colors[formData.tipo_cita] || colors.presencial,
+          location_id: selectedOfficeId,
         });
 
       if (insertError) throw insertError;
@@ -278,6 +319,34 @@ function NuevaCitaSecretariaContent() {
                       Registrar Nuevo Paciente
                     </Button>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Consultorio
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="office_id">
+                    Consultorio <span className="text-red-500">*</span>
+                  </Label>
+                  <Select value={selectedOfficeId} onValueChange={setSelectedOfficeId}>
+                    <SelectTrigger id="office_id">
+                      <SelectValue placeholder="Selecciona un consultorio" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {offices.map((office) => (
+                        <SelectItem key={office.id} value={office.id}>
+                          {office.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>

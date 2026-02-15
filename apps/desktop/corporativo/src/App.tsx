@@ -17,6 +17,7 @@ import DoctorsPage from './pages/roles/Doctors';
 import RolePlaceholderPage from './pages/roles/RolePlaceholder';
 import AcademyPage from './pages/Academy';
 import SupportPage from './pages/Support';
+import PaymentsPage from './pages/Payments';
 
 import { supabase } from './lib/supabase';
 
@@ -80,6 +81,7 @@ const App: React.FC = () => {
                     <Route path="metrics" element={<MetricsPage />} />
                     <Route path="configuracion" element={<SettingsPage />} />
                     <Route path="security" element={<SecurityMasterPage />} />
+                    <Route path="pagos" element={<PaymentsPage />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>

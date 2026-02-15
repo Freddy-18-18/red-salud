@@ -1,0 +1,161 @@
+{
+  "meta": {
+    "project": "Red Salud",
+    "date": "2026-02-12",
+    "prepared_by": "Producto + Ingeniería"
+  },
+  "product_overview": "Red Salud es una plataforma integral para la gestión clínica y farmacéutica multi-rol que unifica procesos críticos en una arquitectura moderna y escalable, facilitando la atención médica, la gestión de recetas, la dispensación en farmacia y el seguimiento por parte del paciente mediante aplicaciones web, desktop y servicios auxiliares.",
+  "core_goals": [
+    "Reducir tiempos de ciclo clínico-farmacéutico para mejorar eficiencia.",
+    "Aumentar la adopción activa de usuarios clave como médicos, pacientes, farmacia y secretaria.",
+    "Garantizar trazabilidad completa y capacidad de auditoría en todos los procesos.",
+    "Ofrecer autenticación y autorización robusta basada en roles para garantizar seguridad y acceso controlado.",
+    "Proporcionar un flujo funcional completo de receta de principio a fin con soporte en web y desktop.",
+    "Mantener consistencia técnica mediante contratos compartidos y lógica reusable entre plataformas.",
+    "Implementar quality gates estrictos para asegurar la calidad de código y entregar con confianza.",
+    "Instrumentar métricas y logs para mejorar observabilidad, monitoreo y soporte técnico."
+  ],
+  "key_features": [
+    "Rutas web públicas y dashboards protegidos por rol (médico, paciente, farmacia, secretaria, clínica, etc).",
+    "Creación y gestión de recetas médicas con trazabilidad de estados y auditoría.",
+    "Visualización del estado de receta por parte del paciente en tiempo real.",
+    "Validación y dispensación controlada en el módulo de farmacia, con actualización de estados.",
+    "Gestión administrativa y coordinación operativa centralizada para secretaría.",
+    "Aplicaciones desktop críticas para médico y farmacia con capacidades offline y sincronización.",
+    "Servicios auxiliares para verificación externa como tasas, identidad fiscal y datos operativos.",
+    "Control de acceso RBAC con redirección automática al dashboard correspondiente.",
+    "Registración de eventos sensibles para auditoría y análisis de calidad.",
+    "Implementación de pruebas unitarias, integración y E2E para asegurar confiabilidad."
+  ],
+  "user_flow_summary": [
+    "Usuario ingresa autenticado y es redirigido según su rol a un dashboard personalizado.",
+    "Médico crea y asocia receta a paciente con datos mínimos requeridos validando la información.",
+    "Paciente visualiza la receta y su estado actualizado en su panel personal.",
+    "Farmacia recibe y lista recetas pendientes para validar y despachar, actualizando su estado.",
+    "Secretaria gestiona tareas administrativas y mantiene coordinación operativa con roles involucrados.",
+    "Los cambios de estado de receta generan eventos auditables para seguimiento y trazabilidad.",
+    "Los servicios auxiliares validan datos externos y aportan información para procesos clínicos y administrativos."
+  ],
+  "validation_criteria": [
+    "Autenticación robusta y autorización por rol con pruebas de acceso restringido exitosas.",
+    "Flujo de receta end-to-end probado entre médico, paciente y farmacia con trazabilidad completa.",
+    "Auditoría efectiva mediante eventos de cambio de estado y logs estructurados.",
+    "Calidad de código garantizada con lint sin errores bloqueantes y verificadores automáticos.",
+    "Tests unitarios, integración y E2E cubren casos críticos sin fallas.",
+    "APIs críticas con latencias dentro de los objetivos (<800ms consulta, <1200ms mutaciones).",
+    "Disponibilidad mínima del 99.5% en módulos web críticos.",
+    "Control y minimización de warnings y deuda técnica con reportes periódicos.",
+    "Integridad de contratos compartidos validada entre web, desktop y mobile.",
+    "Monitoreo y dashboards activos con métricas clave y alertas configuradas."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "TypeScript",
+      "JavaScript",
+      "React 19",
+      "Next.js 16 (App Router)",
+      "Vite",
+      "Tauri 2",
+      "Supabase",
+      "PostgreSQL",
+      "PNPM Workspaces",
+      "Vitest",
+      "ESLint",
+      "Tailwind CSS"
+    ],
+    "features": [
+      {
+        "name": "Web App - Public and Dashboard Routes",
+        "description": "Aplicación web principal con rutas públicas y dashboards por rol (médico, paciente, secretaria, farmacia, clínica).",
+        "files": [
+          "apps/web/app",
+          "apps/web/components",
+          "apps/web/hooks"
+        ]
+      },
+      {
+        "name": "API Routes for Clinical and AI Support",
+        "description": "Endpoints server-side en Next.js para soporte, búsqueda y funcionalidades asistidas por IA (Gemini/servicios internos).",
+        "files": [
+          "apps/web/app/api/soporte/buscar/route.ts",
+          "apps/web/app/api/gemini/suggest-icd11/route.ts",
+          "apps/web/lib/services"
+        ]
+      },
+      {
+        "name": "Shared Core Business Logic",
+        "description": "Paquete reutilizable con utilidades, hooks, validaciones y módulos de dominio consumidos por apps web/desktop.",
+        "files": [
+          "packages/core/src/index.ts",
+          "packages/core/src/utils",
+          "packages/core/src/validations",
+          "packages/core/src/pharmacy"
+        ]
+      },
+      {
+        "name": "Shared Types and Schemas",
+        "description": "Tipado compartido entre aplicaciones del monorepo mediante interfaces y esquemas exportados por dominio.",
+        "files": [
+          "packages/types/src/index.ts",
+          "packages/types/src/pharmacy.ts",
+          "packages/types/src/clinic.ts"
+        ]
+      },
+      {
+        "name": "Shared UI Package",
+        "description": "Biblioteca de componentes UI reutilizables basada en React/Radix/Tailwind para mantener consistencia visual.",
+        "files": [
+          "packages/ui/src/index.ts",
+          "packages/ui/src"
+        ]
+      },
+      {
+        "name": "Desktop Apps with Tauri",
+        "description": "Aplicaciones desktop por dominio (médico, farmacia, corporativo) con Vite + React + Tauri.",
+        "files": [
+          "apps/desktop/medico/package.json",
+          "apps/desktop/farmacia/package.json",
+          "apps/desktop/corporativo/package.json",
+          "apps/desktop/*/src-tauri"
+        ]
+      },
+      {
+        "name": "Auxiliary Verification Services",
+        "description": "Servicios Node/Express para verificación externa y scraping (BCV, RIF, SACS).",
+        "files": [
+          "services/bcv-rate/index.js",
+          "services/rif-verification/index.js",
+          "services/sacs-verification/index.js"
+        ]
+      },
+      {
+        "name": "Database and Migrations",
+        "description": "Esquema y migraciones SQL para Supabase/Postgres, incluyendo módulos de farmacia, seguridad y soporte.",
+        "files": [
+          "supabase/migrations",
+          "supabase/seed.sql"
+        ]
+      },
+      {
+        "name": "Code Quality and Verification Scripts",
+        "description": "Scripts de verificación de imports, tamaño de archivos, rutas, SRP y setup del workspace médico.",
+        "files": [
+          "apps/web/scripts/verify-imports.ts",
+          "apps/web/scripts/verify-file-sizes.ts",
+          "apps/web/scripts/verify-routes.ts",
+          "apps/web/scripts/verify-single-responsibility.ts",
+          "apps/web/scripts/verify-workspace-setup.ts"
+        ]
+      },
+      {
+        "name": "Testing Infrastructure",
+        "description": "Configuración de pruebas con Vitest para unit/integration y utilidades de setup en app web.",
+        "files": [
+          "apps/web/vitest.config.ts",
+          "apps/web/vitest.setup.ts",
+          "apps/web/lib/runtime/__tests__"
+        ]
+      }
+    ]
+  }
+}

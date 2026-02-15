@@ -3,16 +3,45 @@
 import { Badge } from "@red-salud/ui";
 import { Button } from "@red-salud/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/ui";
-import { Video, MessageSquare, Eye, Clock, MapPin } from "lucide-react";
+import {
+  Video,
+  MessageSquare,
+  Eye,
+  Clock,
+  MapPin,
+  CheckCircle,
+  Users,
+  Activity,
+  CheckCircle2,
+  XCircle,
+  UserX,
+} from "lucide-react";
 import { format } from "date-fns";
 import type { CalendarAppointment } from "./types";
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_TYPE_LABELS } from "./types";
+import {
+  getAvailableTransitions,
+  TERMINAL_STATUSES,
+  type AppointmentStatus,
+} from "@/lib/services/appointment-status";
+
+/** Map icon name → Lucide component for transition buttons */
+const TRANSITION_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  CheckCircle,
+  Users,
+  Activity,
+  CheckCircle2,
+  XCircle,
+  UserX,
+};
 
 interface AppointmentCardProps {
   appointment: CalendarAppointment;
   onView?: (appointment: CalendarAppointment) => void;
   onMessage?: (appointment: CalendarAppointment) => void;
   onStartVideo?: (appointment: CalendarAppointment) => void;
+  /** Called when the user clicks a state-machine action button */
+  onStatusChange?: (appointment: CalendarAppointment, newStatus: AppointmentStatus) => void;
   compact?: boolean;
 }
 
@@ -21,6 +50,7 @@ export function AppointmentCard({
   onView,
   onMessage,
   onStartVideo,
+  onStatusChange,
   compact = false,
 }: AppointmentCardProps) {
   const getInitials = (name: string) => {
@@ -88,7 +118,7 @@ export function AppointmentCard({
   // Grid Card Layout (Vertical)
   return (
     <div
-      className="group flex flex-col bg-card rounded-xl border border-border hover:border-primary/50 shadow-sm hover:shadow-md transition-all duration-300 h-full overflow-hidden"
+      className="group flex flex-col bg-card rounded-xl border border-border hover:border-primary/50 shadow-sm hover:shadow-md transition-all duration-300 h-full"
       data-tour="appointment-card"
       data-type={appointment.tipo_cita}
     >
@@ -178,21 +208,47 @@ export function AppointmentCard({
           </Button>
         </div>
 
-        {appointment.tipo_cita === "telemedicina" && appointment.status === "confirmada" ? (
-          <Button
-            size="sm"
-            className="h-7 px-3 text-xs bg-primary hover:bg-primary/90 shadow-sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onStartVideo?.(appointment);
-            }}
-          >
-            <Video className="h-3 w-3 mr-1.5" />
-            Iniciar
-          </Button>
-        ) : (
-          <div /> /* Spacer if no main action */
-        )}
+        <div className="flex items-center gap-1">
+          {/* State-machine action buttons */}
+          {onStatusChange &&
+            !TERMINAL_STATUSES.has(appointment.status) &&
+            getAvailableTransitions(appointment.status, "medico")
+              .filter((t) => t.to !== "cancelada" && t.to !== "rechazada" && t.to !== "no_asistio")
+              .slice(0, 1) // Only the primary next action
+              .map((transition) => {
+                const Icon = TRANSITION_ICON_MAP[transition.icon];
+                return (
+                  <Button
+                    key={transition.to}
+                    size="sm"
+                    className={`h-7 px-3 text-xs shadow-sm ${transition.color}`}
+                    title={transition.description}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStatusChange(appointment, transition.to);
+                    }}
+                  >
+                    {Icon && <Icon className="h-3 w-3 mr-1.5" />}
+                    {transition.action}
+                  </Button>
+                );
+              })}
+
+          {/* Telemedicine video button */}
+          {appointment.tipo_cita === "telemedicina" && appointment.status === "confirmada" && (
+            <Button
+              size="sm"
+              className="h-7 px-3 text-xs bg-primary hover:bg-primary/90 shadow-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStartVideo?.(appointment);
+              }}
+            >
+              <Video className="h-3 w-3 mr-1.5" />
+              Iniciar
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

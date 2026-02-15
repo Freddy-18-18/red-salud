@@ -379,3 +379,33 @@ export interface CreateCommentInput {
     parent_id?: string;
     content: string;
 }
+
+// ============================================
+// ARTÍCULOS CIENTÍFICOS IMPORTADOS DE PUBMED
+// ============================================
+
+export interface ScientificArticle {
+    id: string;
+    pmid: string;
+    pmcid: string | null;
+    doi: string | null;
+    title: string;
+    abstract: string | null;
+    authors: string[];
+    journal: string;
+    pub_date: string;
+    mesh_terms: string[];
+    full_text_url: string | null;
+    is_open_access: boolean;
+    source_category: string;
+    imported_at: string;
+    synced_at: string;
+    created_at: string;
+}
+
+export interface ScientificArticleFilters {
+    category?: string;
+    search?: string;
+    openAccessOnly?: boolean;
+}
+

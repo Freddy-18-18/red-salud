@@ -30,11 +30,21 @@ interface PatientAppointment {
 
 const getStatusBadge = (status: string) => {
   const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
+    // English keys (legacy API)
     pending: { variant: "secondary", label: "Pendiente" },
     confirmed: { variant: "default", label: "Confirmada" },
     cancelled: { variant: "destructive", label: "Cancelada" },
     completed: { variant: "outline", label: "Completada" },
     no_show: { variant: "destructive", label: "No asistió" },
+    // Spanish keys (calendar / realtime)
+    pendiente: { variant: "secondary", label: "Pendiente" },
+    confirmada: { variant: "default", label: "Confirmada" },
+    en_espera: { variant: "default", label: "En Espera" },
+    en_consulta: { variant: "default", label: "En Consulta" },
+    completada: { variant: "outline", label: "Completada" },
+    no_asistio: { variant: "destructive", label: "No asistió" },
+    cancelada: { variant: "destructive", label: "Cancelada" },
+    rechazada: { variant: "destructive", label: "Rechazada" },
   };
   const config = variants[status];
   return <Badge variant={config?.variant || "secondary"}>{config?.label || status}</Badge>;
@@ -65,6 +75,14 @@ const getConsultationLabel = (type: string) => {
       return type;
   }
 };
+
+// Helpers to normalize English/Spanish status codes
+const isActiveStatus = (s: string) =>
+  ["pending", "confirmed", "pendiente", "confirmada", "en_espera"].includes(s);
+const isCancelledStatus = (s: string) =>
+  ["cancelled", "cancelada", "rechazada"].includes(s);
+const isTerminalStatus = (s: string) =>
+  ["completed", "completada", "no_show", "no_asistio"].includes(s);
 
 const AppointmentCard = ({ appointment }: { appointment: PatientAppointment }) => (
   <Card>
@@ -130,7 +148,7 @@ const AppointmentCard = ({ appointment }: { appointment: PatientAppointment }) =
         <Button variant="outline" size="sm" className="flex-1">
           Ver Detalles
         </Button>
-        {(appointment.status === "pending" || appointment.status === "confirmed") && (
+        {isActiveStatus(appointment.status) && (
           <Button variant="destructive" size="sm">
             Cancelar
           </Button>
@@ -165,20 +183,22 @@ export default function CitasPage() {
 
   const { appointments, loading: appointmentsLoading } = usePatientAppointments(userId || undefined);
 
+  // Normalize status to handle both English and Spanish codes
+
   const upcomingAppointments = useMemo(() => appointments.filter(
     (apt) =>
-      (apt.status === "pending" || apt.status === "confirmed") &&
+      isActiveStatus(apt.status) &&
       new Date(`${apt.appointment_date}T${apt.appointment_time}`) > new Date()
   ), [appointments]);
 
   const pastAppointments = useMemo(() => appointments.filter(
     (apt) =>
-      apt.status === "completed" ||
-      (apt.status !== "cancelled" &&
+      isTerminalStatus(apt.status) ||
+      (isActiveStatus(apt.status) &&
         new Date(`${apt.appointment_date}T${apt.appointment_time}`) < new Date())
   ), [appointments]);
 
-  const cancelledAppointments = useMemo(() => appointments.filter((apt) => apt.status === "cancelled"), [appointments]);
+  const cancelledAppointments = useMemo(() => appointments.filter((apt) => isCancelledStatus(apt.status)), [appointments]);
 
   if (loading || appointmentsLoading) {
     return (

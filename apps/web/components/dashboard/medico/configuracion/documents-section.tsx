@@ -400,41 +400,78 @@ export function DocumentsSection() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <div className="flex items-center justify-center h-96">
+                <div className="text-center space-y-4">
+                    <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Cargando documentos...</p>
+                </div>
             </div>
         );
     }
 
+    // Categorizar documentos
+    const requiredDocs = Object.entries(DOCUMENT_CONFIGS).filter(([, c]) => c.required);
+    const optionalDocs = Object.entries(DOCUMENT_CONFIGS).filter(([, c]) => !c.required);
+
     return (
-        <div className="space-y-6">
-            {/* Header con Progreso */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                        Documentos Profesionales
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Verifica tus documentos para completar tu perfil profesional
-                    </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Progreso:</span>
-                    <Progress value={progressPercent} className="w-32" />
-                    <Badge className={cn(
-                        "font-medium",
-                        progressPercent === 100
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-                    )}>
-                        {progressPercent}% Completo
-                    </Badge>
+        <div className="space-y-8 -m-10 p-10 bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950/20 min-h-screen">
+            {/* Hero Header con estadísticas */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-purple-700 p-8 shadow-2xl">
+                <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,rgba(255,255,255,0.6))]" />
+                <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div className="flex items-start gap-5">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-white/20 rounded-2xl blur-xl" />
+                            <div className="relative h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                                <FileCheck className="h-8 w-8 text-white" />
+                            </div>
+                        </div>
+                        <div>
+                            <h2 className="text-3xl font-bold text-white mb-2">
+                                Verificación de Documentos
+                            </h2>
+                            <p className="text-blue-100 text-sm max-w-2xl">
+                                Completa la verificación de tus documentos profesionales para activar todas las funciones de la plataforma
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {/* Stats Cards */}
+                    <div className="flex gap-4">
+                        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 min-w-[140px]">
+                            <div className="text-2xl font-bold text-white mb-1">
+                                {uploadedRequired}/{requiredTypes.length}
+                            </div>
+                            <div className="text-xs text-blue-100">Documentos Requeridos</div>
+                            <Progress value={progressPercent} className="h-1.5 mt-2 bg-white/20" />
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 min-w-[140px]">
+                            <div className="text-2xl font-bold text-white mb-1">
+                                {documents.filter(d => d.status === 'verified').length}
+                            </div>
+                            <div className="text-xs text-blue-100">Verificados</div>
+                            <div className="flex items-center gap-1 mt-2">
+                                <CheckCircle className="h-3 w-3 text-green-300" />
+                                <span className="text-xs text-green-200">Aprobados</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Lista de todos los tipos de documentos */}
-            <div className="space-y-3">
-                {Object.entries(DOCUMENT_CONFIGS).map(([type, config], index) => {
+            {/* Documentos Requeridos */}
+            <section className="space-y-4">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="h-1 w-1 rounded-full bg-red-500" />
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                        Documentos Obligatorios
+                    </h3>
+                    <Badge variant="outline" className="border-red-200 text-red-700 dark:border-red-800 dark:text-red-400">
+                        Requerido
+                    </Badge>
+                </div>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {requiredDocs.map(([type, config], index) => {
                     const docType = type as DoctorDocumentType;
                     const doc = getDocByType(docType);
                     const Icon = config.icon;
@@ -447,101 +484,108 @@ export function DocumentsSection() {
                     return (
                         <motion.article
                             key={type}
-                            initial={{ opacity: 0, y: 10 }}
+                            initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
+                            transition={{ delay: index * 0.08, type: "spring", stiffness: 100 }}
                             className={cn(
-                                "border rounded-xl p-4 transition-all",
+                                "group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl",
+                                "bg-white dark:bg-gray-900 border-2",
                                 isVerified
-                                    ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/10"
+                                    ? "border-green-500/50 shadow-lg shadow-green-500/20 hover:border-green-500"
                                     : isPending
-                                        ? "border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-yellow-900/10"
+                                        ? "border-yellow-500/50 shadow-lg shadow-yellow-500/20 hover:border-yellow-500"
                                         : isRejected
-                                            ? "border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10"
-                                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                                            ? "border-red-500/50 shadow-lg shadow-red-500/20 hover:border-red-500"
+                                            : "border-gray-200 dark:border-gray-700 hover:border-blue-500/50 shadow-lg"
                             )}
                         >
-                            <div className="flex items-center justify-between">
-                                {/* Info del documento */}
-                                <div className="flex items-center gap-4">
-                                    <div className={cn(
-                                        "h-12 w-12 rounded-xl flex items-center justify-center",
-                                        isVerified
-                                            ? "bg-green-100 dark:bg-green-900/40"
-                                            : isPending
-                                                ? "bg-yellow-100 dark:bg-yellow-900/40"
-                                                : "bg-gray-100 dark:bg-gray-800"
-                                    )}>
-                                        <Icon className={cn(
-                                            "h-6 w-6",
+                            {/* Background gradient decoration */}
+                            <div className={cn(
+                                "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                                isVerified
+                                    ? "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20"
+                                    : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"
+                            )} />
+                            
+                            <div className="relative space-y-4">
+                                {/* Header con Icon y Status */}
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className={cn(
+                                            "relative h-14 w-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
                                             isVerified
-                                                ? "text-green-600 dark:text-green-400"
+                                                ? "bg-gradient-to-br from-green-500 to-emerald-600"
                                                 : isPending
-                                                    ? "text-yellow-600 dark:text-yellow-400"
-                                                    : "text-gray-500 dark:text-gray-400"
-                                        )} />
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                                                    ? "bg-gradient-to-br from-yellow-500 to-orange-600"
+                                                    : isRejected
+                                                        ? "bg-gradient-to-br from-red-500 to-pink-600"
+                                                        : "bg-gradient-to-br from-gray-400 to-gray-600"
+                                        )}>
+                                            <Icon className="h-7 w-7 text-white" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">
                                                 {config.name}
                                             </h3>
-                                            {config.required && (
-                                                <span className="text-xs text-red-500">*Requerido</span>
-                                            )}
-                                        </div>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            {config.description}
-                                        </p>
-                                        {/* Estado y fecha */}
-                                        <div className="flex items-center gap-3 mt-1">
-                                            {isVerified && (
-                                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-0">
-                                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                                    Verificado
-                                                </Badge>
-                                            )}
-                                            {isPending && (
-                                                <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-0">
-                                                    <Clock className="h-3 w-3 mr-1" />
-                                                    En revisión
-                                                </Badge>
-                                            )}
-                                            {isRejected && (
-                                                <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-0">
-                                                    <AlertCircle className="h-3 w-3 mr-1" />
-                                                    Rechazado
-                                                </Badge>
-                                            )}
-                                            {doc && !isDiditType && (
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {formatDate(doc.uploadDate)} • {formatFileSize(doc.fileSize)}
-                                                </span>
-                                            )}
-                                            {doc?.extractedData && (
-                                                <Badge variant="outline" className="text-purple-600 border-purple-200 dark:border-purple-800">
-                                                    <Sparkles className="h-3 w-3 mr-1" />
-                                                    Analizado
-                                                </Badge>
-                                            )}
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                {config.description}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
 
+                                {/* Estado y metadata */}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {isVerified && (
+                                        <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-3 py-1">
+                                            <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                                            Verificado
+                                        </Badge>
+                                    )}
+                                    {isPending && (
+                                        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white border-0 px-3 py-1">
+                                            <Clock className="h-3.5 w-3.5 mr-1.5" />
+                                            En revisión
+                                        </Badge>
+                                    )}
+                                    {isRejected && (
+                                        <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white border-0 px-3 py-1">
+                                            <AlertCircle className="h-3.5 w-3.5 mr-1.5" />
+                                            Rechazado
+                                        </Badge>
+                                    )}
+                                    {doc && !isDiditType && (
+                                        <>
+                                            <Badge variant="outline" className="text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+                                                {formatDate(doc.uploadDate)}
+                                            </Badge>
+                                            <Badge variant="outline" className="text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+                                                {formatFileSize(doc.fileSize)}
+                                            </Badge>
+                                        </>
+                                    )}
+                                    {doc?.extractedData && Object.keys(doc.extractedData).length > 0 && (
+                                        <Badge className="bg-gradient-to-r from-purple-500 to-pink-600 text-white border-0 px-3 py-1">
+                                            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                                            Analizado con IA
+                                        </Badge>
+                                    )}
+                                </div>
+
                                 {/* Acciones */}
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2 pt-2">
                                     {/* Para cédula: usa Didit */}
                                     {isDiditType ? (
                                         identityVerified ? (
-                                            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-4 py-2">
-                                                <CheckCircle className="h-4 w-4 mr-2" />
+                                            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl text-white font-medium shadow-lg shadow-green-500/30">
+                                                <CheckCircle className="h-5 w-5" />
                                                 Identidad Verificada
-                                            </Badge>
+                                            </div>
                                         ) : (
                                             <Button
                                                 onClick={handleDiditVerification}
                                                 disabled={isVerifyingIdentity}
-                                                className="bg-blue-600 hover:bg-blue-700"
+                                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all"
                                             >
                                                 {isVerifyingIdentity ? (
                                                     <>
@@ -551,8 +595,8 @@ export function DocumentsSection() {
                                                 ) : (
                                                     <>
                                                         <Shield className="h-4 w-4 mr-2" />
-                                                        Verificar
-                                                        <ExternalLink className="h-3 w-3 ml-1" />
+                                                        Verificar con Didit
+                                                        <ExternalLink className="h-3 w-3 ml-2" />
                                                     </>
                                                 )}
                                             </Button>
@@ -560,7 +604,7 @@ export function DocumentsSection() {
                                     ) : (
                                         /* Para otros documentos: upload normal */
                                         hasDocument ? (
-                                            <div className="flex gap-2">
+                                            <div className="flex flex-wrap gap-2">
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -568,51 +612,58 @@ export function DocumentsSection() {
                                                         setPreviewDoc(doc);
                                                         setIsPreviewOpen(true);
                                                     }}
+                                                    className="border-2 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-500 transition-all"
                                                     title="Ver documento"
                                                 >
-                                                    <Eye className="h-4 w-4" />
+                                                    <Eye className="h-4 w-4 mr-2" />
+                                                    Ver
                                                 </Button>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => handleAnalyze(doc!)}
                                                     disabled={analyzingId === doc?.id}
+                                                    className="border-2 hover:bg-purple-50 dark:hover:bg-purple-950/20 hover:border-purple-500 transition-all"
                                                     title="Analizar con IA"
                                                 >
                                                     {analyzingId === doc?.id ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                                     ) : (
-                                                        <FileScan className="h-4 w-4" />
+                                                        <FileScan className="h-4 w-4 mr-2" />
                                                     )}
+                                                    Analizar
                                                 </Button>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => handleDownload(doc!)}
+                                                    className="border-2 hover:bg-green-50 dark:hover:bg-green-950/20 hover:border-green-500 transition-all"
                                                     title="Descargar"
                                                 >
-                                                    <Download className="h-4 w-4" />
+                                                    <Download className="h-4 w-4 mr-2" />
+                                                    Descargar
                                                 </Button>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => handleDelete(doc!)}
                                                     disabled={deletingId === doc?.id}
-                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                    className="border-2 hover:bg-red-50 dark:hover:bg-red-950/20 hover:border-red-500 text-red-600 hover:text-red-700 transition-all"
                                                     title="Eliminar"
                                                 >
                                                     {deletingId === doc?.id ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                                     ) : (
-                                                        <Trash2 className="h-4 w-4" />
+                                                        <Trash2 className="h-4 w-4 mr-2" />
                                                     )}
+                                                    Eliminar
                                                 </Button>
                                             </div>
                                         ) : (
                                             <Button
                                                 onClick={() => openUploadModal(docType)}
                                                 disabled={uploadingType === docType}
-                                                className="bg-blue-600 hover:bg-blue-700"
+                                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all"
                                             >
                                                 {uploadingType === docType ? (
                                                     <>
@@ -629,67 +680,329 @@ export function DocumentsSection() {
                                         )
                                     )}
                                 </div>
-                            </div>
 
-                            {/* Datos extraídos por OCR */}
-                            {doc?.extractedData && !isDiditType && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800"
-                                >
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
-                                        <Sparkles className="h-3 w-3 text-purple-500" />
-                                        Información extraída automáticamente:
-                                    </p>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                        {!!doc.extractedData.institution && (
-                                            <div>
-                                                <span className="text-gray-500 dark:text-gray-400 text-xs">Institución</span>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                    {doc.extractedData.institution as string}
-                                                </p>
-                                            </div>
-                                        )}
-                                        {!!doc.extractedData.full_name && (
-                                            <div>
-                                                <span className="text-gray-500 dark:text-gray-400 text-xs">Nombre</span>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                    {doc.extractedData.full_name as string}
-                                                </p>
-                                            </div>
-                                        )}
-                                        {!!doc.extractedData.specialty && (
-                                            <div>
-                                                <span className="text-gray-500 dark:text-gray-400 text-xs">Especialidad</span>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                    {doc.extractedData.specialty as string}
-                                                </p>
-                                            </div>
-                                        )}
-                                        {!!doc.extractedData.issue_date && (
-                                            <div>
-                                                <span className="text-gray-500 dark:text-gray-400 text-xs">Fecha</span>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {doc.extractedData.issue_date as string}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            )}
+                                {/* Datos extraídos por OCR */}
+                                {doc?.extractedData && Object.keys(doc.extractedData).length > 0 && !isDiditType && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        className="mt-4 pt-4 border-t-2 border-dashed border-gray-200 dark:border-gray-700"
+                                    >
+                                        <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-3 flex items-center gap-2">
+                                            <Sparkles className="h-4 w-4" />
+                                            Información extraída automáticamente con IA:
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            {!!doc.extractedData.institution && (
+                                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Institución</span>
+                                                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                                        {doc.extractedData.institution as string}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {!!doc.extractedData.full_name && (
+                                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Nombre</span>
+                                                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                                        {doc.extractedData.full_name as string}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {!!doc.extractedData.specialty && (
+                                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Especialidad</span>
+                                                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                                        {doc.extractedData.specialty as string}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {!!doc.extractedData.issue_date && (
+                                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Fecha de emisión</span>
+                                                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                                        {doc.extractedData.issue_date as string}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </div>
                         </motion.article>
                     );
                 })}
-            </div>
+                </div>
+            </section>
 
-            {/* Nota informativa */}
-            <aside className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <p className="text-sm text-blue-800 dark:text-blue-300">
-                    <span className="font-medium">📋 Nota:</span> Los documentos marcados con * son requeridos.
-                    La cédula de identidad se verifica mediante reconocimiento facial y prueba de vida con Didit para mayor seguridad.
-                    Los demás documentos son revisados por nuestro equipo en 24-48 horas.
-                </p>
+            {/* Documentos Opcionales */}
+            <section className="space-y-4">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="h-1 w-1 rounded-full bg-blue-500" />
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                        Documentos Adicionales
+                    </h3>
+                    <Badge variant="outline" className="border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400">
+                        Opcional
+                    </Badge>
+                </div>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {optionalDocs.map(([type, config], index) => {
+                    const docType = type as DoctorDocumentType;
+                    const doc = getDocByType(docType);
+                    const Icon = config.icon;
+                    const isDiditType = config.useDidit;
+                    const isVerified = isDiditType ? identityVerified : doc?.status === "verified";
+                    const isPending = !isDiditType && doc?.status === "pending";
+                    const isRejected = !isDiditType && doc?.status === "rejected";
+                    const hasDocument = isDiditType ? identityVerified : !!doc;
+
+                    return (
+                        <motion.article
+                            key={type}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: (requiredDocs.length * 0.08) + (index * 0.08), type: "spring", stiffness: 100 }}
+                            className={cn(
+                                "group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl",
+                                "bg-white dark:bg-gray-900 border-2",
+                                isVerified
+                                    ? "border-green-500/50 shadow-lg shadow-green-500/20 hover:border-green-500"
+                                    : isPending
+                                        ? "border-yellow-500/50 shadow-lg shadow-yellow-500/20 hover:border-yellow-500"
+                                        : isRejected
+                                            ? "border-red-500/50 shadow-lg shadow-red-500/20 hover:border-red-500"
+                                            : "border-gray-200 dark:border-gray-700 hover:border-blue-500/50 shadow-lg"
+                            )}
+                        >
+                            {/* Background gradient decoration */}
+                            <div className={cn(
+                                "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                                isVerified
+                                    ? "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20"
+                                    : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"
+                            )} />
+                            
+                            <div className="relative space-y-4">
+                                {/* Header con Icon y Status */}
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className={cn(
+                                            "relative h-14 w-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
+                                            isVerified
+                                                ? "bg-gradient-to-br from-green-500 to-emerald-600"
+                                                : isPending
+                                                    ? "bg-gradient-to-br from-yellow-500 to-orange-600"
+                                                    : isRejected
+                                                        ? "bg-gradient-to-br from-red-500 to-pink-600"
+                                                        : "bg-gradient-to-br from-gray-400 to-gray-600"
+                                        )}>
+                                            <Icon className="h-7 w-7 text-white" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">
+                                                {config.name}
+                                            </h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                {config.description}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Estado y metadata */}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {isVerified && (
+                                        <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-3 py-1">
+                                            <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                                            Verificado
+                                        </Badge>
+                                    )}
+                                    {isPending && (
+                                        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white border-0 px-3 py-1">
+                                            <Clock className="h-3.5 w-3.5 mr-1.5" />
+                                            En revisión
+                                        </Badge>
+                                    )}
+                                    {isRejected && (
+                                        <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white border-0 px-3 py-1">
+                                            <AlertCircle className="h-3.5 w-3.5 mr-1.5" />
+                                            Rechazado
+                                        </Badge>
+                                    )}
+                                    {doc && !isDiditType && (
+                                        <>
+                                            <Badge variant="outline" className="text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+                                                {formatDate(doc.uploadDate)}
+                                            </Badge>
+                                            <Badge variant="outline" className="text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+                                                {formatFileSize(doc.fileSize)}
+                                            </Badge>
+                                        </>
+                                    )}
+                                    {doc?.extractedData && Object.keys(doc.extractedData).length > 0 && (
+                                        <Badge className="bg-gradient-to-r from-purple-500 to-pink-600 text-white border-0 px-3 py-1">
+                                            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                                            Analizado con IA
+                                        </Badge>
+                                    )}
+                                </div>
+
+                                {/* Acciones */}
+                                <div className="flex flex-wrap items-center gap-2 pt-2">
+                                    {hasDocument ? (
+                                        <div className="flex flex-wrap gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setPreviewDoc(doc);
+                                                    setIsPreviewOpen(true);
+                                                }}
+                                                className="border-2 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-500 transition-all"
+                                                title="Ver documento"
+                                            >
+                                                <Eye className="h-4 w-4 mr-2" />
+                                                Ver
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleAnalyze(doc!)}
+                                                disabled={analyzingId === doc?.id}
+                                                className="border-2 hover:bg-purple-50 dark:hover:bg-purple-950/20 hover:border-purple-500 transition-all"
+                                                title="Analizar con IA"
+                                            >
+                                                {analyzingId === doc?.id ? (
+                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                ) : (
+                                                    <FileScan className="h-4 w-4 mr-2" />
+                                                )}
+                                                Analizar
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleDownload(doc!)}
+                                                className="border-2 hover:bg-green-50 dark:hover:bg-green-950/20 hover:border-green-500 transition-all"
+                                                title="Descargar"
+                                            >
+                                                <Download className="h-4 w-4 mr-2" />
+                                                Descargar
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleDelete(doc!)}
+                                                disabled={deletingId === doc?.id}
+                                                className="border-2 hover:bg-red-50 dark:hover:bg-red-950/20 hover:border-red-500 text-red-600 hover:text-red-700 transition-all"
+                                                title="Eliminar"
+                                            >
+                                                {deletingId === doc?.id ? (
+                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                ) : (
+                                                    <Trash2 className="h-4 w-4 mr-2" />
+                                                )}
+                                                Eliminar
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            onClick={() => openUploadModal(docType)}
+                                            disabled={uploadingType === docType}
+                                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all"
+                                        >
+                                            {uploadingType === docType ? (
+                                                <>
+                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                    Subiendo...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Upload className="h-4 w-4 mr-2" />
+                                                    Subir Documento
+                                                </>
+                                            )}
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {/* Datos extraídos por OCR */}
+                                {doc?.extractedData && Object.keys(doc.extractedData).length > 0 && !isDiditType && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        className="mt-4 pt-4 border-t-2 border-dashed border-gray-200 dark:border-gray-700"
+                                    >
+                                        <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-3 flex items-center gap-2">
+                                            <Sparkles className="h-4 w-4" />
+                                            Información extraída automáticamente con IA:
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            {!!doc.extractedData.institution && (
+                                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Institución</span>
+                                                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                                        {doc.extractedData.institution as string}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {!!doc.extractedData.full_name && (
+                                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Nombre</span>
+                                                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                                        {doc.extractedData.full_name as string}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {!!doc.extractedData.specialty && (
+                                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Especialidad</span>
+                                                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                                        {doc.extractedData.specialty as string}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {!!doc.extractedData.issue_date && (
+                                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Fecha de emisión</span>
+                                                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                                        {doc.extractedData.issue_date as string}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </div>
+                        </motion.article>
+                    );
+                })}
+                </div>
+            </section>
+
+            {/* Nota informativa mejorada */}
+            <aside className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-purple-950/40 border-2 border-blue-200/50 dark:border-blue-800/50 p-6 shadow-lg">
+                <div className="absolute inset-0 bg-grid-blue-500/5 [mask-image:linear-gradient(0deg,transparent,rgba(255,255,255,0.3))]" />
+                <div className="relative flex gap-4">
+                    <div className="flex-shrink-0">
+                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                            <Shield className="h-6 w-6 text-white" />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <h4 className="font-bold text-lg text-gray-900 dark:text-white">Verificación de Documentos Profesionales</h4>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                            <span className="font-semibold text-blue-700 dark:text-blue-400">Cédula de Identidad:</span> Utiliza verificación biométrica con reconocimiento facial y prueba de vida mediante Didit para garantizar máxima seguridad.
+                        </p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                            <span className="font-semibold text-purple-700 dark:text-purple-400">Documentos Profesionales:</span> Son revisados manualmente por nuestro equipo de verificación en un plazo de 24-48 horas hábiles.
+                        </p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                            <span className="font-semibold text-gray-700 dark:text-gray-300">💡 Tip:</span> Asegúrate de que tus documentos sean legibles y estén actualizados para agilizar el proceso de verificación.
+                        </p>
+                    </div>
+                </div>
             </aside>
 
             {/* Modal de Upload */}

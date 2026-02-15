@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
-    Building2,
     Users,
     BarChart3,
     Settings,
     LogOut,
     Bell,
     Search,
-    Mail,
     Megaphone,
     User as UserIcon,
     ShieldCheck,
@@ -17,7 +15,8 @@ import {
     PanelLeftClose,
     PanelLeft,
     GraduationCap,
-    LifeBuoy
+    LifeBuoy,
+    Banknote
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -134,6 +133,7 @@ const DashboardLayout: React.FC = () => {
 
                     <nav className="flex-1 space-y-0.5 overflow-y-auto custom-scrollbar pr-1">
                         <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" isCollapsed={actualCollapsed} />
+                        <SidebarItem to="/pagos" icon={Banknote} label="Gestión de Pagos" isCollapsed={actualCollapsed} />
                         {hasAccessLevel(2) && <SidebarItem to="/roles" icon={Users} label="Hub de Roles" isCollapsed={actualCollapsed} />}
                         {(hasPermission('can_manage_users') || hasAccessLevel(4)) && <SidebarItem to="/users" icon={UserIcon} label="Monitor Global" isCollapsed={actualCollapsed} />}
                         {(hasPermission('can_broadcast_announcements') || hasAccessLevel(3)) && <SidebarItem to="/announcements" icon={Megaphone} label="Avisos Sistema" isCollapsed={actualCollapsed} />}

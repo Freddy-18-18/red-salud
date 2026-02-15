@@ -88,6 +88,7 @@ function NuevaCitaContent() {
   const dateParam = searchParams.get("date");
   const hourParam = searchParams.get("hour");
   const pacienteParam = searchParams.get("paciente");
+  const officeParam = searchParams.get("officeId");
 
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(appointmentSchema) as unknown as Resolver<AppointmentFormValues>,
@@ -413,6 +414,13 @@ function NuevaCitaContent() {
         return;
       }
 
+      const resolvedOfficeId = officeParam || (typeof window !== "undefined" ? localStorage.getItem("selectedOfficeId") : null);
+      if (!resolvedOfficeId) {
+        setError("Debes seleccionar un consultorio antes de crear la cita.");
+        setLoading(false);
+        return;
+      }
+
       // VALIDACIÓN CRÍTICA: Verificar conflictos una última vez antes de guardar
       const startDateTime = new Date(`${data.fecha}T${data.hora}:00`);
       const endDateTime = new Date(startDateTime.getTime() + data.duracion_minutos * 60000);
@@ -473,6 +481,7 @@ function NuevaCitaContent() {
         meeting_url: meetingUrl,
         metodo_pago: data.metodo_pago,
         enviar_recordatorio: data.enviar_recordatorio,
+        location_id: resolvedOfficeId,
       };
 
       if (isOffline) {
@@ -491,6 +500,46 @@ function NuevaCitaContent() {
 
       if (result.error) throw result.error;
 
+      // ──── Guardar detalles dentales si existen ────────────────────────────
+      if (data.dental_details && 
+          (data.dental_details.procedureCode || 
+           data.dental_details.toothNumbers?.length || 
+           data.dental_details.chairId)) {
+        
+        const dentalData = {
+          appointment_id: appointmentId,
+          chair_id: data.dental_details.chairId || null,
+          hygienist_id: data.dental_details.hygienistId || null,
+          assistant_id: data.dental_details.assistantId || null,
+          procedure_code: data.dental_details.procedureCode || null,
+          procedure_name: data.dental_details.procedureName || null,
+          tooth_numbers: data.dental_details.toothNumbers || [],
+          surfaces: data.dental_details.surfaces || [],
+          quadrant: data.dental_details.quadrant || null,
+          requires_anesthesia: data.dental_details.requiresAnesthesia || false,
+          anesthesia_type: data.dental_details.anesthesiaType || null,
+          requires_sedation: data.dental_details.requiresSedation || false,
+          sedation_type: data.dental_details.sedationType || null,
+          materials_needed: data.dental_details.materialsNeeded || [],
+          materials_prepared: data.dental_details.materialsPrepared || false,
+          special_equipment: data.dental_details.specialEquipment || [],
+          estimated_cost: data.dental_details.estimatedCost || null,
+          insurance_authorization: data.dental_details.insuranceAuthorization || null,
+          preop_notes: data.dental_details.preopNotes || "",
+          postop_notes: data.dental_details.postopNotes || "",
+          complications: data.dental_details.complications || "",
+        };
+
+        const dentalResult = await supabase
+          .from("dental_appointment_details")
+          .insert(dentalData);
+
+        if (dentalResult.error) {
+          console.error("Error saving dental details:", dentalResult.error);
+          // No bloqueamos la creación de la cita si falla el detalle dental
+        }
+      }
+
       await supabase.from("user_activity_log").insert({
         user_id: user.id,
         activity_type: "appointment_created",
@@ -505,7 +554,7 @@ function NuevaCitaContent() {
     } finally {
       setLoading(false);
     }
-  }, [patients, router]);
+  }, [officeParam, patients, router]);
 
   return (
     <VerificationGuard>
@@ -571,7 +620,7 @@ function NuevaCitaContent() {
                   patients={patients}
                   schedules={schedules}
                   offices={offices}
-                  selectedOfficeId={searchParams.get("officeId")}
+                  selectedOfficeId={officeParam}
                   doctorSpecialty={doctorSpecialty}
                 />
               </div>

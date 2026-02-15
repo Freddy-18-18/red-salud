@@ -33,6 +33,16 @@ import {
 import { cn } from "@red-salud/core/utils";
 import { format, getDay } from "date-fns";
 import { searchAllReasons, getTopReasons } from "@/lib/data/specialty-reasons-data";
+import { DentalAppointmentFields } from "@/app/dashboard/medico/citas/components/dental-appointment-fields";
+import type { DentalAppointmentDetails } from "@/types/dental";
+
+// Helper: Detectar si la especialidad es odontología
+function isOdontologySpecialty(specialty: string): boolean {
+  const normalized = specialty.toLowerCase().trim();
+  return normalized.includes("odonto") || 
+         normalized.includes("dental") || 
+         normalized === "odontología";
+}
 
 type CalendarDayButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
     date?: Date;
@@ -94,6 +104,30 @@ export function AppointmentForm({
     const form = useFormContext();
     const { watch, setValue } = form;
 
+    // State para datos dentales (si aplica)
+    const [dentalDetails, setDentalDetails] = React.useState<Partial<DentalAppointmentDetails>>({
+        toothNumbers: [],
+        surfaces: [],
+        requiresAnesthesia: false,
+        requiresSedation: false,
+        materialsNeeded: [],
+        materialsPrepared: false,
+        preopNotes: "",
+        postopNotes: "",
+        complications: "",
+    });
+
+    const isOdontology = React.useMemo(
+        () => isOdontologySpecialty(doctorSpecialty),
+        [doctorSpecialty]
+    );
+
+    // Sincronizar dentalDetails con el formulario
+    React.useEffect(() => {
+        if (isOdontology) {
+            setValue("dental_details", dentalDetails);
+        }
+    }, [dentalDetails, isOdontology, setValue]);
 
     const motivo = watch("motivo");
 
@@ -620,6 +654,17 @@ export function AppointmentForm({
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Campos Odontológicos (solo para especialidad Odontología) */}
+            {isOdontology && selectedOfficeId && (
+                <div className="mt-6">
+                    <DentalAppointmentFields
+                        officeId={selectedOfficeId}
+                        value={dentalDetails}
+                        onChange={setDentalDetails}
+                    />
+                </div>
+            )}
         </TooltipProvider >
     );
 }

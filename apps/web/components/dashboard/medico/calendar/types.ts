@@ -23,6 +23,14 @@ export interface CalendarAppointment {
   cancellation_reason?: string | null;
   medical_record_id?: string | null;
   location_id?: string | null;
+  // Campos odontológicos (opcionales)
+  dental_chair_id?: string | null;
+  dental_procedure_code?: string | null;
+  dental_procedure_name?: string | null;
+  dental_tooth_numbers?: number[];
+  dental_surfaces?: string[];
+  dental_requires_anesthesia?: boolean;
+  dental_estimated_cost?: number | null;
 }
 
 export interface TimeBlock {

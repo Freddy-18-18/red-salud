@@ -75,3 +75,12 @@ export async function getUserRole(supabase: ReturnType<typeof createMiddlewareCl
 
   return undefined
 }
+
+export async function updateSession(request: NextRequest) {
+  const response = NextResponse.next({ request })
+  const supabase = createMiddlewareClient(request, response)
+  await supabase.auth.getUser()
+  return response
+}
+
+export default updateSession

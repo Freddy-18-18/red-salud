@@ -1,0 +1,322 @@
+/* Periodontograma Estilo SEPA - Diseño Profesional */
+
+.periodontogram-sepa-container {
+  width: 100%;
+  overflow-x: auto;
+  background: white;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.sepa-table-wrapper {
+  margin-bottom: 30px;
+  border: 2px solid #333;
+  background: white;
+}
+
+.sepa-section-header {
+  background: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
+  text-align: center;
+  padding: 12px;
+  border-bottom: 2px solid #333;
+}
+
+.sepa-section-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #222;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sepa-arch-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.sepa-quadrant-table {
+  border-collapse: collapse;
+  width: auto;
+  background: white;
+}
+
+.sepa-label {
+  background: #f9f9f9;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border: 1px solid #d0d0d0;
+  text-align: right;
+  white-space: nowrap;
+  min-width: 120px;
+  color: #444;
+  vertical-align: middle;
+}
+
+.sepa-zone-label {
+  font-weight: bold;
+  background: #e9e9e9;
+  font-size: 12px;
+}
+
+.sepa-cell {
+  border: 1px solid #d0d0d0;
+  padding: 4px;
+  text-align: center;
+  min-width: 55px;
+  position: relative;
+  background: white;
+  vertical-align: middle;
+}
+
+.sepa-cell-striped {
+  background: repeating-linear-gradient(
+    45deg,
+    #f5f5f5,
+    #f5f5f5 10px,
+    #fafafa 10px,
+    #fafafa 20px
+  );
+}
+
+.sepa-tooth-number {
+  font-size: 13px;
+  font-weight: bold;
+  padding: 6px 4px;
+  color: #222;
+}
+
+.tooth-missing {
+  text-decoration: line-through;
+  opacity: 0.35;
+  color: #999;
+}
+
+.sepa-input {
+  width: 100%;
+  max-width: 38px;
+  border: 1px solid #bbb;
+  padding: 3px 4px;
+  font-size: 12px;
+  text-align: center;
+  border-radius: 2px;
+  transition: border-color 0.2s;
+}
+
+.sepa-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.sepa-input:disabled {
+  background: #f5f5f5;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sepa-input-small {
+  width: 100%;
+  max-width: 35px;
+  border: 1px solid #bbb;
+  padding: 3px;
+  font-size: 12px;
+  text-align: center;
+  border-radius: 2px;
+}
+
+.sepa-select {
+  width: 100%;
+  max-width: 80px;
+  border: 1px solid #bbb;
+  padding: 3px 2px;
+  font-size: 11px;
+  border-radius: 2px;
+  background: white;
+}
+
+.sepa-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.sepa-three-sites,
+.sepa-three-inputs {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 3px;
+}
+
+.sepa-indicator {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #888;
+  border-radius: 2px;
+  cursor: pointer;
+  background: white;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.sepa-indicator:hover:not(.disabled) {
+  border-color: #333;
+  transform: scale(1.1);
+}
+
+.sepa-indicator.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: #ccc;
+}
+
+.bleeding-active {
+  background: #dc2626 !important;
+  border-color: #991b1b;
+}
+
+.suppuration-active {
+  background: #fbbf24 !important;
+  border-color: #d97706;
+}
+
+.plaque-active {
+  background: #3b82f6 !important;
+  border-color: #1e40af;
+}
+
+.implant-active {
+  background: #8b5cf6 !important;
+  border-color: #6d28d9;
+}
+
+.sepa-tooth-visual {
+  height: 70px;
+  vertical-align: middle;
+  padding: 8px;
+}
+
+.tooth-image-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.tooth-image-placeholder {
+  font-size: 36px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.tooth-canvas {
+  width: 100%;
+  max-width: 50px;
+  height: 40px;
+}
+
+.sepa-note {
+  width: 100%;
+  min-width: 60px;
+  min-height: 35px;
+  max-height: 60px;
+  border: 1px solid #bbb;
+  padding: 4px;
+  font-size: 10px;
+  resize: vertical;
+  border-radius: 2px;
+  font-family: inherit;
+}
+
+.sepa-note:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.sepa-note:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: #f5f5f5;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .sepa-arch-container {
+    flex-direction: column;
+  }
+  
+  .sepa-label {
+    min-width: 100px;
+    font-size: 10px;
+  }
+  
+  .sepa-cell {
+    min-width: 45px;
+  }
+}
+
+@media print {
+  .periodontogram-sepa-container {
+    background: white;
+  }
+  
+  .sepa-input,
+  .sepa-select,
+  .sepa-note {
+    border: 1px solid #333;
+  }
+  
+  .sepa-indicator:not(.bleeding-active):not(.suppuration-active):not(.plaque-active):not(.implant-active) {
+    background: white;
+  }
+}
+
+/* Animaciones sutiles */
+@keyframes highlight {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+}
+
+.sepa-cell:focus-within {
+  animation: highlight 0.5s ease;
+}
+
+/* Estados de validación */
+.sepa-input.error {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.sepa-input.warning {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.sepa-input.success {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+/* Indicador de profundidad alta */
+.depth-high {
+  color: #dc2626;
+  font-weight: bold;
+}
+
+.depth-moderate {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.depth-normal {
+  color: #10b981;
+}

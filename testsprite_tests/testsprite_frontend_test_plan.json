@@ -1,0 +1,283 @@
+[
+  {
+    "id": "TC001",
+    "title": "Role-Based Access Control - Dashboard Redirection",
+    "description": "Verify that authenticated users are redirected to their corresponding dashboards based on their roles (médico, paciente, farmacia, secretaria, clínica).",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login with valid credentials for each user role."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the user is redirected to the correct dashboard for their role."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Role-Based Access Control - Access Restriction",
+    "description": "Verify that users cannot access dashboards or routes of roles different than their own.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as each role and attempt to navigate to a dashboard or protected route of a different role."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that access is denied or redirected accordingly."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Medical Prescription Creation - Minimum Data Validation",
+    "description": "Validate that médicos can create and associate a prescription to a patient only when all required fields are correctly filled.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as médico and navigate to prescription creation page."
+      },
+      {
+        "type": "action",
+        "description": "Input valid minimal required data for a prescription."
+      },
+      {
+        "type": "action",
+        "description": "Submit the prescription."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the prescription is successfully created and associated with the selected patient."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit a prescription missing required data."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that validation errors are shown and creation is blocked."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Patient - Prescription Status Visibility",
+    "description": "Verify that patients can view the real-time status of their prescriptions on their personal panel.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as paciente and navigate to their prescriptions panel."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that prescriptions and their statuses are displayed correctly and updated in real time."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Pharmacy - Prescription Validation and Dispensation",
+    "description": "Verify that farmacia users can list pending prescriptions, validate them, and update their states upon dispensation.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as farmacia user and access pending prescriptions list."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that all pending prescriptions are listed."
+      },
+      {
+        "type": "action",
+        "description": "Validate a pending prescription."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the prescription status changes accordingly."
+      },
+      {
+        "type": "action",
+        "description": "Dispense the prescription and update the status."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the dispensation reflects in the prescription state and triggers audit events."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Secretaria - Administrative Task Management and Coordination",
+    "description": "Verify that secretaria users can access administrative modules and coordinate operational tasks across roles.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as secretaria user and access administrative dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Check available tasks and coordination tools."
+      },
+      {
+        "type": "action",
+        "description": "Create, update, and delete administrative tasks."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify tasks are persisted and visible to related roles."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Audit Events Generation on Prescription State Changes",
+    "description": "Verify that every change of prescription state generates an auditable event that is logged correctly.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform various prescription state transitions (creation, validation, dispensation)."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that each transition generates a correctly structured audit event recorded in the logs."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "API Performance - Clinical and AI Support Endpoints",
+    "description": "Ensure that critical API routes for clinical support and AI assistance respond within performance targets (<800ms for queries, <1200ms for mutations).",
+    "category": "performance",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Invoke GET queries on support and AI suggestion endpoints."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm response times are under 800ms."
+      },
+      {
+        "type": "action",
+        "description": "Invoke POST or mutation endpoints related to these features."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm response times are under 1200ms."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Desktop Applications - Offline Mode and Synchronization",
+    "description": "Verify that médico and farmacia desktop apps work correctly in offline mode and synchronize data reliably when back online.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Launch desktop app and switch to offline mode."
+      },
+      {
+        "type": "action",
+        "description": "Perform typical operations like creating/modifying prescriptions."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify local data persistence without errors."
+      },
+      {
+        "type": "action",
+        "description": "Reconnect to network and trigger synchronization."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure data syncs correctly with backend and status updates propagate."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Shared Contracts Integrity Across Web and Desktop",
+    "description": "Validate the consistency and integrity of shared types and schemas between web and desktop applications to ensure no contract mismatch.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Run automated tests and validations on shared type packages."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm type and schema contracts match expected definitions and no breaking changes exist."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Code Quality - Linting and Static Analysis Enforcement",
+    "description": "Ensure that the codebase passes all linting rules with no blocking errors or critical warnings.",
+    "category": "quality",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Run ESLint and static code analyzers on all project packages."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify zero linting errors and acceptable warning levels."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Testing Coverage - Unit, Integration and E2E Tests",
+    "description": "Verify that unit, integration and end-to-end tests cover critical use cases without failures.",
+    "category": "quality",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Execute full test suite including unit, integration and e2e tests."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure all tests pass and coverage meets predefined thresholds."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Monitoring and Metrics Instrumentation Validation",
+    "description": "Confirm that key metrics and logs are properly instrumented and dashboards display real-time monitoring data.",
+    "category": "quality",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger various key actions in the system (login, prescription lifecycle events, API calls)."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that metrics update, logs are generated and monitoring dashboards reflect the activity."
+      }
+    ]
+  }
+]

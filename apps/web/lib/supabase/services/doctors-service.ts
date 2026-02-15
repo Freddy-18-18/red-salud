@@ -60,7 +60,7 @@ export async function getDoctorProfile(userId: string) {
       .from('doctor_details')
       .select(`
         *,
-        especialidad:specialties(id, name, icon, description),
+        especialidad:specialties(id, name, slug, icon, description),
         profile:profiles!doctor_details_profile_id_fkey(
           id,
           nombre_completo,
@@ -95,6 +95,7 @@ export async function getDoctorProfile(userId: string) {
       specialty: data.especialidad ? {
         id: data.especialidad.id,
         name: data.especialidad.name,
+        slug: data.especialidad.slug ?? null,
         icon: data.especialidad.icon,
         description: data.especialidad.description,
       } : null,
@@ -115,6 +116,8 @@ export async function getDoctorProfile(userId: string) {
       sacs_data: data.sacs_data || null,
       average_rating: 0,
       total_reviews: 0,
+      professional_type: data.professional_type || 'doctor',
+      dashboard_config: data.dashboard_config || {},
       schedule: data.horario_atencion || undefined,
       created_at: data.created_at,
       updated_at: data.updated_at,
@@ -127,6 +130,7 @@ export async function getDoctorProfile(userId: string) {
       sacs_nombre: data.profile?.sacs_nombre || undefined,
       sacs_matricula: data.profile?.sacs_matricula || undefined,
       sacs_especialidad: data.profile?.sacs_especialidad || undefined,
+      subespecialidades: Array.isArray(data.subespecialidades) ? data.subespecialidades : [],
       universidad: undefined,
     } as DoctorProfile;
 

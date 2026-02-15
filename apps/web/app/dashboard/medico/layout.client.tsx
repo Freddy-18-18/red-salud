@@ -15,6 +15,8 @@ interface Profile {
   role: string;
   nombre_completo: string | null;
   scheduled_deletion_at: string | null;
+  specialtyName?: string;
+  subSpecialties?: string[];
 }
 
 export function MedicoLayoutClient({ children }: { children: React.ReactNode }) {
@@ -48,6 +50,24 @@ export function MedicoLayoutClient({ children }: { children: React.ReactNode }) 
       }
 
       setProfile(profile);
+
+      // Obtener especialidad si es médico
+      if (profile?.role === "medico") {
+        const { data: doctorDetails } = await supabase
+          .from("doctor_details")
+          .select("especialidad:specialties(name), subespecialidades")
+          .eq("profile_id", user.id)
+          .single();
+
+        if (doctorDetails?.especialidad) {
+          profile.specialtyName = (doctorDetails.especialidad as { name?: string }).name;
+        }
+
+        profile.subSpecialties = Array.isArray(doctorDetails?.subespecialidades)
+          ? doctorDetails.subespecialidades
+          : [];
+      }
+
       setLoading(false);
     };
 
@@ -86,6 +106,8 @@ export function MedicoLayoutClient({ children }: { children: React.ReactNode }) 
             userEmail={user.email || ""}
             userRole="medico"
             userId={user.id}
+            specialtyName={profile.specialtyName}
+            subSpecialties={profile.subSpecialties}
           >
             {profile?.scheduled_deletion_at && (
               <div className="bg-orange-500 text-white px-4 py-2 flex items-center justify-between text-sm animate-pulse">

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { format, startOfWeek, addDays, isSameDay, isToday as checkIsToday } from "date-fns";
 import { es } from "date-fns/locale";
 import type { CalendarAppointment } from "./types";
-import { Clock } from "lucide-react";
+import { Clock, ArrowLeftRight } from "lucide-react";
 
 interface WeekViewProps {
   date: Date;
@@ -19,10 +19,10 @@ interface WeekViewProps {
   dragState?: {
     isDragging: boolean;
     draggedAppointment: CalendarAppointment | null;
-    draggedOver: { date: Date; hour: number } | null;
+    draggedOver: { date: Date; hour: number; minute?: number; existingAppointment?: CalendarAppointment } | null;
   };
   onDragStart?: (appointment: CalendarAppointment) => void;
-  onDragOver?: (date: Date, hour: number) => void;
+  onDragOver?: (date: Date, hour: number, minute?: number) => void;
   onDragEnd?: () => void;
   onDragCancel?: () => void;
 }
@@ -57,11 +57,62 @@ export function WeekView({
   const currentHour = new Date().getHours();
   const currentMinute = new Date().getMinutes();
 
+  // Estructura para agrupar citas por slot de tiempo
+  interface TimeSlot {
+    startMinute: number; // 0, 15, 30, 45
+    endMinute: number; // 15, 30, 45, 60
+    appointments: CalendarAppointment[];
+  }
+
   const getAppointmentsForDayAndHour = (day: Date, hour: number) => {
     return appointments.filter((apt) => {
       const aptDate = new Date(apt.fecha_hora);
       return isSameDay(aptDate, day) && aptDate.getHours() === hour;
     });
+  };
+
+  // Nueva función para obtener slots de tiempo con citas agrupadas
+  const getTimeSlotsForHour = (day: Date, hour: number): TimeSlot[] => {
+    const hourAppointments = getAppointmentsForDayAndHour(day, hour);
+    
+    if (hourAppointments.length === 0) {
+      return [];
+    }
+
+    // Ordenar citas por minuto de inicio
+    const sortedAppointments = [...hourAppointments].sort((a, b) => {
+      const minuteA = new Date(a.fecha_hora).getMinutes();
+      const minuteB = new Date(b.fecha_hora).getMinutes();
+      return minuteA - minuteB;
+    });
+
+    // Crear slots basados en las duraciones de las citas
+    const slots: TimeSlot[] = [];
+    
+    for (const apt of sortedAppointments) {
+      const aptDate = new Date(apt.fecha_hora);
+      const startMinute = aptDate.getMinutes();
+      const duration = apt.duracion_minutos || 30; // default 30 min
+      const endMinute = Math.min(startMinute + duration, 60);
+
+      // Buscar si ya existe un slot que coincida
+      const existingSlot = slots.find(
+        s => s.startMinute === startMinute && s.endMinute === endMinute
+      );
+
+      if (existingSlot) {
+        existingSlot.appointments.push(apt);
+      } else {
+        slots.push({
+          startMinute,
+          endMinute,
+          appointments: [apt]
+        });
+      }
+    }
+
+    // Ordenar slots por minuto de inicio
+    return slots.sort((a, b) => a.startMinute - b.startMinute);
   };
 
   const getDayAppointments = (day: Date) => {
@@ -162,26 +213,28 @@ export function WeekView({
 
           {/* Days grid - Grid fixed, NO horizontal scroll */}
           <div className="flex-1 grid grid-cols-7 gap-0">
-            {weekDays.map((day) => {
+                {weekDays.map((day) => {
               const isCurrentDay = checkIsToday(day);
               const isPastDay = day < new Date(new Date().setHours(0, 0, 0, 0));
 
               return (
                 <div key={day.toISOString()} className="border-r border-border last:border-r-0">
                   {hours.map((hour) => {
-                    const hourAppointments = getAppointmentsForDayAndHour(day, hour);
+                    const timeSlots = getTimeSlotsForHour(day, hour);
                     const isCurrentHour = hour === currentHour && isCurrentDay;
                     const slotTime = new Date(day);
                     slotTime.setHours(hour, 0, 0, 0);
                     const isPast = slotTime < new Date();
                     const isDropTarget = dragState?.draggedOver?.date === day && dragState?.draggedOver?.hour === hour;
+                    const willSwap = isDropTarget && dragState?.draggedOver?.existingAppointment;
 
                     return (
                       <div
                         key={`${day.toISOString()}-${hour}`}
                         data-tour="time-slot"
-                        className={`h-24 p-1 border-b border-border transition-all duration-100 ${isCurrentHour ? "bg-warning/10 dark:bg-warning/20" : ""
-                          } ${isDropTarget ? "bg-green-100 dark:bg-green-900/30 ring-2 ring-green-400" : ""
+                        className={`h-24 p-1 border-b border-border transition-all duration-150 ${isCurrentHour ? "bg-warning/10 dark:bg-warning/20" : ""
+                          } ${isDropTarget && !willSwap ? "bg-green-100 dark:bg-green-900/30 ring-2 ring-green-400" : ""
+                          } ${willSwap ? "bg-amber-100 dark:bg-amber-900/30 ring-2 ring-amber-500" : ""
                           } ${isPast || isPastDay
                             ? "bg-muted/50 cursor-not-allowed opacity-50"
                             : "cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 active:bg-primary/10"
@@ -204,52 +257,122 @@ export function WeekView({
                           }
                         }}
                       >
-                        {/* Appointments */}
-                        {hourAppointments.length > 0 ? (
-                          <div className="space-y-0.5 h-full overflow-y-auto scrollbar-none">
-                            {hourAppointments.map((apt) => {
-                              const isDragging = dragState?.draggedAppointment?.id === apt.id;
+                        {/* Swap indicator */}
+                        {willSwap && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                            <div className="bg-amber-500 text-white px-2 py-1 rounded-md shadow-lg flex items-center gap-1 text-[10px] font-bold">
+                              <ArrowLeftRight className="h-3 w-3" />
+                              <span>Intercambiar</span>
+                            </div>
+                          </div>
+                        )}
 
+                        {/* Time slots con citas */}
+                        {timeSlots.length > 0 ? (
+                          <div className="flex flex-col h-full gap-px">
+                            {timeSlots.map((slot, slotIndex) => {
+                              const slotHeight = ((slot.endMinute - slot.startMinute) / 60) * 100;
+                              const duration = slot.endMinute - slot.startMinute;
+                              const maxCapacity = duration === 15 ? 1 : duration === 30 ? 1 : 1; // Por slot específico
+                              const isFull = slot.appointments.length >= maxCapacity;
+                              
                               return (
                                 <div
-                                  key={apt.id}
-                                  data-tour="appointment-card"
-                                  data-type={apt.tipo_cita}
-                                  draggable={!isPast && !isPastDay}
-                                  onDragStart={(e) => {
-                                    e.stopPropagation();
-                                    onDragStart?.(apt);
-                                  }}
-                                  onDragEnd={(e) => {
-                                    e.stopPropagation();
-                                    if (dragState?.draggedOver) {
-                                      // El drop se maneja en el contenedor
-                                    } else {
-                                      onDragCancel?.();
-                                    }
-                                  }}
-                                  className={`text-[9px] p-1 rounded border-l-2 transition-all hover:shadow-lg ${isDragging ? "opacity-50 scale-95 cursor-grabbing" : "cursor-grab"
-                                    } ${apt.status === "pendiente"
-                                      ? "bg-yellow-50 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-600 hover:bg-yellow-100 dark:hover:bg-yellow-900/40"
-                                      : apt.status === "confirmada"
-                                        ? "bg-blue-50 dark:bg-blue-900/30 border-blue-400 dark:border-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/40"
-                                        : apt.status === "completada"
-                                          ? "bg-green-50 dark:bg-green-900/30 border-green-400 dark:border-green-600 hover:bg-green-100 dark:hover:bg-green-900/40"
-                                          : "bg-muted border-muted-foreground hover:bg-muted/80"
-                                    }`}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (!isDragging) {
-                                      onAppointmentClick?.(apt);
-                                    }
+                                  key={`${hour}:${slot.startMinute}`}
+                                  className={`flex-shrink-0 relative border-t border-dashed border-border/30 pt-0.5 ${
+                                    slotIndex === 0 ? 'border-t-0' : ''
+                                  }`}
+                                  style={{
+                                    height: `${slotHeight}%`,
+                                    minHeight: '22px'
                                   }}
                                 >
-                                  <div className="font-bold text-foreground truncate">
-                                    {format(new Date(apt.fecha_hora), "HH:mm")}
+                                  {/* Header del slot con tiempo y capacidad */}
+                                  <div className="flex items-center justify-between mb-0.5 px-0.5">
+                                    <div className="text-[8px] text-muted-foreground/70 font-mono font-semibold">
+                                      {String(hour).padStart(2, '0')}:{String(slot.startMinute).padStart(2, '0')}
+                                    </div>
+                                    {slot.appointments.length > 0 && (
+                                      <div className={`text-[7px] px-1 py-0.5 rounded-full font-bold ${
+                                        isFull 
+                                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                                          : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                                      }`}>
+                                        {slot.appointments.length}/{maxCapacity}
+                                      </div>
+                                    )}
                                   </div>
-                                  <div className="truncate text-muted-foreground font-semibold">
-                                    {apt.paciente_nombre}
+                                  
+                                  {/* Citas en este slot */}
+                                  <div className="flex flex-col gap-0.5 overflow-y-auto scrollbar-none h-[calc(100%-16px)]">
+                                    {slot.appointments.map((apt, aptIndex) => {
+                                      const isDragging = dragState?.draggedAppointment?.id === apt.id;
+
+                                      return (
+                                        <div
+                                          key={apt.id}
+                                          data-tour="appointment-card"
+                                          data-type={apt.tipo_cita}
+                                          draggable={!isPast && !isPastDay}
+                                          onDragStart={(e) => {
+                                            e.stopPropagation();
+                                            onDragStart?.(apt);
+                                          }}
+                                          onDragEnd={(e) => {
+                                            e.stopPropagation();
+                                            if (dragState?.draggedOver) {
+                                              // El drop se maneja en el contenedor
+                                            } else {
+                                              onDragCancel?.();
+                                            }
+                                          }}
+                                          className={`text-[9px] p-1.5 rounded-md border-l-[3px] transition-all hover:shadow-md hover:scale-[1.02] ${
+                                            isDragging ? "opacity-50 scale-95 cursor-grabbing" : "cursor-grab"
+                                          } ${
+                                            apt.status === "pendiente"
+                                              ? "bg-yellow-50 dark:bg-yellow-900/30 border-yellow-500 dark:border-yellow-600 hover:bg-yellow-100 dark:hover:bg-yellow-900/40"
+                                              : apt.status === "confirmada"
+                                                ? "bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/40"
+                                                : apt.status === "completada"
+                                                  ? "bg-green-50 dark:bg-green-900/30 border-green-500 dark:border-green-600 hover:bg-green-100 dark:hover:bg-green-900/40"
+                                                  : "bg-muted border-muted-foreground hover:bg-muted/80"
+                                          }`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (!isDragging) {
+                                              onAppointmentClick?.(apt);
+                                            }
+                                          }}
+                                        >
+                                          <div className="font-bold text-foreground truncate flex items-center justify-between gap-1">
+                                            <span className="text-[10px]">{format(new Date(apt.fecha_hora), "HH:mm")}</span>
+                                            <div className="flex items-center gap-1">
+                                              <span className="text-[7px] px-1 py-0.5 bg-background/50 rounded text-muted-foreground font-mono">
+                                                {apt.duracion_minutos}min
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div className="truncate text-muted-foreground font-semibold mt-0.5">
+                                            {apt.paciente_nombre}
+                                          </div>
+                                          {apt.motivo && (
+                                            <div className="text-[7px] text-muted-foreground/70 truncate mt-0.5">
+                                              {apt.motivo}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
                                   </div>
+                                  
+                                  {/* Indicador de slot vacío */}
+                                  {slot.appointments.length === 0 && !isPast && !isPastDay && (
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                      <div className="text-[8px] text-muted-foreground/50 font-medium bg-background/80 px-2 py-1 rounded-md">
+                                        Disponible
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}

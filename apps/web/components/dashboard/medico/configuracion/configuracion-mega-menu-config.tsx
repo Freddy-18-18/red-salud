@@ -20,6 +20,7 @@ import {
   Activity,
   CreditCard,
   Settings,
+  Calendar,
 } from "lucide-react";
 
 /**
@@ -89,6 +90,12 @@ export const CONFIGURACION_MEGA_MENU: MegaMenuSection[] = [
         label: "Horarios",
         icon: Clock,
         description: "Atención",
+      },
+      {
+        id: "integraciones",
+        label: "Integraciones",
+        icon: Calendar,
+        description: "Google Calendar",
       },
       {
         id: "secretarias",

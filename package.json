@@ -1,24 +1,32 @@
 {
-    "name": "red-salud-monorepo",
-    "version": "0.1.0",
-    "private": true,
-    "packageManager": "pnpm@10.4.0",
-    "scripts": {
-        "dev": "pnpm --filter red-salud-web dev",
-        "build": "pnpm --filter @red-salud/types build && pnpm --filter red-salud-web build",
-        "start": "pnpm --filter red-salud-web start",
-        "web:dev": "pnpm --filter red-salud-web dev",
-        "tauri:dev": "pnpm --filter @red-salud/farmacia-desktop tauri:dev",
-        "tauri:farmacia:dev": "pnpm --filter @red-salud/farmacia-desktop tauri:dev",
-        "tauri:medico:dev": "pnpm --filter red-salud-desktop-medico tauri dev",
-        "lint": "pnpm --filter red-salud-web lint"
-    },
-    "dependencies": {},
-    "devDependencies": {
-        "next": "^16.1.0",
-        "react": "^19.2.0",
-        "react-dom": "^19.2.0",
-        "@types/react": "^19",
-        "@types/react-dom": "^19"
-    }
+  "name": "red-salud-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.4.0",
+  "scripts": {
+    "nx": "nx",
+    "dev": "pnpm --filter red-salud-web dev",
+    "build": "pnpm --filter @red-salud/types build && pnpm --filter red-salud-web build",
+    "start": "pnpm --filter red-salud-web start",
+    "web:dev": "pnpm --filter red-salud-web dev",
+    "tauri:dev": "pnpm --filter @red-salud/farmacia-desktop tauri:dev",
+    "tauri:farmacia:dev": "pnpm --filter @red-salud/farmacia-desktop tauri:dev",
+    "tauri:medico:dev": "pnpm --filter red-salud-desktop-medico tauri dev",
+    "lint": "nx run red-salud-web:lint --outputStyle=static",
+    "typecheck": "nx run red-salud-web:typecheck --outputStyle=static",
+    "test": "nx run red-salud-web:test --outputStyle=static",
+    "lint:all": "nx run-many -t lint --all --outputStyle=static",
+    "check": "pnpm lint && pnpm typecheck && pnpm test"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "globals": "^16.4.0",
+    "next": "^16.1.0",
+    "nx": "22.5.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript-eslint": "^8.46.1"
+  }
 }

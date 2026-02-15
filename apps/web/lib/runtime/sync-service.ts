@@ -526,14 +526,16 @@ export class SyncService implements ISyncService {
     entity: PendingChange['entity'],
     id: string
   ): string {
-    return `${entity}s:${id}`;
+    const collection = entity.endsWith('s') ? entity : `${entity}s`;
+    return `${collection}:${id}`;
   }
 
   /**
    * Get collection storage key for entity
    */
   private getCollectionKeyForEntity(entity: PendingChange['entity']): string {
-    return `${entity}s:all`;
+    const collection = entity.endsWith('s') ? entity : `${entity}s`;
+    return `${collection}:all`;
   }
 
   /**

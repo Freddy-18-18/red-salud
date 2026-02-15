@@ -40,7 +40,6 @@ export interface VerificationResult {
 }
 
 export function useProfileSetup() {
-  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -49,32 +48,13 @@ export function useProfileSetup() {
   const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
   const [verifying, setVerifying] = useState(false);
 
-  const [specialtyId, setSpecialtyId] = useState("");
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
-  const [filteredSpecialties, setFilteredSpecialties] = useState<Specialty[]>([]);
-  const [specialtySearch, setSpecialtySearch] = useState("");
-  const [recommendedSpecialty, setRecommendedSpecialty] = useState<Specialty | null>(null);
-  const [licenseNumber, setLicenseNumber] = useState("");
   const [yearsExperience, setYearsExperience] = useState("");
-  const [bio, setBio] = useState("");
 
   useEffect(() => {
     checkAuth();
     loadSpecialties();
   }, []);
-
-  useEffect(() => {
-    if (!specialtySearch.trim()) {
-      setFilteredSpecialties(specialties);
-      return;
-    }
-    const query = specialtySearch.toLowerCase();
-    const filtered = specialties.filter((specialty: Specialty) =>
-      specialty.name.toLowerCase().includes(query) ||
-      specialty.description?.toLowerCase().includes(query)
-    );
-    setFilteredSpecialties(filtered);
-  }, [specialtySearch, specialties]);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -89,7 +69,6 @@ export function useProfileSetup() {
       .order("name");
     if (!error && data) {
       setSpecialties(data);
-      setFilteredSpecialties(data);
     }
   };
 
@@ -103,17 +82,6 @@ export function useProfileSetup() {
       });
       if (error) throw error instanceof Error ? error : new Error(String(error));
       setVerificationResult(data as VerificationResult);
-      if ((data as VerificationResult).verified && (data as VerificationResult).data) {
-        setLicenseNumber((data as VerificationResult).data!.matricula_principal);
-        const match = specialties.find(
-          (s: Specialty) => s.name.toUpperCase().includes((data as VerificationResult).data!.especialidad_display.toUpperCase()) ||
-            (data as VerificationResult).data!.especialidad_display.toUpperCase().includes(s.name.toUpperCase())
-        );
-        if (match) {
-          setRecommendedSpecialty(match);
-          setSpecialtyId(match.id);
-        }
-      }
     } catch (err) {
       setVerificationResult({
         success: false,
@@ -128,14 +96,29 @@ export function useProfileSetup() {
 
   const handleCompleteSetup = async () => {
     if (!verificationResult?.verified) return;
-    if (!specialtyId || !licenseNumber || !yearsExperience) return;
+    if (!yearsExperience) return;
+    
     setLoading(true);
     try {
+      // Buscar especialidad automáticamente basado en SACS
+      const especialidadSACS = verificationResult.data?.especialidad_display || "";
+      const match = specialties.find(
+        (s: Specialty) => 
+          s.name.toUpperCase().includes(especialidadSACS.toUpperCase()) ||
+          especialidadSACS.toUpperCase().includes(s.name.toUpperCase())
+      );
+      
+      const especialidadId = match ? match.id : null;
+      
+      if (!especialidadId) {
+        throw new Error("No se pudo encontrar la especialidad en el sistema");
+      }
+
       const { error: profileError } = await supabase
         .from("doctor_details")
         .insert({
           profile_id: userId,
-          especialidad_id: specialtyId,
+          especialidad_id: especialidadId,
           licencia_medica: verificationResult?.data?.matricula_principal,
           anos_experiencia: parseInt(yearsExperience),
           verified: true,
@@ -165,34 +148,110 @@ export function useProfileSetup() {
     }
   };
 
+  const handleCompleteManual = async (data: {
+    nombre_completo: string;
+    cedula: string;
+    tipo_documento: string;
+    especialidad_id: string;
+    anos_experiencia: number;
+  }) => {
+    setLoading(true);
+    try {
+      const { error: profileError } = await supabase
+        .from("doctor_details")
+        .insert({
+          profile_id: userId,
+          especialidad_id: data.especialidad_id,
+          licencia_medica: null, // No tiene matrícula SACS
+          anos_experiencia: data.anos_experiencia,
+          verified: false, // Pendiente de verificación manual
+          sacs_verified: false,
+          sacs_data: null,
+        })
+        .select()
+        .single();
+      if (profileError) throw new Error(profileError.message || "Error al crear perfil de médico");
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          nombre_completo: data.nombre_completo,
+          cedula: data.cedula,
+          cedula_verificada: false, // Pendiente de verificación
+          sacs_verificado: false,
+        })
+        .eq("id", userId);
+      if (updateError) throw new Error(updateError.message || "Error al actualizar perfil");
+
+      // Obtener el email del perfil para incluirlo en el ticket
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", userId)
+        .single();
+
+      // Obtener el nombre de la especialidad
+      const selectedSpecialty = specialties.find(s => s.id === data.especialidad_id);
+
+      // Crear ticket de verificación para la app corporativa
+      const { error: ticketError } = await supabase
+        .from("support_tickets")
+        .insert({
+          name: data.nombre_completo,
+          email: profileData?.email || "sin-email@registro-manual.com",
+          phone: null,
+          subject: "Verificación de profesional de salud",
+          ticket_type: "verification_medico",
+          priority: "alta",
+          status: "NUEVO",
+          created_by: userId,
+          message: `Solicitud de verificación manual de profesional de salud.\n\nNo se encuentra registrado en el sistema SACS.`,
+          metadata: {
+            tipo_solicitud: "verificacion_manual",
+            tipo_profesional: "medico",
+            cedula: `${data.tipo_documento}-${data.cedula}`,
+            especialidad: selectedSpecialty?.name || "No especificada",
+            especialidad_id: data.especialidad_id,
+            anos_experiencia: data.anos_experiencia,
+            profile_id: userId,
+            fecha_solicitud: new Date().toISOString(),
+            requiere_documentos: true,
+            documentos_pendientes: [
+              "Cédula de identidad (ambas caras)",
+              "Título profesional",
+              "Certificado de registro profesional",
+              "Constancia de experiencia laboral"
+            ]
+          }
+        });
+
+      if (ticketError) {
+        console.error("Error creando ticket de verificación:", ticketError);
+        // No lanzamos error para no bloquear el flujo principal
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     state: {
-      step,
       loading,
       userId,
       cedula,
       tipoDocumento,
       verificationResult,
       verifying,
-      specialtyId,
       specialties,
-      filteredSpecialties,
-      specialtySearch,
-      recommendedSpecialty,
-      licenseNumber,
       yearsExperience,
-      bio,
     },
     actions: {
-      setStep,
       setCedula,
       setTipoDocumento,
-      setSpecialtyId,
-      setSpecialtySearch,
       setYearsExperience,
-      setBio,
       handleVerifySACS,
       handleCompleteSetup,
+      handleCompleteManual,
     },
   };
 }

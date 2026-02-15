@@ -421,6 +421,42 @@ export function PatientSummaryModal({
                     <p className="text-xs text-gray-500 mb-0.5">Motivo</p>
                     <p className="text-sm font-medium text-gray-900 break-words">{appointment.motivo}</p>
                   </div>
+                  
+                  {/* Información Dental (si existe) */}
+                  {(appointment.dental_procedure_name || appointment.dental_tooth_numbers?.length) && (
+                    <div className="col-span-full min-w-0 bg-blue-50 p-2 rounded-md border border-blue-100">
+                      <p className="text-xs font-semibold text-blue-900 mb-1">🦷 Información Odontológica</p>
+                      <div className="space-y-1">
+                        {appointment.dental_procedure_name && (
+                          <p className="text-xs text-blue-800">
+                            <span className="font-medium">Procedimiento:</span> {appointment.dental_procedure_name}
+                            {appointment.dental_procedure_code && ` (${appointment.dental_procedure_code})`}
+                          </p>
+                        )}
+                        {appointment.dental_tooth_numbers && appointment.dental_tooth_numbers.length > 0 && (
+                          <p className="text-xs text-blue-800">
+                            <span className="font-medium">Dientes:</span> {appointment.dental_tooth_numbers.join(", ")}
+                          </p>
+                        )}
+                        {appointment.dental_surfaces && appointment.dental_surfaces.length > 0 && (
+                          <p className="text-xs text-blue-800">
+                            <span className="font-medium">Superficies:</span> {appointment.dental_surfaces.join(", ")}
+                          </p>
+                        )}
+                        {appointment.dental_requires_anesthesia && (
+                          <p className="text-xs text-blue-800">
+                            💉 <span className="font-medium">Requiere anestesia</span>
+                          </p>
+                        )}
+                        {appointment.dental_estimated_cost && (
+                          <p className="text-xs text-blue-800">
+                            <span className="font-medium">Costo estimado:</span> ${appointment.dental_estimated_cost.toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
                   {appointment.notas_internas && (
                     <div className="col-span-full min-w-0">
                       <p className="text-xs text-gray-500 mb-0.5">Notas Internas</p>

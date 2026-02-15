@@ -49,7 +49,11 @@ describe('Property 17: Runtime-Specific Implementation Selection', () => {
 
   afterEach(() => {
     // Restore original window state
-    global.window = originalWindow;
+    if (originalWindow) {
+      global.window = originalWindow;
+    } else {
+      delete (global as { window?: Window & typeof globalThis }).window;
+    }
 
     // Reset runtime service singleton instance
     RuntimeServiceImpl.resetInstance();
@@ -491,16 +495,22 @@ describe('Property 17: Runtime-Specific Implementation Selection', () => {
     expect(RuntimeService.isWeb()).toBe(true);
     expect(RuntimeService.isTauri()).toBe(false);
 
-    // Test case 3: window exists and __TAURI__ is defined
+    // Test case 3: window exists and __TAURI__ is present but invalid (no invoke)
     global.window = { __TAURI__: {} } as unknown as Window & typeof globalThis;
     RuntimeServiceImpl.resetInstance();
-    expect(RuntimeService.isTauri()).toBe(true);
-    expect(RuntimeService.isWeb()).toBe(false);
+    expect(RuntimeService.isTauri()).toBe(false);
+    expect(RuntimeService.isWeb()).toBe(true);
 
-    // Test case 4: window exists and __TAURI__ is null (should be tauri because 'in' operator checks for property existence)
+    // Test case 4: window exists and __TAURI__ is null
     global.window = { __TAURI__: null } as unknown as Window & typeof globalThis;
     RuntimeServiceImpl.resetInstance();
-    expect(RuntimeService.isTauri()).toBe(true); // Changed: 'in' operator returns true even if value is null
+    expect(RuntimeService.isTauri()).toBe(false);
+    expect(RuntimeService.isWeb()).toBe(true);
+
+    // Test case 5: window exists and __TAURI__.invoke is callable
+    global.window = { __TAURI__: { invoke: vi.fn() } } as unknown as Window & typeof globalThis;
+    RuntimeServiceImpl.resetInstance();
+    expect(RuntimeService.isTauri()).toBe(true);
     expect(RuntimeService.isWeb()).toBe(false);
   });
 });

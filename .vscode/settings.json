@@ -1,4 +1,7 @@
 {
     "typescript.autoClosingTags": false,
-    "kiroAgent.configureMCP": "Enabled"
+    "kiroAgent.configureMCP": "Enabled",
+    "chat.tools.terminal.autoApprove": {
+        "S": true
+    }
 }

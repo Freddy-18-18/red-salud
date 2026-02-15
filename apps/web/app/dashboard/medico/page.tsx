@@ -20,12 +20,16 @@ import { useDoctorProfile } from "@/hooks/use-doctor-profile";
 import { useDashboardWidgets } from "@/hooks/use-dashboard-widgets";
 import { supabase } from "@/lib/supabase/client";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
-import { DashboardV2 } from "@/components/dashboard/medico/dashboard-v2/DashboardV2";
+import { SpecialtyDashboardSafe } from "@/components/dashboard/medico/specialty-dashboard-loader";
 import { ThemeToggle } from "@red-salud/ui";
 import { useCurrentOffice } from "@/hooks/use-current-office";
 import { OfficeQuickSelectorDropdown } from "@/components/dashboard/medico/office-quick-selector-dropdown";
 import { FullDashboardSkeleton } from "@/components/dashboard/medico/dashboard/dashboard-skeleton";
 import { useTourGuide } from "@/hooks/use-tour-guide";
+import {
+  getSpecialtyExperienceConfig,
+  type SpecialtyContext,
+} from "@/lib/specialties";
 
 export default function DoctorDashboardPage() {
   const router = useRouter();
@@ -49,6 +53,24 @@ export default function DoctorDashboardPage() {
 
   // Si no hay perfil de médico, necesita completar setup
   const needsSetup = !loading && !profile && !!userId;
+
+  // MODO PRUEBA: Permitir forzar dashboard de odontología en desarrollo
+  // Para usar: agrega ?test=odontologia al URL
+  const searchParams = new URLSearchParams(
+    typeof window !== "undefined" ? window.location.search : ""
+  );
+  const forceDashboardVariant =
+    process.env.NODE_ENV !== "production" && searchParams.get("test") === "odontologia"
+      ? ("odontologia" as const)
+      : undefined;
+
+  const specialtyExperience = getSpecialtyExperienceConfig({
+    specialtySlug: profile?.specialty?.slug,
+    specialtyName: profile?.specialty?.name || profile?.sacs_especialidad,
+    sacsEspecialidad: profile?.sacs_especialidad,
+    subSpecialties: profile?.subespecialidades,
+    forceDashboardVariant,
+  });
 
   useEffect(() => {
     const getUser = async () => {
@@ -293,10 +315,27 @@ export default function DoctorDashboardPage() {
             </motion.div>
           )}
 
-          {/* Dashboard V2 - Unified Experience */}
+          {/* Test Mode Alert */}
+          {forceDashboardVariant && (
+            <motion.div variants={fadeInUp}>
+              <Alert className="bg-purple-500/10 border-purple-500/30 dark:bg-purple-500/15 dark:border-purple-500/40">
+                <AlertCircle className="h-4 w-4 text-purple-600 dark:text-purple-500" />
+                <AlertDescription className="text-purple-700 dark:text-purple-300">
+                  <strong>MODO PRUEBA:</strong> Estás viendo el dashboard de
+                  Odontología forzado para desarrollo. En producción, esto se
+                  detectará automáticamente según tu especialidad SACS.
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+
+          {/* Specialty Dashboard - Dynamically loads from SpecialtyConfig */}
           <motion.div variants={fadeInUp}>
-            <DashboardV2
+            <SpecialtyDashboardSafe
+              config={specialtyExperience}
               userId={userId || undefined}
+              subSpecialties={profile?.subespecialidades}
+              profileName={profile?.nombre_completo}
             />
           </motion.div>
         </motion.div>

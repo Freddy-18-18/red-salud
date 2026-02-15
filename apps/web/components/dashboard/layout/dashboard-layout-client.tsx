@@ -22,6 +22,7 @@ import { useDoctorProfile } from "@/hooks/use-doctor-profile";
 import { useTourGuide } from "@/components/dashboard/shared/tour-guide/tour-guide-provider";
 import { useMegaMenuConfig } from "@/hooks/dashboard/use-mega-menu-config";
 import { useDashboardMenuGroups } from "@/hooks/dashboard/use-dashboard-menu-groups";
+import { useSpecialtyMenuGroups } from "@/hooks/dashboard/use-specialty-menu-groups";
 
 interface SecretaryPermissions {
   can_view_agenda?: boolean;
@@ -36,6 +37,8 @@ interface DashboardLayoutClientProps {
   userId?: string;
   userRole?: "paciente" | "medico" | "secretaria";
   secretaryPermissions?: SecretaryPermissions;
+  specialtyName?: string;
+  subSpecialties?: string[];
 }
 
 export function DashboardLayoutClient({
@@ -45,6 +48,8 @@ export function DashboardLayoutClient({
   userId,
   userRole = "paciente",
   secretaryPermissions,
+  specialtyName,
+  subSpecialties,
 }: DashboardLayoutClientProps) {
   const router = useRouter();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -56,7 +61,18 @@ export function DashboardLayoutClient({
 
   // Hooks de configuración de menú
   const megaMenuConfig = useMegaMenuConfig();
-  const { menuGroups, dashboardRoute } = useDashboardMenuGroups(userRole, secretaryPermissions);
+
+  // New specialty-aware menu groups for all roles
+  const { menuGroups, dashboardRoute, specialtyConfig } = useSpecialtyMenuGroups(
+    userRole,
+    secretaryPermissions,
+    userRole === "medico"
+      ? {
+          specialtyName: specialtyName,
+          subSpecialties: subSpecialties,
+        }
+      : undefined
+  );
 
   // Hooks para médicos
   const { profile: doctorProfile } = useDoctorProfile(

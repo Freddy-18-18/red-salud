@@ -2,7 +2,9 @@
     "compilerOptions": {
         "target": "ES2020",
         "lib": [
-            "ESNext"
+            "ESNext",
+            "DOM",
+            "DOM.Iterable"
         ],
         "module": "ESNext",
         "skipLibCheck": true,

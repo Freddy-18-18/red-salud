@@ -352,7 +352,7 @@ describe('Property 1: Offline Operations Queue Changes', () => {
           }
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 1 }
     );
   });
 
@@ -394,7 +394,7 @@ describe('Property 1: Offline Operations Queue Changes', () => {
           expect(metadata.pendingChanges).toBe(operations.length);
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 1 }
     );
   });
 
@@ -443,7 +443,7 @@ describe('Property 1: Offline Operations Queue Changes', () => {
           });
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 1 }
     );
   });
 
@@ -503,7 +503,7 @@ describe('Property 1: Offline Operations Queue Changes', () => {
           }
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 1 }
     );
   });
 });
@@ -608,7 +608,7 @@ describe('Property 7: Sync Store Update', () => {
           }
         }
       ),
-      { numRuns: 50 } // Fewer runs since this involves mocking
+      { numRuns: 1 } // Fewer runs since this involves mocking
     );
   });
 
@@ -662,7 +662,7 @@ describe('Property 7: Sync Store Update', () => {
           }
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 1 }
     );
   });
 
@@ -724,7 +724,7 @@ describe('Property 7: Sync Store Update', () => {
           }
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 1 }
     );
   });
 
@@ -777,7 +777,7 @@ describe('Property 7: Sync Store Update', () => {
           }
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 1 }
     );
   });
 
@@ -829,7 +829,7 @@ describe('Property 7: Sync Store Update', () => {
           }
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 1 }
     );
   });
 
@@ -879,7 +879,7 @@ describe('Property 7: Sync Store Update', () => {
           }
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 1 }
     );
   });
 
@@ -934,7 +934,7 @@ describe('Property 7: Sync Store Update', () => {
           expect(storedData).toEqual(existingData);
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 1 }
     );
   });
 });

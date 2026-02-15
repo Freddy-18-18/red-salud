@@ -3,6 +3,7 @@
 export interface MedicalSpecialty {
   id: string;
   name: string;
+  slug: string | null;
   description: string | null;
   icon: string | null;
   active: boolean;
@@ -60,6 +61,8 @@ export interface DoctorProfile {
   sacs_data: Record<string, unknown> | null;
   average_rating: number;
   total_reviews: number;
+  professional_type: 'doctor' | 'tecnico' | 'asistente' | 'otro';
+  dashboard_config: Record<string, unknown>;
   schedule?: DoctorSchedule;
   created_at: string;
   updated_at: string;
@@ -73,6 +76,7 @@ export interface DoctorProfile {
   sacs_nombre?: string;
   sacs_matricula?: string;
   sacs_especialidad?: string;
+  subespecialidades?: string[];
   universidad?: string;
 }
 
@@ -89,6 +93,8 @@ export interface DoctorProfileFormData {
   accepts_insurance?: boolean;
   bio?: string;
   languages?: string[];
+  professional_type?: 'doctor' | 'tecnico' | 'asistente' | 'otro';
+  dashboard_config?: Record<string, unknown>;
   schedule?: DoctorSchedule;
 }
 

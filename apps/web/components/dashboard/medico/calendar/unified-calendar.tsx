@@ -15,7 +15,9 @@ import type { CalendarAppointment } from "./types";
 import { cn } from "@red-salud/core/utils";
 import { AppointmentCard } from "./appointment-card";
 import { AppointmentStack } from "./appointment-stack";
+import { WeekView } from "./week-view-improved";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import type { AppointmentStatus } from "@/lib/services/appointment-status";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +34,18 @@ interface UnifiedCalendarProps {
   onTimeSlotClick?: (date: Date, hour?: number) => void;
   onMessage?: (appointment: CalendarAppointment) => void;
   onStartVideo?: (appointment: CalendarAppointment) => void;
+  onStatusChange?: (appointment: CalendarAppointment, newStatus: AppointmentStatus) => void;
   loading?: boolean;
+  // Drag & Drop
+  dragState?: {
+    isDragging: boolean;
+    draggedAppointment: CalendarAppointment | null;
+    draggedOver: { date: Date; hour: number; existingAppointment?: CalendarAppointment } | null;
+  };
+  onDragStart?: (appointment: CalendarAppointment) => void;
+  onDragOver?: (date: Date, hour: number) => void;
+  onDragEnd?: () => void;
+  onDragCancel?: () => void;
 }
 
 export function UnifiedCalendar({
@@ -42,7 +55,13 @@ export function UnifiedCalendar({
   onTimeSlotClick,
   onMessage,
   onStartVideo,
+  onStatusChange,
   loading = false,
+  dragState,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
+  onDragCancel,
 }: UnifiedCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("week");
@@ -141,7 +160,7 @@ export function UnifiedCalendar({
 
     // Ajuste de ancho responsivo
     return (
-      <div className="h-full">
+      <div className="h-full overflow-y-auto">
         <div className="min-w-full md:min-w-[600px]">
           {hours.map(hour => {
             const hourAppointments = getAppointmentsForHour(currentDate, hour);
@@ -253,8 +272,8 @@ export function UnifiedCalendar({
                         className="absolute w-full z-20 pointer-events-none flex items-center"
                         style={{ top: `${(now.getMinutes() / 60) * 100}%` }}
                       >
-                        <div className="absolute -left-[1px] w-2 h-2 bg-red-500 rounded-full ring-2 ring-background" />
-                        <div className="w-full border-t border-red-500 shadow-[0_0_4px_rgba(239,68,68,0.4)]" />
+                        <div className="absolute -left-[1px] w-2 h-2 bg-red-500 rounded-full" />
+                        <div className="w-full border-t border-red-500" />
                       </div>
                     )}
 
@@ -380,7 +399,7 @@ export function UnifiedCalendar({
     });
 
     return (
-      <div className="w-full pb-10">
+      <div className="h-full w-full overflow-y-auto pb-6">
         {sortedAppointments.length > 0 ? (
           <div className="space-y-6 w-full">
             {Object.entries(groupedAppointments).map(([dateKey, apts]) => (
@@ -404,6 +423,7 @@ export function UnifiedCalendar({
                       onView={onAppointmentClick}
                       onMessage={onMessage}
                       onStartVideo={onStartVideo}
+                      onStatusChange={onStatusChange}
                     />
                   ))}
                 </div>
@@ -440,9 +460,9 @@ export function UnifiedCalendar({
   }
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background overflow-hidden">
       {/* Toolbar responsive */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2 sm:p-3 border-b border-border bg-card gap-3 sm:gap-4 transition-all duration-200">
+      <div className="flex-none flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2 sm:p-3 border-b border-border bg-card gap-3 sm:gap-4 transition-all duration-200">
 
         {/* Navigation & Date */}
         <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
@@ -532,7 +552,21 @@ export function UnifiedCalendar({
       {/* Calendar Content */}
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative">
         {viewMode === "day" && renderDayView()}
-        {viewMode === "week" && renderWeekView()}
+        {viewMode === "week" && (
+          <WeekView
+            date={currentDate}
+            appointments={appointments}
+            onAppointmentClick={onAppointmentClick}
+            onTimeSlotClick={onTimeSlotClick}
+            onMessage={onMessage}
+            onStartVideo={onStartVideo}
+            dragState={dragState}
+            onDragStart={onDragStart}
+            onDragOver={onDragOver}
+            onDragEnd={onDragEnd}
+            onDragCancel={onDragCancel}
+          />
+        )}
         {viewMode === "month" && renderMonthView()}
         {viewMode === "list" && renderListView()}
       </div>
