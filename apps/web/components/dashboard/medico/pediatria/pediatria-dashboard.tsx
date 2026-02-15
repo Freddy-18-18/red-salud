@@ -1,6 +1,7 @@
 // ============================================
 // PEDIATRICS DASHBOARD
 // Main dashboard for pediatrics specialty
+// Uses real Supabase data via usePediatricsDashboardData hook
 // ============================================
 
 "use client";
@@ -12,19 +13,29 @@ import {
   TrendingUp,
   Clock3,
   RefreshCcw,
-  Calendar,
   AlertCircle,
   Users,
   Video,
+  Ruler,
+  Weight,
 } from "lucide-react";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@red-salud/ui";
 import { getPrimarySubSpecialty } from "@/lib/specialty-experience/engine";
-import { usePediatricsDashboardData } from "@/hooks/dashboard/use-pediatrics-dashboard-data";
+import {
+  usePediatricsDashboardData,
+  type GrowthAlert,
+  type UpcomingVaccine,
+  type RecentGrowthRecord,
+} from "@/hooks/dashboard/use-pediatrics-dashboard-data";
 
 interface PediatricsDashboardProps {
   doctorId?: string;
   subSpecialties?: string[];
 }
+
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
 
 function MetricItem({
   label,
@@ -61,81 +72,30 @@ function MetricItem({
   );
 }
 
-function VaccinationTracker({
-  vaccinations,
-  upcomingVaccines
-}: {
-  vaccinations: Array<{
-    vaccineName: string;
-    completed: number;
-    scheduled: number;
-    coverage: number;
-  }>;
-  upcomingVaccines: Array<{
-    patientName: string;
-    vaccine: string;
-    scheduledDate: string;
-  }>;
-}) {
-  return (
-    <div className="space-y-4">
-      {/* Coverage Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {vaccinations.map((vax) => (
-          <div key={vax.vaccineName} className="text-center">
-            <p className="text-xs text-muted-foreground mb-1">{vax.vaccineName}</p>
-            <p className="text-lg font-bold">{vax.coverage}%</p>
-            <p className="text-xs text-muted-foreground">
-              {vax.completed}/{vax.scheduled}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Upcoming Vaccinations */}
-      {upcomingVaccines.length > 0 && (
-        <>
-          <div className="h-px bg-border my-2" />
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Próximas Vacunas:</p>
-            {upcomingVaccines.map((vax, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm">
-                <Syringe className="h-3.5 w-3.5 text-primary" />
-                <span>{vax.patientName} - {vax.vaccine}</span>
-                <span className="text-muted-foreground ml-auto">{vax.scheduledDate}</span>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
+function formatAge(ageMonths: number): string {
+  if (ageMonths < 1) return "< 1 mes";
+  if (ageMonths < 12) return `${ageMonths} mes${ageMonths === 1 ? "" : "es"}`;
+  const years = Math.floor(ageMonths / 12);
+  const months = ageMonths % 12;
+  if (months === 0) return `${years} año${years === 1 ? "" : "s"}`;
+  return `${years}a ${months}m`;
 }
 
-function GrowthAlerts({
-  alerts
-}: {
-  alerts: Array<{
-    patientName: string;
-    age: string;
-    alert: string;
-    severity: "high" | "medium" | "low";
-  }>;
-}) {
+function GrowthAlertsList({ alerts }: { alerts: GrowthAlert[] }) {
   if (alerts.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <TrendingUp className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">No alertas de crecimiento</p>
+        <p className="text-sm">No hay alertas de crecimiento</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-2">
-      {alerts.map((alert, i) => (
+      {alerts.map((alert) => (
         <div
-          key={i}
+          key={alert.id}
           className={`flex items-center gap-3 p-3 rounded-lg border ${
             alert.severity === "high"
               ? "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800"
@@ -144,58 +104,133 @@ function GrowthAlerts({
               : "bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800"
           }`}
         >
-          <AlertCircle className="h-4 w-4 flex-shrink-0 text-blue-600" />
+          <AlertCircle
+            className={`h-4 w-4 flex-shrink-0 ${
+              alert.severity === "high"
+                ? "text-red-600"
+                : alert.severity === "medium"
+                ? "text-yellow-600"
+                : "text-blue-600"
+            }`}
+          />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">
-              {alert.patientName}, {alert.age}
+              {alert.patientName}, {formatAge(alert.ageMonths)}
             </p>
-            <p className="text-xs text-muted-foreground truncate">{alert.alert}</p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{alert.nutritionalStatus || "Sin clasificar"}</span>
+              {alert.weightPercentile != null && (
+                <span>• P{alert.weightPercentile} peso</span>
+              )}
+              {alert.heightPercentile != null && (
+                <span>• P{alert.heightPercentile} talla</span>
+              )}
+            </div>
           </div>
+          <Badge
+            variant={alert.severity === "high" ? "destructive" : "secondary"}
+            className="text-[10px]"
+          >
+            {alert.severity}
+          </Badge>
         </div>
       ))}
     </div>
   );
 }
 
-function WellChildSchedule({
-  appointments
-}: {
-  appointments: Array<{
-    patientName: string;
-    age: string;
-    visitType: string;
-    scheduledDate: string;
-  }>;
-}) {
-  if (appointments.length === 0) {
+function UpcomingVaccinesList({ vaccines }: { vaccines: UpcomingVaccine[] }) {
+  if (vaccines.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">No visitas programadas hoy</p>
+        <Syringe className="h-8 w-8 mx-auto mb-2 opacity-50" />
+        <p className="text-sm">No hay vacunas próximas</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-2">
-      {appointments.map((apt, i) => (
+      {vaccines.map((vax) => (
         <div
-          key={i}
+          key={vax.id}
           className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card"
         >
-          <Baby className="h-4 w-4 text-primary flex-shrink-0" />
+          <Syringe className="h-4 w-4 text-green-600 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{apt.patientName}</p>
+            <p className="text-sm font-medium truncate">{vax.patientName}</p>
             <p className="text-xs text-muted-foreground">
-              {apt.age} • {apt.visitType}
+              {vax.vaccineName} • Dosis {vax.doseNumber}
             </p>
           </div>
-          <span className="text-xs text-muted-foreground">{apt.scheduledDate}</span>
+          <div className="text-right flex-shrink-0">
+            <Badge variant="outline" className="text-[10px]">
+              {vax.vaccineType}
+            </Badge>
+            {vax.nextDoseDate && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {new Date(vax.nextDoseDate).toLocaleDateString("es-ES", {
+                  day: "2-digit",
+                  month: "short",
+                })}
+              </p>
+            )}
+          </div>
         </div>
       ))}
     </div>
   );
 }
+
+function RecentGrowthRecordsList({ records }: { records: RecentGrowthRecord[] }) {
+  if (records.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <Ruler className="h-8 w-8 mx-auto mb-2 opacity-50" />
+        <p className="text-sm">No hay registros recientes</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {records.map((record) => (
+        <div
+          key={record.id}
+          className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card"
+        >
+          <Baby className="h-4 w-4 text-primary flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{record.patientName}</p>
+            <p className="text-xs text-muted-foreground">
+              {formatAge(record.ageMonths)} •{" "}
+              {record.weightKg != null ? `${record.weightKg} kg` : "—"} •{" "}
+              {record.heightCm != null ? `${record.heightCm} cm` : "—"}
+              {record.bmi != null && ` • IMC ${record.bmi.toFixed(1)}`}
+            </p>
+          </div>
+          <div className="text-right flex-shrink-0">
+            {record.nutritionalStatus && (
+              <Badge variant="outline" className="text-[10px]">
+                {record.nutritionalStatus}
+              </Badge>
+            )}
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {new Date(record.measurementDate).toLocaleDateString("es-ES", {
+                day: "2-digit",
+                month: "short",
+              })}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
 
 export default function PediatricsDashboard({
   doctorId,
@@ -203,10 +238,10 @@ export default function PediatricsDashboard({
 }: PediatricsDashboardProps) {
   const {
     patientStatus,
-    vaccinations,
     growthAlerts,
-    wellChildSchedule,
     upcomingVaccines,
+    recentGrowthRecords,
+    pendingVaccines,
     refreshedAt,
     isLoading,
     error,
@@ -227,7 +262,7 @@ export default function PediatricsDashboard({
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <Baby className="h-8 w-8 text-green-500" />
-              Pediatría v1
+              Pediatría
             </h1>
             {primarySubSpecialty && (
               <Badge variant="outline">{primarySubSpecialty}</Badge>
@@ -265,43 +300,45 @@ export default function PediatricsDashboard({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <GrowthAlerts alerts={growthAlerts || []} />
+            <GrowthAlertsList alerts={growthAlerts || []} />
           </CardContent>
         </Card>
 
-        {/* Well Child Schedule */}
+        {/* Upcoming Vaccines */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Visitas de Bienestar Hoy
+              <Syringe className="h-4 w-4 text-green-600" />
+              Próximas Vacunas ({upcomingVaccines?.length || 0})
+              {pendingVaccines > 0 && (
+                <Badge variant="secondary" className="text-[10px] ml-auto">
+                  {pendingVaccines} pendientes
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <WellChildSchedule appointments={wellChildSchedule || []} />
+            <UpcomingVaccinesList vaccines={upcomingVaccines || []} />
           </CardContent>
         </Card>
 
-        {/* Vaccination Tracker */}
+        {/* Recent Growth Records */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
-              <Syringe className="h-4 w-4" />
-              Cobertura de Vacunación
+              <Ruler className="h-4 w-4 text-blue-600" />
+              Registros de Crecimiento Recientes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <VaccinationTracker
-              vaccinations={vaccinations || []}
-              upcomingVaccines={upcomingVaccines || []}
-            />
+            <RecentGrowthRecordsList records={recentGrowthRecords || []} />
           </CardContent>
         </Card>
 
         {/* Patient Stats */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Estadística de Pacientes</CardTitle>
+            <CardTitle>Estadísticas de Pacientes</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <MetricItem
@@ -319,14 +356,30 @@ export default function PediatricsDashboard({
               value={patientStatus?.followUp || 0}
             />
             <MetricItem
-              label="Tasa de Cumplimiento"
-              value="87%"
-              trend={3}
+              label="Alta Prioridad"
+              value={patientStatus?.highPriority || 0}
+              icon={AlertCircle}
             />
-            <MetricItem label="Visitas Well-Child" value="92%" trend={5} />
-            <MetricItem label="Vacunación al Día" value="94%" />
-            <MetricItem label="Crecimiento Normal" value="89%" />
-            <MetricItem label="Alertas Nutricionales" value={patientStatus?.nutritionAlerts || 0} status={patientStatus?.nutritionAlerts > 5 ? "warning" : "normal"} />
+            <MetricItem
+              label="Alertas Nutricionales"
+              value={patientStatus?.nutritionAlerts || 0}
+              icon={Weight}
+            />
+            <MetricItem
+              label="Vacunas Pendientes"
+              value={pendingVaccines || 0}
+              icon={Syringe}
+            />
+            <MetricItem
+              label="Alertas Crecimiento"
+              value={growthAlerts?.length || 0}
+              icon={TrendingUp}
+            />
+            <MetricItem
+              label="Tendencia Activos"
+              value={patientStatus?.active || 0}
+              trend={patientStatus?.activeTrend || 0}
+            />
           </CardContent>
         </Card>
 
