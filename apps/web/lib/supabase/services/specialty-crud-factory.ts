@@ -17,6 +17,7 @@ export interface SpecialtyRecord {
   patient_id: string;
   created_at: string;
   updated_at: string;
+  [key: string]: unknown;
 }
 
 export interface ServiceResult<T> {
