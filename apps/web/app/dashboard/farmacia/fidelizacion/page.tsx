@@ -12,9 +12,9 @@ import {
   Filter,
   DollarSign,
 } from "lucide-react";
-import { Button } from "@red-salud/ui";
-import { Input } from "@red-salud/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@red-salud/ui";
+import { Button } from "@red-salud/design-system";
+import { Input } from "@red-salud/design-system";
+import { Card, CardContent, CardHeader, CardTitle } from "@red-salud/design-system";
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@red-salud/ui";
+} from "@red-salud/design-system";
 
 interface ClienteFidelizacion {
   id: string;

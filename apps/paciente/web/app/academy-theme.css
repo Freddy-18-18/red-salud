@@ -1,0 +1,268 @@
+/**
+ * @file academy-theme.css
+ * @description Sistema de diseño específico para Red-Salud Academy.
+ * Paleta diferenciada pero familiar al ecosistema Red-Salud.
+ * 
+ * Características:
+ * - Azules profundos como color primario (diferente del índigo de Red-Salud)
+ * - Cyan como acento secundario (energía, conocimiento)
+ * - Modo oscuro como default para ambiente de estudio
+ * - Tipografía más seria y académica
+ */
+
+/* ===========================================
+   PALETA ACADEMY - "Deep Knowledge"
+   Inspirada en: Profundidad intelectual, ciencia, confianza
+   =========================================== */
+
+.academy-theme {
+  /* Primary Academy: Azul profundo - conocimiento, confianza */
+  --academy-primary: 210 100% 30%;
+  --academy-primary-light: 199 89% 48%;
+  --academy-primary-dark: 215 90% 20%;
+  --academy-primary-foreground: 0 0% 100%;
+
+  /* Secondary: Cyan energético - innovación, ciencia */
+  --academy-secondary: 186 94% 41%;
+  --academy-secondary-light: 180 65% 60%;
+  --academy-secondary-foreground: 220 20% 10%;
+
+  /* Background: Slate profundo - ambiente de estudio */
+  --academy-background: 222 47% 6%;
+  --academy-background-subtle: 220 40% 8%;
+  --academy-foreground: 210 40% 98%;
+
+  /* Cards y superficies */
+  --academy-card: 222 40% 10%;
+  --academy-card-hover: 222 40% 13%;
+  --academy-card-foreground: 210 40% 98%;
+
+  /* Bordes y separadores */
+  --academy-border: 215 25% 18%;
+  --academy-border-light: 215 25% 25%;
+
+  /* Estados de éxito (completado, progreso) */
+  --academy-success: 162 72% 42%;
+  --academy-success-foreground: 0 0% 100%;
+
+  /* Estados de advertencia */
+  --academy-warning: 38 92% 50%;
+  --academy-warning-foreground: 0 0% 0%;
+
+  /* Estados de error */
+  --academy-error: 0 72% 51%;
+  --academy-error-foreground: 0 0% 100%;
+
+  /* Muted states */
+  --academy-muted: 215 25% 15%;
+  --academy-muted-foreground: 215 20% 60%;
+
+  /* Gradientes */
+  --academy-gradient-from: 199 89% 48%;
+  --academy-gradient-to: 186 94% 41%;
+  
+  /* Progress indicators */
+  --academy-progress: 186 94% 41%;
+  --academy-progress-bg: 222 40% 15%;
+
+  /* Achievements/badges */
+  --academy-gold: 45 93% 47%;
+  --academy-silver: 210 10% 70%;
+  --academy-bronze: 30 60% 50%;
+}
+
+/* ===========================================
+   OVERRIDES PARA COMPONENTES UI EN ACADEMY
+   =========================================== */
+
+.academy-theme {
+  background-color: hsl(var(--academy-background));
+  color: hsl(var(--academy-foreground));
+}
+
+/* Botones primarios */
+.academy-theme .btn-academy-primary {
+  @apply bg-gradient-to-r from-[hsl(var(--academy-primary-light))] to-[hsl(var(--academy-secondary))];
+  @apply text-white font-semibold;
+  @apply shadow-lg shadow-cyan-500/20;
+  @apply hover:shadow-xl hover:shadow-cyan-500/30;
+  @apply transition-all duration-300;
+}
+
+/* Cards */
+.academy-theme .academy-card {
+  background-color: hsl(var(--academy-card));
+  border: 1px solid hsl(var(--academy-border));
+  @apply rounded-xl;
+  @apply transition-all duration-300;
+}
+
+.academy-theme .academy-card:hover {
+  background-color: hsl(var(--academy-card-hover));
+  border-color: hsl(var(--academy-border-light));
+}
+
+/* Glassmorphism para Academy */
+.academy-theme .academy-glass {
+  @apply backdrop-blur-xl;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--academy-card) / 0.8) 0%,
+    hsl(var(--academy-background-subtle) / 0.6) 100%
+  );
+  border: 1px solid hsl(var(--academy-border) / 0.5);
+}
+
+/* Progress bars */
+.academy-theme .academy-progress {
+  @apply rounded-full overflow-hidden;
+  background-color: hsl(var(--academy-progress-bg));
+}
+
+.academy-theme .academy-progress-bar {
+  @apply h-full rounded-full;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--academy-primary-light)) 0%,
+    hsl(var(--academy-secondary)) 100%
+  );
+}
+
+/* Badges de nivel */
+.academy-theme .badge-basic {
+  @apply bg-slate-600/30 text-slate-300 border border-slate-500/30;
+}
+
+.academy-theme .badge-intermediate {
+  @apply bg-blue-600/30 text-blue-300 border border-blue-500/30;
+}
+
+.academy-theme .badge-advanced {
+  @apply bg-purple-600/30 text-purple-300 border border-purple-500/30;
+}
+
+.academy-theme .badge-expert {
+  @apply bg-amber-600/30 text-amber-300 border border-amber-500/30;
+}
+
+/* ===========================================
+   ANIMACIONES ESPECÍFICAS DE ACADEMY
+   =========================================== */
+
+@keyframes academy-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes academy-progress-shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.academy-theme .animate-pulse-soft {
+  animation: academy-pulse 3s ease-in-out infinite;
+}
+
+.academy-theme .progress-shine::after {
+  content: '';
+  @apply absolute inset-0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: academy-progress-shine 2s ease-in-out infinite;
+}
+
+/* ===========================================
+   TIPOGRAFÍA ACADEMY
+   =========================================== */
+
+.academy-theme {
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.academy-theme .text-academy-heading {
+  @apply font-bold tracking-tight;
+  color: hsl(var(--academy-foreground));
+}
+
+.academy-theme .text-academy-body {
+  @apply leading-relaxed;
+  color: hsl(var(--academy-muted-foreground));
+}
+
+.academy-theme .text-academy-highlight {
+  @apply font-semibold;
+  color: hsl(var(--academy-secondary));
+}
+
+/* Gradient text para títulos destacados */
+.academy-theme .gradient-academy-text {
+  @apply bg-clip-text text-transparent;
+  background-image: linear-gradient(
+    135deg,
+    hsl(var(--academy-primary-light)) 0%,
+    hsl(var(--academy-secondary)) 50%,
+    hsl(var(--academy-secondary-light)) 100%
+  );
+}
+
+/* ===========================================
+   UTILIDADES ESPECÍFICAS
+   =========================================== */
+
+/* Glow effects */
+.academy-theme .glow-cyan {
+  box-shadow: 
+    0 0 20px -5px hsl(var(--academy-secondary) / 0.4),
+    0 0 40px -10px hsl(var(--academy-secondary) / 0.2);
+}
+
+.academy-theme .glow-primary {
+  box-shadow: 
+    0 0 20px -5px hsl(var(--academy-primary-light) / 0.4),
+    0 0 40px -10px hsl(var(--academy-primary-light) / 0.2);
+}
+
+/* Hover lift effect para cards */
+.academy-theme .hover-lift-academy {
+  @apply transition-all duration-300;
+}
+
+.academy-theme .hover-lift-academy:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 20px 40px -15px hsl(var(--academy-primary-light) / 0.2),
+    0 10px 20px -10px hsl(var(--academy-secondary) / 0.1);
+}
+
+/* Scrollbar personalizado para Academy */
+.academy-theme ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.academy-theme ::-webkit-scrollbar-track {
+  background: hsl(var(--academy-background-subtle));
+}
+
+.academy-theme ::-webkit-scrollbar-thumb {
+  background: hsl(var(--academy-border));
+  border-radius: 4px;
+}
+
+.academy-theme ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--academy-border-light));
+}

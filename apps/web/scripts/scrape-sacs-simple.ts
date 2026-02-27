@@ -10,7 +10,7 @@ import { JSDOM } from 'jsdom';
 import fs from 'fs';
 import path from 'path';
 
-interface ProfessionalData {
+export interface ProfessionalData {
   cedula: string;
   profesiones: Array<{
     profesion: string;
@@ -23,7 +23,7 @@ interface ProfessionalData {
   mensaje: string;
 }
 
-class SACSSimpleScraper {
+export class SACSSimpleScraper {
   private agent: https.Agent;
 
   constructor() {

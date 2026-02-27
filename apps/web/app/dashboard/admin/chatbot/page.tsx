@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@red-salud/ui";
+} from "@red-salud/design-system";
 import {
   ThumbsUp,
   ThumbsDown,

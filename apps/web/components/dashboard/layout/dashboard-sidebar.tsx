@@ -31,7 +31,7 @@ import {
   MessageCircle,
   ChevronDown,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@red-salud/ui";
+import { Avatar, AvatarFallback } from "@red-salud/design-system";
 import { cn } from "@red-salud/core/utils";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { SidebarModeSelector } from "./sidebar-mode-selector";

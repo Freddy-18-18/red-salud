@@ -469,7 +469,7 @@ export function PrivateRoute({ children, requiredRole }: PrivateRouteProps) {
 ```typescript
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
-import { Input } from '@red-salud/ui';
+import { Input } from '@red-salud/design-system';
 import { ProductsService } from '@/services/products.service';
 import type { Product } from '@/types/product.types';
 

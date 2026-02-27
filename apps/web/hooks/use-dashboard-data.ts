@@ -11,11 +11,11 @@
  * const { appointments, messages, notifications, stats, isLoading } = useDashboardData(doctorId);
  */
 
-import type { Appointment } from '@/lib/supabase/types/appointments';
+import type { Appointment } from '@red-salud/sdk-medico';
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { getDoctorAppointments } from "@/lib/supabase/services/appointments/appointments.queries";
+import { createMedicoSdk } from "@red-salud/sdk-medico";
 import { getUserConversations, getUnreadMessagesCount } from "@/lib/supabase/services/messaging-service";
 import {
     getNotifications,
@@ -24,6 +24,8 @@ import {
     subscribeToNotifications,
 } from "@/lib/supabase/services/dashboard-preferences-service";
 import type { DoctorNotification, DoctorTask } from "@red-salud/types";
+
+const sdk = createMedicoSdk(supabase);
 
 // ============================================================================
 // TIPOS
@@ -166,10 +168,7 @@ export function useDashboardData(doctorId: string | undefined): DashboardData {
         if (!doctorId) return;
 
         try {
-            const result = await getDoctorAppointments(doctorId);
-
-            if (result.success && result.data) {
-                const allAppointments = result.data;
+            const allAppointments = await sdk.appointments.getDoctorAppointments(doctorId);
                 setAppointments(allAppointments); // Store raw appointments
 
                 const { start: todayStart, end: todayEnd } = getTodayRange();
@@ -229,7 +228,6 @@ export function useDashboardData(doctorId: string | undefined): DashboardData {
                     completedAppointments: allAppointments.filter((a) => a.status === "completed").length,
                     cancelledAppointments: allAppointments.filter((a) => a.status === "cancelled").length,
                 }));
-            }
         } catch (err) {
             console.error("[useDashboardData] Error loading appointments:", err);
         }

@@ -1,6 +1,9 @@
 packages:
   - 'apps/*'
-  - 'apps/desktop/*'
-  - 'apps/mobile/*'
-  - 'services/*'
+  - 'apps/medico/packages/*'
+  - 'apps/paciente/web'
+  - 'apps/paciente/desktop'
+  - 'apps/paciente/packages/*'
   - 'packages/*'
+  - 'services/*'
+

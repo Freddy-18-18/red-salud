@@ -1,0 +1,25 @@
+{
+    "name": "@red-salud/laboratorios",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev -p 3005 -H laboratorios.localhost",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "next": "16.1.0",
+        "react": "19.2.0",
+        "react-dom": "19.2.0",
+        "@red-salud/identity": "workspace:*",
+        "@red-salud/design-system": "workspace:*",
+        "@red-salud/contracts": "workspace:*"
+    },
+    "devDependencies": {
+        "typescript": "5.6.3",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0"
+    }
+}

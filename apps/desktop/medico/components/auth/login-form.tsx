@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
-import { Button, Input, Label, Card, CardContent, Logo } from "@red-salud/ui";
+import { Button, Input, Label, Card, CardContent, Logo } from "@red-salud/design-system";
 import { loginSchema, type LoginFormData } from "@red-salud/core/validations";
 import { signIn } from "@/lib/supabase/auth";
 

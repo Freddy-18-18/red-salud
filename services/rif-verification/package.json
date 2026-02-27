@@ -2,6 +2,9 @@
     "name": "rif-verification",
     "version": "1.0.0",
     "description": "Servicio de verificación de RIF (SENIAT) para Red-Salud",
+    "nx": {
+        "tags": ["type:service", "runtime:node", "domain:verification"]
+    },
     "main": "index.js",
     "scripts": {
         "start": "node index.js",
@@ -9,7 +12,7 @@
     },
     "dependencies": {
         "cors": "^2.8.5",
-        "dotenv": "^16.3.1",
+        "dotenv": "^17.2.3",
         "express": "^4.18.2",
         "puppeteer-core": "^21.5.0",
         "puppeteer-extra": "^3.3.6",
@@ -17,6 +20,6 @@
         "ve-check": "^0.1.0"
     },
     "devDependencies": {
-        "nodemon": "^3.0.1"
+        "nodemon": "^3.0.2"
     }
 }

@@ -15,7 +15,7 @@ This project is a monorepo managed by `pnpm`, organized to share core logic and 
 - **`packages/core` (`@red-salud/core`)**: 
   - Contains shared business logic, utilities, and constants.
   - **Pharmacy Module**: Contains currency management and rate fetching logic (`packages/core/src/pharmacy`). Note: While heavily used by the desktop app, the web app consumes specific parts like `BCVRateFetcher`.
-- **`packages/ui` (`@red-salud/ui`)**: 
+- **`packages/ui` (`@red-salud/design-system`)**: 
   - Validated, reusable UI components built with Radix UI and Tailwind CSS.
   - **Philosophy**: Dumb components. They should not contain business logic or direct API calls (e.g., `AvatarUpload` receives `onUpload` prop rather than calling Supabase directly).
 - **`packages/types` (`@red-salud/types`)**: 
@@ -39,7 +39,7 @@ The `apps/web` application follows a domain-driven structure within the Next.js 
 - **`@/components`**: Local components specific to the web app.
 - **`@/lib`**: Local utilities, hooks, and services.
 - **`@red-salud/core`**: Import from shared core business logic.
-- **`@red-salud/ui`**: Import shared UI components.
+- **`@red-salud/design-system`**: Import shared UI components.
 
 ### Data Layer
 - **Separation of Concerns**: UI components should not directly fetch data.

@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"],
+      "@red-salud/contracts": ["../../packages/contracts/src/index.ts"],
+      "@red-salud/core": ["../../packages/core/src/index.ts"],
+      "@red-salud/design-system": ["../../packages/design-system/src/index.ts"],
+      "@red-salud/identity": ["../../packages/identity/src/index.ts"],
+      "@red-salud/sdk-medico": ["./packages/sdk-medico/src/index.ts"],
+      "@red-salud/types": ["../../packages/types/src/index.ts"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

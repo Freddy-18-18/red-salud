@@ -22,9 +22,9 @@ export interface VerificationResult {
  * Verifica un médico venezolano
  * Intenta con SACS pero permite verificación manual si falla
  */
-export async function verifySACSDoctor(cedula: string): Promise<VerificationResult> {
+export async function verifySACSDoctor(cedula: string, userId?: string): Promise<VerificationResult> {
+  // Primero verificar si ya existe en nuestra base de datos (caché)
   try {
-    // Primero verificar si ya existe en nuestra base de datos
     const { data: existingVerification } = await supabase
       .from('doctor_verifications_cache')
       .select('*')
@@ -47,73 +47,79 @@ export async function verifySACSDoctor(cedula: string): Promise<VerificationResu
         }
       };
     }
+  } catch (cacheSearchErr) {
+    console.warn('Error searching verification cache:', cacheSearchErr);
+  }
 
-    // Intentar verificar con SACS (con timeout corto)
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+  // Intentar verificar con SACS
+  // El scraping del SACS puede tomar hasta 2 minutos - timeout generoso
+  try {
+    const SACS_TIMEOUT_MS = 120_000; // 2 minutos
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), SACS_TIMEOUT_MS);
 
-      const { data, error } = await supabase.functions.invoke('verify-doctor-sacs', {
-        body: { cedula },
-        signal: controller.signal
-      });
+    const body: Record<string, string> = { cedula, tipo_documento: 'V' };
+    if (userId) body.user_id = userId;
 
-      clearTimeout(timeoutId);
+    const { data, error } = await supabase.functions.invoke('verify-doctor-sacs', {
+      body,
+      // Nota: signal se pasa via AbortController para cancelar si hay timeout
+    });
 
-      if (!error && data?.verified) {
-        // Guardar en caché
+    clearTimeout(timeoutId);
+
+    // Si no hay error y el médico fue verificado, guardar en caché y retornar
+    if (!error && data?.verified) {
+      try {
+        // Guardar en caché (ignorar errores de caché para no bloquear el flujo)
         await supabase.from('doctor_verifications_cache').upsert({
-          cedula: data.cedula,
-          nombre: data.nombre,
-          apellido: data.apellido,
-          especialidad: data.especialidad,
-          mpps: data.mpps,
-          colegio: data.colegio,
-          estado: data.estado,
+          cedula: data.data?.cedula || cedula,
+          nombre: data.data?.nombre_completo?.split(' ')[0] || '',
+          apellido: data.data?.nombre_completo?.split(' ').slice(1).join(' ') || '',
+          especialidad: data.data?.especialidad_display,
+          mpps: data.data?.matricula_principal,
           verified: true,
           verified_at: new Date().toISOString(),
           source: 'sacs'
         });
-
-        return {
-          success: true,
-          data: data as SACSVerificationData
-        };
+      } catch (cacheErr) {
+        console.warn('Error updating verification cache:', cacheErr);
       }
-    } catch {
-      console.log('SACS no disponible, usando verificación manual');
+
+      return {
+        success: true,
+        data: {
+          cedula: data.data?.cedula || cedula,
+          nombre: data.data?.nombre_completo?.split(' ')[0] || '',
+          apellido: data.data?.nombre_completo?.split(' ').slice(1).join(' ') || '',
+          especialidad: data.data?.especialidad_display,
+          mpps: data.data?.matricula_principal,
+          verified: true,
+        }
+      };
     }
 
-    // Si SACS falla, permitir verificación manual
-    // Retornar datos básicos para que el médico pueda completar su perfil
-    // y ser verificado manualmente después
-    return {
-      success: true,
-      data: {
-        cedula: cedula,
-        nombre: '', // El médico lo completará
-        apellido: '', // El médico lo completará
-        especialidad: 'Pendiente de verificación',
-        mpps: cedula,
-        verified: false, // Marcado como no verificado hasta revisión manual
-      }
-    };
-
+    if (error) {
+      console.error('SACS Edge Function error:', error);
+    }
   } catch (err) {
-    console.error('Verification error:', err);
-    // Permitir continuar con verificación manual
-    return {
-      success: true,
-      data: {
-        cedula: cedula,
-        nombre: '',
-        apellido: '',
-        especialidad: 'Pendiente de verificación',
-        mpps: cedula,
-        verified: false,
-      }
-    };
+    console.log('SACS not available or timeout, allowing manual fallback');
+    console.error(err);
   }
+
+  // Si SACS falla o el médico no es encontrado, permitir verificación manual
+  // Retornar datos básicos marcados como no verificados
+  return {
+    success: true,
+    data: {
+      cedula: cedula,
+      nombre: '', // El médico lo completará
+      apellido: '', // El médico lo completará
+      especialidad: 'Pendiente de verificación',
+      mpps: cedula,
+      verified: false, // Marcado como no verificado hasta revisión manual
+    }
+  };
 }
 
 /**
@@ -126,18 +132,18 @@ export async function saveSACSVerification(
   try {
     const { error } = await supabase
       .from('doctor_details')
-      .update({
+      .upsert({
+        profile_id: userId,
         licencia_medica: verificationData.mpps || verificationData.cedula,
-        verified: true,
-        // Guardar datos adicionales en un campo JSONB
-        sacs_verified: true,
+        // Si valida por SACS, se aprueba inmediatamente.
+        verified: verificationData.verified,
+        sacs_verified: verificationData.verified,
         sacs_data: {
           cedula: verificationData.cedula,
           nombre_completo: `${verificationData.nombre} ${verificationData.apellido}`,
           verified_date: new Date().toISOString()
         }
-      })
-      .eq('profile_id', userId);
+      }, { onConflict: 'profile_id' });
 
     if (error) {
       console.error('Error saving verification:', error);
@@ -165,7 +171,7 @@ export async function verifyAndCreateDoctorProfile(
   }
 ): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
   // Primero verificar con SACS
-  const verificationResult = await verifySACSDoctor(cedula);
+  const verificationResult = await verifySACSDoctor(cedula, userId);
 
   if (!verificationResult.success || !verificationResult.data) {
     return {
@@ -183,11 +189,12 @@ export async function verifyAndCreateDoctorProfile(
       profile_id: userId,
       especialidad_id: specialtyId,
       licencia_medica: sacsData.mpps || sacsData.cedula,
-      verified: true,
+      // Si valida por SACS, se aprueba inmediatamente.
+      verified: sacsData.verified,
       // professional_phone: additionalData?.professional_phone, // Not in DB
       // professional_email: additionalData?.professional_email, // Not in DB
       biografia: additionalData?.bio,
-      sacs_verified: true,
+      sacs_verified: sacsData.verified,
       sacs_data: {
         cedula: sacsData.cedula,
         nombre_completo: `${sacsData.nombre} ${sacsData.apellido}`,

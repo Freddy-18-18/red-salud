@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { APP_NAME, APP_DESCRIPTION } from "@/lib/constants";
-import { SupabaseAuthProvider } from "@/components/providers/supabase-auth-provider";
+import { SupabaseAuthProvider } from "@red-salud/identity";
 import { AppProviders } from "@/components/providers/app-providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -58,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="scroll-smooth" suppressHydrationWarning>
+    <html lang="es" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${montserrat.variable} font-sans antialiased`}
         suppressHydrationWarning

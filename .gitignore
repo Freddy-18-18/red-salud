@@ -1,8 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
-/sacs-verification-service/node_modules
+# ========================
+# Dependencies
+# ========================
+**/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -11,54 +12,40 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-*.bak
-*.old
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-debug-*.png
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
+# ========================
+# Build output
+# ========================
+**/.next/
+**/out/
+**/dist/
+**/build/
+**/.turbo/
+**/target/
 *.tsbuildinfo
 next-env.d.ts
 
-# resultados y reportes temporales
-resultados-*.json
-informe-*.json
+# ========================
+# Testing & Coverage
+# ========================
+**/coverage/
 
-.vercel
+# ========================
+# Environment variables
+# ========================
+.env*
+!.env.example
 
-# mobile (Flutter / Expo)
-/mobile/
-/mobile/node_modules
-**/node_modules
-/mobile/.expo
-/mobile/.expo/*
-/mobile/.turbo
+# ========================
+# OS & IDE
+# ========================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*.log
 
-# IDE and AI assistant folders
+# ========================
+# AI assistant folders
+# ========================
 .claude/
 .cursor/
 .kilocode/
@@ -66,8 +53,77 @@ informe-*.json
 .trae/
 .agent/
 opencode.json
+tmpclaude-*
 
-# Documentation and reports (temporary)
+# ========================
+# Debug & logs
+# ========================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+debug-*.png
+
+# ========================
+# Vercel
+# ========================
+.vercel
+
+# ========================
+# Nx
+# ========================
+.nx/cache
+.nx/workspace-data
+
+# ========================
+# Mobile (Flutter / Expo / Dart)
+# ========================
+**/.dart_tool/
+**/.gradle/
+**/.expo/
+**/android/app/build/
+**/ios/Pods/
+**/ios/.symlinks/
+**/*.apk
+**/*.aab
+**/*.ipa
+**/*.dSYM.zip
+**/*.dSYM
+red_salud_medico_mobile/
+
+# ========================
+# Tauri (Rust)
+# ========================
+**/src-tauri/target/
+**/src-tauri/Cargo.lock
+
+# ========================
+# Temporary reports & scripts
+# ========================
+*.pem
+*.bak
+*.old
+*.backup
+*_report.txt
+*_output.txt
+
+# Lint/TS error reports
+eslint-*.json
+eslint-*.txt
+lint-*.txt
+lint_*.txt
+ts-errors*.txt
+ts_errors*.txt
+tsc_output*.txt
+build_output*.txt
+lint_web.json
+git_status.txt
+tsc_errors.log
+tsc_web.log
+*-results.json
+
+# Generated docs/reports (Spanish naming convention)
 *_CORRECCION*.md
 *_RESOLUCION*.md
 *_REPARACIONES*.md
@@ -84,74 +140,30 @@ RESUMEN_*.md
 TAURI_*.md
 RED_SALUD_MOBILE_*.md
 
-# Lint and error reports
-eslint-*.json
-eslint-*.txt
-lint-*.txt
-lint_*.txt
-ts-errors*.txt
-ts_errors*.txt
-tsc_output*.txt
-build_output*.txt
-*_output.txt
+# Temp result files
+resultados-*.json
+informe-*.json
 
-# Test files
-nul
-
-# Supabase temporary files
-supabase/.temp/
-
-# Scripts temporales de corrección
+# Temp scripts
 scripts/fix-*.ps1
 scripts/fix-*.ts
 scripts/create-clinic-credentials.ts
-
-# Validación temporal
-validate-progress.ps1
-
-# Proyecto móvil Flutter (si existe en raíz)
-red_salud_medico_mobile/
-
-# Proyecto Tauri (desarrollo local)
-src-tauri/target/
-src-tauri/Cargo.lock
-
-# Plans folder (temporal)
-plans/
-
-# Logs and Reports
-*.log
-*.backup
-*_report.txt
-lint_web.json
-git_status.txt
-tsc_errors.log
-tsc_web.log
-
-# Scripts and Temporary Files
 move_files.ps1
 reorganization_report.md
 validate-progress.ps1
 apps_web_lint_report.txt
+apps/web/build_log.txt
+apps/web/tsc_log.txt
 
+# Plans folder (temporal)
+plans/
 
-# Compilation output
-**/target/
-src-tauri/target/
-.next/
-.turbo/
-dist/
-build/
-
-apps/web/build_log.txt  
-apps/web/tsc_log.txt  
-.env*.local
-
-
-
-.nx/cache
-.nx/workspace-data
+# Supabase temporary files
+supabase/.temp/
 
 # Testsprite artifacts (temporary/generated)
 testsprite_tests/tmp/
 testsprite_tests/*.html
+
+# Windows temp
+nul

@@ -20,7 +20,7 @@ This is a pnpm workspace monorepo using Nx for task orchestration.
 | Package | Location | Purpose |
 |---------|----------|---------|
 | `@red-salud/types` | `packages/types/` | Shared TypeScript interfaces and Zod schemas |
-| `@red-salud/ui` | `packages/ui/` | Dumb UI components (Radix UI + Tailwind CSS) |
+| `@red-salud/design-system` | `packages/ui/` | Dumb UI components (Radix UI + Tailwind CSS) |
 | `@red-salud/core` | `packages/core/` | Business logic, utilities, constants |
 
 ## Common Commands
@@ -118,7 +118,7 @@ All tables use Supabase RLS. Key policies:
 
 ### Component Architecture
 
-- **Dumb Components**: `@red-salud/ui` components are pure presentation (no business logic)
+- **Dumb Components**: `@red-salud/design-system` components are pure presentation (no business logic)
 - **Smart Components**: App components in `components/` handle data fetching via hooks
 - **Props Pattern**: UI components receive callbacks like `onUpload`, `onChange` rather than calling services directly
 
@@ -128,7 +128,7 @@ All tables use Supabase RLS. Key policies:
 |-------|-------------|
 | `@/` | `apps/web/` |
 | `@red-salud/core` | `packages/core/src/` |
-| `@red-salud/ui` | `packages/ui/src/` |
+| `@red-salud/design-system` | `packages/ui/src/` |
 | `@red-salud/types` | `packages/types/src/` |
 
 ### Testing

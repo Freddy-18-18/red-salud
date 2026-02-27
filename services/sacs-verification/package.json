@@ -2,6 +2,9 @@
   "name": "sacs-verification-service",
   "version": "2.0.0",
   "description": "Servicio de verificación SACS con Puppeteer para Red-Salud",
+  "nx": {
+    "tags": ["type:service", "runtime:node", "domain:verification"]
+  },
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

@@ -1,0 +1,467 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  PALETA MÉDICA MODERNA "AURORA HEALTH"
+  Inspirada en: confianza, innovación, calidez humana
+  Colores únicos que combinan profesionalismo con modernidad
+*/
+
+:root {
+  --radius: 0.75rem;
+
+  /* Fondo: Blanco puro - higiene y elegancia */
+  --background: 0 0% 100%;
+
+  /* Texto principal: Gris pizarra oscuro - elegancia y legibilidad */
+  --foreground: 222 47% 11%;
+
+  /* Cards: Blanco puro */
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  /* Popovers */
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  /* Primary: Cyan Profesional (#0891B2) */
+  --primary: 192 91% 36%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary: Cyan Vibrante (#22D3EE) - acentos de tecnología */
+  --secondary: 188 86% 53%;
+  --secondary-foreground: 222 47% 11%;
+
+  /* Muted: Slate muy claro */
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+
+  /* Accent: Slate claro */
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+
+  /* Estados */
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+
+  /* Bordes y inputs: Gris suave (Slate 200) */
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+
+  /* Charts - paleta armoniosa */
+  --chart-1: 243 75% 59%;
+  --chart-2: 162 72% 42%;
+  --chart-3: 12 70% 55%;
+  --chart-4: 280 60% 55%;
+  --chart-5: 45 90% 55%;
+
+  /* Sidebar: Negro Mate */
+  --sidebar: 0 0% 5%;
+  --sidebar-foreground: 0 0% 90%;
+  --sidebar-primary: 0 0% 15%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 10%;
+  --sidebar-accent-foreground: 0 0% 95%;
+  --sidebar-border: 0 0% 8%;
+  --sidebar-ring: 0 0% 50%;
+
+  /* Colores adicionales para UI médica */
+  --success: 162 72% 42%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 100%;
+
+  /* Gradientes personalizados */
+  --gradient-start: 243 75% 59%;
+  --gradient-end: 162 72% 42%;
+}
+
+/* 
+  MODO OSCURO: "Negro Mate Puro"
+  Elegante, minimalista, negro absoluto sin tintes azules
+*/
+.dark {
+  /* Fondo: Negro mate puro */
+  --background: 0 0% 0%;
+
+  /* Texto: Blanco puro */
+  --foreground: 0 0% 100%;
+
+  /* Cards: Negro puro */
+  --card: 0 0% 0%;
+  --card-foreground: 0 0% 100%;
+
+  /* Popovers */
+  --popover: 0 0% 0%;
+  --popover-foreground: 0 0% 100%;
+
+  /* Primary: Cyan brillante para acción */
+  --primary: 188 86% 53%;
+  --primary-foreground: 0 0% 0%;
+
+  /* Secondary: Blanco grisáceo */
+  --secondary: 0 0% 20%;
+  --secondary-foreground: 0 0% 100%;
+
+  /* Muted: Negro puro */
+  --muted: 0 0% 8%;
+  --muted-foreground: 0 0% 60%;
+
+  /* Accent: Negro con blanco */
+  --accent: 0 0% 10%;
+  --accent-foreground: 0 0% 100%;
+
+  /* Estados */
+  --destructive: 0 65% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Bordes y inputs - negro puro */
+  --border: 0 0% 10%;
+  --input: 0 0% 10%;
+  --ring: 0 0% 50%;
+
+  /* Charts - blanco/gris */
+  --chart-1: 0 0% 50%;
+  --chart-2: 0 0% 40%;
+  --chart-3: 0 0% 30%;
+  --chart-4: 0 0% 20%;
+  --chart-5: 0 0% 10%;
+
+  /* Sidebar: Negro Mate Puro */
+  --sidebar: 0 0% 0%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 0 0% 8%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 8%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 0 0% 8%;
+  --sidebar-ring: 0 0% 50%;
+
+  /* Colores adicionales */
+  --success: 142 70% 45%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 90% 50%;
+  --warning-foreground: 0 0% 100%;
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 100%;
+
+  /* Gradientes */
+  --gradient-start: 0 0% 50%;
+  --gradient-end: 0 0% 30%;
+
+  /* Variables específicas para widgets */
+  --widget-bg: 0 0% 0%;
+  --widget-border: 0 0% 10%;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring) / 0.5);
+    outline-offset: 2px;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  /* Mejora de legibilidad para números y texto pequeño */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Texto con mejor contraste en ambos temas */
+  .text-high-contrast {
+    @apply text-foreground;
+  }
+
+  /* Números siempre legibles */
+  [data-number],
+  .stat-value,
+  .price,
+  .count {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+
+  /* Utilidades personalizadas para mejor compatibilidad */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  @supports not (text-wrap: balance) {
+    .text-balance {
+      text-wrap: pretty;
+    }
+  }
+
+  /* Animaciones de blob para fondos dinámicos - más suaves */
+  .animate-blob {
+    animation: blob 12s ease-in-out infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  @keyframes blob {
+
+    0%,
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+      transform: translate(20px, -30px) scale(1.05);
+    }
+
+    66% {
+      transform: translate(-15px, 15px) scale(0.95);
+    }
+  }
+
+  /* Gradiente de texto animado */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg,
+        hsl(var(--primary)) 0%,
+        hsl(var(--secondary)) 50%,
+        hsl(var(--primary)) 100%);
+    background-size: 200% auto;
+  }
+
+  .gradient-text-animated {
+    @apply gradient-text;
+    animation: gradient-shift 4s ease-in-out infinite;
+  }
+
+  @keyframes gradient-shift {
+
+    0%,
+    100% {
+      background-position: 0% center;
+    }
+
+    50% {
+      background-position: 100% center;
+    }
+  }
+
+  /* Efecto de brillo sutil */
+  .shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shine::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(to right,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%);
+    transform: rotate(30deg);
+    animation: shine 6s ease-in-out infinite;
+  }
+
+  @keyframes shine {
+
+    0%,
+    100% {
+      transform: translateX(-100%) rotate(30deg);
+    }
+
+    50% {
+      transform: translateX(100%) rotate(30deg);
+    }
+  }
+
+  /* Glassmorphism mejorado */
+  .glass {
+    @apply backdrop-blur-xl bg-white/70 dark:bg-black/80;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-card {
+    @apply backdrop-blur-md bg-white/80 dark:bg-black/90 border border-white/20 dark:border-white/10;
+  }
+
+  /* Bento Grid Utilities */
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .bento-item {
+    @apply glass-card rounded-2xl p-6 transition-all duration-300 hover:shadow-glow;
+  }
+
+  /* Premium Design System Utilities */
+  .glass-premium {
+    @apply backdrop-blur-2xl bg-white/10 dark:bg-black/20 border border-white/10 dark:border-white/5 shadow-2xl;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+  }
+
+  .bg-grid-white {
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
+  }
+
+  .glass-widget {
+    @apply backdrop-blur-xl bg-white/80 border border-white/20;
+  }
+
+  .dark .glass-widget {
+    background-color: hsl(var(--widget-bg) / 0.95);
+    border-color: hsl(var(--widget-border) / 0.6);
+  }
+
+  /* Sombras elegantes */
+  .shadow-glow {
+    box-shadow:
+      0 0 20px -5px hsl(var(--primary) / 0.3),
+      0 10px 40px -10px hsl(var(--primary) / 0.2);
+  }
+
+  .shadow-glow-secondary {
+    box-shadow:
+      0 0 20px -5px hsl(var(--secondary) / 0.3),
+      0 10px 40px -10px hsl(var(--secondary) / 0.2);
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 20px 40px -15px hsl(var(--foreground) / 0.15),
+      0 10px 20px -10px hsl(var(--foreground) / 0.1);
+  }
+
+  /* Pausa en hover para animaciones */
+  .hover\:pause:hover {
+    animation-play-state: paused;
+  }
+}
+
+/* Ocultar scrollbar pero mantener funcionalidad */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================
+   REACT-GRID-LAYOUT - Estilos Personalizados
+   ============================================ */
+
+/* Placeholder durante el arrastre */
+.react-grid-placeholder {
+  background: hsl(var(--primary) / 0.2) !important;
+  border: 2px dashed hsl(var(--primary) / 0.5) !important;
+  border-radius: 1rem;
+  transition: all 150ms ease;
+}
+
+/* Item durante el arrastre */
+.react-grid-item.react-draggable-dragging {
+  z-index: 100;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: scale(1.02);
+  cursor: grabbing !important;
+}
+
+/* Item durante el resize */
+.react-grid-item.resizing {
+  z-index: 100;
+}
+
+/* Handle de resize - esquina inferior derecha */
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+  opacity: 0;
+  transition: opacity 200ms;
+}
+
+.react-grid-item:hover .react-resizable-handle {
+  opacity: 1;
+}
+
+.react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid hsl(var(--muted-foreground) / 0.5);
+  border-bottom: 2px solid hsl(var(--muted-foreground) / 0.5);
+  border-radius: 0 0 4px 0;
+}
+
+.react-resizable-handle:hover::after {
+  border-color: hsl(var(--primary));
+}
+
+/* Transiciones suaves para el layout */
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top, width, height;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+}
+
+.react-grid-item.dropping {
+  transition: none;
+}
+
+/* Contenedor del layout */
+.react-grid-layout {
+  position: relative;
+}
+
+/* Animación al soltar */
+.react-grid-item.react-grid-placeholder {
+  background: hsl(var(--primary) / 0.15);
+  opacity: 1;
+  transition-duration: 100ms;
+}

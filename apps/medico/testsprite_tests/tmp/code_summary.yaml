@@ -1,0 +1,212 @@
+version: "2"
+type: frontend
+tech_stack:
+  - TypeScript
+  - Next.js 16 (App Router)
+  - React 19
+  - Tailwind CSS 4
+  - Radix UI
+  - shadcn/ui
+  - Supabase (Auth + Database + Realtime)
+  - Framer Motion
+  - Vitest
+  - Tauri (desktop builds)
+routes:
+  - path: /
+    file: app/page.tsx
+    auth_required: false
+    description: Landing page
+  - path: /login/medico
+    file: app/(auth)/login/medico/page.tsx
+    auth_required: false
+    description: Doctor login page
+  - path: /login/paciente
+    file: app/(auth)/login/paciente/page.tsx
+    auth_required: false
+    description: Patient login page
+  - path: /register
+    file: app/(auth)/register/page.tsx
+    auth_required: false
+    description: Registration page
+  - path: /dashboard/medico
+    file: app/dashboard/medico/page.tsx
+    auth_required: true
+    description: Doctor main dashboard - auto-detects specialty and renders specialized UI
+  - path: /dashboard/medico/citas
+    file: app/dashboard/medico/citas/page.tsx
+    auth_required: true
+    description: Doctor appointments management
+  - path: /dashboard/medico/pacientes
+    file: app/dashboard/medico/pacientes/page.tsx
+    auth_required: true
+    description: Doctor patient list
+  - path: /dashboard/medico/recetas
+    file: app/dashboard/medico/recetas/page.tsx
+    auth_required: true
+    description: Digital prescriptions
+  - path: /dashboard/medico/mensajeria
+    file: app/dashboard/medico/mensajeria/page.tsx
+    auth_required: true
+    description: Doctor messaging
+  - path: /dashboard/medico/estadisticas
+    file: app/dashboard/medico/estadisticas/page.tsx
+    auth_required: true
+    description: Doctor statistics
+  - path: /dashboard/medico/perfil
+    file: app/dashboard/medico/perfil/page.tsx
+    auth_required: true
+    description: Doctor profile
+  - path: /dashboard/medico/perfil/setup
+    file: app/dashboard/medico/perfil/setup/page.tsx
+    auth_required: true
+    description: Doctor profile setup and SACS verification
+  - path: /dashboard/medico/configuracion
+    file: app/dashboard/medico/configuracion/page.tsx
+    auth_required: true
+    description: Doctor settings
+  - path: /dashboard/medico/consulta
+    file: app/dashboard/medico/consulta/page.tsx
+    auth_required: true
+    description: Clinical consultation workspace
+  - path: /dashboard/medico/telemedicina
+    file: app/dashboard/medico/telemedicina/page.tsx
+    auth_required: true
+    description: Telemedicine video calls
+  - path: /dashboard/paciente
+    file: app/dashboard/paciente/page.tsx
+    auth_required: true
+    description: Patient dashboard
+  - path: /dashboard/secretaria
+    file: app/dashboard/secretaria/page.tsx
+    auth_required: true
+    description: Secretary dashboard
+  - path: /dashboard/farmacia
+    file: app/dashboard/farmacia/page.tsx
+    auth_required: true
+    description: Pharmacy dashboard
+features:
+  - name: Doctor Login
+    description: Login with email and password for doctors
+    files:
+      - app/(auth)/login/medico/page.tsx
+      - lib/supabase/client.ts
+      - components/providers/supabase-auth-provider.tsx
+    entry_route: /login/medico
+    user_interactions:
+      - Fill email input
+      - Fill password input
+      - Click login button
+      - See error on invalid credentials
+      - Redirect to /dashboard/medico on success
+    api_calls:
+      - method: POST
+        endpoint: supabase.auth.signInWithPassword
+    auth_required: false
+  - name: Specialty Auto-Detection
+    description: Automatically detects doctor specialty from SACS data, profile, or sub-specialties and loads the appropriate dashboard
+    files:
+      - lib/specialties/core/detector.ts
+      - lib/specialties/core/registry.ts
+      - lib/specialties/configs/index.ts
+      - lib/specialties/identity/specialty-identities.ts
+      - lib/specialties/index.ts
+      - app/dashboard/medico/page.tsx
+    entry_route: /dashboard/medico
+    user_interactions:
+      - Doctor logs in and lands on dashboard
+      - Dashboard automatically shows specialty-specific KPIs
+      - Dashboard shows specialty-specific modules in sidebar
+      - Can test with ?test=odontologia URL param in dev
+    api_calls:
+      - method: GET
+        endpoint: supabase.from('doctor_details').select('*,especialidad:specialties(name)')
+    auth_required: true
+  - name: Specialty Dashboard Shell
+    description: Generic dashboard shell that renders any of 132 specialties with KPI grid, modules, and widgets
+    files:
+      - components/dashboard/medico/specialty/specialty-dashboard-shell.tsx
+      - components/dashboard/medico/specialty-dashboard-loader.tsx
+      - hooks/dashboard/use-specialty-dashboard.ts
+      - hooks/dashboard/use-specialty-kpis.ts
+      - lib/specialties/data/specialty-kpi-resolver.ts
+    entry_route: /dashboard/medico
+    user_interactions:
+      - View specialty-specific KPI cards (patients seen, satisfaction, etc.)
+      - Navigate specialty modules via sidebar
+      - See real-time appointment updates
+      - Pull-to-refresh KPI data
+    api_calls:
+      - method: GET
+        endpoint: supabase.from('appointments').select('*')
+      - method: GET
+        endpoint: supabase.from('patients').select('*')
+    auth_required: true
+  - name: Custom Dental Dashboard
+    description: Specialized odontology dashboard with periodontogram, dental imaging, treatment plans
+    files:
+      - components/dashboard/medico/odontologia/odontologia-dashboard.tsx
+      - components/dashboard/medico/specialty-dashboard-loader.tsx
+    entry_route: /dashboard/medico
+    user_interactions:
+      - View dental-specific KPIs
+      - Access periodontogram module
+      - View dental imaging
+      - Manage treatment estimates
+    api_calls: []
+    auth_required: true
+  - name: Appointment Management
+    description: Doctor appointment scheduling, viewing, and management
+    files:
+      - app/dashboard/medico/citas/page.tsx
+      - lib/supabase/services/appointments-service.ts
+    entry_route: /dashboard/medico/citas
+    user_interactions:
+      - View daily/weekly/monthly calendar
+      - Create new appointment
+      - Modify appointment status
+      - Cancel appointment
+    api_calls:
+      - method: GET
+        endpoint: supabase.from('appointments').select('*')
+      - method: POST
+        endpoint: supabase.from('appointments').insert()
+    auth_required: true
+  - name: Role-Based Access Control
+    description: Routes protected by user role (medico, paciente, secretaria, admin)
+    files:
+      - lib/supabase/middleware.ts
+      - app/dashboard/medico/layout.client.tsx
+    entry_route: /dashboard/medico
+    user_interactions:
+      - Redirect to login if not authenticated
+      - Redirect to correct dashboard based on role
+      - Show 403 if accessing wrong role dashboard
+    api_calls:
+      - method: GET
+        endpoint: supabase.from('profiles').select('role')
+    auth_required: true
+  - name: SACS Verification
+    description: Venezuelan doctors verify their identity via SACS (Sistema de Atención al Ciudadano en Salud)
+    files:
+      - app/dashboard/medico/perfil/setup/page.tsx
+      - services/sacs-verification/
+    entry_route: /dashboard/medico/perfil/setup
+    user_interactions:
+      - Enter cedula number
+      - System auto-verifies against SACS API
+      - Complete professional profile
+      - Get verified badge
+    api_calls:
+      - method: POST
+        endpoint: /api/sacs/verify
+    auth_required: true
+known_limitations:
+  - issue: Custom cardiology dashboard exists but widgets (ECG viewer, alerts) are placeholder UI
+    location: components/dashboard/medico/cardiology/cardiologia-dashboard.tsx
+    impact: Cardiology doctors see the shell but interactive widgets are not functional
+  - issue: KPI resolver queries against tables that may not have materialized views yet
+    location: lib/specialties/data/specialty-kpi-resolver.ts
+    impact: KPI queries may be slow on large datasets without proper indexing/views
+  - issue: Only 3 specialty overrides exist (odontologia, cardiologia, pediatria) out of 132 specialties
+    location: lib/specialties/configs/overrides/
+    impact: Most specialties use auto-generated configs without fine-tuned KPIs or widgets

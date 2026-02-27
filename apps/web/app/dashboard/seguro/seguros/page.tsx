@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import {
   Button, Card, CardContent, CardHeader, CardTitle, Badge, Input
-} from "@red-salud/ui";
+} from "@red-salud/design-system";
 import type { InsurancePlan, InsuranceClaim } from "@/types/dental";
 
 // ─── Demo Insurance Plans ────────────────────────────────────────────────────

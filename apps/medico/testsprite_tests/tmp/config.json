@@ -1,0 +1,8 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000/dashboard/medico",
+  "loginUser": "prueba@gmail.com",
+  "loginPassword": "Freddy.123"
+}

@@ -1,4 +1,4 @@
-import { Card } from "@red-salud/ui";
+import { Card } from "@red-salud/design-system";
 import { ROLE_CONFIG, USER_ROLES, type UserRole, ROUTES } from "@/lib/constants";
 import Link from "next/link";
 import {
@@ -12,8 +12,8 @@ import {
   UserCog,
   ChevronRight,
 } from "lucide-react";
-import { Logo } from "@red-salud/ui";
-import { ThemeToggle } from "@red-salud/ui";
+import { Logo } from "@red-salud/design-system";
+import { ThemeToggle } from "@red-salud/design-system";
 import { cn } from "@red-salud/core/utils";
 
 /**

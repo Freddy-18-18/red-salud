@@ -1,0 +1,97 @@
+"use client";
+
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@red-salud/design-system";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+
+interface DonutChartCardProps {
+    title: string;
+    description?: string;
+    data: Record<string, unknown>[];
+    category: string;
+    index: string;
+    colors: string[];
+    valueFormatter?: (number: number) => string;
+    className?: string;
+    height?: number;
+}
+
+interface TooltipProps {
+    active?: boolean;
+    payload?: Array<{ name: string; value: number; payload: { fill: string } }>;
+    formatter?: (value: number) => string;
+}
+
+const CustomTooltip = ({ active, payload, formatter }: TooltipProps) => {
+    if (active && payload && payload.length) {
+        const data = payload[0];
+        if (!data) return null;
+        return (
+            <div className="bg-white/95 dark:bg-black/95 border border-slate-200 dark:border-white/10 p-3 rounded-lg shadow-lg backdrop-blur-sm">
+                <div className="flex items-center gap-2 text-sm">
+                    <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: data.payload.fill }}
+                    />
+                    <span className="text-slate-500 dark:text-slate-400">
+                        {data.name}:
+                    </span>
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatter ? formatter(data.value) : data.value}
+                    </span>
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
+
+export function DonutChartCard({
+    title,
+    description,
+    data,
+    category,
+    index,
+    colors,
+    valueFormatter = (val) => val.toString(),
+    className,
+    height = 350,
+}: DonutChartCardProps) {
+    return (
+        <Card className={className}>
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                {description && <CardDescription>{description}</CardDescription>}
+            </CardHeader>
+            <CardContent>
+                <div style={{ height }} className="animate-in fade-in zoom-in duration-500">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                data={data}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey={category}
+                                nameKey={index}
+                                strokeWidth={0}
+                            >
+                                {data.map((entry, i) => (
+                                    <Cell key={`cell-${i}`} fill={colors[i % colors.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip content={<CustomTooltip formatter={valueFormatter} />} />
+                            <Legend
+                                verticalAlign="bottom"
+                                height={36}
+                                iconType="circle"
+                                wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }}
+                            />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}

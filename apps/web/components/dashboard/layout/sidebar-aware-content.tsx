@@ -50,6 +50,9 @@ export function SidebarAwareContent({
         "w-full ml-0",
         // En desktop: margen y ancho ajustados según el sidebar
         "md:ml-[var(--sidebar-width)] md:w-[calc(100%-var(--sidebar-width))]",
+        // Scroll interno: el contenido scrollea dentro del main, no el body.
+        // Esto evita que el header desaparezca al hacer scroll.
+        "overflow-y-auto",
         className
       )}
       style={{
@@ -58,7 +61,7 @@ export function SidebarAwareContent({
       } as React.CSSProperties}
     >
       <div className={cn(
-        "h-full",
+        "min-h-full",
         userRole === "medico" ? "" : "pt-14 md:pt-0"
       )}>
         {children}

@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { useSupabaseAuth } from "@red-salud/identity";
 import { Loader2 } from "lucide-react";
+import { sessionManager } from "@/lib/security/session-manager";
 
 function LoadingFallback() {
   return (
@@ -19,68 +20,96 @@ function LoadingFallback() {
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
+  const { session, isLoading: isAuthLoading } = useSupabaseAuth();
   const [error, setError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const hasProcessed = useRef(false);
 
-  const handleOAuthCallback = useCallback(async () => {
+  const handleSession = useCallback(async (currentSession: any) => {
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
+    setProcessing(true);
+
     try {
       const action = searchParams.get("action");
-      const role = searchParams.get("role");
+      const roleFromUrl = searchParams.get("role");
       const rememberMe = searchParams.get("rememberMe") === "true";
 
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+      const user = currentSession.user;
 
-      // Esperar a que Supabase procese el callback
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Obtener la sesión actual
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError) {
-        throw sessionError;
+      // PRIORIDAD DE ROL
+      let userRole: string;
+      if (action === "register" && roleFromUrl) {
+        userRole = roleFromUrl;
+      } else {
+        userRole = user.user_metadata?.role || "paciente";
       }
 
-      if (!session) {
-        setError("No se pudo obtener la sesión de OAuth. Intenta nuevamente.");
-        setLoading(false);
-        return;
-      }
+      console.log("🎯 Callback - Procesando sesión:", { userRole, action, roleFromUrl });
 
-      const user = session.user;
-      const userRole = user.user_metadata?.role || role || "paciente";
+      // Sincronización con el servidor
+      console.log("🎯 Callback - Sincronizando sesión con el servidor...");
+      const syncResponse = await fetch("/api/auth/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accessToken: currentSession.access_token,
+          refreshToken: currentSession.refresh_token,
+          role: roleFromUrl,
+          action: action,
+        }),
+      });
 
-      // Si es registro y el rol no coincide, actualizar
-      if (action === "register" && role && userRole !== role) {
-        const { error: updateError } = await supabase.auth.updateUser({
-          data: { role },
-        });
-
-        if (updateError) {
-          console.error("Error actualizando rol:", updateError);
+      if (!syncResponse.ok) {
+        console.warn("⚠️ Callback - Sincronización fallida, pero continuando...");
+      } else {
+        const syncData = await syncResponse.json();
+        if (syncData.user?.role) {
+          userRole = syncData.user.role;
         }
       }
 
-      // Configurar rememberMe
-      if (rememberMe) {
-        localStorage.setItem("rememberMe", "true");
-      }
+      // IMPORTANTE: Configurar SessionManager para evitar el error "no_config"
+      // Esto guarda el rol y las preferencias de sesión en el almacenamiento local
+      const deviceFingerprint = btoa([
+        navigator.userAgent,
+        navigator.language,
+        window.screen.width,
+        window.screen.height,
+        new Date().getTimezoneOffset(),
+      ].join("|"));
 
-      // Redirigir al dashboard correspondiente
+      await sessionManager.setupSession({
+        rememberMe,
+        role: userRole,
+        deviceFingerprint,
+      });
+
+      // Redirigir
+      console.log(`🎯 Callback - Redirigiendo a /dashboard/${userRole}`);
       router.push(`/dashboard/${userRole}`);
     } catch (err) {
-      console.error("Error en callback OAuth:", err);
-      setError("Error al procesar el inicio de sesión con Google. Intenta nuevamente.");
-      setLoading(false);
+      console.error("❌ Callback - Error procesando sesión:", err);
+      setError("Error al configurar tu perfil. Por favor intenta de nuevo.");
+      setProcessing(false);
+      hasProcessed.current = false;
     }
   }, [router, searchParams]);
 
   useEffect(() => {
-    handleOAuthCallback();
-  }, [handleOAuthCallback]);
+    if (!isAuthLoading && session && !hasProcessed.current) {
+      handleSession(session);
+    } else if (!isAuthLoading && !session && !hasProcessed.current) {
+      const timer = setTimeout(() => {
+        if (!session && !hasProcessed.current) {
+          setError("No se pudo obtener la sesión de inicio de sesión.");
+        }
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [session, isAuthLoading, handleSession]);
 
-  if (loading) {
+  if (isAuthLoading || processing) {
     return <LoadingFallback />;
   }
 

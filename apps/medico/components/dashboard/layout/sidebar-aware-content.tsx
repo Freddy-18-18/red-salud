@@ -1,0 +1,71 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { cn } from "@red-salud/core/utils";
+
+interface SidebarAwareContentProps {
+  children: React.ReactNode;
+  className?: string;
+  userRole?: string;
+}
+
+export function SidebarAwareContent({
+  children,
+  className,
+  userRole
+}: SidebarAwareContentProps) {
+  const [currentMode, setCurrentMode] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("sidebar-mode") || "hover";
+    }
+    return "hover";
+  });
+
+  // Calcular width basado en el modo actual (derivado)
+  // FIX: En modo hover y collapsed, reservamos espacio para la barra colapsada (48px)
+  const sidebarWidth = currentMode === "expanded" ? 256 : 48;
+
+  useEffect(() => {
+    // 1. (Eliminado) Leer estado inicial ya se hace en useState
+
+    // 2. Suscribirse a cambios
+
+    // 2. Suscribirse a cambios
+    const handleSidebarModeChange = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setCurrentMode(customEvent.detail.mode);
+    };
+
+    window.addEventListener("sidebar-mode-change", handleSidebarModeChange);
+    return () => {
+      window.removeEventListener("sidebar-mode-change", handleSidebarModeChange);
+    };
+  }, []);
+
+  return (
+    <main
+      className={cn(
+        "flex-1 transition-all duration-200 ease-out",
+        // En mobile: ancho completo, sin margen
+        "w-full ml-0",
+        // En desktop: margen y ancho ajustados según el sidebar
+        "md:ml-[var(--sidebar-width)] md:w-[calc(100%-var(--sidebar-width))]",
+        // Scroll interno: el contenido scrollea dentro del main, no el body.
+        // Esto evita que el header desaparezca al hacer scroll.
+        "overflow-y-auto",
+        className
+      )}
+      style={{
+        "--sidebar-width": `${sidebarWidth}px`,
+        height: userRole === "medico" ? "calc(100vh - 48px)" : "calc(100vh - 3.5rem)"
+      } as React.CSSProperties}
+    >
+      <div className={cn(
+        "h-full flex flex-col",
+        userRole === "medico" ? "" : "pt-14 md:pt-0"
+      )}>
+        {children}
+      </div>
+    </main>
+  );
+}

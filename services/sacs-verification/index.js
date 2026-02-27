@@ -14,27 +14,62 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
 const cors = require('cors');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+const MAX_CONCURRENT_SCRAPES = Number.parseInt(process.env.MAX_CONCURRENT_SCRAPES || '1', 10);
+const MAX_QUEUE_SIZE = Number.parseInt(process.env.MAX_QUEUE_SIZE || '25', 10);
+const HARD_TIMEOUT_MS = Number.parseInt(process.env.HARD_TIMEOUT_MS || '150000', 10); // 2m30s
+const CACHE_TTL_MS = Number.parseInt(process.env.SACS_CACHE_TTL_MS || String(6 * 60 * 60 * 1000), 10); // 6h
+
+function nowMs() {
+  return Date.now();
+}
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Configuración de Puppeteer
-const PUPPETEER_CONFIG = {
-  headless: 'new',
-  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable',
-  args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--ignore-certificate-errors',
-    '--disable-dev-shm-usage',
-  ],
-  ignoreHTTPSErrors: true,
-  acceptInsecureCerts: true,
-};
+function getPuppeteerConfig() {
+  const config = {
+    headless: 'new',
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--ignore-certificate-errors',
+      '--disable-dev-shm-usage',
+    ],
+    ignoreHTTPSErrors: true,
+    acceptInsecureCerts: true,
+  };
+
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    config.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  } else {
+    const linuxChromePaths = [
+      '/usr/bin/google-chrome-stable',
+      '/usr/bin/google-chrome',
+      '/usr/bin/chromium-browser',
+      '/usr/bin/chromium',
+    ];
+
+    for (const candidatePath of linuxChromePaths) {
+      try {
+        if (fs.existsSync(candidatePath)) {
+          config.executablePath = candidatePath;
+          break;
+        }
+      } catch {
+        // noop
+      }
+    }
+  }
+
+  return config;
+}
 
 // Profesiones médicas válidas (salud humana)
 const PROFESIONES_MEDICAS_VALIDAS = [
@@ -50,6 +85,142 @@ function esMedicoHumano(profesion) {
   const prof = profesion.toUpperCase();
   if (prof.includes('VETERINARIO')) return false;
   return PROFESIONES_MEDICAS_VALIDAS.some(p => prof.includes(p));
+}
+
+function normalizarTexto(valor = '') {
+  return String(valor)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase();
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// ===========================================================
+// Concurrency control (simple FIFO queue)
+// ===========================================================
+
+let activeScrapes = 0;
+/** @type {{ resolve: Function, reject: Function, enqueuedAt: number }[]} */
+const waitQueue = [];
+
+function getQueueState() {
+  return {
+    active: activeScrapes,
+    queued: waitQueue.length,
+    maxConcurrent: MAX_CONCURRENT_SCRAPES,
+    maxQueue: MAX_QUEUE_SIZE,
+  };
+}
+
+async function acquireSlot() {
+  if (activeScrapes < MAX_CONCURRENT_SCRAPES) {
+    activeScrapes += 1;
+    return;
+  }
+
+  if (waitQueue.length >= MAX_QUEUE_SIZE) {
+    const err = new Error('QUEUE_FULL');
+    err.code = 'QUEUE_FULL';
+    throw err;
+  }
+
+  await new Promise((resolve, reject) => {
+    waitQueue.push({ resolve, reject, enqueuedAt: nowMs() });
+  });
+  activeScrapes += 1;
+}
+
+function releaseSlot() {
+  activeScrapes = Math.max(0, activeScrapes - 1);
+  const next = waitQueue.shift();
+  if (next) {
+    next.resolve();
+  }
+}
+
+// ===========================================================
+// Simple in-memory cache (TTL)
+// ===========================================================
+
+/** @type {Map<string, { expiresAt: number, value: any }>} */
+const verifyCache = new Map();
+
+function cacheKey(cedula, tipoDocumento) {
+  return `${tipoDocumento}-${String(cedula)}`;
+}
+
+function getCached(cedula, tipoDocumento) {
+  const key = cacheKey(cedula, tipoDocumento);
+  const entry = verifyCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= nowMs()) {
+    verifyCache.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+
+function setCached(cedula, tipoDocumento, value) {
+  const key = cacheKey(cedula, tipoDocumento);
+  verifyCache.set(key, { expiresAt: nowMs() + CACHE_TTL_MS, value });
+}
+
+// ===========================================================
+// Browser lifecycle (reuse a single browser per container)
+// ===========================================================
+
+let sharedBrowser = null;
+let sharedBrowserPromise = null;
+
+function isBrowserConnected(browser) {
+  if (!browser) return false;
+  if (typeof browser.isConnected === 'function') return browser.isConnected();
+  if (typeof browser.connected === 'function') return browser.connected();
+  if (typeof browser.connected === 'boolean') return browser.connected;
+  return true;
+}
+
+async function getSharedBrowser() {
+  if (isBrowserConnected(sharedBrowser)) {
+    return sharedBrowser;
+  }
+
+  if (sharedBrowserPromise) {
+    return sharedBrowserPromise;
+  }
+
+  sharedBrowserPromise = (async () => {
+    const maxIntentos = 3;
+    let ultimoError;
+    for (let intento = 1; intento <= maxIntentos; intento++) {
+      try {
+        console.log(`[SACS] Lanzando browser compartido (intento ${intento}/${maxIntentos})...`);
+        const browser = await puppeteer.launch(getPuppeteerConfig());
+        browser.on('disconnected', () => {
+          console.log('[SACS] Browser desconectado; se reiniciará en el próximo request');
+          sharedBrowser = null;
+        });
+        sharedBrowser = browser;
+        return browser;
+      } catch (error) {
+        ultimoError = error;
+        console.log(`[SACS] Error lanzando browser compartido: ${error.message}`);
+        await sleep(1200 * intento);
+      }
+    }
+    throw ultimoError;
+  })();
+
+  try {
+    return await sharedBrowserPromise;
+  } finally {
+    sharedBrowserPromise = null;
+  }
 }
 
 /**
@@ -82,27 +253,57 @@ function determinarEspecialidad(profesiones, postgrados) {
  * Función principal de scraping del SACS
  */
 async function scrapeSACS(cedula, tipoDocumento = 'V') {
-  let browser;
+  let page;
 
   try {
     console.log(`[SACS] Iniciando verificación: ${tipoDocumento}-${cedula}`);
 
-    browser = await puppeteer.launch(PUPPETEER_CONFIG);
-    const page = await browser.newPage();
+    const browser = await getSharedBrowser();
+    page = await browser.newPage();
 
     // Configurar timeout y user agent - AUMENTAR TIMEOUT por lentitud del SACS
-    page.setDefaultTimeout(60000); // 60 segundos
+    page.setDefaultTimeout(90000);
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      const type = request.resourceType();
+      if (type === 'image' || type === 'media' || type === 'font') {
+        request.abort();
+        return;
+      }
+      request.continue();
+    });
 
     // Navegar al SACS
     console.log('[SACS] Navegando a la página...');
-    await page.goto('https://sistemas.sacs.gob.ve/consultas/prfsnal_salud', {
-      waitUntil: 'domcontentloaded',
-      timeout: 30000
-    });
+    const navegarConReintento = async () => {
+      const maxIntentos = 3;
+      let ultimoError;
 
-    // Esperar que cargue el formulario
-    await page.waitForSelector('#tipo', { timeout: 10000 });
+      for (let intento = 1; intento <= maxIntentos; intento++) {
+        try {
+          await page.goto('https://sistemas.sacs.gob.ve/consultas/prfsnal_salud', {
+            waitUntil: 'domcontentloaded',
+            timeout: 50000,
+          });
+
+          await page.waitForSelector('#tipo', { timeout: 20000 });
+          await page.waitForSelector('#datajs', { timeout: 20000 });
+          return;
+        } catch (error) {
+          ultimoError = error;
+          console.log(`[SACS] Error navegando al formulario (intento ${intento}/${maxIntentos}): ${error.message}`);
+          if (intento < maxIntentos) {
+            await sleep(1500 * intento);
+          }
+        }
+      }
+
+      throw ultimoError;
+    };
+
+    await navegarConReintento();
 
     console.log('[SACS] Llenando formulario...');
 
@@ -117,61 +318,174 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
     // El xajax del SACS a veces tarda en actualizar el formulario después de cambiar la nacionalidad
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Ingresar cédula - Usar evaluate para evitar interferencia con máscaras de entrada
-    console.log(`[SACS] Ingresando cédula: ${cedula}`);
-    await page.evaluate((c) => {
-      const input = document.getElementById('cedula_matricula');
-      if (input) {
-        input.value = c;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-        input.dispatchEvent(new Event('blur', { bubbles: true }));
-      }
-    }, cedula);
+    const cedulaLimpia = String(cedula).replace(/\D/g, '').replace(/^0+/, '') || String(cedula);
+    const cedulasCandidatas = Array.from(new Set([
+      cedulaLimpia,
+      String(cedula),
+      String(cedula).padStart(8, '0'),
+      String(cedula).padStart(9, '0'),
+      String(cedula).padStart(10, '0'),
+    ])).filter((c) => /^\d{6,10}$/.test(c));
 
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const consultasCandidatas = cedulasCandidatas.map((cedulaBase) => ({
+      input: cedulaBase,
+      api: `${tipoDocumento}-${cedulaBase.replace(/^0+/, '') || cedulaBase}`,
+    }));
 
-    console.log('[SACS] Consultando...');
+    console.log('[SACS] Formatos de cédula a probar:', consultasCandidatas);
 
-    // Intentar clickear el botón, si falla llamar a la función JS directamente
-    try {
-      await page.click('a.btn.btn-lg.btn-primary');
-    } catch (btnErr) {
-      console.log('[SACS] No se pudo hacer click en el botón, llamando a nroRegistro() directamente');
-      await page.evaluate(() => {
-        if (typeof nroRegistro === 'function') nroRegistro();
-        else if (typeof xajax_getPrfsnalByCed === 'function') {
-          const cedula = document.getElementById('cedula_matricula').value;
-          xajax_getPrfsnalByCed(cedula);
+    const leerEstadoResultado = async (cedulaConsultada) => {
+      return page.evaluate((cedulaEsperada) => {
+        const filtrarTexto = (v) => (v || '').replace(/\s+/g, ' ').trim();
+        const normalizar = (v) => filtrarTexto(v)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toUpperCase();
+        const compactarCedula = (v) => filtrarTexto(v).replace(/\D/g, '').replace(/^0+/, '');
+
+        const rows = Array.from(document.querySelectorAll('#tableUser table tbody tr'));
+        const cedulaEsperadaCompacta = compactarCedula(cedulaEsperada);
+
+        const hayCedula = rows.some((row) => {
+          const th = normalizar(row.querySelector('th')?.textContent);
+          const td = filtrarTexto(row.querySelector('td b')?.textContent || row.querySelector('td')?.textContent);
+          return th.includes('CEDULA') && compactarCedula(td) === cedulaEsperadaCompacta;
+        });
+
+        const hayNombre = rows.some((row) => {
+          const th = normalizar(row.querySelector('th')?.textContent);
+          const td = filtrarTexto(row.querySelector('td b')?.textContent || row.querySelector('td')?.textContent);
+          return th.includes('NOMBRE') && td.length > 0;
+        });
+
+        const textoPagina = normalizar(document.body?.innerText || '');
+        const filaProfesion = filtrarTexto(document.querySelector('#profesional tbody tr td')?.textContent);
+        const tablaVaciaSacs =
+          rows.length >= 2 &&
+          !hayCedula &&
+          !hayNombre &&
+          normalizar(filaProfesion).includes('NO HAY SOLICITUDES DISPONIBLES EN LA TABLA');
+
+        const sinResultado =
+          textoPagina.includes('NO SE ENCONTRARON RESULTADOS') ||
+          textoPagina.includes('NO ENCONTRADO') ||
+          textoPagina.includes('SIN RESULTADOS') ||
+          tablaVaciaSacs;
+
+        if (hayCedula && hayNombre) {
+          return { estado: 'COMPLETO' };
         }
-      });
+
+        if (sinResultado) {
+          return { estado: 'SIN_RESULTADO' };
+        }
+
+        return { estado: 'PENDIENTE' };
+      }, cedulaConsultada);
+    };
+
+    const esperarResultadoRobusto = async (cedulaConsultada, timeoutMs) => {
+      const inicio = Date.now();
+      while (Date.now() - inicio < timeoutMs) {
+        const estado = await leerEstadoResultado(cedulaConsultada);
+        if (estado.estado === 'COMPLETO' || estado.estado === 'SIN_RESULTADO') {
+          return estado;
+        }
+        await sleep(1200);
+      }
+      return { estado: 'TIMEOUT' };
+    };
+
+    let resultadoDetectado = false;
+    let huboRespuestaSinResultado = false;
+
+    for (const consulta of consultasCandidatas) {
+      const cedulaConsulta = consulta.input;
+      const cedulaApi = consulta.api;
+      console.log(`[SACS] Consultando con cédula: input=${cedulaConsulta}, api=${cedulaApi}`);
+
+      let estadoFinalCedula = 'TIMEOUT';
+
+      for (let intento = 1; intento <= 2; intento++) {
+        console.log(`[SACS] Intento ${intento}/2 para cédula ${cedulaConsulta}`);
+
+        await page.click('#cedula_matricula', { clickCount: 3 });
+        await page.keyboard.press('Backspace');
+        await page.type('#cedula_matricula', cedulaConsulta, { delay: 50 });
+
+        await page.evaluate((cedInput, cedApi) => {
+          const input = document.getElementById('cedula_matricula');
+          if (input) {
+            input.value = cedInput;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+
+          if (typeof xajax_getPrfsnalByCed === 'function') {
+            xajax_getPrfsnalByCed(cedApi);
+            return;
+          }
+
+          if (typeof nroRegistro === 'function') {
+            nroRegistro(cedInput);
+            nroRegistro();
+          }
+
+          if (window.js && typeof window.js.nroRegistro === 'function') {
+            window.js.nroRegistro(cedInput);
+            window.js.nroRegistro();
+          }
+
+          const boton = document.querySelector('a.btn.btn-lg.btn-primary');
+          if (boton) boton.click();
+        }, cedulaConsulta, cedulaApi);
+
+        const estado = await esperarResultadoRobusto(cedulaConsulta, 45000 + (intento * 5000));
+        estadoFinalCedula = estado.estado;
+
+        if (estado.estado === 'COMPLETO') {
+          console.log(`[SACS] Resultado completo detectado para formato: ${cedulaConsulta}`);
+          resultadoDetectado = true;
+          await sleep(2200);
+          break;
+        }
+
+        if (estado.estado === 'SIN_RESULTADO') {
+          huboRespuestaSinResultado = true;
+          console.log(`[SACS] El SACS respondió sin resultado para formato: ${cedulaConsulta}`);
+          break;
+        }
+
+        console.log(`[SACS] Timeout parcial para formato ${cedulaConsulta} (intento ${intento})`);
+        await sleep(1000);
+      }
+
+      if (resultadoDetectado) {
+        break;
+      }
+
+      if (estadoFinalCedula === 'SIN_RESULTADO') {
+        continue;
+      }
     }
 
-    // Esperar resultados
-    try {
-      // Aumentar timeout a 45s por lentitud extrema del SACS gubernamental
-      await page.waitForSelector('#tableUser table', { timeout: 45000 });
-      console.log('[SACS] Tabla de datos básicos cargada');
-
-      // Esperar adicional para tabla de profesiones (servidor lento)
-      await new Promise(resolve => setTimeout(resolve, 5000));
-
-      try {
-        await page.waitForSelector('#profesional tbody tr', { timeout: 10000 });
-        console.log('[SACS] Tabla de profesiones cargada');
-      } catch (err) {
-        console.log('[SACS] Tabla de profesiones no encontrada - puede que no tenga o esté cargando');
-        // No fallar aquí, intentar extraer de todos modos
-      }
-    } catch (err) {
-      console.log('[SACS] No se encontraron resultados - timeout o cédula no existe');
+    if (!resultadoDetectado) {
       await browser.close();
+
+      if (huboRespuestaSinResultado) {
+        return {
+          success: true,
+          verified: false,
+          message: 'Esta cédula no está registrada en el SACS como profesional de la salud',
+          razon_rechazo: 'NO_REGISTRADO_SACS'
+        };
+      }
 
       return {
         success: false,
         verified: false,
-        error: 'No se encontraron datos en el SACS',
-        message: 'Esta cédula no está registrada en el SACS como profesional de la salud'
+        error: 'Timeout esperando resultado del SACS',
+        message: 'El SACS no devolvió datos completos para esta consulta. Intenta nuevamente en unos segundos.'
       };
     }
 
@@ -195,15 +509,17 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
         profesiones: []
       };
 
+      const limpiar = (valor) => (valor || '').replace(/\s+/g, ' ').trim();
+
       // Datos básicos
       const tableUser = document.querySelector('#tableUser table tbody');
       if (tableUser) {
         tableUser.querySelectorAll('tr').forEach(row => {
           const th = row.querySelector('th');
-          const td = row.querySelector('td b');
+          const td = row.querySelector('td b') || row.querySelector('td');
           if (th && td) {
-            const key = th.innerText.replace(':', '').trim();
-            const value = td.innerText.trim();
+            const key = limpiar(th.textContent).replace(/:$/, '');
+            const value = limpiar(td.textContent);
             datos.datosBasicos[key] = value;
           }
         });
@@ -215,21 +531,45 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
         const rows = tableProfesional.querySelectorAll('tr');
         rows.forEach(row => {
           const cells = row.querySelectorAll('td');
-          if (cells.length >= 5 && cells[0].innerText.trim() !== '') {
-            const profesion = cells[0].innerText.trim();
-            const matricula = cells[1].innerText.trim();
+          if (cells.length >= 5 && limpiar(cells[0].textContent) !== '') {
+            const profesion = limpiar(cells[0].textContent);
+            const matricula = limpiar(cells[1].textContent);
 
             if (profesion && matricula) {
               datos.profesiones.push({
                 profesion: profesion,
                 matricula: matricula,
-                fecha_registro: cells[2].innerText.trim(),
-                tomo: cells[3].innerText.trim(),
-                folio: cells[4].innerText.trim(),
+                fecha_registro: limpiar(cells[2].textContent),
+                tomo: limpiar(cells[3].textContent),
+                folio: limpiar(cells[4].textContent),
                 tiene_postgrado_btn: cells.length > 5 && !!cells[5].querySelector('button')
               });
             }
           }
+        });
+      }
+
+      // Fallback: tablas similares si #profesional no entregó filas
+      if (datos.profesiones.length === 0) {
+        const posiblesTablas = Array.from(document.querySelectorAll('#divTabla table tbody, .dataTables_scrollBody table tbody'));
+        posiblesTablas.forEach((tbody) => {
+          tbody.querySelectorAll('tr').forEach((row) => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 2) {
+              const profesion = limpiar(cells[0].textContent);
+              const matricula = limpiar(cells[1].textContent);
+              if (profesion && matricula && !datos.profesiones.some(p => p.profesion === profesion && p.matricula === matricula)) {
+                datos.profesiones.push({
+                  profesion,
+                  matricula,
+                  fecha_registro: limpiar(cells[2]?.textContent),
+                  tomo: limpiar(cells[3]?.textContent),
+                  folio: limpiar(cells[4]?.textContent),
+                  tiene_postgrado_btn: !!cells[5]?.querySelector('button')
+                });
+              }
+            }
+          });
         });
       }
 
@@ -274,29 +614,23 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
       }
     }
 
-    await browser.close();
+    await page.close();
 
     // DEBUG: Ver qué datos se extrajeron
     console.log('[SACS] Datos extraídos del SACS:');
     console.log('[SACS] - Datos básicos:', JSON.stringify(datosExtraidos.datosBasicos));
     console.log('[SACS] - Profesiones encontradas:', datosExtraidos.profesiones.length);
 
-    // Construir resultado - BUSCAR EL NOMBRE DE FORMA MÁS FLEXIBLE
-    let nombreCompleto = datosExtraidos.datosBasicos['NOMBRE Y APELLIDO'] || 
-                         datosExtraidos.datosBasicos['NOMBRE'] ||
-                         datosExtraidos.datosBasicos['Nombre y Apellido'] ||
-                         datosExtraidos.datosBasicos['Nombre'] ||
-                         null;
-    
-    // Si no encontramos el nombre con las keys esperadas, buscar cualquier key que contenga "nombre"
-    if (!nombreCompleto) {
-      const nombreKey = Object.keys(datosExtraidos.datosBasicos).find(key => 
-        key.toLowerCase().includes('nombre')
-      );
-      if (nombreKey) {
-        nombreCompleto = datosExtraidos.datosBasicos[nombreKey];
-        console.log(`[SACS] Nombre encontrado con key alternativa: "${nombreKey}"`);
-      }
+    // Construir resultado - detectar nombre de forma tolerante a acentos/espacios/variantes
+    let nombreCompleto = null;
+    const entradaNombre = Object.entries(datosExtraidos.datosBasicos).find(([key, value]) => {
+      const keyNorm = normalizarTexto(key);
+      const valueNorm = String(value || '').trim();
+      return keyNorm.includes('NOMBRE') && valueNorm.length > 0;
+    });
+    if (entradaNombre) {
+      nombreCompleto = entradaNombre[1];
+      console.log(`[SACS] Nombre encontrado con key: "${entradaNombre[0]}"`);
     }
 
     // CASO 1: No se encontró nombre o profesiones
@@ -371,8 +705,12 @@ async function scrapeSACS(cedula, tipoDocumento = 'V') {
   } catch (error) {
     console.error('[SACS] Error:', error.message);
 
-    if (browser) {
-      await browser.close();
+    try {
+      if (page) {
+        await page.close();
+      }
+    } catch {
+      // noop
     }
 
     return {
@@ -396,7 +734,12 @@ app.get('/health', (req, res) => {
     status: 'ok',
     service: 'SACS Verification Service',
     version: '2.0.0',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    queue: getQueueState(),
+    cache: {
+      ttlMs: CACHE_TTL_MS,
+      entries: verifyCache.size,
+    },
   });
 });
 
@@ -408,6 +751,8 @@ app.get('/health', (req, res) => {
 app.post('/verify', async (req, res) => {
   try {
     const { cedula, tipo_documento = 'V' } = req.body;
+
+    const requestStart = nowMs();
 
     // Validaciones
     if (!cedula) {
@@ -434,10 +779,67 @@ app.post('/verify', async (req, res) => {
       });
     }
 
-    // Realizar scraping
-    const resultado = await scrapeSACS(cedula, tipo_documento);
+    // Cache (fast path)
+    const cached = getCached(cedula, tipo_documento);
+    if (cached) {
+      return res.json({
+        ...cached,
+        meta: {
+          cached: true,
+          ms: nowMs() - requestStart,
+          queue: getQueueState(),
+        },
+      });
+    }
 
-    res.json(resultado);
+    // Concurrency guard
+    try {
+      await acquireSlot();
+    } catch (err) {
+      if (err && err.code === 'QUEUE_FULL') {
+        return res.status(503).json({
+          success: false,
+          verified: false,
+          error: 'Servicio ocupado (cola llena). Intenta nuevamente en unos segundos.',
+          queue: getQueueState(),
+        });
+      }
+      throw err;
+    }
+
+    try {
+      // Timeout duro (evita requests colgadas)
+      const resultado = await Promise.race([
+        scrapeSACS(cedula, tipo_documento),
+        (async () => {
+          await sleep(HARD_TIMEOUT_MS);
+          return {
+            success: false,
+            verified: false,
+            error: 'HARD_TIMEOUT',
+            message: 'Timeout consultando SACS. Intenta nuevamente en unos segundos.',
+          };
+        })(),
+      ]);
+
+      const responsePayload = {
+        ...resultado,
+        meta: {
+          cached: false,
+          ms: nowMs() - requestStart,
+          queue: getQueueState(),
+        },
+      };
+
+      // Cache solo respuestas determinísticas (no timeouts/errores transitorios)
+      if (resultado && resultado.success === true) {
+        setCached(cedula, tipo_documento, responsePayload);
+      }
+
+      res.json(responsePayload);
+    } finally {
+      releaseSlot();
+    }
 
   } catch (error) {
     console.error('[API] Error:', error);

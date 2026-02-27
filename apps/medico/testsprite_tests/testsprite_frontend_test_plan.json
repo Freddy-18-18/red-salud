@@ -1,0 +1,1727 @@
+[
+  {
+    "id": "TC001",
+    "title": "Doctor login redirects to doctor dashboard with specialty KPIs and modules",
+    "description": "Verifies that after a successful doctor login, the user lands on the doctor dashboard and sees specialty-specific KPI content and sidebar modules.",
+    "category": "Specialty Auto-Detection",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"KPIs\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Sidebar\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Doctor dashboard loads without manual interaction and shows KPI grid",
+    "description": "Verifies that navigating to the doctor dashboard results in an automatically rendered KPI grid (no extra user actions required).",
+    "category": "Specialty Auto-Detection",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Dashboard\" / \"Inicio\" in the sidebar menu"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"KPI grid\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Doctor dashboard shows specialty modules in sidebar (navigation targets present)",
+    "description": "Verifies that the dashboard sidebar exposes the doctor modules expected for a detected specialty (at minimum, core module entries are visible).",
+    "category": "Specialty Auto-Detection",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Sidebar\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Citas\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Pacientes\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Recetas\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Fallback behavior: generic dashboard shell and missing specialty notification",
+    "description": "Verifies that when specialty data cannot be resolved, the dashboard shows a generic shell with fallback modules and a visible notification about missing specialty data.",
+    "category": "Specialty Auto-Detection",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Perfil\" in the sidebar menu"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/perfil\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Dashboard\" / \"Inicio\" in the sidebar menu"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Dashboard shell\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"especialidad\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Dev override: odontologia test parameter loads odontology-specific dashboard content",
+    "description": "Verifies that using the dev test parameter for odontology causes odontology-specific KPIs/modules to appear on the doctor dashboard.",
+    "category": "Specialty Auto-Detection",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /dashboard/medico?test=odontologia"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"test=odontologia\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Odontología\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"KPI grid\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Doctor dashboard remains usable while specialty detection completes (loading state)",
+    "description": "Verifies that the dashboard shows a visible loading or placeholder state before KPIs/modules render, rather than a blank or broken UI.",
+    "category": "Specialty Auto-Detection",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Cargando\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Wait for element \"KPI grid\" to appear"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Sidebar module navigation works after auto-detection (modules are not broken by specialty config)",
+    "description": "Verifies that after the dashboard loads, the user can access a core module from the sidebar and the app stays in the authenticated doctor area.",
+    "category": "Specialty Auto-Detection",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Citas\" in the sidebar menu"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/citas\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Dashboard\" / \"Inicio\" in the sidebar menu"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Doctor dashboard loads and shows KPI cards for detected specialty",
+    "description": "Verifies an authenticated doctor can reach the specialty dashboard shell and see KPI cards rendered.",
+    "category": "Specialty Dashboard Shell",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Ingresar\" or \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"KPIs\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify at least one KPI card is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Navigate to Appointments module from dashboard sidebar",
+    "description": "Verifies sidebar module navigation from the specialty dashboard shell loads the Appointments page.",
+    "category": "Specialty Dashboard Shell",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Ingresar\" or \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Citas\" module in the sidebar"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/citas\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Citas\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Citas\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Navigate to Patients module from dashboard sidebar",
+    "description": "Verifies sidebar module navigation from the specialty dashboard shell loads the Patients list page.",
+    "category": "Specialty Dashboard Shell",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Ingresar\" or \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Pacientes\" module in the sidebar"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/pacientes\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Pacientes\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Pacientes\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Navigate to Prescriptions module from dashboard sidebar",
+    "description": "Verifies sidebar module navigation from the specialty dashboard shell loads the Digital Prescriptions page.",
+    "category": "Specialty Dashboard Shell",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Ingresar\" or \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Recetas\" module in the sidebar"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/recetas\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Recetas\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Recetas\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Real-time appointments widget/section shows updates indicator",
+    "description": "Verifies the dashboard exposes a visible real-time updates area for appointments (without simulating backend events).",
+    "category": "Specialty Dashboard Shell",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Ingresar\" or \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Actualizaciones\" or \"Tiempo real\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an element \"Actualizaciones\" or \"Tiempo real\" section is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "KPI loading state is shown while KPIs resolve",
+    "description": "Verifies KPI area shows a visible loading state before KPI cards finish rendering.",
+    "category": "Specialty Dashboard Shell",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Ingresar\" or \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Cargando\" or \"Loading\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify at least one KPI card is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "KPI error state provides actionable message and retry option",
+    "description": "Verifies that when KPIs cannot be loaded, the dashboard shows a visible error message with a retry action (if it occurs).",
+    "category": "Specialty Dashboard Shell",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Ingresar\" or \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the KPI area to finish initial loading"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Error\" or \"No se pudieron cargar\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Reintentar\" or \"Retry\" button is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Pull-to-refresh reloads KPI data",
+    "description": "Verifies the dashboard pull-to-refresh interaction triggers KPI reload and returns to a loaded KPI state.",
+    "category": "Specialty Dashboard Shell",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Ingresar\" or \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the top of the dashboard content"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Actualizar\" or refresh control for KPIs (pull-to-refresh equivalent if present)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Cargando\" or \"Actualizando\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Dashboard sidebar navigation to Messaging module works",
+    "description": "Verifies the messaging module can be opened from the specialty dashboard shell using the sidebar.",
+    "category": "Specialty Dashboard Shell",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Ingresar\" or \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Mensajería\" module in the sidebar"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/mensajeria\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Mensajería\""
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Odontology doctor sees dental dashboard KPIs after login redirect",
+    "description": "Verifies that after a successful doctor login, the system redirects to the doctor dashboard and shows odontology-specific KPI cards.",
+    "category": "Custom Dental Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Odontología\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"KPI\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Open Periodontograma module and view periodontogram viewer",
+    "description": "Verifies that an odontology doctor can open the Periodontograma module from the dashboard sidebar and see the periodontogram viewer and dental record area.",
+    "category": "Custom Dental Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Periodontograma\" in the sidebar menu"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Periodontograma\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Visor\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "From odontology dashboard, open Dental Imaging module and view images list",
+    "description": "Verifies that the Dental Imaging module opens and displays a list/grid of available dental images for viewing.",
+    "category": "Custom Dental Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Dental Imaging\" / \"Imágenes\" in the sidebar menu"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Imágenes\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Lista de imágenes\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Dental Imaging shows treatment estimates section when opened",
+    "description": "Verifies that the Dental Imaging view includes a visible treatment estimate area for odontology workflows.",
+    "category": "Custom Dental Dashboard",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Dental Imaging\" / \"Imágenes\" in the sidebar menu"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Estimación\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Tratamiento\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Odontology dashboard sidebar contains Periodontograma and Dental Imaging entries",
+    "description": "Verifies that when odontology specialty is detected, the sidebar exposes the dental modules required for the workflow.",
+    "category": "Custom Dental Dashboard",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ingresar\" / \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Periodontograma\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Dental Imaging\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Create a new appointment and see it appear on the calendar",
+    "description": "Verifies a doctor can create an appointment and it becomes visible in the appointments calendar.",
+    "category": "Appointment Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" / \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Citas\" / \"Appointments\" in the doctor dashboard navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/citas\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Crear cita\" / \"Create appointment\""
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "Create appointment with valid details and confirm it is visible",
+    "description": "Verifies saving valid appointment details adds a visible appointment item in the calendar.",
+    "category": "Appointment Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" / \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Citas\" / \"Appointments\" in the doctor dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Crear cita\" / \"Create appointment\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Consulta de prueba E2E\" into the appointment reason/title field"
+      }
+    ]
+  },
+  {
+    "id": "TC024",
+    "title": "Switch between daily, weekly, and monthly calendar views",
+    "description": "Verifies the calendar supports changing view modes and shows the selected view state.",
+    "category": "Appointment Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Citas\" / \"Appointments\" in the doctor dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Día\" / \"Daily\" view option"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Día\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Semana\" / \"Weekly\" view option"
+      }
+    ]
+  },
+  {
+    "id": "TC025",
+    "title": "Monthly view selection is reflected on screen",
+    "description": "Verifies selecting the monthly view updates the visible view indicator.",
+    "category": "Appointment Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Citas\" / \"Appointments\" in the doctor dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Mes\" / \"Monthly\" view option"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Mes\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Calendar\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC026",
+    "title": "Attempt to save an appointment with missing required fields and see validation",
+    "description": "Verifies the UI prevents saving when required fields are missing and shows visible guidance.",
+    "category": "Appointment Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Citas\" / \"Appointments\" in the doctor dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Crear cita\" / \"Create appointment\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Guardar\" / \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Campo obligatorio\" / \"Required\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC027",
+    "title": "Attempt to save an appointment with conflicting/invalid scheduling data",
+    "description": "Verifies entering conflicting or invalid scheduling information shows a visible validation error and does not create the appointment.",
+    "category": "Appointment Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" / \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Citas\" / \"Appointments\" in the doctor dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Crear cita\" / \"Create appointment\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"00:00\" into the appointment time field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Guardar\" / \"Save\""
+      }
+    ]
+  },
+  {
+    "id": "TC028",
+    "title": "Successful login as medico shows medico dashboard",
+    "description": "Verifies a doctor can sign in and reach the medico dashboard with the correct role.",
+    "category": "Role-Based Access Control",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Iniciar sesión\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Dashboard\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC029",
+    "title": "Paciente attempting to access medico dashboard is blocked with 403 guidance",
+    "description": "Verifies a patient role cannot access the doctor dashboard and sees a forbidden page with guidance.",
+    "category": "Role-Based Access Control",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/paciente"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Iniciar sesión\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a navigation option or link labeled \"Ir al dashboard del médico\" (or similar medico dashboard link if present)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"403\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Acceso prohibido\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Ir a tu dashboard\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC030",
+    "title": "Paciente is guided to their own dashboard from 403 page",
+    "description": "Verifies the forbidden page provides a working path to the correct dashboard for the signed-in role.",
+    "category": "Role-Based Access Control",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/paciente"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Iniciar sesión\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a navigation option or link labeled \"Dashboard médico\" (or similar medico dashboard link if present) to trigger the forbidden page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"403\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Ir a tu dashboard\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/paciente\""
+      }
+    ]
+  },
+  {
+    "id": "TC031",
+    "title": "Authenticated medico can navigate to another medico section without being redirected",
+    "description": "Verifies that once signed in as medico, protected medico routes remain accessible without being sent to login.",
+    "category": "Role-Based Access Control",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Iniciar sesión\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Recetas\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/recetas\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Recetas\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC032",
+    "title": "Authenticated medico can access profile page (role-protected route)",
+    "description": "Verifies the medico role can access another protected dashboard route that should remain within the medico area.",
+    "category": "Role-Based Access Control",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Iniciar sesión\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Perfil\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/perfil\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Perfil\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC033",
+    "title": "Doctor login fails with invalid credentials and does not reach dashboard",
+    "description": "Verifies the login page rejects invalid credentials and the user remains on the login flow.",
+    "category": "Role-Based Access Control",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"invalid.user@example.com\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"WrongPassword123!\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Iniciar sesión\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/login/medico\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"error\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC034",
+    "title": "Patient login fails with invalid credentials and does not reach patient dashboard",
+    "description": "Verifies the patient login page rejects invalid credentials and does not allow access to authenticated dashboards.",
+    "category": "Role-Based Access Control",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/paciente"
+      },
+      {
+        "type": "action",
+        "description": "Type \"nonexistent.patient@example.com\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"NotTheRightPass!\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Iniciar sesión\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/login/paciente\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"error\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC035",
+    "title": "Successful SACS verification shows verified badge and completed profile status",
+    "description": "Verifies a doctor can submit a valid cédula, receive success feedback, and see a verified badge and completed professional profile indicators.",
+    "category": "SACS Verification",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Perfil\" in the dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Setup\" or \"Configurar perfil\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/perfil/setup\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"12345678\" into the cédula field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Verificar\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Verificado\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Verified badge\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Perfil profesional completado\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC036",
+    "title": "SACS verification failure shows explanatory error and retry guidance",
+    "description": "Verifies that an invalid or non-matching cédula results in a visible failure message with next steps to retry or contact support.",
+    "category": "SACS Verification",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Perfil\" in the dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Setup\" or \"Configurar perfil\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/perfil/setup\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"00000000\" into the cédula field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Verificar\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No se pudo verificar\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Intenta de nuevo\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"contacta soporte\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC037",
+    "title": "Client-side validation blocks verification when cédula is empty",
+    "description": "Verifies the cédula field is required and the UI shows a validation error without proceeding when the user clicks Verify with an empty field.",
+    "category": "SACS Verification",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Perfil\" in the dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Setup\" or \"Configurar perfil\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/perfil/setup\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Verificar\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Ingresa tu cédula\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"cédula field error message\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC038",
+    "title": "Non-numeric cédula input is rejected or prompts a validation message",
+    "description": "Verifies the UI handles non-numeric cédula input by showing a visible validation error and not showing a verified state.",
+    "category": "SACS Verification",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Perfil\" in the dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Setup\" or \"Configurar perfil\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/perfil/setup\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"ABC123\" into the cédula field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Verificar\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Cédula inválida\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Verificado\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC039",
+    "title": "Cédula with leading/trailing spaces is handled correctly",
+    "description": "Verifies the verification flow works (or clearly errors) when the user enters a cédula with extra spaces, and the UI provides clear feedback.",
+    "category": "SACS Verification",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Perfil\" in the dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Setup\" or \"Configurar perfil\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/perfil/setup\""
+      },
+      {
+        "type": "action",
+        "description": "Type \" 12345678 \" into the cédula field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Verificar\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Verificando\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Verificado\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC040",
+    "title": "Verification in progress shows a visible loading state",
+    "description": "Verifies that after clicking Verify, the UI shows an in-progress indicator while verification is happening, preventing unclear double submissions.",
+    "category": "SACS Verification",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Perfil\" in the dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Setup\" or \"Configurar perfil\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/perfil/setup\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"12345678\" into the cédula field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Verificar\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Verificando\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"verification loading indicator\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC041",
+    "title": "After successful verification, the verified badge is visible on the profile page",
+    "description": "Verifies the verified state persists within the session by navigating to the profile page and confirming the badge is visible.",
+    "category": "SACS Verification",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login/medico"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Iniciar sesión\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Perfil\" in the dashboard navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Setup\" or \"Configurar perfil\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/perfil/setup\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"12345678\" into the cédula field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Verificar\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Verificado\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Perfil\" in the dashboard navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard/medico/perfil\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Verified badge\" is visible"
+      }
+    ]
+  }
+]

@@ -11,7 +11,7 @@ import {
   DollarSign,
   Clock,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@red-salud/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@red-salud/design-system";
 import { cn } from "@red-salud/core/utils";
 
 interface KPICardProps {

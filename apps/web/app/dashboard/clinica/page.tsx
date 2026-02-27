@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { getUserClinics } from '@/lib/supabase/services/clinics-service';
-import { Button } from "@red-salud/ui";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@red-salud/ui";
+import { Button } from "@red-salud/design-system";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@red-salud/design-system";
 import { Building2 } from 'lucide-react';
 
 

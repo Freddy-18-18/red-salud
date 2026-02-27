@@ -1,22 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  getPatientAppointments,
-  getDoctorAppointments,
-  getMedicalSpecialties,
-  getAvailableDoctors,
-  getDoctorProfile,
-  getAvailableTimeSlots,
-  createAppointment,
-  cancelAppointment,
-} from "@/lib/supabase/services/appointments-service";
-import type {
-  Appointment,
-  MedicalSpecialty,
-  DoctorProfile,
-  TimeSlot,
-  CreateAppointmentData,
-} from "@/lib/supabase/types/appointments";
-import { useAuth } from "./use-auth";
+  createMedicoSdk,
+  type Appointment,
+  type CreateAppointmentData,
+  type DoctorProfile,
+  type MedicalSpecialty,
+  type TimeSlot,
+} from "@red-salud/sdk-medico";
+
+import { supabase } from "@/lib/supabase/client";
+
+const medicoSdk = createMedicoSdk(supabase);
 
 // Hook para citas del paciente
 export function usePatientAppointments(patientId: string | undefined) {
@@ -27,26 +21,30 @@ export function usePatientAppointments(patientId: string | undefined) {
   const refreshAppointments = useCallback(async () => {
     if (!patientId) return;
     setLoading(true);
-    const result = await getPatientAppointments(patientId);
-    if (result.success) {
-      setAppointments(result.data);
-    } else {
-      setError(String(result.error) || 'Error loading appointments');
+    setError(null);
+    try {
+      const data = await medicoSdk.appointments.getPatientAppointments(patientId);
+      setAppointments(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Error loading appointments');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [patientId]);
 
   useEffect(() => {
     if (!patientId) return;
     const loadData = async () => {
       setLoading(true);
-      const result = await getPatientAppointments(patientId);
-      if (result.success) {
-        setAppointments(result.data);
-      } else {
-        setError(String(result.error) || 'Error loading appointments');
+      setError(null);
+      try {
+        const data = await medicoSdk.appointments.getPatientAppointments(patientId);
+        setAppointments(data);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'Error loading appointments');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     loadData();
   }, [patientId]);
@@ -59,34 +57,37 @@ export function useDoctorAppointments(doctorId: string | undefined) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { session } = useAuth();
 
   const refreshAppointments = useCallback(async () => {
     if (!doctorId) return;
     setLoading(true);
-    const result = await getDoctorAppointments(doctorId, session?.access_token);
-    if (result.success) {
-      setAppointments(result.data);
-    } else {
-      setError(String(result.error) || 'Error loading appointments');
+    setError(null);
+    try {
+      const data = await medicoSdk.appointments.getDoctorAppointments(doctorId);
+      setAppointments(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Error loading appointments');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [doctorId, session?.access_token]);
+  }, [doctorId]);
 
   useEffect(() => {
     if (!doctorId) return;
     const loadData = async () => {
       setLoading(true);
-      const result = await getDoctorAppointments(doctorId, session?.access_token);
-      if (result.success) {
-        setAppointments(result.data);
-      } else {
-        setError(String(result.error) || 'Error loading appointments');
+      setError(null);
+      try {
+        const data = await medicoSdk.appointments.getDoctorAppointments(doctorId);
+        setAppointments(data);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'Error loading appointments');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     loadData();
-  }, [doctorId, session?.access_token]);
+  }, [doctorId]);
 
   return { appointments, loading, error, refreshAppointments };
 }
@@ -98,14 +99,14 @@ export function useMedicalSpecialties(onlyWithDoctors: boolean = false) {
 
   useEffect(() => {
     const loadSpecialties = async () => {
-      const result = await getMedicalSpecialties(onlyWithDoctors);
-
-      if (result.success) {
-        setSpecialties(result.data);
-      } else {
-        console.error('Error loading specialties:', result.error);
+      try {
+        const data = await medicoSdk.appointments.getMedicalSpecialties(onlyWithDoctors);
+        setSpecialties(data);
+      } catch (error) {
+        console.error('Error loading specialties:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadSpecialties();
@@ -122,11 +123,12 @@ export function useAvailableDoctors(specialtyId?: string) {
   useEffect(() => {
     const loadDoctors = async () => {
       setLoading(true);
-      const result = await getAvailableDoctors(specialtyId);
-      if (result.success) {
-        setDoctors(result.data);
+      try {
+        const data = await medicoSdk.appointments.getAvailableDoctors(specialtyId);
+        setDoctors(data);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadDoctors();
@@ -145,11 +147,12 @@ export function useDoctorProfile(doctorId: string | undefined) {
 
     const loadDoctor = async () => {
       setLoading(true);
-      const result = await getDoctorProfile(doctorId);
-      if (result.success) {
-        setDoctor(result.data);
+      try {
+        const data = await medicoSdk.appointments.getDoctorProfile(doctorId);
+        setDoctor(data);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadDoctor();
@@ -174,11 +177,12 @@ export function useAvailableTimeSlots(
       }
 
       setLoading(true);
-      const result = await getAvailableTimeSlots(doctorId, date);
-      if (result.success) {
-        setTimeSlots(result.data);
+      try {
+        const data = await medicoSdk.appointments.getAvailableTimeSlots(doctorId, date);
+        setTimeSlots(data);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadTimeSlots();
@@ -198,12 +202,14 @@ export function useCreateAppointment() {
   ) => {
     setLoading(true);
     setError(null);
-    const result = await createAppointment(patientId, appointmentData);
-    setLoading(false);
-    if (!result.success) {
-      setError(String(result.error));
+    try {
+      return await medicoSdk.appointments.createAppointment(patientId, appointmentData);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : String(error));
+      return { success: false as const, error, data: null };
+    } finally {
+      setLoading(false);
     }
-    return result;
   };
 
   return { create, loading, error };
@@ -221,12 +227,16 @@ export function useCancelAppointment() {
   ) => {
     setLoading(true);
     setError(null);
-    const result = await cancelAppointment(appointmentId, userId, reason);
-    setLoading(false);
-    if (!result.success) {
-      setError(String(result.error));
+    try {
+      await medicoSdk.appointments.cancel({ appointmentId, reason });
+      return { success: true as const, data: null };
+    } catch (error) {
+      setError(error instanceof Error ? error.message : String(error));
+      return { success: false as const, error, data: null };
+    } finally {
+      void userId;
+      setLoading(false);
     }
-    return result;
   };
 
   return { cancel, loading, error };

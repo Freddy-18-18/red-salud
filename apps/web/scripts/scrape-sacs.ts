@@ -5,7 +5,7 @@
  * Uso: npm run scrape-sacs [cedula1] [cedula2] ...
  */
 
-import { SACSScraper } from './sacs-scraper';
+import { SACSSimpleScraper } from './scrape-sacs-simple';
 import fs from 'fs';
 import path from 'path';
 
@@ -19,20 +19,19 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('🚀 Iniciando scraper SACS...');
+  console.log('🚀 Iniciando scraper SACS (Modo Simple)...');
   console.log(`📋 Cédulas a procesar: ${cedulas.join(', ')}\n`);
 
-  const scraper = new SACSScraper();
+  const scraper = new SACSSimpleScraper();
 
   try {
-    // Inicializar navegador
-    await scraper.initialize();
+    const results = [];
 
-    // Manejar certificado SSL
-    await scraper.handleSSLCertificate();
-
-    // Procesar todas las cédulas
-    const results = await scraper.scrapeMultipleCedulas(cedulas);
+    for (const cedula of cedulas) {
+      console.log(`🔍 Buscando cédula: ${cedula}...`);
+      const result = await scraper.searchProfessional(cedula);
+      results.push(result);
+    }
 
     // Mostrar resultados
     console.log('\n📊 RESULTADOS:');
@@ -71,8 +70,6 @@ async function main() {
   } catch (error) {
     console.error('❌ Error en el proceso:', error);
     process.exit(1);
-  } finally {
-    await scraper.close();
   }
 }
 

@@ -8,23 +8,26 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@red-salud/ui";
-import { Button } from "@red-salud/ui";
-import { Input } from "@red-salud/ui";
-import { Label } from "@red-salud/ui";
-import { Textarea } from "@red-salud/ui";
+} from "@red-salud/design-system";
+import { Button } from "@red-salud/design-system";
+import { Input } from "@red-salud/design-system";
+import { Label } from "@red-salud/design-system";
+import { Textarea } from "@red-salud/design-system";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@red-salud/ui";
+} from "@red-salud/design-system";
 import { MessageSquarePlus, Loader2 } from "lucide-react";
-import { getAvailableDoctors } from "@/lib/supabase/services/appointments-service";
-import type { DoctorProfile } from "@/lib/supabase/types/appointments";
+import { createMedicoSdk, type DoctorProfile } from "@red-salud/sdk-medico";
+
+import { supabase } from "@/lib/supabase/client";
 import type { CreateConversationData } from "@/lib/supabase/types/messaging";
-import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/design-system";
+
+const medicoSdk = createMedicoSdk(supabase);
 
 interface NewConversationDialogProps {
   onCreateConversation: (data: CreateConversationData) => Promise<{ success: boolean; error?: string; data?: unknown }>;
@@ -47,9 +50,11 @@ export function NewConversationDialog({
   }, [open]);
 
   const loadDoctors = async () => {
-    const result = await getAvailableDoctors();
-    if (result.success) {
-      setDoctors(result.data);
+    try {
+      const data = await medicoSdk.appointments.getAvailableDoctors();
+      setDoctors(data);
+    } catch (error) {
+      console.error('Error loading doctors:', error);
     }
   };
 

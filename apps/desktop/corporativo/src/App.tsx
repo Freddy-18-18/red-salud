@@ -18,6 +18,7 @@ import RolePlaceholderPage from './pages/roles/RolePlaceholder';
 import AcademyPage from './pages/Academy';
 import SupportPage from './pages/Support';
 import PaymentsPage from './pages/Payments';
+import SpecialtiesPage from './pages/Specialties';
 
 import { supabase } from './lib/supabase';
 
@@ -82,6 +83,7 @@ const App: React.FC = () => {
                     <Route path="configuracion" element={<SettingsPage />} />
                     <Route path="security" element={<SecurityMasterPage />} />
                     <Route path="pagos" element={<PaymentsPage />} />
+                    <Route path="specialties" element={<SpecialtiesPage />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>

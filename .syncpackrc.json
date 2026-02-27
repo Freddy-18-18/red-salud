@@ -1,0 +1,41 @@
+{
+    "$schema": "https://kinday.github.io/syncpack/schema.json",
+    "dependencyTypes": [
+        "dev",
+        "peer",
+        "prod"
+    ],
+    "indexGroups": [
+        "@red-salud/**"
+    ],
+    "semverGroups": [
+        {
+            "range": "",
+            "dependencies": [
+                "react",
+                "react-dom",
+                "next"
+            ],
+            "packages": [
+                "**"
+            ]
+        }
+    ],
+    "versionGroups": [
+        {
+            "label": "React ecosystem must match",
+            "dependencies": [
+                "react",
+                "react-dom",
+                "@types/react",
+                "@types/react-dom"
+            ],
+            "dependencyTypes": [
+                "prod",
+                "dev",
+                "peer"
+            ],
+            "preferVersion": "19.2.0"
+        }
+    ]
+}
