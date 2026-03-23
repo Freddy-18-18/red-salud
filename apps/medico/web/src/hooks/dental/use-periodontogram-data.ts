@@ -1,7 +1,32 @@
 // Hook personalizado para datos de Periodontograma
 import { useState, useEffect, useCallback } from 'react';
 import { useSupabaseAuth } from '@red-salud/identity';
-import type { PerioExam, PerioToothData } from '@red-salud/types' // TODO: ensure PerioExam types exist;
+// TODO: Move PerioExam types to @red-salud/types when available
+interface PerioToothData {
+  tooth_number: number;
+  probing_depths?: number[];
+  recession?: number[];
+  bleeding_on_probing?: boolean[];
+  plaque?: boolean[];
+  mobility?: number;
+  furcation?: number;
+  missing?: boolean;
+  implant?: boolean;
+}
+
+interface PerioExam {
+  id: string;
+  patient_id?: string;
+  patientId?: string;
+  doctor_id?: string;
+  doctorId?: string;
+  exam_date?: string;
+  teeth?: Record<number, PerioToothData>;
+  notes?: string;
+  status?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 import {
   createPerioExam,
   updatePerioExam,

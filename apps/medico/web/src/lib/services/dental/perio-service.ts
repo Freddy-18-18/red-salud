@@ -181,8 +181,10 @@ export async function getPerioStatsByPatient(patientId: string) {
     ? exams.reduce((sum, exam) => {
         const teeth = exam.teeth as Record<number, PerioToothData>;
         Object.values(teeth).forEach(tooth => {
-          Object.values(tooth.measurements).forEach(m => {
-            sum += m.probingDepth;
+          Object.values(tooth.measurements ?? {}).forEach((sites) => {
+            (sites as PerioSite[] ?? []).forEach(m => {
+              sum += (m as unknown as Record<string, number>).probingDepth ?? 0;
+            });
           });
         });
         return sum;
@@ -224,15 +226,19 @@ export function calculatePerioStats(teeth: Record<number, PerioToothData>) {
       return;
     }
 
-    Object.values(t.measurements).forEach(m => {
-      totalDepth += m.probingDepth;
-      totalSites++;
+    Object.values(t.measurements ?? {}).forEach((sites) => {
+      (sites as PerioSite[] ?? []).forEach(site => {
+        const m = site as unknown as Record<string, number | boolean>;
+        const probingDepth = (m.probingDepth as number) ?? 0;
+        totalDepth += probingDepth;
+        totalSites++;
 
-      if (m.bleeding) bleedingSites++;
-      if (m.probingDepth >= 4) pocketsOver4++;
-      if (m.probingDepth >= 5) pocketsOver5++;
-      if (m.probingDepth >= 6) pocketsOver6++;
-      if (m.probingDepth > maxDepth) maxDepth = m.probingDepth;
+        if (m.bleeding) bleedingSites++;
+        if (probingDepth >= 4) pocketsOver4++;
+        if (probingDepth >= 5) pocketsOver5++;
+        if (probingDepth >= 6) pocketsOver6++;
+        if (probingDepth > maxDepth) maxDepth = probingDepth;
+      });
     });
   });
 

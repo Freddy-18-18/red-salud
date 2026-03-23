@@ -8,7 +8,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import type { StorageService } from '../types';
+import type { StorageService } from '../../types';
 
 export class TauriStorageService implements StorageService {
   private fallbackStorage = new Map<string, string>();

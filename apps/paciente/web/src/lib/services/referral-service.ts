@@ -146,7 +146,7 @@ export const referralService = {
 
     for (const row of data || []) {
       const id = row.referrer_id as string;
-      const referrer = row.referrer as Record<string, unknown>;
+      const referrer = row.referrer as unknown as Record<string, unknown>;
       const existing = counts.get(id);
       if (existing) {
         existing.count++;

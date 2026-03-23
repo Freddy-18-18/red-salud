@@ -43,7 +43,7 @@ export function useDirectorySearch(options: UseDirectorySearchOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const abortRef = useRef(0); // simple counter to discard stale requests
 
   // Main search function

@@ -294,7 +294,7 @@ export function SpecialtySelector({ value, onChange, error }: SpecialtySelectorP
           const knownCatIds = new Set(allCategories.map((c) => c.id));
           const extraSpecialties: SpecialtyOption[] = [];
           for (const [catId, specs] of grouped.entries()) {
-            if (!knownCatIds.has(catId) && catId !== 'otros') {
+            if (!knownCatIds.has(catId as typeof allCategories[number]['id']) && catId !== 'otros') {
               extraSpecialties.push(...specs);
             }
           }

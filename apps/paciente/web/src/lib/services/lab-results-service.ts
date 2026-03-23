@@ -202,7 +202,7 @@ export const labResultsService = {
 
     const points: ParameterHistoryPoint[] = (data || []).map(
       (row: Record<string, unknown>) => {
-        const result = row.result as Record<string, unknown>;
+        const result = row.result as unknown as Record<string, unknown>;
         return {
           value: row.value as number,
           date: result.result_at as string,
@@ -262,7 +262,7 @@ export const labResultsService = {
 
     for (const row of data || []) {
       const name = row.parameter_name as string;
-      const result = row.result as Record<string, unknown>;
+      const result = row.result as unknown as Record<string, unknown>;
 
       if (!historyMap.has(name)) {
         historyMap.set(name, []);

@@ -2,7 +2,21 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-import type { Appointment } from "@red-salud/sdk-medico";
+// TODO: Import from @red-salud/sdk-medico when the package is available
+interface Appointment {
+  id: string;
+  patient_id: string;
+  doctor_id: string;
+  appointment_date: string;
+  appointment_time: string;
+  duration: number;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show' | string;
+  consultation_type: string;
+  price: number;
+  created_at: string;
+  updated_at: string;
+  [key: string]: unknown;
+}
 
 type ClaimStatus =
   | "draft"

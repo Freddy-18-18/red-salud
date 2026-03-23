@@ -142,7 +142,7 @@ export const ginecologiaOverride: SpecialtyConfigOverride = {
         label: 'Laboratorio Prenatal',
         icon: 'FlaskConical',
         route: '/dashboard/medico/ginecologia/laboratorio',
-        group: 'laboratory',
+        group: 'lab',
         order: 1,
         enabledByDefault: true,
         description: 'Hemograma, TORCH, glucosa, urocultivo, HIV, VDRL',

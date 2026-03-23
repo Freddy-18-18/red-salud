@@ -9,7 +9,7 @@ import type {
   DoctorAvailabilityException,
   DoctorSearchFilters,
   DoctorSearchResult,
-} from '@red-salud/types' // TODO: ensure DoctorProfile types are in @red-salud/types;
+} from '@/types/doctor';
 
 // ============================================
 // ESPECIALIDADES
@@ -132,7 +132,7 @@ export async function getDoctorProfile(userId: string) {
       sacs_especialidad: data.profile?.sacs_especialidad || undefined,
       subespecialidades: Array.isArray(data.subespecialidades) ? data.subespecialidades : [],
       universidad: undefined,
-    } as DoctorProfile;
+    } as unknown as DoctorProfile;
 
     return { success: true, data: doctorProfile };
   } catch (_err) {
@@ -537,7 +537,7 @@ export async function getAvailableSlots(
   }
 
   const availableSlots: string[] = [];
-  const duration = profile.consultation_duration;
+  const duration = profile.consultation_duration ?? 30;
 
   // Usar custom_slots si hay excepción con disponibilidad especial
   const slotsToUse = exceptions?.custom_slots || daySchedule.slots;

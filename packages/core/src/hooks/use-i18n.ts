@@ -1,7 +1,8 @@
 "use client";
 
 import { usePreferences } from "../contexts/preferences-context";
-import { getTranslations, type Language } from "../i18n/translations";
+import { getTranslations } from "../i18n/translations";
+import type { Language } from "../contexts/preferences-context";
 
 export function useI18n() {
     const { preferences } = usePreferences();

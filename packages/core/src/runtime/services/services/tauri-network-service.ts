@@ -13,7 +13,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import type { NetworkService, RequestOptions } from '../types';
+import type { NetworkService, RequestOptions } from '../../types';
 
 /**
  * Network error types for better error handling

@@ -8,7 +8,7 @@ export function ConnectivityBanner() {
   const [online, setOnline] = useState(true);
   const [showRestored, setShowRestored] = useState(false);
   const wasOfflineRef = useRef(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     // Set initial state

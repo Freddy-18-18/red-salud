@@ -3,7 +3,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
-import {
+import type {
   PrescriptionTemplate,
   DoctorSignature,
   PrescriptionScan,
@@ -17,7 +17,7 @@ import {
   PatientDataSnapshot,
   MedicoDataSnapshot,
   PrescriptionMedication,
-} from '@red-salud/types' // TODO: ensure prescription types are in @red-salud/types;
+} from '@/types/prescriptions';
 
 // ============================================================================
 // TEMPLATE QUERIES

@@ -24,6 +24,7 @@ export {
 
 // Tipos de idiomas soportados
 export type LanguageCode = 'es' | 'en' | 'pt' | 'fr' | 'it';
+export type TranslationKey = string;
 
 // Interfaz para todas las traducciones
 interface Translations {

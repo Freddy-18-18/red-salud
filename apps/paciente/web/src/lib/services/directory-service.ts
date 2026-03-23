@@ -902,7 +902,7 @@ export const directoryService = {
     if (error) throw error;
     if (!data) return null;
 
-    const profile = data.profile as {
+    const profile = data.profile as unknown as {
       id: string;
       nombre_completo: string;
       email: string | null;
@@ -911,7 +911,7 @@ export const directoryService = {
       estado: string | null;
       telefono: string | null;
     };
-    const specialty = data.specialty as { id: string; name: string };
+    const specialty = data.specialty as unknown as { id: string; name: string };
 
     // Get offices
     const { data: offices } = await supabase
@@ -994,7 +994,7 @@ export const directoryService = {
     if (error) throw error;
     if (!data) return null;
 
-    const profile = data.profile as {
+    const profile = data.profile as unknown as {
       id: string;
       nombre_completo: string;
       avatar_url: string | null;
@@ -1062,7 +1062,7 @@ export const directoryService = {
     if (error) throw error;
     if (!data) return null;
 
-    const profile = data.profile as {
+    const profile = data.profile as unknown as {
       id: string;
       nombre_completo: string;
       avatar_url: string | null;
@@ -1130,7 +1130,7 @@ export const directoryService = {
     if (error) throw error;
     if (!data) return null;
 
-    const profile = data.profile as {
+    const profile = data.profile as unknown as {
       id: string;
       nombre_completo: string;
       avatar_url: string | null;

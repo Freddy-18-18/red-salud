@@ -10,4 +10,4 @@ export * from './prescriptions.queries';
 export * from './prescriptions.mutations';
 
 // Tipos
-export * from '@red-salud/types' // TODO: ensure prescription types are in @red-salud/types;
+export type * from '@/types/prescriptions';

@@ -1,6 +1,5 @@
 export * from './constants';
-export * from './academy-navigation';
 export * from './medical-suggestions';
-export * from './medicos-content';
-export * from './pacientes-content';
+export { MEDICOS_FALLBACK_CONTENT } from './medicos-content';
+export { PACIENTES_FALLBACK_CONTENT } from './pacientes-content';
 export * from './venezuela-cities';

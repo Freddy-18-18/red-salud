@@ -7,7 +7,7 @@
  * Validates: Requirements 2.4, 7.5
  */
 
-import type { StorageService } from '../types';
+import type { StorageService } from '../../types';
 
 export class WebStorageService implements StorageService {
   private dbName = 'red-salud-medico';

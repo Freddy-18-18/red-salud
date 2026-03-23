@@ -178,14 +178,12 @@ export async function getPosts(options?: {
 
 export async function getPostById(postId: string) {
   try {
-    // Increment views
-    await supabase.rpc("increment_post_views", { post_id: postId }).catch(() => {
-      // Fallback: direct update if RPC doesn't exist
-      return supabase
-        .from("community_posts")
-        .update({ views: supabase.rpc("increment_post_views", { post_id: postId }) })
-        .eq("id", postId);
-    });
+    // Increment views (best-effort, ignore errors)
+    try {
+      await supabase.rpc("increment_post_views", { post_id: postId });
+    } catch {
+      // Silently ignore if RPC doesn't exist
+    }
 
     const { data, error } = await supabase
       .from("community_posts")
@@ -705,7 +703,7 @@ export async function getDailyTip() {
     );
     const index = dayOfYear % data.length;
 
-    return { success: true, data: data[index] as Partial<HealthArticle> };
+    return { success: true, data: data[index] as unknown as Partial<HealthArticle> };
   } catch (error) {
     console.error("Error fetching daily tip:", error);
     return { success: false, error, data: null };

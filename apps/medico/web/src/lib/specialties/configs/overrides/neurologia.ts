@@ -119,7 +119,7 @@ export const neurologiaOverride: SpecialtyConfigOverride = {
         label: 'Laboratorio / LCR',
         icon: 'FlaskConical',
         route: '/dashboard/medico/neurologia/laboratorio',
-        group: 'laboratory',
+        group: 'lab',
         order: 1,
         enabledByDefault: true,
         description: 'Análisis de LCR, biomarcadores, genética',

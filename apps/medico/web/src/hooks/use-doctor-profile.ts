@@ -6,7 +6,7 @@ import {
   updateDoctorProfile,
   getDoctorStats,
 } from '@/lib/services/doctors-service';
-import type { DoctorProfile, DoctorProfileFormData } from '@red-salud/types' // TODO: ensure DoctorProfile types exist;
+import type { DoctorProfile, DoctorProfileFormData } from '@/types/doctor';
 
 export function useDoctorProfile(userId?: string) {
   const [profile, setProfile] = useState<DoctorProfile | null>(null);

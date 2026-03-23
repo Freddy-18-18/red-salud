@@ -40,6 +40,10 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // Downgrade new React 19 rules to warnings until the codebase is migrated
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/purity': 'warn',
+      'react-hooks/immutability': 'warn',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

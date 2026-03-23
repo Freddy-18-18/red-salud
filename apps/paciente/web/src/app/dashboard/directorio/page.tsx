@@ -10,7 +10,7 @@ import { FilterPanel } from "@/components/directory/filter-panel";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonList } from "@/components/ui/skeleton";
 import { Search, Loader2 } from "lucide-react";
-import type { ProviderResult, ProviderType } from "@/lib/services/directory-service";
+import type { ProviderResult, ProviderType, DirectoryFilters } from "@/lib/services/directory-service";
 
 export default function DirectorioPage() {
   const router = useRouter();
@@ -218,11 +218,11 @@ function ActiveFiltersSummary({
   specialties,
   onRemove,
 }: {
-  filters: Record<string, unknown>;
+  filters: DirectoryFilters;
   specialties: { id: string; name: string }[];
-  onRemove: (key: string, value: unknown) => void;
+  onRemove: (key: keyof DirectoryFilters, value: unknown) => void;
 }) {
-  const badges: { key: string; label: string }[] = [];
+  const badges: { key: keyof DirectoryFilters; label: string }[] = [];
 
   if (filters.city) {
     badges.push({ key: "city", label: `Ciudad: ${filters.city}` });

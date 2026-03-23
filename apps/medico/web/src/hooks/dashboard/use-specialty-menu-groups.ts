@@ -4,7 +4,7 @@
 // ============================================
 
 import { useMemo } from 'react';
-import type { MenuGroup } from '@red-salud/types' // TODO: define MenuGroup type locally or in shared types;
+import type { MenuGroup } from '@/components/dashboard/layout/dashboard-sidebar';
 import {
   getSpecialtyExperienceConfig,
   getSpecialtyMenuGroups,

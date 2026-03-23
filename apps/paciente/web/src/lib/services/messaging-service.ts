@@ -171,7 +171,7 @@ export async function createConversation(
     return { success: true, data: { conversationId, message } };
   } catch (error) {
     console.error("Error creating conversation:", error);
-    return { success: false, error, data: null };
+    return { success: false, error: error instanceof Error ? error.message : String(error), data: null };
   }
 }
 

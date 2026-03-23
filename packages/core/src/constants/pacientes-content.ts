@@ -1,7 +1,7 @@
 // Contenido de respaldo en caso de que la base de datos falle o esté vacía
 // Esto asegura que la página nunca se rompa ni muestre "Lorem Ipsum"
 
-export const FALLBACK_CONTENT = {
+export const PACIENTES_FALLBACK_CONTENT = {
   stats: {
     patients: 0, // Default to 0 so we show "Próximamente" instead of fake numbers
     doctors: 0,

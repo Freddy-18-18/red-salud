@@ -5,7 +5,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { CalendarAppointment } from '@red-salud/types' // TODO: ensure CalendarAppointment types exist;
+// TODO: Move CalendarAppointment to @red-salud/types when available
+interface CalendarAppointment {
+  id: string;
+  title?: string;
+  description?: string;
+  start_time: string;
+  end_time: string;
+  patient_name?: string;
+  status?: string;
+  [key: string]: unknown;
+}
 
 interface GoogleCalendarStatus {
   connected: boolean;

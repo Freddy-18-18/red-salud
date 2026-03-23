@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 // TODO: Import these types from app-level or @red-salud/types
 type FormData = Record<string, any>;
-type TabComponentProps = { setFormData: (data: FormData) => void };
+type TabComponentProps = {
+  setFormData: (data: FormData) => void;
+  handleSave: (data: FormData) => Promise<{ success: boolean; error?: string }>;
+};
 
 export function useMedicalForm(
   formData: FormData,

@@ -121,7 +121,7 @@ export const traumatologiaOverride: SpecialtyConfigOverride = {
         label: 'Imagenología',
         icon: 'Scan',
         route: '/dashboard/medico/traumatologia/imagen',
-        group: 'laboratory',
+        group: 'lab',
         order: 1,
         enabledByDefault: true,
         description: 'Rx, TAC, RM, densitometría',

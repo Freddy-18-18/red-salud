@@ -12,7 +12,7 @@
  * Validates: Requirements 7.3, 9.2, 9.3
  */
 
-import type { NetworkService, RequestOptions } from '../types';
+import type { NetworkService, RequestOptions } from '../../types';
 
 /**
  * Network error types for better error handling

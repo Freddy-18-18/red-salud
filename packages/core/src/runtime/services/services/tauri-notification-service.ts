@@ -7,7 +7,7 @@
  * This is a stub implementation - will be fully implemented in Task 12.
  */
 
-import type { NotificationService } from '../types';
+import type { NotificationService } from '../../types';
 
 export class TauriNotificationService implements NotificationService {
   /**

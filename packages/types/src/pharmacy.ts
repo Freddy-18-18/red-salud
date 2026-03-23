@@ -421,7 +421,7 @@ export const auditLogSchema = z.object({
   action: z.string(),
   entity_type: z.string(),
   entity_id: z.string().optional(),
-  changes: z.record(z.any()).optional(),
+  changes: z.record(z.string(), z.any()).optional(),
   ip_address: z.string().optional(),
 
   created_at: z.date(),
@@ -507,7 +507,7 @@ export const reportSchema = z.object({
   type: z.nativeEnum(ReportType),
 
   title: z.string(),
-  parameters: z.record(z.any()).optional(),
+  parameters: z.record(z.string(), z.any()).optional(),
 
   generated_by: z.string().uuid(),
   warehouse_id: z.string().uuid().optional(),
@@ -515,7 +515,7 @@ export const reportSchema = z.object({
   start_date: z.date().optional(),
   end_date: z.date().optional(),
 
-  data: z.record(z.any()).optional(),
+  data: z.record(z.string(), z.any()).optional(),
 
   created_at: z.date(),
 });
@@ -1401,7 +1401,7 @@ export const lopdComplianceReportSchema = z.object({
 
   // Statistics
   total_events: z.number(),
-  events_by_type: z.record(z.number()),
+  events_by_type: z.record(z.string(), z.number()),
   events_by_user: z.array(z.object({
     user_id: z.string().uuid(),
     user_name: z.string(),
@@ -1773,7 +1773,7 @@ export const mobileReportSchema = z.object({
     chart_type: z.nativeEnum(ChartType),
     title: z.string(),
     data: z.array(z.any()),
-    config: z.record(z.any()).optional(),
+    config: z.record(z.string(), z.any()).optional(),
   })),
 
   // Export
@@ -1798,7 +1798,7 @@ export const chartDataSchema = z.object({
   chart_type: z.nativeEnum(ChartType),
   title: z.string(),
   data: z.array(z.any()),
-  config: z.record(z.any()).optional(),
+  config: z.record(z.string(), z.any()).optional(),
   created_at: z.date(),
 });
 
@@ -2014,7 +2014,7 @@ export const formSubmissionSchema = z.object({
   template_name: z.string(),
 
   // Data
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.any()),
   signature_data: z.string().optional(),
 
   // Status

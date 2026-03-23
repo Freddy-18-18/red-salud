@@ -127,12 +127,12 @@ export default function LabOrderDetailPage() {
               Dr. {order.doctor.nombre_completo}
             </div>
           )}
-          {(order.laboratory as Record<string, unknown>)?.name && (
+          {(order.laboratory as Record<string, unknown>)?.name ? (
             <div className="flex items-center gap-1">
               <Building2 className="h-4 w-4" />
-              {(order.laboratory as Record<string, unknown>).name as string}
+              {String((order.laboratory as Record<string, unknown>).name)}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 

@@ -6,7 +6,7 @@
  * This is a stub implementation - will be fully implemented in Task 11.
  */
 
-import type { PDFService, PDFResult } from '../types';
+import type { PDFService, PDFResult } from '../../types';
 
 export class TauriPDFService implements PDFService {
   /**

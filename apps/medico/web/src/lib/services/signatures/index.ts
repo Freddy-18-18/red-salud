@@ -4,7 +4,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
-import { DoctorSignature, CreateDoctorSignatureInput, UpdateDoctorSignatureInput, ServiceResponse } from '@/lib/supabase/types/prescriptions-advanced';
+import type { DoctorSignature, CreateDoctorSignatureInput, UpdateDoctorSignatureInput, ServiceResponse } from '@/types/prescriptions';
 
 // ============================================================================
 // SIGNATURE QUERIES

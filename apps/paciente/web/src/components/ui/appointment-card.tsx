@@ -104,7 +104,7 @@ export function AppointmentCard({
 
           {/* Actions */}
           <div className="flex items-center gap-2 mt-3">
-            {status === "upcoming" || status === "confirmed" || status === "pending" ? (
+            {status === "confirmed" || status === "pending" ? (
               <>
                 {onCancel && (
                   <button

@@ -132,7 +132,7 @@ export const oftalmologiaOverride: SpecialtyConfigOverride = {
         label: 'Diagnóstico por Imagen',
         icon: 'Scan',
         route: '/dashboard/medico/oftalmologia/diagnostico',
-        group: 'laboratory',
+        group: 'lab',
         order: 1,
         enabledByDefault: true,
         description: 'OCT, topografía corneal, biometría, ecografía ocular',

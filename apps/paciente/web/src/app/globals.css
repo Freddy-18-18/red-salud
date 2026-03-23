@@ -132,3 +132,36 @@
 .emergency-glow {
   animation: emergency-glow 2s ease-in-out infinite;
 }
+
+/* Print styles for medical ID card */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-card,
+  .printable-card * {
+    visibility: visible;
+  }
+  .printable-card {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 86mm;
+  }
+  .print\\:hidden {
+    display: none !important;
+  }
+  .print\\:shadow-none {
+    box-shadow: none !important;
+  }
+  .print\\:mt-0 {
+    margin-top: 0 !important;
+  }
+  nav,
+  aside,
+  header,
+  .safe-area-bottom {
+    display: none !important;
+  }
+}

@@ -99,7 +99,7 @@ export function useCurrentOffice() {
 
             // Si hay preferencia, buscar ese consultorio
             if (preference?.current_office_id) {
-                const office = offices.find(o => o.id === preference.current_office_id);
+                const office = offices.find((o: Record<string, unknown>) => o.id === preference.current_office_id);
                 if (office) {
                     setCurrentOffice(office);
                     setLoading(false);
@@ -108,7 +108,7 @@ export function useCurrentOffice() {
             }
 
             // Si no hay preferencia o el consultorio no existe, usar el principal o el primero
-            const defaultOffice = offices.find(o => o.es_principal) || offices[0];
+            const defaultOffice = offices.find((o: Record<string, unknown>) => o.es_principal) || offices[0];
             if (defaultOffice) {
                 setCurrentOffice(defaultOffice);
                 // Guardar preferencia si no existe
