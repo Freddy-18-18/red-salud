@@ -175,7 +175,7 @@ export const VisualRecipePreview = forwardRef<HTMLDivElement, VisualRecipePrevie
                                 return <TemplateWaves color={frameColor} className="absolute inset-0" />;
                             case 'tech-line':
                                 return <TemplateTech color={frameColor} className="absolute inset-0" />;
-                            default:
+                            default: {
                                 // Fallback for legacy image-based templates
                                 const templateImage = (() => {
                                     switch (templateId) {
@@ -198,6 +198,7 @@ export const VisualRecipePreview = forwardRef<HTMLDivElement, VisualRecipePrevie
                                         }}
                                     />
                                 );
+                            }
                         }
                     })()}
                 </div>
@@ -243,7 +244,7 @@ export const VisualRecipePreview = forwardRef<HTMLDivElement, VisualRecipePrevie
                     {/* Logo (Top Left) */}
                     {showLogo && logoUrl && (
                         <div style={{ top: layout.logoTop, left: layout.logoLeft, width: "165px", height: "93px", position: "absolute" }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {/* Using <img> intentionally for print/PDF rendering compatibility */}
                             <img
                                 src={logoUrl}
                                 alt="logo"
@@ -347,7 +348,7 @@ export const VisualRecipePreview = forwardRef<HTMLDivElement, VisualRecipePrevie
                         {/* Signature Image */}
                         {showSignature && signatureUrl && (
                             <div style={{ left: "50%", width: "180px", bottom: "122px", height: "70px", position: "absolute", transform: "translateX(-50%)" }}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                {/* Using <img> intentionally for print/PDF rendering compatibility */}
                                 <img
                                     src={signatureUrl}
                                     alt="signature"

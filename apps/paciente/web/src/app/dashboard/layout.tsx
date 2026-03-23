@@ -6,6 +6,7 @@ import { PatientNavbar } from "@/components/layout/patient-navbar";
 import { PatientSidebar } from "@/components/layout/patient-sidebar";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { getUnreadMessagesCount } from "@/lib/services/messaging-service";
+import { EmergencyButton } from "@/components/emergency/emergency-button";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [userName, setUserName] = useState<string>();
@@ -61,6 +62,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </main>
       </div>
       <MobileTabBar />
+      <EmergencyButton />
     </div>
   );
 }

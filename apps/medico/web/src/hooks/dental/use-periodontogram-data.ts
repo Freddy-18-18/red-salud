@@ -115,6 +115,7 @@ export function usePeriodontogramData(
   }, [user?.id, loadPatientHistory]);
 
   // Save exam (create or update)
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- Intentionally using stable deps for callback identity
   const saveExam = useCallback(async (
     examData: Omit<PerioExam, 'id' | 'created_at' | 'updated_at'>
   ) => {
@@ -187,8 +188,10 @@ export function usePeriodontogramData(
   // Initial load
   useEffect(() => {
     if (examId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Loading data on mount/param change
       loadExam(examId);
     } else if (patientId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Loading data on mount/param change
       loadLatestExam(patientId);
     }
   }, [examId, patientId, loadExam, loadLatestExam]);
@@ -223,6 +226,7 @@ export function usePerioStats(examData: PerioExam | null) {
     if (examData?.teeth) {
       const teeth = examData.teeth as Record<number, any>;
       const calculatedStats = calculatePerioStats(teeth);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Deriving computed stats from prop data
       setStats(calculatedStats);
     }
   }, [examData]);

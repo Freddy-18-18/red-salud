@@ -61,3 +61,74 @@
     opacity: 1;
   }
 }
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out;
+}
+
+/* Fade-in animation */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Bounce-in animation for level up celebrations */
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  80% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s ease-out;
+}
+
+/* Slide-down animation for notifications */
+@keyframes slide-down {
+  from {
+    transform: translateY(-0.5rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+/* Animate-in for emergency step transitions */
+.animate-in {
+  animation: fade-in 0.25s ease-out;
+}
+
+/* Emergency pulse glow */
+@keyframes emergency-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px 2px rgba(220, 38, 38, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px 6px rgba(220, 38, 38, 0.5);
+  }
+}
+
+.emergency-glow {
+  animation: emergency-glow 2s ease-in-out infinite;
+}

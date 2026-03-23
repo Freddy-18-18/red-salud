@@ -100,10 +100,16 @@ export default function ConsultaPage() {
         .eq('profile_id', user.id)
         .maybeSingle();
 
+      const especialidad = Array.isArray(details?.especialidad)
+        ? details.especialidad[0]
+        : details?.especialidad;
+      const profileData = Array.isArray(details?.profile)
+        ? details.profile[0]
+        : details?.profile;
       const config = getSpecialtyExperienceConfig({
-        specialtySlug: details?.especialidad?.slug ?? undefined,
-        specialtyName: details?.especialidad?.name ?? undefined,
-        sacsEspecialidad: details?.profile?.sacs_especialidad ?? undefined,
+        specialtySlug: especialidad?.slug ?? undefined,
+        specialtyName: especialidad?.name ?? undefined,
+        sacsEspecialidad: profileData?.sacs_especialidad ?? undefined,
       });
       setSpecialtyConfig(config);
     }

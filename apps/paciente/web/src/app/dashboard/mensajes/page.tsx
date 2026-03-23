@@ -88,9 +88,11 @@ export default function MensajesPage() {
   }, [userId]);
 
   useEffect(() => {
-    if (userId) {
-      loadConversations();
-    }
+    if (!userId) return;
+    const load = async () => {
+      await loadConversations();
+    };
+    load();
   }, [userId, loadConversations]);
 
   const handleSelectConversation = async (conversation: Conversation) => {

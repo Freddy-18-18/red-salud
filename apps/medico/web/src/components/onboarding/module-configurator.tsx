@@ -346,6 +346,7 @@ export function ModuleConfigurator({
     ];
 
     onModulesChange(defaultIds);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- One-time initialization flag
     setInitialized(true);
   }, [toggleableModules, initialized, onModulesChange]);
 

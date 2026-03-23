@@ -123,6 +123,7 @@ interface UseModuleContextResult {
 export function useModuleContext(
   params: Parameters<typeof buildRuntimeContext>[0]
 ): UseModuleContextResult {
+  /* eslint-disable react-hooks/preserve-manual-memoization -- Intentionally using destructured properties for fine-grained memoization */
   const context = useMemo(
     () => buildRuntimeContext(params),
     [
@@ -141,6 +142,7 @@ export function useModuleContext(
       params.platform,
     ]
   );
+  /* eslint-enable react-hooks/preserve-manual-memoization */
 
   const { mountable, excluded } = useMemo(
     () => getModulesForContext(context),

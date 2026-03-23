@@ -57,12 +57,12 @@ export type {
   NotificationAction,
 } from './types';
 
-// Export service implementations for testing
-export { TauriStorageService } from './services/tauri-storage-service';
-export { WebStorageService } from './services/web-storage-service';
-export { TauriNetworkService } from './services/tauri-network-service';
-export { WebNetworkService } from './services/web-network-service';
-export { TauriPDFService } from './services/tauri-pdf-service';
-export { WebPDFService } from './services/web-pdf-service';
-export { TauriNotificationService } from './services/tauri-notification-service';
-export { WebNotificationService } from './services/web-notification-service';
+// Export web service implementations (always available)
+export { WebStorageService } from './services/services/web-storage-service';
+export { WebNetworkService } from './services/services/web-network-service';
+export { WebPDFService } from './services/services/web-pdf-service';
+export { WebNotificationService } from './services/services/web-notification-service';
+
+// Tauri service implementations are NOT exported statically to avoid
+// bundling @tauri-apps/api in web-only builds. Use dynamic import:
+//   const { TauriStorageService } = await import('@red-salud/core/runtime/services/services/tauri-storage-service');

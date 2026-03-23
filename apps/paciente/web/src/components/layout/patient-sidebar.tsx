@@ -10,6 +10,7 @@ import {
   MessageSquare,
   User,
   FileText,
+  Trophy,
   type LucideIcon,
 } from "lucide-react";
 
@@ -28,6 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Historial", href: "/dashboard/historial", icon: Clock },
   { label: "Recetas", href: "/dashboard/recetas", icon: FileText },
   { label: "Mensajes", href: "/dashboard/mensajes", icon: MessageSquare },
+  { label: "Recompensas", href: "/dashboard/recompensas", icon: Trophy },
   { label: "Mi Perfil", href: "/dashboard/perfil", icon: User },
 ];
 

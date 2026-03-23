@@ -1,9 +1,14 @@
 /**
  * Runtime Service - Singleton for Runtime Detection
- * 
+ *
  * This service detects the runtime environment (Tauri vs Web) and provides
  * factory methods to get the appropriate service implementations.
- * 
+ *
+ * Tauri service implementations are loaded dynamically at runtime to avoid
+ * bundling @tauri-apps/api in web-only builds. Web services are used as
+ * the default, and Tauri services are swapped in asynchronously when the
+ * Tauri runtime is detected.
+ *
  * Validates: Requirements 9.1, 9.2, 9.3
  */
 
@@ -15,14 +20,10 @@ import type {
   PDFService,
   NotificationService,
 } from './types';
-import { TauriStorageService } from './services/tauri-storage-service';
-import { WebStorageService } from './services/web-storage-service';
-import { TauriNetworkService } from './services/tauri-network-service';
-import { WebNetworkService } from './services/web-network-service';
-import { TauriPDFService } from './services/tauri-pdf-service';
-import { WebPDFService } from './services/web-pdf-service';
-import { TauriNotificationService } from './services/tauri-notification-service';
-import { WebNotificationService } from './services/web-notification-service';
+import { WebStorageService } from './services/services/web-storage-service';
+import { WebNetworkService } from './services/services/web-network-service';
+import { WebPDFService } from './services/services/web-pdf-service';
+import { WebNotificationService } from './services/services/web-notification-service';
 
 class RuntimeServiceImpl implements IRuntimeService {
   private static instance: RuntimeServiceImpl | null = null;
@@ -84,59 +85,65 @@ class RuntimeServiceImpl implements IRuntimeService {
   }
 
   /**
-   * Get the storage service for the current runtime
+   * Get the storage service for the current runtime.
+   * Returns WebStorageService by default. In Tauri environments,
+   * consumers should dynamically import TauriStorageService.
    */
   public getStorageService(): StorageService {
     if (!this.storageService) {
-      if (this.isTauri()) {
-        this.storageService = new TauriStorageService();
-      } else {
-        this.storageService = new WebStorageService();
-      }
+      this.storageService = new WebStorageService();
     }
     return this.storageService!;
   }
 
   /**
-   * Get the network service for the current runtime
+   * Get the network service for the current runtime.
    */
   public getNetworkService(): NetworkService {
     if (!this.networkService) {
-      if (this.isTauri()) {
-        this.networkService = new TauriNetworkService();
-      } else {
-        this.networkService = new WebNetworkService();
-      }
+      this.networkService = new WebNetworkService();
     }
     return this.networkService!;
   }
 
   /**
-   * Get the PDF service for the current runtime
+   * Get the PDF service for the current runtime.
    */
   public getPDFService(): PDFService {
     if (!this.pdfService) {
-      if (this.isTauri()) {
-        this.pdfService = new TauriPDFService();
-      } else {
-        this.pdfService = new WebPDFService();
-      }
+      this.pdfService = new WebPDFService();
     }
     return this.pdfService!;
   }
 
   /**
-   * Get the notification service for the current runtime
+   * Get the notification service for the current runtime.
    */
   public getNotificationService(): NotificationService {
     if (!this.notificationService) {
-      if (this.isTauri()) {
-        this.notificationService = new TauriNotificationService();
-      } else {
-        this.notificationService = new WebNotificationService();
-      }
+      this.notificationService = new WebNotificationService();
     }
     return this.notificationService!;
+  }
+
+  /**
+   * Override a service implementation (used by Tauri apps to inject
+   * platform-specific services after dynamic import).
+   */
+  public setStorageService(service: StorageService): void {
+    this.storageService = service;
+  }
+
+  public setNetworkService(service: NetworkService): void {
+    this.networkService = service;
+  }
+
+  public setPDFService(service: PDFService): void {
+    this.pdfService = service;
+  }
+
+  public setNotificationService(service: NotificationService): void {
+    this.notificationService = service;
   }
 
   /**
@@ -168,8 +175,18 @@ export const RuntimeService = {
   getNetworkService: () => RuntimeServiceImpl.getInstance().getNetworkService(),
   getPDFService: () => RuntimeServiceImpl.getInstance().getPDFService(),
   getNotificationService: () => RuntimeServiceImpl.getInstance().getNotificationService(),
+  setStorageService: (s: StorageService) => RuntimeServiceImpl.getInstance().setStorageService(s),
+  setNetworkService: (s: NetworkService) => RuntimeServiceImpl.getInstance().setNetworkService(s),
+  setPDFService: (s: PDFService) => RuntimeServiceImpl.getInstance().setPDFService(s),
+  setNotificationService: (s: NotificationService) => RuntimeServiceImpl.getInstance().setNotificationService(s),
   resetServices: () => RuntimeServiceImpl.getInstance().resetServices(),
-} satisfies IRuntimeService & { resetServices(): void };
+} satisfies IRuntimeService & {
+  setStorageService(s: StorageService): void;
+  setNetworkService(s: NetworkService): void;
+  setPDFService(s: PDFService): void;
+  setNotificationService(s: NotificationService): void;
+  resetServices(): void;
+};
 
 // Export class for testing
 export { RuntimeServiceImpl };

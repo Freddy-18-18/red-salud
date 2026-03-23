@@ -6,7 +6,7 @@ const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/callback', '/a
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  let supabaseResponse = NextResponse.next({ request });
+  const supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

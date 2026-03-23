@@ -18,7 +18,7 @@
     "@tanstack/react-query": "^5.64.0",
     "@red-salud/types": "workspace:*",
     "@red-salud/contracts": "workspace:*",
-    "@red-salud/ui": "workspace:*",
+    "@red-salud/design-system": "workspace:*",
     "@red-salud/core": "workspace:*",
     "@red-salud/auth-sdk": "workspace:*",
     "@red-salud/api-client": "workspace:*",

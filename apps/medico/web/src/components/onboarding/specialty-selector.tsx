@@ -94,6 +94,7 @@ export function SpecialtySelector({ value, onChange, error }: SpecialtySelectorP
   // Auto-expand categories when searching
   useEffect(() => {
     if (search) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing UI state with search filter
       setExpandedCategories(new Set(grouped.keys()));
     }
   }, [search, grouped]);

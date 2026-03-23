@@ -62,6 +62,7 @@ export default function ConfiguracionPage() {
   // Populate form from profile
   useEffect(() => {
     if (!profile) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing external data into local form state
     setFormData({
       bio: profile.bio ?? '',
       professional_phone: profile.professional_phone ?? '',
@@ -180,7 +181,7 @@ export default function ConfiguracionPage() {
             <div className="relative">
               <div className="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-2xl font-bold">
                 {profile?.nombre_completo
-                  ? profile.nombre_completo.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                  ? profile.nombre_completo.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
                   : 'DR'
                 }
               </div>

@@ -49,6 +49,7 @@ export function useSpecialtyMenuGroups(
   dashboardRoute: string;
   specialtyConfig: ReturnType<typeof getSpecialtyExperienceConfig>;
 } {
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- Intentionally using destructured properties for fine-grained memoization
   return useMemo(() => {
     // Determine dashboard route
     const dashboardRoute =
@@ -219,9 +220,7 @@ export function hasSecretaryPermissions(
 /**
  * Get available specialty IDs for debugging
  */
-export function getAvailableSpecialtyIds(): string[] {
-  const {
-    getAllSpecialties,
-  } = require('@/lib/specialties/core/registry');
+export async function getAvailableSpecialtyIds(): Promise<string[]> {
+  const { getAllSpecialties } = await import('@/lib/specialties/core/registry');
   return getAllSpecialties().map((s: { id: string }) => s.id);
 }

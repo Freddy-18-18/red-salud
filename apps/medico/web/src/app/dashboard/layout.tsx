@@ -32,11 +32,17 @@ export default async function DashboardLayout({
     .eq('profile_id', user.id)
     .maybeSingle();
 
-  const doctorName = doctorDetails?.profile?.nombre_completo ?? user.email ?? 'Doctor';
-  const specialtyName = doctorDetails?.especialidad?.name ?? 'Medicina General';
-  const specialtySlug = doctorDetails?.especialidad?.slug ?? null;
-  const avatarUrl = doctorDetails?.profile?.avatar_url ?? null;
-  const sacsEspecialidad = doctorDetails?.profile?.sacs_especialidad ?? null;
+  const especialidad = Array.isArray(doctorDetails?.especialidad)
+    ? doctorDetails.especialidad[0]
+    : doctorDetails?.especialidad;
+  const profileData = Array.isArray(doctorDetails?.profile)
+    ? doctorDetails.profile[0]
+    : doctorDetails?.profile;
+  const doctorName = profileData?.nombre_completo ?? user.email ?? 'Doctor';
+  const specialtyName = especialidad?.name ?? 'Medicina General';
+  const specialtySlug = especialidad?.slug ?? null;
+  const avatarUrl = profileData?.avatar_url ?? null;
+  const sacsEspecialidad = profileData?.sacs_especialidad ?? null;
 
   return (
     <DashboardShell

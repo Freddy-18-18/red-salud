@@ -14,9 +14,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 import {
     getSmartSuggestions,
     getInitialSuggestions
@@ -24,8 +23,7 @@ import {
 
 export async function GET(request: NextRequest) {
     try {
-        const cookieStore = cookies();
-        const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+        const supabase = await createClient();
 
         // Verificar autenticación
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -108,8 +106,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
     try {
-        const cookieStore = cookies();
-        const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+        const supabase = await createClient();
 
         // Verificar autenticación
         const { data: { user }, error: authError } = await supabase.auth.getUser();
