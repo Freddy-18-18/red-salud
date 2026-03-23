@@ -185,7 +185,9 @@ export function useMedicationReminders(patientId: string | undefined) {
   };
 
   useEffect(() => {
-    if (patientId) refresh();
+    if (!patientId) return;
+    const load = async () => { await refresh(); };
+    load();
   }, [patientId, refresh]);
 
   return { reminders, loading, refresh, add, remove };
@@ -228,7 +230,9 @@ export function useHealthMetrics(patientId: string | undefined) {
   };
 
   useEffect(() => {
-    if (patientId) refresh();
+    if (!patientId) return;
+    const load = async () => { await refresh(); };
+    load();
   }, [patientId, refresh]);
 
   return { metricTypes, latestMetrics, loading, refresh, log, getHistory };

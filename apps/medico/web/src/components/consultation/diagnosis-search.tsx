@@ -41,7 +41,7 @@ export function DiagnosisSearch({
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click

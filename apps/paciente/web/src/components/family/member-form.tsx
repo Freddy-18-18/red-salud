@@ -26,38 +26,20 @@ interface MemberFormProps {
 export function MemberForm({ member, onSubmit, onClose, saving }: MemberFormProps) {
   const isEditing = Boolean(member);
 
-  const [fullName, setFullName] = useState("");
-  const [relationship, setRelationship] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
-  const [gender, setGender] = useState("");
-  const [bloodType, setBloodType] = useState("");
-  const [nationalId, setNationalId] = useState("");
-  const [allergies, setAllergies] = useState<string[]>([]);
-  const [chronicConditions, setChronicConditions] = useState<string[]>([]);
-  const [medications, setMedications] = useState<Medication[]>([]);
-  const [emergencyName, setEmergencyName] = useState("");
-  const [emergencyPhone, setEmergencyPhone] = useState("");
-  const [emergencyRelationship, setEmergencyRelationship] = useState("");
+  const [fullName, setFullName] = useState(member?.full_name ?? "");
+  const [relationship, setRelationship] = useState(member?.relationship ?? "");
+  const [dateOfBirth, setDateOfBirth] = useState(member?.date_of_birth ?? "");
+  const [gender, setGender] = useState(member?.gender ?? "");
+  const [bloodType, setBloodType] = useState(member?.blood_type ?? "");
+  const [nationalId, setNationalId] = useState(member?.national_id ?? "");
+  const [allergies, setAllergies] = useState<string[]>(member?.allergies ?? []);
+  const [chronicConditions, setChronicConditions] = useState<string[]>(member?.chronic_conditions ?? []);
+  const [medications, setMedications] = useState<Medication[]>(member?.current_medications ?? []);
+  const [emergencyName, setEmergencyName] = useState(member?.emergency_contact?.name ?? "");
+  const [emergencyPhone, setEmergencyPhone] = useState(member?.emergency_contact?.phone ?? "");
+  const [emergencyRelationship, setEmergencyRelationship] = useState(member?.emergency_contact?.relationship ?? "");
 
   const [validationError, setValidationError] = useState<string | null>(null);
-
-  // Populate form when editing
-  useEffect(() => {
-    if (member) {
-      setFullName(member.full_name);
-      setRelationship(member.relationship);
-      setDateOfBirth(member.date_of_birth ?? "");
-      setGender(member.gender ?? "");
-      setBloodType(member.blood_type ?? "");
-      setNationalId(member.national_id ?? "");
-      setAllergies(member.allergies);
-      setChronicConditions(member.chronic_conditions);
-      setMedications(member.current_medications);
-      setEmergencyName(member.emergency_contact?.name ?? "");
-      setEmergencyPhone(member.emergency_contact?.phone ?? "");
-      setEmergencyRelationship(member.emergency_contact?.relationship ?? "");
-    }
-  }, [member]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

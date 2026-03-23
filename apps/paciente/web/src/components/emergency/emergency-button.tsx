@@ -33,20 +33,23 @@ export function EmergencyButton() {
   // Clean up on unmount
   useEffect(() => clearTimers, [clearTimers]);
 
-  const animateProgress = useCallback(() => {
-    const elapsed = Date.now() - startTimeRef.current;
-    const pct = Math.min(elapsed / LONG_PRESS_MS, 1);
-    setProgress(pct);
-    if (pct < 1) {
-      animRef.current = requestAnimationFrame(animateProgress);
-    }
+  const startAnimation = useCallback(() => {
+    const tick = () => {
+      const elapsed = Date.now() - startTimeRef.current;
+      const pct = Math.min(elapsed / LONG_PRESS_MS, 1);
+      setProgress(pct);
+      if (pct < 1) {
+        animRef.current = requestAnimationFrame(tick);
+      }
+    };
+    tick();
   }, []);
 
   const onPressStart = useCallback(() => {
     setPressing(true);
     setProgress(0);
     startTimeRef.current = Date.now();
-    animateProgress();
+    startAnimation();
 
     timerRef.current = setTimeout(() => {
       // Long-press threshold met — navigate
@@ -55,7 +58,7 @@ export function EmergencyButton() {
       clearTimers();
       router.push("/dashboard/emergencia");
     }, LONG_PRESS_MS);
-  }, [router, clearTimers, animateProgress]);
+  }, [router, clearTimers, startAnimation]);
 
   const onPressEnd = useCallback(() => {
     setPressing(false);

@@ -193,6 +193,19 @@ export function useEmergency(userId: string | undefined) {
     setLocation(loc);
   }, []);
 
+  const reset = useCallback(() => {
+    unsubRef.current?.();
+    unsubRef.current = null;
+    setStep("idle");
+    setSelectedPerson(null);
+    setPriority(null);
+    setSymptoms("");
+    setLocation(null);
+    setActiveRequest(null);
+    setError(null);
+    setLoading(false);
+  }, []);
+
   const submitRequest = useCallback(async () => {
     if (!userId || !priority || !location) return;
 
@@ -237,7 +250,7 @@ export function useEmergency(userId: string | undefined) {
     }
 
     setLoading(false);
-  }, [userId, priority, location, symptoms, selectedPerson]);
+  }, [userId, priority, location, symptoms, selectedPerson, reset]);
 
   const cancelRequest = useCallback(async () => {
     if (!activeRequest || !userId) return;
@@ -251,20 +264,7 @@ export function useEmergency(userId: string | undefined) {
       setError("No se pudo cancelar la solicitud.");
     }
     setLoading(false);
-  }, [activeRequest, userId]);
-
-  const reset = useCallback(() => {
-    unsubRef.current?.();
-    unsubRef.current = null;
-    setStep("idle");
-    setSelectedPerson(null);
-    setPriority(null);
-    setSymptoms("");
-    setLocation(null);
-    setActiveRequest(null);
-    setError(null);
-    setLoading(false);
-  }, []);
+  }, [activeRequest, userId, reset]);
 
   const loadHistory = useCallback(async () => {
     if (!userId) return;
