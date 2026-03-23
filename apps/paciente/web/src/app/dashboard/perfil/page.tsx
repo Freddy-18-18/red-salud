@@ -6,8 +6,22 @@ import { MedicalInfoCard } from "@/components/paciente/configuracion/MedicalInfo
 import { NotificationsCard } from "@/components/paciente/configuracion/NotificationsCard";
 import { PreferencesCard } from "@/components/paciente/configuracion/PreferencesCard";
 import { PrivacyCard } from "@/components/paciente/configuracion/PrivacyCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { User, Heart, Bell, Settings, Shield } from "lucide-react";
+import { useState } from "react";
+
+type Section = "personal" | "medical" | "notifications" | "preferences" | "privacy";
+
+const SECTIONS: { id: Section; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { id: "personal", label: "Personal", icon: User },
+  { id: "medical", label: "Medica", icon: Heart },
+  { id: "notifications", label: "Notificaciones", icon: Bell },
+  { id: "preferences", label: "Preferencias", icon: Settings },
+  { id: "privacy", label: "Privacidad", icon: Shield },
+];
 
 export default function PerfilPage() {
+  const [activeSection, setActiveSection] = useState<Section>("personal");
   const {
     loading,
     saving,
@@ -31,60 +45,101 @@ export default function PerfilPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-gray-500">Cargando perfil...</p>
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="flex gap-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-24 rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="h-64 w-full rounded-xl" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <h1 className="text-2xl font-bold">Mi Perfil</h1>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Mi Perfil</h1>
+        <p className="text-gray-500 mt-1">Gestiona tu informacion personal y preferencias</p>
+      </div>
 
+      {/* Success/error message */}
       {message && (
-        <div className={`p-3 rounded-lg text-sm ${
+        <div className={`p-4 rounded-xl text-sm font-medium ${
           message.type === "success"
-            ? "bg-green-50 border border-green-200 text-green-700"
+            ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
             : "bg-red-50 border border-red-200 text-red-700"
         }`}>
           {message.text}
         </div>
       )}
 
-      <ProfileCard
-        profile={profile}
-        setProfile={setProfile}
-        saving={saving}
-        onSave={saveProfile}
-      />
+      {/* Section tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {SECTIONS.map((section) => {
+          const Icon = section.icon;
+          return (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap ${
+                activeSection === section.id
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {section.label}
+            </button>
+          );
+        })}
+      </div>
 
-      <MedicalInfoCard
-        details={patientDetails}
-        setDetails={setPatientDetails}
-        saving={saving}
-        onSave={savePatientDetails}
-      />
-
-      <NotificationsCard
-        notifications={notifications}
-        setNotifications={setNotifications}
-        saving={saving}
-        onSave={saveNotifications}
-      />
-
-      <PreferencesCard
-        preferences={preferences}
-        setPreferences={setPreferences}
-        saving={saving}
-        onSave={savePreferences}
-      />
-
-      <PrivacyCard
-        privacy={privacy}
-        setPrivacy={setPrivacy}
-        saving={saving}
-        onSave={savePrivacy}
-      />
+      {/* Content */}
+      <div className="max-w-3xl">
+        {activeSection === "personal" && (
+          <ProfileCard
+            profile={profile}
+            setProfile={setProfile}
+            saving={saving}
+            onSave={saveProfile}
+          />
+        )}
+        {activeSection === "medical" && (
+          <MedicalInfoCard
+            details={patientDetails}
+            setDetails={setPatientDetails}
+            saving={saving}
+            onSave={savePatientDetails}
+          />
+        )}
+        {activeSection === "notifications" && (
+          <NotificationsCard
+            notifications={notifications}
+            setNotifications={setNotifications}
+            saving={saving}
+            onSave={saveNotifications}
+          />
+        )}
+        {activeSection === "preferences" && (
+          <PreferencesCard
+            preferences={preferences}
+            setPreferences={setPreferences}
+            saving={saving}
+            onSave={savePreferences}
+          />
+        )}
+        {activeSection === "privacy" && (
+          <PrivacyCard
+            privacy={privacy}
+            setPrivacy={setPrivacy}
+            saving={saving}
+            onSave={savePrivacy}
+          />
+        )}
+      </div>
     </div>
   );
 }

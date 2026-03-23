@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { DashboardShell } from './dashboard-shell';
 
 export default async function DashboardLayout({
   children,
@@ -15,40 +16,38 @@ export default async function DashboardLayout({
     redirect('/auth/login');
   }
 
+  // Fetch doctor profile for the sidebar
+  const { data: doctorDetails } = await supabase
+    .from('doctor_details')
+    .select(`
+      profile_id,
+      especialidad_id,
+      especialidad:specialties(id, name, slug, icon),
+      profile:profiles!doctor_details_profile_id_fkey(
+        nombre_completo,
+        avatar_url,
+        sacs_especialidad
+      )
+    `)
+    .eq('profile_id', user.id)
+    .maybeSingle();
+
+  const doctorName = doctorDetails?.profile?.nombre_completo ?? user.email ?? 'Doctor';
+  const specialtyName = doctorDetails?.especialidad?.name ?? 'Medicina General';
+  const specialtySlug = doctorDetails?.especialidad?.slug ?? null;
+  const avatarUrl = doctorDetails?.profile?.avatar_url ?? null;
+  const sacsEspecialidad = doctorDetails?.profile?.sacs_especialidad ?? null;
+
   return (
-    <div className="flex min-h-screen">
-      {/* TODO: Add DashboardSidebar with specialty-aware menu groups */}
-      {/* Use getSpecialtyMenuGroups() from @/lib/specialties to build navigation */}
-      <aside className="w-64 border-r bg-gray-50 p-4">
-        <nav className="space-y-2">
-          <h2 className="text-lg font-semibold mb-4">Consultorio</h2>
-          <a href="/dashboard" className="block px-3 py-2 rounded hover:bg-gray-100">
-            Inicio
-          </a>
-          <a href="/dashboard/agenda" className="block px-3 py-2 rounded hover:bg-gray-100">
-            Agenda
-          </a>
-          <a href="/dashboard/pacientes" className="block px-3 py-2 rounded hover:bg-gray-100">
-            Pacientes
-          </a>
-          <a href="/dashboard/consulta" className="block px-3 py-2 rounded hover:bg-gray-100">
-            Consulta
-          </a>
-          <a href="/dashboard/recetas" className="block px-3 py-2 rounded hover:bg-gray-100">
-            Recetas
-          </a>
-          <a href="/dashboard/estadisticas" className="block px-3 py-2 rounded hover:bg-gray-100">
-            Estadísticas
-          </a>
-          <a href="/dashboard/verificacion" className="block px-3 py-2 rounded hover:bg-gray-100">
-            Verificación SACS
-          </a>
-          <a href="/dashboard/configuracion" className="block px-3 py-2 rounded hover:bg-gray-100">
-            Configuración
-          </a>
-        </nav>
-      </aside>
-      <main className="flex-1 p-6">{children}</main>
-    </div>
+    <DashboardShell
+      userId={user.id}
+      doctorName={doctorName}
+      specialtyName={specialtyName}
+      specialtySlug={specialtySlug}
+      avatarUrl={avatarUrl}
+      sacsEspecialidad={sacsEspecialidad}
+    >
+      {children}
+    </DashboardShell>
   );
 }

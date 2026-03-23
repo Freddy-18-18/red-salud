@@ -3,7 +3,8 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Red Salud - Portal del Paciente',
-  description: 'Tu salud en un solo lugar - citas, historial, mensajería con tu doctor',
+  description: 'Tu salud en un solo lugar. Busca tu medico, agenda tu cita y cuida tu salud.',
+  keywords: ['salud', 'medico', 'citas', 'paciente', 'Venezuela'],
 };
 
 export default function RootLayout({
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body className="min-h-screen bg-white text-gray-900 antialiased">
+        {children}
+      </body>
     </html>
   );
 }

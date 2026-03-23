@@ -1,10 +1,10 @@
+import { LoginForm } from '@/components/auth/login-form';
+
 export default function LoginPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md p-8 space-y-6">
-        <h1 className="text-2xl font-bold text-center">Iniciar Sesión</h1>
-        <p className="text-center text-gray-500">Red Salud — Consultorio Médico</p>
-        {/* Auth form will be implemented here */}
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-white p-4">
+      <div className="w-full max-w-md">
+        <LoginForm />
       </div>
     </main>
   );
