@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
+// Force dynamic rendering for all pages since they require Supabase auth
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Red Salud - Portal del Paciente',
   description: 'Tu salud en un solo lugar. Busca tu medico, agenda tu cita y cuida tu salud.',
