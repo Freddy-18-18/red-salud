@@ -1,9 +1,24 @@
 packages:
-  - 'apps/*'
-  - 'apps/medico/packages/*'
-  - 'apps/paciente/web'
-  - 'apps/paciente/desktop'
-  - 'apps/paciente/packages/*'
+  # Shared packages
   - 'packages/*'
-  - 'services/*'
 
+  # Web apps (Next.js)
+  - 'apps/farmacia/web'
+  - 'apps/medico/web'
+  - 'apps/paciente/web'
+  - 'apps/clinica/web'
+  - 'apps/laboratorio/web'
+  - 'apps/secretaria/web'
+  - 'apps/seguro/web'
+  - 'apps/ambulancia/web'
+  - 'apps/academia/web'
+
+  # Desktop apps (Tauri frontend)
+  - 'apps/farmacia/desktop'
+  - 'apps/medico/desktop'
+  - 'apps/clinica/desktop'
+  - 'apps/laboratorio/desktop'
+  - 'apps/secretaria/desktop'
+
+  # NOTE: Flutter apps are NOT pnpm workspaces (they use pub)
+  # NOTE: Rust services are NOT pnpm workspaces (they use cargo)

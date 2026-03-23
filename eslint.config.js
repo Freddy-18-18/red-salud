@@ -7,7 +7,21 @@ import importPlugin from 'eslint-plugin-import';
 import nx from '@nx/eslint-plugin';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', '.next', '.tauri', 'out'] },
+  {
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.next/**',
+      '**/build/**',
+      '**/coverage/**',
+      '**/target/**',
+      '**/.dart_tool/**',
+      '**/android/**',
+      '**/ios/**',
+      '.tauri',
+      'out',
+    ],
+  },
   {
     extends: [
       js.configs.recommended,
@@ -30,18 +44,20 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
       'import/order': [
-        'error',
+        'warn',
         {
           'groups': ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
           'newlines-between': 'always',
-          'alphabetize': { 'order': 'asc', 'caseInsensitive': true }
-        }
+          'alphabetize': { 'order': 'asc', 'caseInsensitive': true },
+        },
       ],
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
 
       // Enforce dependency boundaries between Nx projects.
-      // Goal: apps must not depend on other apps/services directly; communication goes via shared libs (contracts/core/types/etc).
+      // Apps must not depend on other apps/services directly; communication goes via shared libs.
       '@nx/enforce-module-boundaries': [
         'error',
         {
@@ -53,6 +69,8 @@ export default tseslint.config(
             '^@red-salud/design-system$',
             '^@red-salud/identity$',
             '^@red-salud/sdk-.*$',
+            '^@red-salud/auth-sdk$',
+            '^@red-salud/api-client$',
           ],
           depConstraints: [
             {

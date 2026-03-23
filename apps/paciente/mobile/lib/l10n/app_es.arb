@@ -1,0 +1,8 @@
+{
+  "@@locale": "es",
+  "appTitle": "Red Salud - Portal del Paciente",
+  "login": "Iniciar Sesión",
+  "logout": "Cerrar Sesión",
+  "email": "Correo electrónico",
+  "password": "Contraseña"
+}

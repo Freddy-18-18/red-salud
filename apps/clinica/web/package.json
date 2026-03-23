@@ -1,0 +1,37 @@
+{
+  "name": "@red-salud/clinica-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack --port 3004",
+    "build": "next build",
+    "start": "next start --port 3004",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@supabase/supabase-js": "^2.49.0",
+    "@supabase/ssr": "^0.6.0",
+    "@tanstack/react-query": "^5.64.0",
+    "@red-salud/types": "workspace:*",
+    "@red-salud/contracts": "workspace:*",
+    "@red-salud/ui": "workspace:*",
+    "@red-salud/core": "workspace:*",
+    "@red-salud/auth-sdk": "workspace:*",
+    "@red-salud/api-client": "workspace:*",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "lucide-react": "^0.474.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/node": "^22.0.0",
+    "vitest": "^3.0.0"
+  }
+}

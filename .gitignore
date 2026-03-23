@@ -167,3 +167,23 @@ testsprite_tests/*.html
 
 # Windows temp
 nul
+
+# ========================
+# Rust (services)
+# ========================
+**/*.rs.bk
+
+# ========================
+# Flutter (additional)
+# ========================
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/pubspec.lock
+
+# ========================
+# Infrastructure
+# ========================
+*.tfstate
+*.tfstate.backup
+.terraform/

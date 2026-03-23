@@ -1,15 +1,11 @@
-# Tauri (desktop app - not needed for web deployment)
-src-tauri/
-src-tauricapabilities/
-src-tauriicons/
-src-taurisrc/
+# Desktop apps (Tauri - deployed separately)
+apps/*/desktop/
 
-# Flutter mobile app
-red_salud_medico_mobile/
+# Mobile apps (Flutter - deployed separately)
+apps/*/mobile/
 
-# Microservices (deployed separately)
-bcv-rate-service/
-sacs-verification-service/
+# Rust services (deployed separately)
+services/
 
 # Large video files
 public/videos/

@@ -1,3 +1,37 @@
 {
-  "extends": "./tsconfig.json"
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": false,
+    "paths": {
+      "@red-salud/types": ["./packages/types/src/index.ts"],
+      "@red-salud/types/*": ["./packages/types/src/*"],
+      "@red-salud/contracts": ["./packages/contracts/src/index.ts"],
+      "@red-salud/contracts/*": ["./packages/contracts/src/*"],
+      "@red-salud/ui": ["./packages/ui/src/index.ts"],
+      "@red-salud/ui/*": ["./packages/ui/src/*"],
+      "@red-salud/core": ["./packages/core/src/index.ts"],
+      "@red-salud/core/*": ["./packages/core/src/*"],
+      "@red-salud/auth-sdk": ["./packages/auth-sdk/src/index.ts"],
+      "@red-salud/auth-sdk/*": ["./packages/auth-sdk/src/*"],
+      "@red-salud/api-client": ["./packages/api-client/src/index.ts"],
+      "@red-salud/api-client/*": ["./packages/api-client/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".next", "build", "coverage"]
 }
