@@ -104,6 +104,7 @@ export default function DirectorioPage() {
         <div className="flex-1">
           <SearchBar value={query} onChange={setQuery} />
         </div>
+        {/* Mobile-only filter trigger (hidden on lg+) */}
         <FilterPanel
           filters={filters}
           providerType={providerType}
@@ -112,6 +113,7 @@ export default function DirectorioPage() {
           onReset={resetFilters}
           open={showFilters}
           onToggle={() => setShowFilters(!showFilters)}
+          mode="mobile-only"
         />
       </div>
 
@@ -130,7 +132,7 @@ export default function DirectorioPage() {
 
       {/* Content area with desktop filter sidebar */}
       <div className="flex gap-6">
-        {/* Desktop sidebar (rendered inside FilterPanel) */}
+        {/* Desktop-only sidebar (hidden below lg) */}
         <FilterPanel
           filters={filters}
           providerType={providerType}
@@ -139,6 +141,7 @@ export default function DirectorioPage() {
           onReset={resetFilters}
           open={false}
           onToggle={() => {}}
+          mode="desktop-only"
         />
 
         {/* Results */}

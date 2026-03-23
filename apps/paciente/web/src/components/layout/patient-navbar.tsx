@@ -6,20 +6,27 @@ import { supabase } from "@/lib/supabase/client";
 import {
   Heart,
   Search,
-  Bell,
+  MessageSquare,
   LogOut,
   User,
   Settings,
   ChevronDown,
 } from "lucide-react";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 interface PatientNavbarProps {
   userName?: string;
   avatarUrl?: string;
   unreadCount?: number;
+  notificationCount?: number;
 }
 
-export function PatientNavbar({ userName, avatarUrl, unreadCount = 0 }: PatientNavbarProps) {
+export function PatientNavbar({
+  userName,
+  avatarUrl,
+  unreadCount = 0,
+  notificationCount = 0,
+}: PatientNavbarProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,18 +89,22 @@ export function PatientNavbar({ userName, avatarUrl, unreadCount = 0 }: PatientN
 
         {/* Right side */}
         <div className="flex items-center gap-2">
-          {/* Notifications */}
+          {/* Messages */}
           <a
             href="/dashboard/mensajes"
             className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition"
+            aria-label={`Mensajes${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ""}`}
           >
-            <Bell className="h-5 w-5" />
+            <MessageSquare className="h-5 w-5" />
             {unreadCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </a>
+
+          {/* Notifications bell */}
+          <NotificationBell unreadCount={notificationCount} />
 
           {/* User menu */}
           <div className="relative" ref={menuRef}>

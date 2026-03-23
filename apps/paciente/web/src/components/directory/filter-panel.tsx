@@ -22,6 +22,8 @@ interface FilterPanelProps {
   /** Mobile: whether the panel is open */
   open: boolean;
   onToggle: () => void;
+  /** Render mode: mobile-only shows trigger + bottom sheet, desktop-only shows sidebar */
+  mode?: "mobile-only" | "desktop-only" | "both";
 }
 
 export function FilterPanel({
@@ -32,6 +34,7 @@ export function FilterPanel({
   onReset,
   open,
   onToggle,
+  mode = "both",
 }: FilterPanelProps) {
   const hasActiveFilters = Boolean(
     filters.city ||
@@ -55,28 +58,33 @@ export function FilterPanel({
     filters.maxPrice,
   ].filter(Boolean).length;
 
+  const showMobile = mode === "mobile-only" || mode === "both";
+  const showDesktop = mode === "desktop-only" || mode === "both";
+
   return (
     <>
       {/* Mobile trigger button */}
-      <button
-        onClick={onToggle}
-        className={`lg:hidden flex items-center gap-2 px-4 py-3 border rounded-xl text-sm font-medium transition ${
-          hasActiveFilters
-            ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-            : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-        }`}
-      >
-        <SlidersHorizontal className="h-4 w-4" />
-        <span>Filtros</span>
-        {activeCount > 0 && (
-          <span className="bg-emerald-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-            {activeCount}
-          </span>
-        )}
-      </button>
+      {showMobile && (
+        <button
+          onClick={onToggle}
+          className={`lg:hidden flex items-center gap-2 px-4 py-3 border rounded-xl text-sm font-medium transition ${
+            hasActiveFilters
+              ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+              : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          <span>Filtros</span>
+          {activeCount > 0 && (
+            <span className="bg-emerald-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+              {activeCount}
+            </span>
+          )}
+        </button>
+      )}
 
       {/* Mobile bottom sheet */}
-      {open && (
+      {showMobile && open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
             className="absolute inset-0 bg-black/50"
@@ -119,27 +127,29 @@ export function FilterPanel({
       )}
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:block w-64 flex-shrink-0">
-        <div className="bg-white border border-gray-100 rounded-xl p-4 sticky top-24 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900 text-sm">Filtros</h3>
-            {hasActiveFilters && (
-              <button
-                onClick={onReset}
-                className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
-              >
-                Limpiar
-              </button>
-            )}
+      {showDesktop && (
+        <div className="hidden lg:block w-64 flex-shrink-0">
+          <div className="bg-white border border-gray-100 rounded-xl p-4 sticky top-24 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900 text-sm">Filtros</h3>
+              {hasActiveFilters && (
+                <button
+                  onClick={onReset}
+                  className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+            <FilterContent
+              filters={filters}
+              providerType={providerType}
+              specialties={specialties}
+              onUpdate={onUpdate}
+            />
           </div>
-          <FilterContent
-            filters={filters}
-            providerType={providerType}
-            specialties={specialties}
-            onUpdate={onUpdate}
-          />
         </div>
-      </div>
+      )}
     </>
   );
 }
