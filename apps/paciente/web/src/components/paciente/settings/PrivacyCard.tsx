@@ -9,7 +9,8 @@ import {
     Button,
 } from "@red-salud/design-system";
 import { Loader2, Save } from "lucide-react";
-import { PrivacySettings } from "@/hooks/paciente/useConfiguracion";
+
+import { PrivacySettings } from "@/hooks/paciente/useSettings";
 
 interface PrivacyCardProps {
     privacy: PrivacySettings | null;
@@ -38,7 +39,7 @@ export function PrivacyCard({
                 <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                         <Label>Perfil Público</Label>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-[hsl(var(--muted-foreground))]">
                             Permitir que otros usuarios vean tu perfil básico
                         </p>
                     </div>
@@ -52,7 +53,7 @@ export function PrivacyCard({
                 <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                         <Label>Compartir Historial Médico</Label>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-[hsl(var(--muted-foreground))]">
                             Permitir acceso a doctores autorizados
                         </p>
                     </div>

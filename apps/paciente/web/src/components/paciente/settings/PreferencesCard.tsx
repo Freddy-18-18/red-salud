@@ -9,7 +9,8 @@ import {
     Button,
 } from "@red-salud/design-system";
 import { Loader2, Save } from "lucide-react";
-import { UserPreferences } from "@/hooks/paciente/useConfiguracion";
+
+import { UserPreferences } from "@/hooks/paciente/useSettings";
 
 interface PreferencesCardProps {
     preferences: UserPreferences | null;

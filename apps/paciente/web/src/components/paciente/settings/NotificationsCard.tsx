@@ -9,7 +9,8 @@ import {
     Button,
 } from "@red-salud/design-system";
 import { Loader2, Save } from "lucide-react";
-import { NotificationSettings } from "@/hooks/paciente/useConfiguracion";
+
+import { NotificationSettings } from "@/hooks/paciente/useSettings";
 
 interface NotificationsCardProps {
     notifications: NotificationSettings | null;
@@ -36,7 +37,7 @@ export function NotificationsCard({
                 <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                         <Label>Recordatorios de Citas</Label>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-[hsl(var(--muted-foreground))]">
                             Recibir avisos antes de tus citas médicas
                         </p>
                     </div>
@@ -53,7 +54,7 @@ export function NotificationsCard({
                 <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                         <Label>Resultados de Laboratorio</Label>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-[hsl(var(--muted-foreground))]">
                             Notificar cuando estén listos los resultados
                         </p>
                     </div>

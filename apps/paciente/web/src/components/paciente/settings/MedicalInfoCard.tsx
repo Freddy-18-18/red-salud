@@ -10,7 +10,8 @@ import {
     Textarea,
 } from "@red-salud/design-system";
 import { Loader2, Save } from "lucide-react";
-import { PatientDetails } from "@/hooks/paciente/useConfiguracion";
+
+import { PatientDetails } from "@/hooks/paciente/useSettings";
 
 interface MedicalInfoCardProps {
     details: PatientDetails | null;

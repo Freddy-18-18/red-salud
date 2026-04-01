@@ -9,7 +9,8 @@ import {
     Button,
 } from "@red-salud/design-system";
 import { Loader2, Save } from "lucide-react";
-import { Profile } from "@/hooks/paciente/useConfiguracion";
+
+import { Profile } from "@/hooks/paciente/useSettings";
 
 interface ProfileCardProps {
     profile: Profile | null;
@@ -40,9 +41,9 @@ export function ProfileCard({
                         <Label htmlFor="nombre">Nombre Completo</Label>
                         <Input
                             id="nombre"
-                            value={profile.nombre_completo || ""}
+                            value={profile.full_name || ""}
                             onChange={(e) =>
-                                setProfile({ ...profile, nombre_completo: e.target.value })
+                                setProfile({ ...profile, full_name: e.target.value })
                             }
                             placeholder="Tu nombre completo"
                         />
@@ -60,9 +61,9 @@ export function ProfileCard({
                         <Label htmlFor="telefono">Teléfono</Label>
                         <Input
                             id="telefono"
-                            value={profile.telefono || ""}
+                            value={profile.phone || ""}
                             onChange={(e) =>
-                                setProfile({ ...profile, telefono: e.target.value })
+                                setProfile({ ...profile, phone: e.target.value })
                             }
                             placeholder="+57 300 123 4567"
                         />
@@ -71,9 +72,9 @@ export function ProfileCard({
                         <Label htmlFor="cedula">Cédula</Label>
                         <Input
                             id="cedula"
-                            value={profile.cedula || ""}
+                            value={profile.national_id || ""}
                             onChange={(e) =>
-                                setProfile({ ...profile, cedula: e.target.value })
+                                setProfile({ ...profile, national_id: e.target.value })
                             }
                             placeholder="1234567890"
                         />
@@ -82,9 +83,9 @@ export function ProfileCard({
                         <Label htmlFor="direccion">Dirección</Label>
                         <Input
                             id="direccion"
-                            value={profile.direccion || ""}
+                            value={profile.address || ""}
                             onChange={(e) =>
-                                setProfile({ ...profile, direccion: e.target.value })
+                                setProfile({ ...profile, address: e.target.value })
                             }
                             placeholder="Tu dirección"
                         />
@@ -93,9 +94,9 @@ export function ProfileCard({
                         <Label htmlFor="ciudad">Ciudad</Label>
                         <Input
                             id="ciudad"
-                            value={profile.ciudad || ""}
+                            value={profile.city || ""}
                             onChange={(e) =>
-                                setProfile({ ...profile, ciudad: e.target.value })
+                                setProfile({ ...profile, city: e.target.value })
                             }
                             placeholder="Ciudad"
                         />
