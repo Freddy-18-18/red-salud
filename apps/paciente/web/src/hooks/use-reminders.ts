@@ -18,6 +18,7 @@ import {
   updateGoalProgress,
   completeGoal,
   getUpcomingAppointments,
+  type MedicationReminder,
   type MedicationIntakeLog,
   type CreateMedicationReminder,
   type CreateHealthMetric,

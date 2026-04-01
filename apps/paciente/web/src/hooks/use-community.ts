@@ -155,6 +155,7 @@ export function usePostReplies(postId: string | null) {
 // ── Voting ─────────────────────────────────────────────────────────────
 
 export function useVoting(userId: string | null, postId: string | null) {
+  const queryClient = useQueryClient();
   const { data, isFetching } = useQuery({
     queryKey: ["userVotes", userId, postId],
     queryFn: async () => {
