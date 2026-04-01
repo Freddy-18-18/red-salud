@@ -1,0 +1,6 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - heading "Red Salud — Farmacia" [level=1] [ref=e4]
+    - paragraph [ref=e5]: Sistema de gestión para farmacias - inventario, POS, recetas, entregas
+    - link "Iniciar Sesión" [ref=e7] [cursor=pointer]:
+      - /url: /auth/login

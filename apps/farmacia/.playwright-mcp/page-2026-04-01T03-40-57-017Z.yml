@@ -1,0 +1,50 @@
+- main [ref=e2]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - img [ref=e7]
+      - generic [ref=e10]:
+        - text: Red Salud
+        - generic [ref=e11]: Farmacia
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - heading "Registra tu farmacia" [level=1] [ref=e14]
+        - paragraph [ref=e15]: Paso 1 de 4 — Acceso
+      - generic [ref=e16]:
+        - generic [ref=e18]:
+          - img [ref=e20]
+          - generic [ref=e23]: Acceso
+        - generic [ref=e26]:
+          - img [ref=e28]
+          - generic [ref=e32]: Farmacia
+        - generic [ref=e35]:
+          - img [ref=e37]
+          - generic [ref=e40]: Representante
+        - generic [ref=e43]:
+          - img [ref=e45]
+          - generic [ref=e48]: Ubicacion
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]: Email
+          - textbox "Email" [ref=e52]:
+            - /placeholder: tu@farmacia.com
+        - generic [ref=e53]:
+          - generic [ref=e54]: Contrasena
+          - generic [ref=e55]:
+            - textbox "Contrasena" [ref=e56]:
+              - /placeholder: Minimo 6 caracteres
+            - button [ref=e57]:
+              - img [ref=e58]
+        - generic [ref=e61]:
+          - generic [ref=e62]: Confirmar contrasena
+          - generic [ref=e63]:
+            - textbox "Confirmar contrasena" [ref=e64]:
+              - /placeholder: Repeti tu contrasena
+            - button [ref=e65]:
+              - img [ref=e66]
+      - button "Siguiente" [ref=e70]:
+        - text: Siguiente
+        - img [ref=e71]
+    - paragraph [ref=e73]:
+      - text: Ya tenes cuenta?
+      - link "Inicia sesion" [ref=e74] [cursor=pointer]:
+        - /url: /auth/login

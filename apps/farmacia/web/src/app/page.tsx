@@ -1,15 +1,27 @@
+import { Navbar } from '@/components/landing/navbar';
+import { Hero } from '@/components/landing/hero';
+import { PainPoints } from '@/components/landing/pain-points';
+import { FeaturesGrid } from '@/components/landing/features-grid';
+import { HowItWorks } from '@/components/landing/how-it-works';
+import { Stats } from '@/components/landing/stats';
+import { Pricing } from '@/components/landing/pricing';
+import { CtaSection } from '@/components/landing/cta-section';
+import { Footer } from '@/components/landing/footer';
+
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">Red Salud — Farmacia</h1>
-        <p className="text-lg text-gray-600">Sistema de gestión para farmacias - inventario, POS, recetas, entregas</p>
-        <div className="flex gap-4 justify-center mt-8">
-          <a href="/auth/login" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            Iniciar Sesión
-          </a>
-        </div>
-      </div>
-    </main>
+    <>
+      <Navbar />
+      <main>
+        <Hero />
+        <PainPoints />
+        <FeaturesGrid />
+        <HowItWorks />
+        <Stats />
+        <Pricing />
+        <CtaSection />
+      </main>
+      <Footer />
+    </>
   );
 }

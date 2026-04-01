@@ -1,7 +1,18 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
-const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/callback', '/auth/forgot-password', '/terminos', '/privacidad'];
+const publicPaths = [
+  '/',
+  '/funcionalidades',
+  '/especialidades',
+  '/precios',
+  '/terminos',
+  '/privacidad',
+  '/auth/login',
+  '/auth/register',
+  '/auth/callback',
+  '/auth/forgot-password',
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -28,7 +39,7 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const isPublicPath = publicPaths.some((path) => pathname === path || pathname.startsWith('/auth/'));
+  const isPublicPath = publicPaths.some((path) => pathname === path || pathname.startsWith(path + '/')) || pathname.startsWith('/auth/');
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();

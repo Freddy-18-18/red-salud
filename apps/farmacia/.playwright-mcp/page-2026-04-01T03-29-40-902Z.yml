@@ -1,0 +1,6 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Iniciar Sesión" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Red Salud — Farmacia
+  - alert [ref=e6]

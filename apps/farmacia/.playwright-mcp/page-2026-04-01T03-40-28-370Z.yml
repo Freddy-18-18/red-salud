@@ -1,0 +1,507 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Red SaludFarmacia" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img [ref=e7]
+          - generic [ref=e10]: Red SaludFarmacia
+        - button "Toggle menu" [ref=e11]:
+          - img [ref=e12]
+      - generic [ref=e13]:
+        - link "Problemas" [ref=e14] [cursor=pointer]:
+          - /url: "#problemas"
+        - link "Funcionalidades" [ref=e15] [cursor=pointer]:
+          - /url: "#funcionalidades"
+        - link "Como Funciona" [ref=e16] [cursor=pointer]:
+          - /url: "#como-funciona"
+        - link "Precios" [ref=e17] [cursor=pointer]:
+          - /url: "#precios"
+        - separator [ref=e18]
+        - link "Iniciar Sesion" [ref=e19] [cursor=pointer]:
+          - /url: /auth/login
+        - link "Registrar Farmacia" [ref=e20] [cursor=pointer]:
+          - /url: /auth/register
+  - main [ref=e21]:
+    - generic [ref=e25]:
+      - generic [ref=e30]: Plataforma 100% venezolana
+      - heading "La plataforma que digitaliza tu farmacia" [level=1] [ref=e31]
+      - paragraph [ref=e32]: Gestion de inventario, punto de venta, recetas digitales, integracion BCV y mucho mas. Todo lo que necesitas para modernizar tu farmacia en una sola plataforma.
+      - generic [ref=e33]:
+        - generic [ref=e34]:
+          - img [ref=e35]
+          - text: Tasa BCV automatica
+        - generic [ref=e38]:
+          - img [ref=e39]
+          - text: Recetas digitales
+        - generic [ref=e42]:
+          - img [ref=e43]
+          - text: Multi-pago
+        - generic [ref=e46]:
+          - img [ref=e47]
+          - text: FEFO automatico
+      - generic [ref=e50]:
+        - link "Registrar Mi Farmacia" [ref=e51] [cursor=pointer]:
+          - /url: /auth/register
+          - text: Registrar Mi Farmacia
+          - img [ref=e52]
+        - link "Ver como funciona" [ref=e54] [cursor=pointer]:
+          - /url: "#como-funciona"
+      - paragraph [ref=e55]: Sin tarjeta de credito. Gratis para comenzar. Listo en 5 minutos.
+    - generic [ref=e58]:
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - img [ref=e61]
+          - text: Problemas que resolvemos
+        - heading "Deja atras lo manual y abraza lo digital" [level=2] [ref=e63]
+        - paragraph [ref=e64]: Cada dia sin digitalizarte es dinero que pierdes. Estos son los problemas mas comunes de las farmacias venezolanas que resolvemos.
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - generic [ref=e68]:
+              - img [ref=e70]
+              - generic [ref=e72]: Antes
+            - heading "Inventario en cuadernos o Excel" [level=3] [ref=e73]
+            - paragraph [ref=e74]: Registro manual propenso a errores, productos perdidos y diferencias de inventario.
+          - img [ref=e77]
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - img [ref=e82]
+              - generic [ref=e85]: Con Red Salud
+            - heading "Digitalizacion completa" [level=3] [ref=e86]
+            - paragraph [ref=e87]: Inventario en tiempo real con codigo de barras, lotes y trazabilidad total.
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - img [ref=e93]
+              - generic [ref=e95]: Antes
+            - heading "Sin control de vencimientos" [level=3] [ref=e96]
+            - paragraph [ref=e97]: Productos vencidos en estante, perdidas economicas y riesgo sanitario.
+          - img [ref=e100]
+          - generic [ref=e102]:
+            - generic [ref=e103]:
+              - img [ref=e105]
+              - generic [ref=e108]: Con Red Salud
+            - heading "Alertas automaticas FEFO" [level=3] [ref=e109]
+            - paragraph [ref=e110]: Sistema First Expired, First Out con alertas 30, 60 y 90 dias antes del vencimiento.
+        - generic [ref=e112]:
+          - generic [ref=e113]:
+            - generic [ref=e114]:
+              - img [ref=e116]
+              - generic [ref=e118]: Antes
+            - heading "Tasa del dolar manual" [level=3] [ref=e119]
+            - paragraph [ref=e120]: Actualizar precios manualmente cada dia, riesgo de vender a perdida.
+          - img [ref=e123]
+          - generic [ref=e125]:
+            - generic [ref=e126]:
+              - img [ref=e128]
+              - generic [ref=e130]: Con Red Salud
+            - heading "Integracion BCV en tiempo real" [level=3] [ref=e131]
+            - paragraph [ref=e132]: Tasa oficial del BCV sincronizada automaticamente. Precios siempre actualizados.
+        - generic [ref=e134]:
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - img [ref=e138]
+              - generic [ref=e143]: Antes
+            - heading "Recetas en papel" [level=3] [ref=e144]
+            - paragraph [ref=e145]: Recetas ilegibles, sin verificacion, imposible rastrear dispensaciones.
+          - img [ref=e148]
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - img [ref=e153]
+              - generic [ref=e157]: Con Red Salud
+            - heading "Recetas digitales verificables" [level=3] [ref=e158]
+            - paragraph [ref=e159]: Recepcion digital desde medicos de Red Salud. Verificacion y trazabilidad completa.
+        - generic [ref=e161]:
+          - generic [ref=e162]:
+            - generic [ref=e163]:
+              - img [ref=e165]
+              - generic [ref=e168]: Antes
+            - heading "Sin reportes de negocio" [level=3] [ref=e169]
+            - paragraph [ref=e170]: Decisiones a ciegas, sin saber que productos rotan mas ni cuanto vende cada turno.
+          - img [ref=e173]
+          - generic [ref=e175]:
+            - generic [ref=e176]:
+              - img [ref=e178]
+              - generic [ref=e180]: Con Red Salud
+            - heading "Dashboard con KPIs en tiempo real" [level=3] [ref=e181]
+            - paragraph [ref=e182]: Reportes de ventas, inventario, financieros y operativos. Data para decidir mejor.
+        - generic [ref=e184]:
+          - generic [ref=e185]:
+            - generic [ref=e186]:
+              - img [ref=e188]
+              - generic [ref=e191]: Antes
+            - heading "Facturacion manual" [level=3] [ref=e192]
+            - paragraph [ref=e193]: Proceso lento, errores de calculo, colas largas y clientes frustrados.
+          - img [ref=e196]
+          - generic [ref=e198]:
+            - generic [ref=e199]:
+              - img [ref=e201]
+              - generic [ref=e203]: Con Red Salud
+            - heading "POS moderno multi-pago" [level=3] [ref=e204]
+            - paragraph [ref=e205]: Punto de venta rapido con efectivo, tarjeta, Pago Movil, Zelle y transferencia.
+    - generic [ref=e208]:
+      - generic [ref=e209]:
+        - generic [ref=e210]:
+          - img [ref=e211]
+          - text: Todo lo que necesitas
+        - heading "12 modulos. Una plataforma." [level=2] [ref=e215]
+        - paragraph [ref=e216]: Cada aspecto de tu farmacia cubierto. Desde el inventario hasta las entregas, todo integrado en un ecosistema que funciona.
+      - generic [ref=e217]:
+        - generic [ref=e218]:
+          - img [ref=e220]
+          - heading "Inventario Inteligente" [level=3] [ref=e224]
+          - paragraph [ref=e225]: Codigo de barras, lotes, control FEFO automatico. Sabe exactamente que tienes, donde esta y cuando vence.
+        - generic [ref=e227]:
+          - img [ref=e229]
+          - heading "Punto de Venta" [level=3] [ref=e233]
+          - paragraph [ref=e234]: POS rapido con Bs, USD, Zelle, Pago Movil y tarjetas. Multiples pagos en una sola transaccion.
+        - generic [ref=e236]:
+          - img [ref=e238]
+          - heading "Recetas Digitales" [level=3] [ref=e241]
+          - paragraph [ref=e242]: Recibe recetas directamente de medicos en Red Salud. Verifica, dispensa y rastrea todo digitalmente.
+        - generic [ref=e244]:
+          - img [ref=e246]
+          - heading "Control de Vencimientos" [level=3] [ref=e248]
+          - paragraph [ref=e249]: Alertas automaticas a 30, 60 y 90 dias. Nunca mas vendas un producto vencido ni pierdas inventario.
+        - generic [ref=e251]:
+          - img [ref=e253]
+          - heading "Tasa BCV Automatica" [level=3] [ref=e255]
+          - paragraph [ref=e256]: Sincronizacion automatica con la tasa oficial del BCV. Precios actualizados sin mover un dedo.
+        - generic [ref=e258]:
+          - img [ref=e260]
+          - heading "Proveedores y Pedidos" [level=3] [ref=e265]
+          - paragraph [ref=e266]: Gestion de proveedores, ordenes de compra automaticas por stock minimo y seguimiento de entregas.
+        - generic [ref=e268]:
+          - img [ref=e270]
+          - heading "Reportes y Analitica" [level=3] [ref=e272]
+          - paragraph [ref=e273]: Dashboard con KPIs de ventas, inventario, financieros y operativos. Toma decisiones con data real.
+        - generic [ref=e275]:
+          - img [ref=e277]
+          - heading "Programa de Fidelizacion" [level=3] [ref=e279]
+          - paragraph [ref=e280]: Sistema de puntos y tiers para tus clientes. Fideliza, premia y haz que vuelvan siempre.
+        - generic [ref=e282]:
+          - img [ref=e284]
+          - heading "Gestion de Personal" [level=3] [ref=e289]
+          - paragraph [ref=e290]: Turnos, permisos, roles y control de acceso. Cada empleado ve solo lo que necesita.
+        - generic [ref=e292]:
+          - img [ref=e294]
+          - heading "Entregas a Domicilio" [level=3] [ref=e297]
+          - paragraph [ref=e298]: Tracking en tiempo real, zonas de cobertura, asignacion de repartidores y notificaciones al cliente.
+        - generic [ref=e300]:
+          - img [ref=e302]
+          - heading "Integracion con Seguros" [level=3] [ref=e304]
+          - paragraph [ref=e305]: Conecta con aseguradoras para validar coberturas, procesar reclamaciones y agilizar el pago.
+        - generic [ref=e307]:
+          - img [ref=e309]
+          - heading "Multi-Sucursal" [level=3] [ref=e313]
+          - paragraph [ref=e314]: Gestion centralizada de multiples sucursales. Un solo panel para verlo todo, transferencias entre sedes.
+    - generic [ref=e317]:
+      - generic [ref=e318]:
+        - generic [ref=e319]:
+          - img [ref=e320]
+          - text: Facil y rapido
+        - heading "Operativo en tres pasos" [level=2] [ref=e325]
+        - paragraph [ref=e326]: No necesitas ser experto en tecnologia. Si sabes usar un telefono, puedes usar Red Salud.
+      - generic [ref=e328]:
+        - generic [ref=e329]:
+          - generic [ref=e330]:
+            - img [ref=e332]
+            - generic [ref=e336]: "01"
+          - heading "Registra tu farmacia" [level=3] [ref=e337]
+          - paragraph [ref=e338]: Crea tu cuenta en minutos. Solo necesitas los datos basicos de tu farmacia, RIF y direccion. Sin papeleos innecesarios.
+        - generic [ref=e339]:
+          - generic [ref=e340]:
+            - img [ref=e342]
+            - generic [ref=e346]: "02"
+          - heading "Carga tu inventario" [level=3] [ref=e347]
+          - paragraph [ref=e348]: Importa desde Excel o escanea con codigo de barras. Nuestro sistema reconoce automaticamente los productos mas comunes del mercado venezolano.
+        - generic [ref=e349]:
+          - generic [ref=e350]:
+            - img [ref=e352]
+            - generic [ref=e357]: "03"
+          - heading "Empieza a vender" [level=3] [ref=e358]
+          - paragraph [ref=e359]: Tu punto de venta esta listo. Empieza a facturar con multiples metodos de pago, tasa BCV automatica y recetas digitales desde el dia uno.
+      - link "Empieza ahora — es gratis" [ref=e361] [cursor=pointer]:
+        - /url: /auth/register
+        - text: Empieza ahora — es gratis
+        - img [ref=e362]
+    - generic [ref=e368]:
+      - generic [ref=e369]:
+        - heading "Construido por venezolanos, para venezolanos" [level=2] [ref=e370]
+        - paragraph [ref=e371]: Entendemos tu realidad porque la vivimos. Red Salud no es un software generico adaptado — fue creado desde cero para tu contexto.
+      - generic [ref=e372]:
+        - generic [ref=e373]:
+          - img [ref=e375]
+          - heading "Hecho para Venezuela" [level=3] [ref=e378]
+          - paragraph [ref=e379]: Disenado desde cero para las necesidades unicas de las farmacias venezolanas.
+        - generic [ref=e381]:
+          - img [ref=e383]
+          - heading "Integracion BCV" [level=3] [ref=e385]
+          - paragraph [ref=e386]: Tasa oficial del Banco Central de Venezuela sincronizada en tiempo real.
+        - generic [ref=e388]:
+          - img [ref=e390]
+          - heading "Regulaciones SUNAHIP" [level=3] [ref=e393]
+          - paragraph [ref=e394]: Cumple con las regulaciones sanitarias y farmaceuticas vigentes.
+        - generic [ref=e396]:
+          - img [ref=e398]
+          - heading "Soporte 24/7" [level=3] [ref=e400]
+          - paragraph [ref=e401]: Equipo de soporte venezolano disponible cuando lo necesites. WhatsApp, chat o telefono.
+      - generic [ref=e403]:
+        - generic [ref=e404]:
+          - generic [ref=e405]: 500+
+          - generic [ref=e406]: Productos gratis
+        - generic [ref=e407]:
+          - generic [ref=e408]: 5 min
+          - generic [ref=e409]: Para empezar
+        - generic [ref=e410]:
+          - generic [ref=e411]: 24/7
+          - generic [ref=e412]: Soporte activo
+        - generic [ref=e413]:
+          - generic [ref=e414]: 99.9%
+          - generic [ref=e415]: Disponibilidad
+    - generic [ref=e417]:
+      - generic [ref=e418]:
+        - generic [ref=e419]:
+          - img [ref=e420]
+          - text: Precios transparentes
+        - heading "Un plan para cada etapa de tu farmacia" [level=2] [ref=e422]
+        - paragraph [ref=e423]: Empieza gratis y crece a tu ritmo. Sin contratos, sin sorpresas. Cancela cuando quieras.
+      - generic [ref=e424]:
+        - generic [ref=e425]:
+          - generic [ref=e426]:
+            - generic [ref=e427]:
+              - heading "Gratis" [level=3] [ref=e428]
+              - paragraph [ref=e429]: Para farmacias que quieren dar el primer paso hacia la digitalizacion.
+            - generic [ref=e430]:
+              - generic [ref=e431]: $0
+              - generic [ref=e432]: /mes
+            - link "Empezar gratis" [ref=e433] [cursor=pointer]:
+              - /url: /auth/register
+              - text: Empezar gratis
+              - img [ref=e434]
+          - generic [ref=e436]:
+            - paragraph [ref=e437]: "Incluye:"
+            - list [ref=e438]:
+              - listitem [ref=e439]:
+                - img [ref=e440]
+                - generic [ref=e442]: 1 sucursal
+              - listitem [ref=e443]:
+                - img [ref=e444]
+                - generic [ref=e446]: Hasta 500 productos
+              - listitem [ref=e447]:
+                - img [ref=e448]
+                - generic [ref=e450]: POS basico (efectivo y tarjeta)
+              - listitem [ref=e451]:
+                - img [ref=e452]
+                - generic [ref=e454]: Tasa BCV automatica
+              - listitem [ref=e455]:
+                - img [ref=e456]
+                - generic [ref=e458]: Control de vencimientos
+              - listitem [ref=e459]:
+                - img [ref=e460]
+                - generic [ref=e462]: Reportes basicos
+              - listitem [ref=e463]:
+                - img [ref=e464]
+                - generic [ref=e466]: Soporte por email
+        - generic [ref=e467]:
+          - generic [ref=e469]:
+            - img [ref=e470]
+            - text: Mas popular
+          - generic [ref=e472]:
+            - generic [ref=e473]:
+              - heading "Profesional" [level=3] [ref=e474]
+              - paragraph [ref=e475]: Para farmacias que quieren el paquete completo y crecer sin limites.
+            - generic [ref=e476]:
+              - generic [ref=e477]: $29
+              - generic [ref=e478]: /mes
+            - link "Empezar prueba gratis" [ref=e479] [cursor=pointer]:
+              - /url: /auth/register?plan=pro
+              - text: Empezar prueba gratis
+              - img [ref=e480]
+          - generic [ref=e482]:
+            - paragraph [ref=e483]: "Incluye:"
+            - list [ref=e484]:
+              - listitem [ref=e485]:
+                - img [ref=e486]
+                - generic [ref=e488]: Productos ilimitados
+              - listitem [ref=e489]:
+                - img [ref=e490]
+                - generic [ref=e492]: Todos los metodos de pago
+              - listitem [ref=e493]:
+                - img [ref=e494]
+                - generic [ref=e496]: Recetas digitales
+              - listitem [ref=e497]:
+                - img [ref=e498]
+                - generic [ref=e500]: Reportes avanzados y KPIs
+              - listitem [ref=e501]:
+                - img [ref=e502]
+                - generic [ref=e504]: Programa de fidelizacion
+              - listitem [ref=e505]:
+                - img [ref=e506]
+                - generic [ref=e508]: Entregas a domicilio
+              - listitem [ref=e509]:
+                - img [ref=e510]
+                - generic [ref=e512]: Gestion de proveedores
+              - listitem [ref=e513]:
+                - img [ref=e514]
+                - generic [ref=e516]: Gestion de personal
+              - listitem [ref=e517]:
+                - img [ref=e518]
+                - generic [ref=e520]: Integracion con seguros
+              - listitem [ref=e521]:
+                - img [ref=e522]
+                - generic [ref=e524]: Soporte prioritario 24/7
+          - paragraph [ref=e526]:
+            - img [ref=e527]
+            - text: 14 dias de prueba gratis. Sin tarjeta de credito.
+        - generic [ref=e531]:
+          - generic [ref=e532]:
+            - generic [ref=e533]:
+              - heading "Enterprise" [level=3] [ref=e534]
+              - paragraph [ref=e535]: Para cadenas y farmacias con necesidades especificas de integracion.
+            - generic [ref=e537]: Contactar
+            - link "Contactar ventas" [ref=e538] [cursor=pointer]:
+              - /url: "#contacto"
+              - text: Contactar ventas
+              - img [ref=e539]
+          - generic [ref=e541]:
+            - paragraph [ref=e542]: "Todo en Profesional, mas:"
+            - list [ref=e543]:
+              - listitem [ref=e544]:
+                - img [ref=e545]
+                - generic [ref=e547]: Multi-sucursal ilimitado
+              - listitem [ref=e548]:
+                - img [ref=e549]
+                - generic [ref=e551]: API para integraciones
+              - listitem [ref=e552]:
+                - img [ref=e553]
+                - generic [ref=e555]: Dashboard corporativo
+              - listitem [ref=e556]:
+                - img [ref=e557]
+                - generic [ref=e559]: Transferencias entre sedes
+              - listitem [ref=e560]:
+                - img [ref=e561]
+                - generic [ref=e563]: Reportes consolidados
+              - listitem [ref=e564]:
+                - img [ref=e565]
+                - generic [ref=e567]: Soporte dedicado
+              - listitem [ref=e568]:
+                - img [ref=e569]
+                - generic [ref=e571]: Onboarding personalizado
+              - listitem [ref=e572]:
+                - img [ref=e573]
+                - generic [ref=e575]: SLA garantizado
+      - paragraph [ref=e577]:
+        - text: Todos los precios en USD. Puedes pagar en bolivares a tasa BCV del dia.
+        - text: Necesitas algo diferente?
+        - link "Hablemos" [ref=e578] [cursor=pointer]:
+          - /url: "#contacto"
+    - generic [ref=e582]:
+      - img [ref=e584]
+      - heading "Empieza a digitalizar tu farmacia hoy" [level=2] [ref=e587]
+      - paragraph [ref=e588]: Unete a las farmacias que ya estan dando el salto a la gestion digital. Tu competencia no va a esperar.
+      - generic [ref=e589]:
+        - generic [ref=e590]:
+          - img [ref=e591]
+          - text: Sin tarjeta de credito
+        - generic [ref=e594]:
+          - img [ref=e595]
+          - text: Gratis para empezar
+        - generic [ref=e598]:
+          - img [ref=e599]
+          - text: Listo en 5 minutos
+      - generic [ref=e602]:
+        - link "Registrar Mi Farmacia" [ref=e603] [cursor=pointer]:
+          - /url: /auth/register
+          - text: Registrar Mi Farmacia
+          - img [ref=e604]
+        - link "Ver planes y precios" [ref=e606] [cursor=pointer]:
+          - /url: "#precios"
+  - contentinfo [ref=e607]:
+    - generic [ref=e608]:
+      - generic [ref=e609]:
+        - generic [ref=e610]:
+          - link "Red SaludFarmacia" [ref=e611] [cursor=pointer]:
+            - /url: /
+            - img [ref=e613]
+            - generic [ref=e616]: Red SaludFarmacia
+          - paragraph [ref=e617]: La plataforma de gestion integral para farmacias venezolanas. Inventario, ventas, recetas y mas en un solo lugar.
+          - generic [ref=e618]:
+            - link "farmacia@redsalud.ve" [ref=e619] [cursor=pointer]:
+              - /url: mailto:farmacia@redsalud.ve
+              - img [ref=e620]
+              - text: farmacia@redsalud.ve
+            - link "+58 212 123 4567" [ref=e623] [cursor=pointer]:
+              - /url: tel:+582121234567
+              - img [ref=e624]
+              - text: +58 212 123 4567
+            - generic [ref=e626]:
+              - img [ref=e627]
+              - text: Caracas, Venezuela
+        - generic [ref=e630]:
+          - heading "Producto" [level=4] [ref=e631]
+          - list [ref=e632]:
+            - listitem [ref=e633]:
+              - link "Funcionalidades" [ref=e634] [cursor=pointer]:
+                - /url: "#funcionalidades"
+            - listitem [ref=e635]:
+              - link "Precios" [ref=e636] [cursor=pointer]:
+                - /url: "#precios"
+            - listitem [ref=e637]:
+              - link "Como Funciona" [ref=e638] [cursor=pointer]:
+                - /url: "#como-funciona"
+            - listitem [ref=e639]:
+              - link "Actualizaciones" [ref=e640] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e641]:
+          - heading "Empresa" [level=4] [ref=e642]
+          - list [ref=e643]:
+            - listitem [ref=e644]:
+              - link "Sobre Nosotros" [ref=e645] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e646]:
+              - link "Blog" [ref=e647] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e648]:
+              - link "Carreras" [ref=e649] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e650]:
+              - link "Contacto" [ref=e651] [cursor=pointer]:
+                - /url: "#contacto"
+        - generic [ref=e652]:
+          - heading "Legal" [level=4] [ref=e653]
+          - list [ref=e654]:
+            - listitem [ref=e655]:
+              - link "Terminos de Servicio" [ref=e656] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e657]:
+              - link "Politica de Privacidad" [ref=e658] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e659]:
+              - link "Politica de Cookies" [ref=e660] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e661]:
+          - heading "Soporte" [level=4] [ref=e662]
+          - list [ref=e663]:
+            - listitem [ref=e664]:
+              - link "Centro de Ayuda" [ref=e665] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e666]:
+              - link "Documentacion" [ref=e667] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e668]:
+              - link "Estado del Sistema" [ref=e669] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e670]:
+              - link "API" [ref=e671] [cursor=pointer]:
+                - /url: "#"
+      - generic [ref=e672]:
+        - paragraph [ref=e673]: © 2026 Red Salud. Todos los derechos reservados.
+        - generic [ref=e674]:
+          - link "X" [ref=e675] [cursor=pointer]:
+            - /url: "#"
+          - link "Instagram" [ref=e676] [cursor=pointer]:
+            - /url: "#"
+          - link "LinkedIn" [ref=e677] [cursor=pointer]:
+            - /url: "#"
