@@ -1,0 +1,37 @@
+- main [ref=e2]:
+  - generic [ref=e4]:
+    - link "Red Salud" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e8]: Red Salud
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - heading "Bienvenido de vuelta" [level=1] [ref=e11]
+        - paragraph [ref=e12]: Ingresa a tu consultorio digital
+      - button "Continuar con Google" [ref=e13]:
+        - img [ref=e14]
+        - text: Continuar con Google
+      - generic [ref=e21]: o
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]: Correo electronico
+          - generic [ref=e26]:
+            - img [ref=e27]
+            - textbox "Correo electronico" [ref=e30]:
+              - /placeholder: doctor@ejemplo.com
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - generic [ref=e33]: Contrasena
+            - link "Olvidaste tu contrasena?" [ref=e34] [cursor=pointer]:
+              - /url: /auth/forgot-password
+          - generic [ref=e35]:
+            - img [ref=e36]
+            - textbox "Contrasena" [ref=e39]:
+              - /placeholder: Tu contrasena
+            - button [ref=e40]:
+              - img [ref=e41]
+        - button "Iniciar Sesion" [ref=e44]
+    - paragraph [ref=e45]:
+      - text: No tenes cuenta?
+      - link "Registrate gratis" [ref=e46] [cursor=pointer]:
+        - /url: /auth/register

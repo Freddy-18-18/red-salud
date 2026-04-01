@@ -14,6 +14,8 @@ export interface StaffMember {
   is_active: boolean;
   hired_at: string;
   terminated_at: string | null;
+  created_at: string;
+  updated_at: string;
   profile?: {
     full_name: string;
     email: string;

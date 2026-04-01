@@ -18,20 +18,25 @@ export interface PharmacySettings {
   receipt_footer: string | null;
   delivery_enabled: boolean;
   loyalty_enabled: boolean;
+  sms_notifications_enabled: boolean;
+  email_notifications_enabled: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PharmacyDetails {
   id: string;
-  name: string;
-  rif: string;
-  license_number: string | null;
+  profile_id: string;
+  business_name: string;
+  pharmacy_license: string | null;
   pharmacy_type: string | null;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  phone: string | null;
-  email: string | null;
-  operating_hours: Record<string, { open: string; close: string } | null> | null;
+  office_hours: Record<string, { open: string; close: string } | null> | null;
+  servicios: string[] | null;
+  accepts_digital_prescriptions: boolean;
+  latitud: number | null;
+  longitud: number | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface UpdateSettingsInput {
@@ -46,6 +51,8 @@ export interface UpdateSettingsInput {
   receipt_footer?: string;
   delivery_enabled?: boolean;
   loyalty_enabled?: boolean;
+  sms_notifications_enabled?: boolean;
+  email_notifications_enabled?: boolean;
 }
 
 // ============================================================================
@@ -114,7 +121,7 @@ export async function updatePharmacySettings(
 }
 
 // ============================================================================
-// Pharmacy Details (from pharmacy_details or pharmacies table)
+// Pharmacy Details (from pharmacy_details table)
 // ============================================================================
 
 export async function getPharmacyDetails(
@@ -122,7 +129,6 @@ export async function getPharmacyDetails(
 ): Promise<PharmacyDetails | null> {
   const supabase = createClient();
 
-  // Try pharmacy_details first, fall back to pharmacies
   const { data, error } = await supabase
     .from("pharmacy_details")
     .select("*")
@@ -130,44 +136,21 @@ export async function getPharmacyDetails(
     .limit(1)
     .maybeSingle();
 
-  if (error || !data) {
-    // Fallback
-    const { data: fallback } = await supabase
-      .from("pharmacies")
-      .select("*")
-      .eq("id", pharmacyId)
-      .limit(1)
-      .maybeSingle();
-
-    if (!fallback) return null;
-
-    return {
-      id: fallback.id,
-      name: fallback.name || "",
-      rif: fallback.rif || "",
-      license_number: fallback.license_number || null,
-      pharmacy_type: fallback.pharmacy_type || null,
-      address: fallback.address || null,
-      city: fallback.city || null,
-      state: fallback.state || null,
-      phone: fallback.phone || null,
-      email: fallback.email || null,
-      operating_hours: fallback.operating_hours || null,
-    };
-  }
+  if (error || !data) return null;
 
   return {
     id: data.id,
-    name: data.name || "",
-    rif: data.rif || "",
-    license_number: data.license_number || null,
+    profile_id: data.profile_id,
+    business_name: data.business_name || "",
+    pharmacy_license: data.pharmacy_license || null,
     pharmacy_type: data.pharmacy_type || null,
-    address: data.address || null,
-    city: data.city || null,
-    state: data.state || null,
-    phone: data.phone || null,
-    email: data.email || null,
-    operating_hours: data.operating_hours || null,
+    office_hours: data.office_hours || null,
+    servicios: data.servicios || null,
+    accepts_digital_prescriptions: data.accepts_digital_prescriptions ?? false,
+    latitud: data.latitud || null,
+    longitud: data.longitud || null,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
   };
 }
 
@@ -183,7 +166,7 @@ export async function getCurrentPharmacyId(): Promise<string | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  // Check pharmacy_staff for the user
+  // Check pharmacy_staff for the user (employee)
   const { data: staff } = await supabase
     .from("pharmacy_staff")
     .select("pharmacy_id")
@@ -194,9 +177,15 @@ export async function getCurrentPharmacyId(): Promise<string | null> {
 
   if (staff) return staff.pharmacy_id;
 
-  // Fallback: check if user has pharmacy_id in profile metadata
-  const meta = user.user_metadata;
-  if (meta?.pharmacy_id) return meta.pharmacy_id as string;
+  // Check if user owns a pharmacy via pharmacy_details
+  const { data: owned } = await supabase
+    .from("pharmacy_details")
+    .select("id")
+    .eq("profile_id", user.id)
+    .limit(1)
+    .maybeSingle();
+
+  if (owned) return owned.id;
 
   return null;
 }

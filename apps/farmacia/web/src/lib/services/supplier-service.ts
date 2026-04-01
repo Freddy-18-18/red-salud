@@ -7,42 +7,43 @@ import { createClient } from "@/lib/supabase/client";
 export interface Supplier {
   id: string;
   pharmacy_id: string;
-  name: string;
-  email: string | null;
+  company_name: string;
+  rif: string | null;
+  contact_name: string | null;
   phone: string | null;
+  email: string | null;
   address: string | null;
   city: string | null;
-  country: string | null;
-  tax_id: string | null;
-  bank_account: string | null;
-  contact_person: string | null;
-  contact_phone: string | null;
+  state: string | null;
   payment_terms: string | null;
+  credit_limit_usd: number | null;
+  credit_days: number | null;
+  delivery_days: number | null;
+  categories: string[] | null;
+  rating: number | null;
   is_active: boolean;
+  notes: string | null;
   created_at: string;
   updated_at: string;
   // computed
   last_order_date?: string | null;
   total_orders?: number;
-  categories?: string[];
-  rating?: number;
-  credit_limit_usd?: number;
-  credit_days?: number;
-  delivery_days?: number;
 }
 
 export interface SupplierFormData {
-  name: string;
-  email: string;
+  company_name: string;
+  rif: string;
+  contact_name: string;
   phone: string;
+  email: string;
   address: string;
   city: string;
-  country: string;
-  tax_id: string;
-  bank_account: string;
-  contact_person: string;
-  contact_phone: string;
+  state: string;
   payment_terms: string;
+  credit_limit_usd: number | null;
+  credit_days: number | null;
+  delivery_days: number | null;
+  categories: string[];
   is_active: boolean;
 }
 
@@ -99,12 +100,31 @@ export const SUPPLIER_CATEGORIES = [
 
 async function getPharmacyId(): Promise<string | null> {
   const supabase = createClient();
-  const { data } = await supabase
-    .from("pharmacy_users")
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // Try pharmacy_staff first (employee)
+  const { data: staff } = await supabase
+    .from("pharmacy_staff")
     .select("pharmacy_id")
+    .eq("profile_id", user.id)
+    .eq("is_active", true)
     .limit(1)
-    .single();
-  return data?.pharmacy_id || null;
+    .maybeSingle();
+
+  if (staff?.pharmacy_id) return staff.pharmacy_id;
+
+  // Try pharmacy_details (owner)
+  const { data: pharmacy } = await supabase
+    .from("pharmacy_details")
+    .select("id")
+    .eq("profile_id", user.id)
+    .limit(1)
+    .maybeSingle();
+
+  return pharmacy?.id ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -117,9 +137,9 @@ export async function fetchSuppliers(
   const supabase = createClient();
 
   let query = supabase
-    .from("suppliers")
+    .from("pharmacy_suppliers")
     .select("*")
-    .order("name", { ascending: true });
+    .order("company_name", { ascending: true });
 
   if (filters.isActive === "true") {
     query = query.eq("is_active", true);
@@ -129,7 +149,7 @@ export async function fetchSuppliers(
 
   if (filters.search) {
     query = query.or(
-      `name.ilike.%${filters.search}%,tax_id.ilike.%${filters.search}%,contact_person.ilike.%${filters.search}%`
+      `company_name.ilike.%${filters.search}%,rif.ilike.%${filters.search}%,contact_name.ilike.%${filters.search}%`
     );
   }
 
@@ -146,17 +166,17 @@ export async function fetchSuppliers(
   if (suppliers.length > 0) {
     const supplierIds = suppliers.map((s) => s.id);
     const { data: orders } = await supabase
-      .from("purchase_orders")
-      .select("supplier_id, order_date")
+      .from("pharmacy_purchase_orders")
+      .select("supplier_id, created_at")
       .in("supplier_id", supplierIds)
-      .order("order_date", { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (orders) {
       const lastOrderMap = new Map<string, string>();
       const orderCountMap = new Map<string, number>();
       for (const order of orders) {
         if (!lastOrderMap.has(order.supplier_id)) {
-          lastOrderMap.set(order.supplier_id, order.order_date);
+          lastOrderMap.set(order.supplier_id, order.created_at);
         }
         orderCountMap.set(
           order.supplier_id,
@@ -182,7 +202,7 @@ export async function getSupplierById(id: string): Promise<Supplier | null> {
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from("suppliers")
+    .from("pharmacy_suppliers")
     .select("*")
     .eq("id", id)
     .single();
@@ -211,10 +231,23 @@ export async function createSupplier(
   }
 
   const { data, error } = await supabase
-    .from("suppliers")
+    .from("pharmacy_suppliers")
     .insert({
       pharmacy_id: pharmacyId,
-      ...formData,
+      company_name: formData.company_name,
+      rif: formData.rif || null,
+      contact_name: formData.contact_name || null,
+      phone: formData.phone || null,
+      email: formData.email || null,
+      address: formData.address || null,
+      city: formData.city || null,
+      state: formData.state || null,
+      payment_terms: formData.payment_terms || null,
+      credit_limit_usd: formData.credit_limit_usd,
+      credit_days: formData.credit_days,
+      delivery_days: formData.delivery_days,
+      categories: formData.categories.length > 0 ? formData.categories : null,
+      is_active: formData.is_active,
     })
     .select()
     .single();
@@ -238,7 +271,7 @@ export async function updateSupplier(
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from("suppliers")
+    .from("pharmacy_suppliers")
     .update({
       ...formData,
       updated_at: new Date().toISOString(),
@@ -263,7 +296,7 @@ export async function deactivateSupplier(id: string): Promise<boolean> {
   const supabase = createClient();
 
   const { error } = await supabase
-    .from("suppliers")
+    .from("pharmacy_suppliers")
     .update({ is_active: false, updated_at: new Date().toISOString() })
     .eq("id", id);
 
@@ -284,8 +317,8 @@ export async function getSupplierOrders(
 ): Promise<
   Array<{
     id: string;
-    po_number: string;
-    order_date: string;
+    order_number: string;
+    created_at: string;
     status: string;
     total_usd: number;
   }>
@@ -293,10 +326,10 @@ export async function getSupplierOrders(
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from("purchase_orders")
-    .select("id, po_number, order_date, status, total_usd")
+    .from("pharmacy_purchase_orders")
+    .select("id, order_number, created_at, status, total_usd")
     .eq("supplier_id", supplierId)
-    .order("order_date", { ascending: false });
+    .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Error fetching supplier orders:", error);
@@ -315,20 +348,20 @@ export async function getSupplierProducts(
 ): Promise<
   Array<{
     product_name: string;
-    lot_number: string;
+    batch_number: string;
     quantity_received: number;
-    expiration_date: string;
+    expiry_date: string;
   }>
 > {
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from("batches")
+    .from("pharmacy_batches")
     .select(
-      "lot_number, quantity_received, expiration_date, product:products!product_id(name)"
+      "batch_number, quantity_received, expiry_date, pharmacy_products!product_id(name)"
     )
     .eq("supplier_id", supplierId)
-    .order("expiration_date", { ascending: false });
+    .order("expiry_date", { ascending: false });
 
   if (error) {
     console.error("Error fetching supplier products:", error);
@@ -336,9 +369,9 @@ export async function getSupplierProducts(
   }
 
   return (data || []).map((b) => ({
-    product_name: (b.product as unknown as { name: string })?.name || "N/A",
-    lot_number: b.lot_number,
+    product_name: (b.pharmacy_products as unknown as { name: string })?.name || "N/A",
+    batch_number: b.batch_number,
     quantity_received: b.quantity_received,
-    expiration_date: b.expiration_date,
+    expiry_date: b.expiry_date,
   }));
 }

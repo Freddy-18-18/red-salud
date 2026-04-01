@@ -33,10 +33,10 @@ export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
                     text-sm font-semibold transition-all duration-300
                     ${
                       isCompleted
-                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200'
+                        ? 'bg-teal-500 text-white shadow-md shadow-teal-500/30'
                         : isCurrent
-                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 ring-4 ring-blue-100'
-                          : 'bg-gray-100 text-gray-400 border border-gray-200'
+                          ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30 ring-4 ring-teal-500/20'
+                          : 'bg-white/5 text-zinc-500 border border-white/10'
                     }
                   `}
                 >
@@ -51,10 +51,10 @@ export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
                     text-xs font-medium text-center max-w-[80px] leading-tight
                     ${
                       isCurrent
-                        ? 'text-blue-700'
+                        ? 'text-teal-400'
                         : isCompleted
-                          ? 'text-emerald-600'
-                          : 'text-gray-400'
+                          ? 'text-teal-500'
+                          : 'text-zinc-500'
                     }
                   `}
                 >
@@ -66,7 +66,7 @@ export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
                 <div
                   className={`
                     flex-1 h-0.5 mx-3 mt-[-20px] transition-all duration-500
-                    ${isCompleted ? 'bg-emerald-400' : 'bg-gray-200'}
+                    ${isCompleted ? 'bg-teal-500' : 'bg-white/10'}
                   `}
                 />
               )}

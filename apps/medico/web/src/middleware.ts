@@ -16,7 +16,12 @@ const publicPaths = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
+  // Let the callback route handler do the PKCE exchange without interference
+  if (pathname === '/auth/callback') {
+    return NextResponse.next();
+  }
+
   const supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

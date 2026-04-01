@@ -1,0 +1,319 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e5]:
+      - link "Red Salud" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8]
+        - generic [ref=e10]: Red Salud
+      - generic [ref=e11]:
+        - link "Funcionalidades" [ref=e12] [cursor=pointer]:
+          - /url: /#funcionalidades
+        - link "Especialidades" [ref=e13] [cursor=pointer]:
+          - /url: /#especialidades
+        - link "Precios" [ref=e14] [cursor=pointer]:
+          - /url: /precios
+      - generic [ref=e15]:
+        - link "Iniciar Sesión" [ref=e16] [cursor=pointer]:
+          - /url: /auth/login
+        - link "Comenzar Gratis" [ref=e17] [cursor=pointer]:
+          - /url: /auth/register
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - img [ref=e23]
+          - generic [ref=e25]: Cardiovasculares
+        - img [ref=e27]
+        - heading "Cada latido cuenta — tu consultorio cardiológico digital" [level=1] [ref=e29]
+        - paragraph [ref=e30]: Visor de ECG integrado, cola de estudios pendientes, alertas críticas en tiempo real y estratificación de riesgo cardiovascular. Porque en cardiología, la velocidad salva vidas.
+        - generic [ref=e31]:
+          - link "Comenzar con Cardiología" [ref=e32] [cursor=pointer]:
+            - /url: /auth/register
+            - text: Comenzar con Cardiología
+            - img [ref=e33]
+          - link "Ver todas las especialidades" [ref=e35] [cursor=pointer]:
+            - /url: /especialidades
+      - generic [ref=e39]:
+        - paragraph [ref=e40]: En cardiología, la diferencia entre un buen resultado y una emergencia puede ser cuestión de minutos. Tu sistema de gestión no puede ser el cuello de botella. Necesitás que la información llegue rápido, se interprete correctamente y dispare las alertas adecuadas.
+        - paragraph [ref=e41]: Red Salud para Cardiología incluye un visor de ECG integrado con medición automática de intervalos, una cola de estudios pendientes (ECG, eco, Holter, prueba de esfuerzo) y un panel de alertas críticas que te notifica en tiempo real cuando un paciente presenta valores fuera de rango.
+        - paragraph [ref=e42]: El módulo de ecocardiograma te permite registrar hallazgos estructurados con mediciones estandarizadas (FEVI, diámetros cavitarios, gradientes valvulares) y generar informes con un clic. Las pruebas de esfuerzo se documentan con protocolo Bruce o Naughton integrado.
+        - paragraph [ref=e43]: La estratificación de riesgo cardiovascular se calcula automáticamente usando Framingham, ASCVD y SCORE, poblándose con datos que ya están en la historia clínica del paciente.
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - heading "Módulos diseñados para Cardiología" [level=2] [ref=e47]
+          - paragraph [ref=e48]: No es un sistema genérico con un logo diferente. Cada módulo fue pensado para los flujos reales de tu especialidad.
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - img [ref=e52]
+            - heading "Visor de ECG" [level=3] [ref=e54]
+            - paragraph [ref=e55]: Visualización de trazados electrocardiográficos con medición de intervalos y ejes.
+          - generic [ref=e56]:
+            - img [ref=e58]
+            - heading "Ecocardiograma" [level=3] [ref=e60]
+            - paragraph [ref=e61]: Registro estructurado de mediciones ecocardiográficas con generación de informes.
+          - generic [ref=e62]:
+            - img [ref=e64]
+            - heading "Prueba de Esfuerzo" [level=3] [ref=e66]
+            - paragraph [ref=e67]: Documentación con protocolo Bruce/Naughton, monitoreo de etapas y resultado.
+          - generic [ref=e68]:
+            - img [ref=e70]
+            - heading "Holter" [level=3] [ref=e75]
+            - paragraph [ref=e76]: Gestión de colocación, retiro e interpretación de monitoreo Holter 24h.
+          - generic [ref=e77]:
+            - img [ref=e79]
+            - heading "Alertas Críticas" [level=3] [ref=e81]
+            - paragraph [ref=e82]: Panel en tiempo real con alertas de valores críticos y pacientes de alto riesgo.
+          - generic [ref=e83]:
+            - img [ref=e85]
+            - heading "Estratificación de Riesgo" [level=3] [ref=e87]
+            - paragraph [ref=e88]: Framingham, ASCVD, SCORE calculados automáticamente con datos del paciente.
+          - generic [ref=e89]:
+            - img [ref=e91]
+            - heading "Telecardiología" [level=3] [ref=e94]
+            - paragraph [ref=e95]: Consultas remotas con compartición de trazados y estudios en tiempo real.
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - heading "Métricas que importan en Cardiología" [level=2] [ref=e99]
+          - paragraph [ref=e100]: KPIs específicos de tu especialidad para medir lo que realmente importa en tu práctica.
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - img [ref=e105]
+            - heading "Pacientes atendidos/día" [level=3] [ref=e108]
+            - paragraph [ref=e109]: Volumen diario de consultas y procedimientos cardiológicos
+          - generic [ref=e112]:
+            - generic [ref=e113]:
+              - img [ref=e115]
+              - generic [ref=e118]:
+                - img [ref=e119]
+                - generic [ref=e123]: <30 min
+            - heading "Tiempo de respuesta ECG" [level=3] [ref=e124]
+            - paragraph [ref=e125]: Tiempo desde la toma del ECG hasta la interpretación
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - img [ref=e131]
+              - generic [ref=e134]:
+                - img [ref=e135]
+                - generic [ref=e139]: ">85%"
+            - heading "Utilización de ecocardiograma" [level=3] [ref=e140]
+            - paragraph [ref=e141]: Porcentaje de slots de eco utilizados vs. disponibles
+          - generic [ref=e144]:
+            - img [ref=e147]
+            - heading "Eventos cardíacos detectados" [level=3] [ref=e150]
+            - paragraph [ref=e151]: Arritmias, isquemias y otros eventos identificados precozmente
+          - generic [ref=e154]:
+            - generic [ref=e155]:
+              - img [ref=e157]
+              - generic [ref=e160]:
+                - img [ref=e161]
+                - generic [ref=e165]: ">4.5/5"
+            - heading "Satisfacción del paciente" [level=3] [ref=e166]
+            - paragraph [ref=e167]: Calificación post-consulta del paciente cardiológico
+          - generic [ref=e170]:
+            - generic [ref=e171]:
+              - img [ref=e173]
+              - generic [ref=e176]:
+                - img [ref=e177]
+                - generic [ref=e181]: ">70%"
+            - heading "Conversión de remisiones" [level=3] [ref=e182]
+            - paragraph [ref=e183]: Remisiones recibidas que se convierten en pacientes activos
+      - generic [ref=e187]:
+        - generic [ref=e188]:
+          - heading "Flujos de trabajo optimizados" [level=2] [ref=e189]
+          - paragraph [ref=e190]: Cada paso de tus procesos clínicos más importantes, digitalizado y secuenciado para que no pierdas tiempo.
+        - generic [ref=e191]:
+          - generic [ref=e192]:
+            - heading "Consulta cardiológica de primera vez" [level=3] [ref=e193]
+            - list [ref=e194]:
+              - listitem [ref=e195]:
+                - generic [ref=e196]: "1"
+                - generic [ref=e197]:
+                  - img [ref=e198]
+                  - generic [ref=e200]: Anamnesis cardiovascular estructurada
+              - listitem [ref=e201]:
+                - generic [ref=e202]: "2"
+                - generic [ref=e203]:
+                  - img [ref=e204]
+                  - generic [ref=e206]: Examen físico cardiovascular
+              - listitem [ref=e207]:
+                - generic [ref=e208]: "3"
+                - generic [ref=e209]:
+                  - img [ref=e210]
+                  - generic [ref=e212]: ECG en consultorio con interpretación
+              - listitem [ref=e213]:
+                - generic [ref=e214]: "4"
+                - generic [ref=e215]:
+                  - img [ref=e216]
+                  - generic [ref=e218]: Solicitud de estudios complementarios
+              - listitem [ref=e219]:
+                - generic [ref=e220]: "5"
+                - generic [ref=e221]:
+                  - img [ref=e222]
+                  - generic [ref=e224]: Estratificación de riesgo cardiovascular
+              - listitem [ref=e225]:
+                - generic [ref=e226]: "6"
+                - generic [ref=e227]:
+                  - img [ref=e228]
+                  - generic [ref=e230]: Plan terapéutico y seguimiento
+          - generic [ref=e231]:
+            - heading "Cola de ECG" [level=3] [ref=e232]
+            - list [ref=e233]:
+              - listitem [ref=e234]:
+                - generic [ref=e235]: "1"
+                - generic [ref=e236]:
+                  - img [ref=e237]
+                  - generic [ref=e239]: ECG tomado por enfermería/técnico
+              - listitem [ref=e240]:
+                - generic [ref=e241]: "2"
+                - generic [ref=e242]:
+                  - img [ref=e243]
+                  - generic [ref=e245]: Aparece en cola de pendientes del cardiólogo
+              - listitem [ref=e246]:
+                - generic [ref=e247]: "3"
+                - generic [ref=e248]:
+                  - img [ref=e249]
+                  - generic [ref=e251]: Interpretación con herramientas de medición
+              - listitem [ref=e252]:
+                - generic [ref=e253]: "4"
+                - generic [ref=e254]:
+                  - img [ref=e255]
+                  - generic [ref=e257]: Informe generado y firmado digitalmente
+              - listitem [ref=e258]:
+                - generic [ref=e259]: "5"
+                - generic [ref=e260]:
+                  - img [ref=e261]
+                  - generic [ref=e263]: Resultado disponible en historia del paciente
+          - generic [ref=e264]:
+            - heading "Seguimiento del paciente cardiovascular" [level=3] [ref=e265]
+            - list [ref=e266]:
+              - listitem [ref=e267]:
+                - generic [ref=e268]: "1"
+                - generic [ref=e269]:
+                  - img [ref=e270]
+                  - generic [ref=e272]: Revisión de alertas y valores fuera de rango
+              - listitem [ref=e273]:
+                - generic [ref=e274]: "2"
+                - generic [ref=e275]:
+                  - img [ref=e276]
+                  - generic [ref=e278]: Control de adherencia al tratamiento
+              - listitem [ref=e279]:
+                - generic [ref=e280]: "3"
+                - generic [ref=e281]:
+                  - img [ref=e282]
+                  - generic [ref=e284]: Actualización de riesgo cardiovascular
+              - listitem [ref=e285]:
+                - generic [ref=e286]: "4"
+                - generic [ref=e287]:
+                  - img [ref=e288]
+                  - generic [ref=e290]: Ajuste terapéutico si necesario
+              - listitem [ref=e291]:
+                - generic [ref=e292]: "5"
+                - generic [ref=e293]:
+                  - img [ref=e294]
+                  - generic [ref=e296]: Programación de próximo control
+      - generic [ref=e298]:
+        - generic [ref=e299]:
+          - heading "¿Por qué Red Salud para Cardiología?" [level=2] [ref=e300]
+          - paragraph [ref=e301]: No es otro sistema genérico. Esto es lo que nos diferencia en tu especialidad.
+        - generic [ref=e302]:
+          - generic [ref=e303]:
+            - img [ref=e305]
+            - heading "ECG integrado" [level=3] [ref=e307]
+            - paragraph [ref=e308]: Visor de trazados con medición de intervalos, ejes y comparación con registros previos del mismo paciente.
+          - generic [ref=e309]:
+            - img [ref=e311]
+            - heading "Alertas en tiempo real" [level=3] [ref=e313]
+            - paragraph [ref=e314]: Cuando un paciente tiene un valor crítico de troponina o un Holter con arritmia, lo sabés inmediatamente.
+          - generic [ref=e315]:
+            - img [ref=e317]
+            - heading "Riesgo auto-calculado" [level=3] [ref=e319]
+            - paragraph [ref=e320]: Framingham, ASCVD y SCORE se calculan solos con los datos que ya tiene la historia clínica.
+          - generic [ref=e321]:
+            - img [ref=e323]
+            - heading "Cola de procedimientos" [level=3] [ref=e326]
+            - paragraph [ref=e327]: ECG, eco, Holter y prueba de esfuerzo — cada estudio tiene su cola y su flujo específico.
+      - generic [ref=e329]:
+        - heading "Transformá tu práctica de Cardiología" [level=2] [ref=e330]
+        - paragraph [ref=e331]: Creá tu cuenta gratuita y descubrí cómo Red Salud se adapta a los flujos de trabajo de tu especialidad. Sin compromiso, sin tarjeta de crédito.
+        - link "Comenzar gratis" [ref=e333] [cursor=pointer]:
+          - /url: /auth/register
+          - text: Comenzar gratis
+          - img [ref=e334]
+        - link "Ver otras especialidades" [ref=e337] [cursor=pointer]:
+          - /url: /especialidades
+          - img [ref=e338]
+          - text: Ver otras especialidades
+        - paragraph [ref=e340]: Sin tarjeta de crédito. Configuración en minutos. Soporte incluido.
+  - contentinfo [ref=e341]:
+    - generic [ref=e343]:
+      - generic [ref=e344]:
+        - link "Red Salud" [ref=e345] [cursor=pointer]:
+          - /url: /
+          - img [ref=e347]
+          - generic [ref=e349]: Red Salud
+        - paragraph [ref=e350]: La plataforma clínica que se adapta a tu especialidad médica.
+      - generic [ref=e351]:
+        - heading "Producto" [level=3] [ref=e352]
+        - list [ref=e353]:
+          - listitem [ref=e354]:
+            - link "Funcionalidades" [ref=e355] [cursor=pointer]:
+              - /url: /#funcionalidades
+          - listitem [ref=e356]:
+            - link "Especialidades" [ref=e357] [cursor=pointer]:
+              - /url: /#especialidades
+          - listitem [ref=e358]:
+            - link "Precios" [ref=e359] [cursor=pointer]:
+              - /url: /precios
+          - listitem [ref=e360]:
+            - link "Actualizaciones" [ref=e361] [cursor=pointer]:
+              - /url: "#"
+      - generic [ref=e362]:
+        - heading "Especialidades" [level=3] [ref=e363]
+        - list [ref=e364]:
+          - listitem [ref=e365]:
+            - link "Medicina General" [ref=e366] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e367]:
+            - link "Cardiología" [ref=e368] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e369]:
+            - link "Pediatría" [ref=e370] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e371]:
+            - link "Odontología" [ref=e372] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e373]:
+            - link "Ginecología" [ref=e374] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e375]:
+            - link "Ver todas" [ref=e376] [cursor=pointer]:
+              - /url: /especialidades
+      - generic [ref=e377]:
+        - heading "Recursos" [level=3] [ref=e378]
+        - list [ref=e379]:
+          - listitem [ref=e380]:
+            - link "Centro de Ayuda" [ref=e381] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e382]:
+            - link "Blog" [ref=e383] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e384]:
+            - link "API" [ref=e385] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e386]:
+            - link "Estado del Sistema" [ref=e387] [cursor=pointer]:
+              - /url: "#"
+      - generic [ref=e388]:
+        - heading "Legal" [level=3] [ref=e389]
+        - list [ref=e390]:
+          - listitem [ref=e391]:
+            - link "Privacidad" [ref=e392] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e393]:
+            - link "Términos" [ref=e394] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e395]:
+            - link "Seguridad" [ref=e396] [cursor=pointer]:
+              - /url: "#"
+    - generic [ref=e398]:
+      - paragraph [ref=e399]: © 2024 Red Salud. Todos los derechos reservados.
+      - paragraph [ref=e400]: Hecho con amor en Venezuela

@@ -1,0 +1,34 @@
+- main [ref=e2]:
+  - generic [ref=e4]:
+    - link "Red Salud" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]
+      - generic [ref=e8]: Red Salud
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - heading "Crea tu cuenta" [level=1] [ref=e11]
+        - paragraph [ref=e12]: Consultorio medico digital en minutos
+      - button "Continuar con Google" [ref=e13]:
+        - img [ref=e14]
+        - text: Continuar con Google
+      - generic [ref=e21]: o
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]: Correo electronico
+          - generic [ref=e26]:
+            - img [ref=e27]
+            - textbox "Correo electronico" [ref=e30]:
+              - /placeholder: doctor@ejemplo.com
+        - generic [ref=e31]:
+          - generic [ref=e32]: Contrasena
+          - generic [ref=e33]:
+            - img [ref=e34]
+            - textbox "Contrasena" [ref=e37]:
+              - /placeholder: Minimo 6 caracteres
+            - button [ref=e38]:
+              - img [ref=e39]
+        - button "Crear Cuenta" [ref=e42]
+    - paragraph [ref=e43]:
+      - text: Ya tenes cuenta?
+      - link "Inicia sesion" [ref=e44] [cursor=pointer]:
+        - /url: /auth/login

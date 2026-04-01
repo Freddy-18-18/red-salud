@@ -4,38 +4,27 @@ import { createClient } from "@/lib/supabase/client";
 // Types
 // ---------------------------------------------------------------------------
 
-export interface PrescriptionMedication {
-  id: string;
-  prescription_id: string;
-  product_id: string | null;
-  quantity: number;
-  dosage: string | null;
-  frequency: string | null;
-  duration: string | null;
-  dispensed_quantity: number;
-  product?: {
-    id: string;
-    name: string;
-    generic_name: string;
-    presentation: string | null;
-  } | null;
-}
-
 export interface Prescription {
   id: string;
-  prescription_number: string;
   patient_id: string | null;
-  doctor_name: string;
-  doctor_license: string;
-  issue_date: string;
-  expiry_date: string;
+  doctor_id: string | null;
+  medical_record_id: string | null;
+  appointment_id: string | null;
+  prescribed_at: string;
+  expires_at: string | null;
+  diagnosis: string | null;
+  general_instructions: string | null;
   status: "pending" | "dispensed" | "cancelled";
+  pharmacy_id: string | null;
+  dispensed_at: string | null;
   notes: string | null;
+  offline_patient_id: string | null;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
   // joined
   patient?: { id: string; full_name: string; email: string | null } | null;
-  prescription_items?: PrescriptionMedication[];
+  doctor?: { id: string; full_name: string; email: string | null } | null;
 }
 
 export interface PrescriptionFilters {
@@ -49,14 +38,33 @@ export interface PrescriptionFilters {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getPharmacyIdQuery() {
+async function getPharmacyId(): Promise<string | null> {
   const supabase = createClient();
-  // pharmacy_users maps auth.uid → pharmacy_id
-  return supabase
-    .from("pharmacy_users")
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // Try pharmacy_staff first (employee)
+  const { data: staff } = await supabase
+    .from("pharmacy_staff")
     .select("pharmacy_id")
+    .eq("profile_id", user.id)
+    .eq("is_active", true)
     .limit(1)
-    .single();
+    .maybeSingle();
+
+  if (staff?.pharmacy_id) return staff.pharmacy_id;
+
+  // Try pharmacy_details (owner)
+  const { data: pharmacy } = await supabase
+    .from("pharmacy_details")
+    .select("id")
+    .eq("profile_id", user.id)
+    .limit(1)
+    .maybeSingle();
+
+  return pharmacy?.id ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -67,36 +75,39 @@ export async function fetchPrescriptions(
   filters: PrescriptionFilters = {}
 ): Promise<Prescription[]> {
   const supabase = createClient();
+  const pharmacyId = await getPharmacyId();
 
   let query = supabase
     .from("prescriptions")
     .select(
       `
       *,
-      patient:patients!patient_id(id, full_name, email),
-      prescription_items(
-        id, prescription_id, product_id, quantity, dosage, frequency, duration, dispensed_quantity,
-        product:products!product_id(id, name, generic_name, presentation)
-      )
+      patient:profiles!patient_id(id, full_name, email),
+      doctor:profiles!doctor_id(id, full_name, email)
     `
     )
-    .order("issue_date", { ascending: false });
+    .order("prescribed_at", { ascending: false });
+
+  // Scope to this pharmacy if we have one
+  if (pharmacyId) {
+    query = query.eq("pharmacy_id", pharmacyId);
+  }
 
   if (filters.status && filters.status !== "todas") {
     query = query.eq("status", filters.status);
   }
 
   if (filters.dateFrom) {
-    query = query.gte("issue_date", filters.dateFrom);
+    query = query.gte("prescribed_at", filters.dateFrom);
   }
 
   if (filters.dateTo) {
-    query = query.lte("issue_date", filters.dateTo);
+    query = query.lte("prescribed_at", filters.dateTo);
   }
 
   if (filters.search) {
     query = query.or(
-      `doctor_name.ilike.%${filters.search}%,prescription_number.ilike.%${filters.search}%`
+      `diagnosis.ilike.%${filters.search}%,general_instructions.ilike.%${filters.search}%`
     );
   }
 
@@ -117,13 +128,14 @@ export async function fetchPrescriptions(
 export async function dispensePrescription(prescriptionId: string): Promise<boolean> {
   const supabase = createClient();
 
-  // Get current user's pharmacy_id
-  const { data: pharmacyUser } = await getPharmacyIdQuery();
+  const pharmacyId = await getPharmacyId();
 
   const { error } = await supabase
     .from("prescriptions")
     .update({
       status: "dispensed",
+      dispensed_at: new Date().toISOString(),
+      pharmacy_id: pharmacyId,
       updated_at: new Date().toISOString(),
     })
     .eq("id", prescriptionId);
@@ -131,26 +143,6 @@ export async function dispensePrescription(prescriptionId: string): Promise<bool
   if (error) {
     console.error("Error dispensing prescription:", error);
     return false;
-  }
-
-  // Mark all items as fully dispensed
-  const { data: items } = await supabase
-    .from("prescription_items")
-    .select("id, quantity")
-    .eq("prescription_id", prescriptionId);
-
-  if (items) {
-    for (const item of items) {
-      await supabase
-        .from("prescription_items")
-        .update({ dispensed_quantity: item.quantity })
-        .eq("id", item.id);
-    }
-  }
-
-  // Create invoice if pharmacy_id available
-  if (pharmacyUser?.pharmacy_id) {
-    await createInvoiceFromPrescription(prescriptionId, pharmacyUser.pharmacy_id);
   }
 
   return true;
@@ -193,11 +185,8 @@ export async function getPrescriptionById(
     .select(
       `
       *,
-      patient:patients!patient_id(id, full_name, email),
-      prescription_items(
-        id, prescription_id, product_id, quantity, dosage, frequency, duration, dispensed_quantity,
-        product:products!product_id(id, name, generic_name, presentation)
-      )
+      patient:profiles!patient_id(id, full_name, email),
+      doctor:profiles!doctor_id(id, full_name, email)
     `
     )
     .eq("id", id)
@@ -209,78 +198,4 @@ export async function getPrescriptionById(
   }
 
   return data as unknown as Prescription;
-}
-
-// ---------------------------------------------------------------------------
-// Create invoice from dispensed prescription
-// ---------------------------------------------------------------------------
-
-async function createInvoiceFromPrescription(
-  prescriptionId: string,
-  pharmacyId: string
-): Promise<void> {
-  const supabase = createClient();
-
-  const { data: items } = await supabase
-    .from("prescription_items")
-    .select("product_id, quantity, product:products!product_id(precio_venta_usd)")
-    .eq("prescription_id", prescriptionId);
-
-  if (!items || items.length === 0) return;
-
-  let subtotal = 0;
-  const invoiceItems: Array<{
-    product_id: string;
-    quantity: number;
-    unit_price_usd: number;
-    subtotal_usd: number;
-  }> = [];
-
-  for (const item of items) {
-    const product = item.product as unknown as { precio_venta_usd: number } | null;
-    const unitPrice = product?.precio_venta_usd || 0;
-    const itemSubtotal = unitPrice * item.quantity;
-    subtotal += itemSubtotal;
-
-    if (item.product_id) {
-      invoiceItems.push({
-        product_id: item.product_id,
-        quantity: item.quantity,
-        unit_price_usd: unitPrice,
-        subtotal_usd: itemSubtotal,
-      });
-    }
-  }
-
-  const taxRate = 0.16;
-  const taxAmount = subtotal * taxRate;
-  const total = subtotal + taxAmount;
-
-  // Create invoice
-  const { data: invoice, error: invoiceError } = await supabase
-    .from("invoices")
-    .insert({
-      pharmacy_id: pharmacyId,
-      subtotal_usd: subtotal,
-      tax_amount_usd: taxAmount,
-      total_usd: total,
-      payment_method: "efectivo",
-      status: "draft",
-      notes: `Generada desde receta ${prescriptionId}`,
-    })
-    .select("id")
-    .single();
-
-  if (invoiceError || !invoice) {
-    console.error("Error creating invoice from prescription:", invoiceError);
-    return;
-  }
-
-  // Insert invoice items
-  for (const item of invoiceItems) {
-    await supabase.from("invoice_items").insert({
-      invoice_id: invoice.id,
-      ...item,
-    });
-  }
 }

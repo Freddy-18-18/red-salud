@@ -1,0 +1,45 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img [ref=e7]
+        - generic [ref=e10]:
+          - text: Red Salud
+          - generic [ref=e11]: Farmacia
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - heading "Bienvenido de vuelta" [level=1] [ref=e14]
+          - paragraph [ref=e15]: Ingresa a tu panel de farmacia
+        - generic [ref=e49]:
+          - img [ref=e50]
+          - paragraph [ref=e52]: Invalid API key
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - generic [ref=e18]: Email
+            - textbox "Email" [ref=e19]:
+              - /placeholder: tu@farmacia.com
+              - text: farmatest2@test.com
+          - generic [ref=e20]:
+            - generic [ref=e21]: Contrasena
+            - generic [ref=e22]:
+              - textbox "Contrasena" [ref=e23]:
+                - /placeholder: Tu contrasena
+                - text: Test1234!
+              - button [ref=e24]:
+                - img [ref=e25]
+          - generic [ref=e28]:
+            - generic [ref=e29] [cursor=pointer]:
+              - checkbox "Recordar sesion" [ref=e30]
+              - generic [ref=e31]: Recordar sesion
+            - link "Olvidaste tu contrasena?" [ref=e32] [cursor=pointer]:
+              - /url: /auth/forgot-password
+          - button "Iniciar Sesion" [ref=e33]:
+            - img [ref=e53]
+            - text: Iniciar Sesion
+      - paragraph [ref=e37]:
+        - text: No tenes cuenta?
+        - link "Registrate aqui" [ref=e38] [cursor=pointer]:
+          - /url: /auth/register
+  - button "Open Next.js Dev Tools" [ref=e45] [cursor=pointer]:
+    - img [ref=e46]
+  - alert [ref=e39]

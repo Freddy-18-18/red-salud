@@ -1,55 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { invoiceSchema } from '@red-salud/types';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 // ============================================================================
-// GET /api/pharmacy/pos
+// LEGACY API ROUTE — /api/pos
+//
+// NOTA: Esta ruta usa las tablas con prefijo farmacia_* del esquema actual.
+// Tablas anteriores (invoices, invoice_items) ya no existen.
+//
+// Tablas actuales:
+//   farmacia_ventas              — Facturas/ventas
+//   pharmacy_invoice_items       — Items de factura (legacy name kept in schema)
+//   farmacia_inventario          — Inventario (para ajustar stock)
+// ============================================================================
+
+// ============================================================================
+// GET /api/pos — Listar ventas/facturas
 // ============================================================================
 export async function GET(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const searchParams = request.nextUrl.searchParams;
-    const invoice_id = searchParams.get('invoice_id');
-    const warehouse_id = searchParams.get('warehouse_id');
-    const status = searchParams.get('status');
-    const date_from = searchParams.get('date_from');
-    const date_to = searchParams.get('date_to');
+    const invoice_id = searchParams.get("invoice_id");
+    const pharmacy_id = searchParams.get("pharmacy_id");
+    const status = searchParams.get("status");
+    const date_from = searchParams.get("date_from");
+    const date_to = searchParams.get("date_to");
 
     let query = supabase
-      .from('invoices')
+      .from("farmacia_ventas")
       .select(`
         *,
-        invoice_items(*),
-        patients(*),
-        warehouses(*),
-        pharmacy_users(*)
+        pharmacy_invoice_items(*)
       `);
 
     if (invoice_id) {
-      query = query.eq('id', invoice_id);
+      query = query.eq("id", invoice_id);
     }
 
-    if (warehouse_id) {
-      query = query.eq('warehouse_id', warehouse_id);
+    if (pharmacy_id) {
+      query = query.eq("pharmacy_id", pharmacy_id);
     }
 
     if (status) {
-      query = query.eq('status', status);
+      query = query.eq("status", status);
     }
 
     if (date_from) {
-      query = query.gte('created_at', date_from);
+      query = query.gte("created_at", date_from);
     }
 
     if (date_to) {
-      query = query.lte('created_at', date_to);
+      query = query.lte("created_at", date_to);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -57,46 +61,45 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data });
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
 
 // ============================================================================
-// POST /api/pharmacy/pos - Create new invoice
+// POST /api/pos — Crear nueva venta/factura
 // ============================================================================
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const body = await request.json();
 
-    // Validate invoice data
-    const invoiceResult = invoiceSchema.safeParse(body);
-    if (!invoiceResult.success) {
-      return NextResponse.json(
-        { error: 'Invalid invoice data', details: invoiceResult.error },
-        { status: 400 }
-      );
-    }
-
-    // Start a transaction-like operation
+    // Crear factura
     const { data: invoice, error: invoiceError } = await supabase
-      .from('invoices')
-      .insert([{
-        invoice_number: body.invoice_number,
-        patient_id: body.patient_id,
-        warehouse_id: body.warehouse_id,
-        user_id: body.user_id,
-        status: body.status || 'draft',
-        subtotal_usd: body.subtotal_usd,
-        subtotal_ves: body.subtotal_ves,
-        iva_usd: body.iva_usd,
-        iva_ves: body.iva_ves,
-        total_usd: body.total_usd,
-        total_ves: body.total_ves,
-        payment_method: body.payment_method,
-        payment_details: body.payment_details,
-        exchange_rate: body.exchange_rate,
-        notes: body.notes
-      }])
+      .from("farmacia_ventas")
+      .insert([
+        {
+          pharmacy_id: body.pharmacy_id,
+          invoice_number: body.invoice_number,
+          customer_name: body.customer_name,
+          customer_ci: body.customer_ci,
+          customer_rif: body.customer_rif,
+          customer_phone: body.customer_phone,
+          status: body.status || "completed",
+          subtotal_usd: body.subtotal_usd,
+          discount_usd: body.discount_usd ?? 0,
+          tax_usd: body.tax_usd ?? 0,
+          total_usd: body.total_usd,
+          exchange_rate_used: body.exchange_rate,
+          total_bs: body.total_bs,
+          payment_method: body.payment_method,
+          payment_reference: body.payment_reference,
+          payment_details: body.payment_details,
+          cashier_id: body.cashier_id,
+          notes: body.notes,
+          is_fiscal: body.is_fiscal ?? false,
+          cash_session_id: body.cash_session_id,
+        },
+      ])
       .select()
       .single();
 
@@ -104,107 +107,90 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: invoiceError.message }, { status: 500 });
     }
 
-    // Insert invoice items
+    // Insertar items de la factura
     if (body.items && body.items.length > 0) {
-      const itemsToInsert = body.items.map((item: {
-        product_id: string;
-        batch_id?: string;
-        product_name: string;
-        generic_name?: string;
-        quantity: number;
-        unit_type: string;
-        unit_price_usd: number;
-        unit_price_ves: number;
-        total_usd: number;
-        total_ves: number;
-        iva_rate: number;
-        iva_usd: number;
-        iva_ves: number;
-      }) => ({
-        invoice_id: invoice.id,
-        product_id: item.product_id,
-        batch_id: item.batch_id,
-        product_name: item.product_name,
-        generic_name: item.generic_name,
-        quantity: item.quantity,
-        unit_type: item.unit_type,
-        unit_price_usd: item.unit_price_usd,
-        unit_price_ves: item.unit_price_ves,
-        total_usd: item.total_usd,
-        total_ves: item.total_ves,
-        iva_rate: item.iva_rate,
-        iva_usd: item.iva_usd,
-        iva_ves: item.iva_ves
-      }));
+      const itemsToInsert = body.items.map(
+        (item: {
+          product_id: string;
+          batch_id?: string;
+          quantity: number;
+          unit_price_usd: number;
+          unit_price_bs: number;
+          discount_percent?: number;
+          subtotal_usd: number;
+          subtotal_bs: number;
+          is_prescription_item?: boolean;
+        }) => ({
+          invoice_id: invoice.id,
+          product_id: item.product_id,
+          batch_id: item.batch_id,
+          quantity: item.quantity,
+          unit_price_usd: item.unit_price_usd,
+          unit_price_bs: item.unit_price_bs,
+          discount_percent: item.discount_percent ?? 0,
+          subtotal_usd: item.subtotal_usd,
+          subtotal_bs: item.subtotal_bs,
+          is_prescription_item: item.is_prescription_item ?? false,
+        }),
+      );
 
       const { error: itemsError } = await supabase
-        .from('invoice_items')
+        .from("pharmacy_invoice_items")
         .insert(itemsToInsert);
 
       if (itemsError) {
-        // Rollback invoice
-        await supabase.from('invoices').delete().eq('id', invoice.id);
+        // Rollback: eliminar la factura si fallan los items
+        await supabase.from("farmacia_ventas").delete().eq("id", invoice.id);
         return NextResponse.json({ error: itemsError.message }, { status: 500 });
       }
 
-      // Update batch quantities
+      // Actualizar stock de inventario
       for (const item of body.items) {
         if (item.batch_id) {
           const { data: batch } = await supabase
-            .from('batches')
-            .select('quantity')
-            .eq('id', item.batch_id)
+            .from("farmacia_inventario")
+            .select("quantity_available")
+            .eq("id", item.batch_id)
             .single();
 
           if (batch) {
             await supabase
-              .from('batches')
-              .update({ quantity: batch.quantity - item.quantity })
-              .eq('id', item.batch_id);
+              .from("farmacia_inventario")
+              .update({
+                quantity_available: batch.quantity_available - item.quantity,
+              })
+              .eq("id", item.batch_id);
           }
         }
       }
     }
 
-    // Log the action
-    await supabase.from('audit_logs').insert([{
-      user_id: body.user_id,
-      action: 'create_invoice',
-      entity_type: 'invoice',
-      entity_id: invoice.id,
-      new_values: invoice
-    }]);
-
     return NextResponse.json({ data: invoice }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
 
 // ============================================================================
-// PATCH /api/pharmacy/pos - Update invoice
+// PATCH /api/pos — Actualizar factura
 // ============================================================================
 export async function PATCH(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const body = await request.json();
     const { id, ...updates } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'Invoice ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Se requiere el ID de la factura" },
+        { status: 400 },
+      );
     }
 
-    // Get current values for audit
-    const { data: current } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    // Update invoice
     const { data, error } = await supabase
-      .from('invoices')
+      .from("farmacia_ventas")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -212,96 +198,87 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Log the action
-    await supabase.from('audit_logs').insert([{
-      user_id: updates.user_id,
-      action: 'update_invoice',
-      entity_type: 'invoice',
-      entity_id: id,
-      old_values: current,
-      new_values: data
-    }]);
-
     return NextResponse.json({ data });
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
 
 // ============================================================================
-// DELETE /api/pharmacy/pos - Cancel invoice
+// DELETE /api/pos — Anular factura y restaurar stock
 // ============================================================================
 export async function DELETE(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const searchParams = request.nextUrl.searchParams;
-    const id = searchParams.get('id');
-    const user_id = searchParams.get('user_id');
+    const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json({ error: 'Invoice ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Se requiere el ID de la factura" },
+        { status: 400 },
+      );
     }
 
-    // Get current invoice
+    // Obtener factura actual
     const { data: current } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('id', id)
+      .from("farmacia_ventas")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (!current) {
-      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Factura no encontrada" },
+        { status: 404 },
+      );
     }
 
-    // Get invoice items to restore quantities
+    // Obtener items para restaurar stock
     const { data: items } = await supabase
-      .from('invoice_items')
-      .select('*')
-      .eq('invoice_id', id);
+      .from("pharmacy_invoice_items")
+      .select("*")
+      .eq("invoice_id", id);
 
-    // Restore batch quantities
+    // Restaurar stock
     if (items) {
       for (const item of items) {
         if (item.batch_id) {
           const { data: batch } = await supabase
-            .from('batches')
-            .select('quantity')
-            .eq('id', item.batch_id)
+            .from("farmacia_inventario")
+            .select("quantity_available")
+            .eq("id", item.batch_id)
             .single();
 
           if (batch) {
             await supabase
-              .from('batches')
-              .update({ quantity: batch.quantity + item.quantity })
-              .eq('id', item.batch_id);
+              .from("farmacia_inventario")
+              .update({
+                quantity_available: batch.quantity_available + item.quantity,
+              })
+              .eq("id", item.batch_id);
           }
         }
       }
     }
 
-    // Delete invoice items
-    await supabase.from('invoice_items').delete().eq('invoice_id', id);
-
-    // Delete invoice
-    const { error } = await supabase
-      .from('invoices')
-      .delete()
-      .eq('id', id);
+    // Anular factura (soft delete — marcar como voided)
+    const { data, error } = await supabase
+      .from("farmacia_ventas")
+      .update({
+        status: "voided",
+        voided_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Log the action
-    await supabase.from('audit_logs').insert([{
-      user_id,
-      action: 'delete_invoice',
-      entity_type: 'invoice',
-      entity_id: id,
-      old_values: current
-    }]);
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ data, success: true });
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }

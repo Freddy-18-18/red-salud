@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { specialtyCategories } from '@/lib/data/specialties-public';
 import { CtaSection } from '@/components/public/cta-section';
 import {
@@ -13,6 +14,7 @@ import {
   Fingerprint,
   Droplet,
   SmilePlus,
+  ArrowRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -48,6 +50,18 @@ const colorBgMap: Record<string, string> = {
   violet: 'bg-violet-500/10 text-violet-400',
 };
 
+const colorTextMap: Record<string, string> = {
+  blue: 'text-blue-400',
+  red: 'text-red-400',
+  purple: 'text-purple-400',
+  orange: 'text-orange-400',
+  sky: 'text-sky-400',
+  pink: 'text-pink-400',
+  cyan: 'text-cyan-400',
+  teal: 'text-teal-400',
+  violet: 'text-violet-400',
+};
+
 export default function EspecialidadesPage() {
   return (
     <div className="pt-24">
@@ -60,6 +74,9 @@ export default function EspecialidadesPage() {
           <p className="mt-4 text-lg text-zinc-400">
             Cada especialidad activa sus propios módulos, formularios, KPIs y flujos de trabajo.
             Encontrá la tuya y descubrí cómo Red Salud se adapta a vos.
+          </p>
+          <p className="mt-3 text-base text-zinc-500">
+            Hacé clic en cualquier especialidad para ver sus módulos, métricas y flujos de trabajo en detalle.
           </p>
         </div>
       </section>
@@ -74,11 +91,11 @@ export default function EspecialidadesPage() {
                 {category.specialties.map((spec) => {
                   const Icon = iconMap[spec.iconName] ?? Stethoscope;
                   const colorClasses = colorBgMap[spec.accentColor] ?? colorBgMap.teal;
-                  return (
-                    <div
-                      key={spec.slug}
-                      className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm hover:border-white/20 transition-colors duration-300"
-                    >
+                  const textColor = colorTextMap[spec.accentColor] ?? colorTextMap.teal;
+                  const hasDetailPage = !!spec.heroTitle;
+
+                  const CardContent = (
+                    <>
                       <div className="flex items-center gap-3 mb-3">
                         <div
                           className={`inline-flex h-10 w-10 items-center justify-center rounded-lg ${colorClasses}`}
@@ -90,7 +107,7 @@ export default function EspecialidadesPage() {
                       <p className="text-sm text-zinc-400 leading-relaxed mb-4">
                         {spec.shortDescription}
                       </p>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-1.5 mb-4">
                         {spec.keyModules.map((mod) => (
                           <span
                             key={mod}
@@ -100,6 +117,33 @@ export default function EspecialidadesPage() {
                           </span>
                         ))}
                       </div>
+                      {hasDetailPage && (
+                        <div className={`inline-flex items-center gap-1.5 text-sm font-medium ${textColor} group-hover:underline`}>
+                          Ver detalle
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+                        </div>
+                      )}
+                    </>
+                  );
+
+                  if (hasDetailPage) {
+                    return (
+                      <Link
+                        key={spec.slug}
+                        href={`/especialidades/${spec.slug}`}
+                        className="group rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm hover:border-white/20 hover:bg-white/[0.08] transition-all duration-300 block"
+                      >
+                        {CardContent}
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={spec.slug}
+                      className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm"
+                    >
+                      {CardContent}
                     </div>
                   );
                 })}

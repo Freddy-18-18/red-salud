@@ -11,6 +11,7 @@ export interface PurchaseOrderItem {
   quantity_ordered: number;
   quantity_received: number;
   unit_cost_usd: number;
+  unit_cost_bs: number | null;
   subtotal_usd: number;
   batch_number: string | null;
   expiry_date: string | null;
@@ -26,14 +27,18 @@ export interface PurchaseOrderItem {
 export interface PurchaseOrder {
   id: string;
   pharmacy_id: string;
-  po_number: string;
   supplier_id: string;
-  order_date: string;
-  expected_delivery_date: string | null;
+  order_number: string;
+  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
   subtotal_usd: number;
   tax_usd: number;
   total_usd: number;
-  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+  exchange_rate_used: number | null;
+  total_bs: number | null;
+  payment_method: string | null;
+  payment_status: string | null;
+  expected_delivery_date: string | null;
+  received_at: string | null;
   notes: string | null;
   created_by: string | null;
   created_at: string;
@@ -41,8 +46,8 @@ export interface PurchaseOrder {
   // joined
   supplier?: {
     id: string;
-    name: string;
-    contact_person: string | null;
+    company_name: string;
+    contact_name: string | null;
     phone: string | null;
   } | null;
   items?: PurchaseOrderItem[];
@@ -103,18 +108,37 @@ export const PO_STATUS_COLORS: Record<string, string> = {
 
 async function getPharmacyId(): Promise<string | null> {
   const supabase = createClient();
-  const { data } = await supabase
-    .from("pharmacy_users")
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // Try pharmacy_staff first (employee)
+  const { data: staff } = await supabase
+    .from("pharmacy_staff")
     .select("pharmacy_id")
+    .eq("profile_id", user.id)
+    .eq("is_active", true)
     .limit(1)
-    .single();
-  return data?.pharmacy_id || null;
+    .maybeSingle();
+
+  if (staff?.pharmacy_id) return staff.pharmacy_id;
+
+  // Try pharmacy_details (owner)
+  const { data: pharmacy } = await supabase
+    .from("pharmacy_details")
+    .select("id")
+    .eq("profile_id", user.id)
+    .limit(1)
+    .maybeSingle();
+
+  return pharmacy?.id ?? null;
 }
 
 async function generatePONumber(pharmacyId: string): Promise<string> {
   const supabase = createClient();
   const { count } = await supabase
-    .from("purchase_orders")
+    .from("pharmacy_purchase_orders")
     .select("*", { count: "exact", head: true })
     .eq("pharmacy_id", pharmacyId);
 
@@ -133,14 +157,14 @@ export async function fetchPurchaseOrders(
   const supabase = createClient();
 
   let query = supabase
-    .from("purchase_orders")
+    .from("pharmacy_purchase_orders")
     .select(
       `
       *,
-      supplier:suppliers!supplier_id(id, name, contact_person, phone)
+      supplier:pharmacy_suppliers!supplier_id(id, company_name, contact_name, phone)
     `
     )
-    .order("order_date", { ascending: false });
+    .order("created_at", { ascending: false });
 
   if (filters.status && filters.status !== "todas") {
     query = query.eq("status", filters.status);
@@ -151,11 +175,11 @@ export async function fetchPurchaseOrders(
   }
 
   if (filters.dateFrom) {
-    query = query.gte("order_date", filters.dateFrom);
+    query = query.gte("created_at", `${filters.dateFrom}T00:00:00`);
   }
 
   if (filters.dateTo) {
-    query = query.lte("order_date", filters.dateTo);
+    query = query.lte("created_at", `${filters.dateTo}T23:59:59`);
   }
 
   const { data, error } = await query;
@@ -178,14 +202,14 @@ export async function getPurchaseOrderById(
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from("purchase_orders")
+    .from("pharmacy_purchase_orders")
     .select(
       `
       *,
-      supplier:suppliers!supplier_id(id, name, contact_person, phone),
-      items:purchase_order_items(
+      supplier:pharmacy_suppliers!supplier_id(id, company_name, contact_name, phone),
+      items:pharmacy_purchase_order_items(
         *,
-        product:products!product_id(id, name, generic_name, presentation)
+        product:pharmacy_products!product_id(id, name, generic_name, presentation)
       )
     `
     )
@@ -227,10 +251,10 @@ export async function createPurchaseOrder(
   const total = subtotal + tax;
 
   const { data: po, error: poError } = await supabase
-    .from("purchase_orders")
+    .from("pharmacy_purchase_orders")
     .insert({
       pharmacy_id: pharmacyId,
-      po_number: poNumber,
+      order_number: poNumber,
       supplier_id: input.supplier_id,
       expected_delivery_date: input.expected_delivery_date || null,
       subtotal_usd: subtotal,
@@ -258,12 +282,12 @@ export async function createPurchaseOrder(
   }));
 
   const { error: itemsError } = await supabase
-    .from("purchase_order_items")
+    .from("pharmacy_purchase_order_items")
     .insert(itemsToInsert);
 
   if (itemsError) {
     console.error("Error creating PO items:", itemsError);
-    // PO was created, items failed – still return PO
+    // PO was created, items failed -- still return PO
   }
 
   return po as unknown as PurchaseOrder;
@@ -280,7 +304,7 @@ export async function updatePOStatus(
   const supabase = createClient();
 
   const { error } = await supabase
-    .from("purchase_orders")
+    .from("pharmacy_purchase_orders")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", id);
 
@@ -313,10 +337,17 @@ export async function receivePurchaseOrder(
 
   if (!pharmacyId) return false;
 
+  // Get the PO to find the supplier
+  const { data: po } = await supabase
+    .from("pharmacy_purchase_orders")
+    .select("supplier_id")
+    .eq("id", poId)
+    .single();
+
   // Update each PO item with received quantity
   for (const received of receivedItems) {
     const { error: itemError } = await supabase
-      .from("purchase_order_items")
+      .from("pharmacy_purchase_order_items")
       .update({
         quantity_received: received.quantity_received,
         batch_number: received.batch_number,
@@ -329,11 +360,11 @@ export async function receivePurchaseOrder(
       continue;
     }
 
-    // Create batch record
+    // Create batch record in pharmacy_batches
     if (received.quantity_received > 0) {
       // Get unit cost from the PO item
       const { data: poItem } = await supabase
-        .from("purchase_order_items")
+        .from("pharmacy_purchase_order_items")
         .select("unit_cost_usd, product_id")
         .eq("id", received.item_id)
         .single();
@@ -341,41 +372,21 @@ export async function receivePurchaseOrder(
       if (poItem) {
         const costPerUnit = poItem.unit_cost_usd || 0;
 
-        await supabase.from("batches").insert({
+        await supabase.from("pharmacy_batches").insert({
           product_id: received.product_id,
-          lot_number: received.batch_number,
-          expiration_date: received.expiry_date,
+          pharmacy_id: pharmacyId,
+          batch_number: received.batch_number,
+          expiry_date: received.expiry_date,
           quantity_received: received.quantity_received,
           quantity_available: received.quantity_received,
-          cost_per_unit: costPerUnit,
-          cost_total: costPerUnit * received.quantity_received,
-          supplier_id: null, // Will be resolved from PO
-        });
-
-        // Update product stock
-        await supabase.rpc("increment_product_stock", {
-          p_product_id: received.product_id,
-          p_quantity: received.quantity_received,
-        }).then(({ error }) => {
-          // If RPC doesn't exist, do manual update
-          if (error) {
-            supabase
-              .from("products")
-              .select("stock_actual")
-              .eq("id", received.product_id)
-              .single()
-              .then(({ data: product }) => {
-                if (product) {
-                  supabase
-                    .from("products")
-                    .update({
-                      stock_actual:
-                        (product.stock_actual || 0) + received.quantity_received,
-                    })
-                    .eq("id", received.product_id);
-                }
-              });
-          }
+          quantity_sold: 0,
+          quantity_damaged: 0,
+          quantity_returned: 0,
+          purchase_price_usd: costPerUnit,
+          purchase_price_bs: null,
+          supplier_id: po?.supplier_id || null,
+          received_at: new Date().toISOString(),
+          status: "active",
         });
       }
     }
@@ -383,7 +394,7 @@ export async function receivePurchaseOrder(
 
   // Determine if fully or partially received
   const { data: allItems } = await supabase
-    .from("purchase_order_items")
+    .from("pharmacy_purchase_order_items")
     .select("quantity_ordered, quantity_received")
     .eq("purchase_order_id", poId);
 
@@ -400,8 +411,12 @@ export async function receivePurchaseOrder(
         : "confirmed";
 
     await supabase
-      .from("purchase_orders")
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .from("pharmacy_purchase_orders")
+      .update({
+        status: newStatus,
+        received_at: allFullyReceived ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", poId);
   }
 
@@ -416,17 +431,16 @@ export async function fetchProductsForPO(): Promise<
   Array<{
     id: string;
     name: string;
-    generic_name: string;
+    generic_name: string | null;
     presentation: string | null;
-    precio_compra_usd: number;
-    stock_actual: number;
+    cost_usd: number | null;
   }>
 > {
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from("products")
-    .select("id, name, generic_name, presentation, precio_compra_usd, stock_actual")
+    .from("pharmacy_products")
+    .select("id, name, generic_name, presentation, cost_usd")
     .eq("is_active", true)
     .order("name");
 
@@ -443,15 +457,15 @@ export async function fetchProductsForPO(): Promise<
 // ---------------------------------------------------------------------------
 
 export async function fetchSuppliersForPO(): Promise<
-  Array<{ id: string; name: string; contact_person: string | null }>
+  Array<{ id: string; company_name: string; contact_name: string | null }>
 > {
   const supabase = createClient();
 
   const { data, error } = await supabase
-    .from("suppliers")
-    .select("id, name, contact_person")
+    .from("pharmacy_suppliers")
+    .select("id, company_name, contact_name")
     .eq("is_active", true)
-    .order("name");
+    .order("company_name");
 
   if (error) {
     console.error("Error fetching suppliers for PO:", error);

@@ -46,6 +46,7 @@ export interface Delivery {
   delivery_notes: string | null;
   customer_signature_url: string | null;
   created_at: string;
+  updated_at: string;
   delivery_person?: {
     full_name: string;
     phone: string | null;
@@ -65,6 +66,7 @@ export interface DeliveryZone {
   delivery_fee_bs: number;
   estimated_time_minutes: number;
   is_active: boolean;
+  created_at: string;
 }
 
 export interface CreateDeliveryInput {
@@ -103,8 +105,8 @@ export async function getDeliveries(
     .from("pharmacy_deliveries")
     .select(
       `*,
-      delivery_person:delivery_person_id(full_name, phone),
-      zone:zone_id(zone_name, delivery_fee_usd)`
+      delivery_person:profiles!delivery_person_id(full_name, phone),
+      zone:pharmacy_delivery_zones!zone_id(zone_name, delivery_fee_usd)`
     )
     .eq("pharmacy_id", pharmacyId)
     .order("created_at", { ascending: false });
@@ -195,7 +197,10 @@ export async function updateDeliveryStatus(
 ): Promise<boolean> {
   const supabase = createClient();
 
-  const payload: Record<string, unknown> = { status: newStatus };
+  const payload: Record<string, unknown> = {
+    status: newStatus,
+    updated_at: new Date().toISOString(),
+  };
   if (newStatus === "delivered") {
     payload.delivered_at = new Date().toISOString();
   }
@@ -227,6 +232,7 @@ export async function assignDeliveryPerson(
     .update({
       delivery_person_id: personId,
       status: "assigned",
+      updated_at: new Date().toISOString(),
     })
     .eq("id", deliveryId);
 

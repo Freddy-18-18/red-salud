@@ -324,7 +324,7 @@ export async function getExpiringProducts(
   const { data, error } = await supabase
     .from("pharmacy_batches")
     .select(
-      "id, product_id, batch_number, expiry_date, quantity_available, pharmacy_products(name)"
+      "id, product_id, batch_number, expiry_date, quantity_available, pharmacy_products:pharmacy_products!product_id(name)"
     )
     .eq("pharmacy_id", pharmacyId)
     .gt("quantity_available", 0)

@@ -1,0 +1,581 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e5]:
+      - link "Red Salud" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8]
+        - generic [ref=e10]: Red Salud
+      - generic [ref=e11]:
+        - link "Funcionalidades" [ref=e12] [cursor=pointer]:
+          - /url: /#funcionalidades
+        - link "Especialidades" [ref=e13] [cursor=pointer]:
+          - /url: /#especialidades
+        - link "Precios" [ref=e14] [cursor=pointer]:
+          - /url: /precios
+      - generic [ref=e15]:
+        - link "Iniciar Sesión" [ref=e16] [cursor=pointer]:
+          - /url: /auth/login
+        - link "Comenzar Gratis" [ref=e17] [cursor=pointer]:
+          - /url: /auth/register
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - img [ref=e23]
+          - generic [ref=e25]: 8 módulos integrados
+        - heading "Todas las herramientas para tu consultorio" [level=1] [ref=e26]
+        - paragraph [ref=e27]: Cada módulo fue diseñado para un flujo clínico específico. Se integran entre sí y se adaptan a tu especialidad. Sin configuraciones complicadas, sin curva de aprendizaje.
+      - generic [ref=e30]:
+        - button "Agenda Inteligente" [ref=e31]:
+          - img [ref=e32]
+          - generic [ref=e36]: Agenda Inteligente
+        - button "Consulta Digital" [ref=e37]:
+          - img [ref=e38]
+          - generic [ref=e42]: Consulta Digital
+        - button "Recetas Electrónicas" [ref=e43]:
+          - img [ref=e44]
+          - generic [ref=e47]: Recetas Electrónicas
+        - button "Historia Clínica" [ref=e48]:
+          - img [ref=e49]
+          - generic [ref=e52]: Historia Clínica
+        - button "IA Diagnóstica" [ref=e53]:
+          - img [ref=e54]
+          - generic [ref=e66]: IA Diagnóstica
+        - button "Google Calendar" [ref=e67]:
+          - img [ref=e68]
+          - generic [ref=e70]: Google Calendar
+        - button "Estadísticas por Especialidad" [ref=e71]:
+          - img [ref=e72]
+          - generic [ref=e74]: Estadísticas por Especialidad
+        - button "Verificación SACS" [ref=e75]:
+          - img [ref=e76]
+          - generic [ref=e79]: Verificación SACS
+      - generic [ref=e82]:
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - img [ref=e86]
+            - generic [ref=e90]:
+              - heading "Agenda Inteligente" [level=2] [ref=e91]
+              - paragraph [ref=e92]: Tu tiempo vale. Tu agenda lo sabe.
+          - paragraph [ref=e93]: Olvidate de las agendas en papel y las llamadas perdidas. La Agenda Inteligente te da control total sobre tu disponibilidad, adaptándose a los ritmos reales de tu consulta. Configurá bloques de tiempo diferentes para primera consulta, control, urgencia o procedimiento — cada uno con su duración y precio. El sistema gestiona automáticamente los recordatorios a pacientes por WhatsApp o correo, reduciendo las inasistencias hasta en un 40%. Si manejás varios consultorios, la agenda se sincroniza en tiempo real entre todas tus ubicaciones, evitando solapamientos y mostrándole al paciente solo los horarios realmente disponibles. Además, la lista de espera inteligente llena automáticamente los huecos cuando un paciente cancela, maximizando tu productividad sin esfuerzo extra.
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e98]: Adaptado por especialidad
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - generic [ref=e101]: Odontología
+                - paragraph [ref=e102]: Bloques de 30min para limpiezas, 90min para endodoncias y 120min para cirugía oral — cada procedimiento con su tiempo exacto.
+              - generic [ref=e103]:
+                - generic [ref=e104]: Psiquiatría
+                - paragraph [ref=e105]: Primera consulta de 60min, seguimiento de 30min. Citas recurrentes semanales o quincenales configuradas automáticamente.
+              - generic [ref=e106]:
+                - generic [ref=e107]: Pediatría
+                - paragraph [ref=e108]: Slots de control de niño sano con esquema de vacunación integrado. Recordatorio automático del próximo control.
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - img [ref=e113]
+            - heading "Bloques configurables" [level=4] [ref=e116]
+            - paragraph [ref=e117]: "Definí la duración y tipo de cada slot: primera vez, control, urgencia o procedimiento. Cada uno con su propio tiempo y tarifa."
+          - generic [ref=e118]:
+            - img [ref=e120]
+            - heading "Recordatorios automáticos" [level=4] [ref=e123]
+            - paragraph [ref=e124]: Notificaciones por WhatsApp, correo y push a pacientes 24h y 1h antes. Reducí inasistencias sin levantar el teléfono.
+          - generic [ref=e125]:
+            - img [ref=e127]
+            - heading "Multi-consultorio" [level=4] [ref=e130]
+            - paragraph [ref=e131]: Manejá varias ubicaciones con agendas independientes. El paciente ve tu disponibilidad real por sede.
+          - generic [ref=e132]:
+            - img [ref=e134]
+            - heading "Lista de espera" [level=4] [ref=e139]
+            - paragraph [ref=e140]: Cuando un paciente cancela, el sistema ofrece el slot automáticamente al próximo en la lista. Cero huecos.
+          - generic [ref=e141]:
+            - img [ref=e143]
+            - heading "Citas recurrentes" [level=4] [ref=e148]
+            - paragraph [ref=e149]: "Programá controles periódicos con un clic: semanal, quincenal, mensual. El paciente recibe la serie completa."
+          - generic [ref=e150]:
+            - img [ref=e152]
+            - heading "Bloqueo de horarios" [level=4] [ref=e155]
+            - paragraph [ref=e156]: Marcá vacaciones, congresos o días personales. La agenda se ajusta sin afectar citas existentes.
+      - generic [ref=e159]:
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - img [ref=e163]
+            - generic [ref=e167]:
+              - heading "Consulta Digital" [level=2] [ref=e168]
+              - paragraph [ref=e169]: Todo el flujo clínico en una sola pantalla.
+          - paragraph [ref=e170]: "La consulta digital replantea cómo documentás tu práctica. En lugar de formularios genéricos, tenés un flujo SOAP que se adapta a tu especialidad: si sos cardiólogo, el examen físico incluye auscultación cardíaca y valoración de edema; si sos dermatólogo, campos para localización, morfología y distribución de lesiones. Todo en una interfaz limpia que no interrumpe tu conversación con el paciente. Los diagnósticos se codifican con ICD-11 con sugerencias inteligentes, las órdenes de laboratorio e imagenología se generan desde la misma pantalla, y la receta se vincula directamente al diagnóstico. Al cerrar la consulta, el resumen se genera automáticamente y queda disponible para el paciente en su portal."
+          - generic [ref=e171]:
+            - generic [ref=e172]:
+              - img [ref=e173]
+              - generic [ref=e175]: Adaptado por especialidad
+            - generic [ref=e176]:
+              - generic [ref=e177]:
+                - generic [ref=e178]: Cardiología
+                - paragraph [ref=e179]: Examen físico con auscultación por focos, valoración de pulsos periféricos, edema, ingurgitación yugular y clasificación NYHA.
+              - generic [ref=e180]:
+                - generic [ref=e181]: Dermatología
+                - paragraph [ref=e182]: Registro de lesiones con localización corporal, morfología, color, distribución y evolución fotográfica.
+              - generic [ref=e183]:
+                - generic [ref=e184]: Traumatología
+                - paragraph [ref=e185]: Examen por segmento corporal con rangos de movilidad, pruebas especiales y clasificación de fracturas.
+        - generic [ref=e187]:
+          - generic [ref=e188]:
+            - img [ref=e190]
+            - heading "Notas SOAP adaptativas" [level=4] [ref=e193]
+            - paragraph [ref=e194]: Cada especialidad tiene sus propios campos en el examen físico. Nada de formularios genéricos — solo lo que necesitás.
+          - generic [ref=e195]:
+            - img [ref=e197]
+            - heading "Diagnóstico ICD-11" [level=4] [ref=e200]
+            - paragraph [ref=e201]: Buscá y codificá diagnósticos con el estándar internacional más actual. Sugerencias inteligentes basadas en lo que escribís.
+          - generic [ref=e202]:
+            - img [ref=e204]
+            - heading "Órdenes integradas" [level=4] [ref=e206]
+            - paragraph [ref=e207]: Laboratorio, imagenología, interconsultas — todo desde la misma pantalla, vinculado al diagnóstico actual.
+          - generic [ref=e208]:
+            - img [ref=e210]
+            - heading "Signos vitales" [level=4] [ref=e212]
+            - paragraph [ref=e213]: Registro de tensión arterial, frecuencia cardíaca, temperatura, saturación y más. Histórico visual con tendencias.
+          - generic [ref=e214]:
+            - img [ref=e216]
+            - heading "Plan de tratamiento" [level=4] [ref=e219]
+            - paragraph [ref=e220]: Indicaciones, reposo, recomendaciones y seguimiento — todo documentado y compartible con el paciente.
+          - generic [ref=e221]:
+            - img [ref=e223]
+            - heading "Resumen automático" [level=4] [ref=e226]
+            - paragraph [ref=e227]: Al cerrar la consulta se genera un resumen legible para el paciente, disponible en su app.
+      - generic [ref=e230]:
+        - generic [ref=e231]:
+          - generic [ref=e232]:
+            - img [ref=e234]
+            - generic [ref=e237]:
+              - heading "Recetas Electrónicas" [level=2] [ref=e238]
+              - paragraph [ref=e239]: Prescribí con seguridad, firmá con confianza.
+          - paragraph [ref=e240]: Las recetas electrónicas eliminan los errores de legibilidad y le dan trazabilidad completa a cada prescripción. Escribí el nombre del medicamento y el sistema completa automáticamente la presentación, concentración y vía de administración desde el vademécum venezolano actualizado. Antes de firmar, el motor de interacciones verifica que no haya contraindicaciones con los medicamentos actuales del paciente ni con sus alergias registradas. Tu firma digital queda vinculada al documento, cumpliendo con la normativa legal. Podés crear plantillas para las combinaciones que usás frecuentemente — un clic y la receta está lista. El paciente recibe la receta en PDF en su celular, puede presentarla en cualquier farmacia, y vos tenés el registro completo en su historia.
+          - generic [ref=e241]:
+            - generic [ref=e242]:
+              - img [ref=e243]
+              - generic [ref=e245]: Adaptado por especialidad
+            - generic [ref=e246]:
+              - generic [ref=e247]:
+                - generic [ref=e248]: Medicina Interna
+                - paragraph [ref=e249]: Plantillas para manejo de hipertensión, diabetes tipo 2 y dislipidemia con ajuste de dosis por función renal.
+              - generic [ref=e250]:
+                - generic [ref=e251]: Oftalmología
+                - paragraph [ref=e252]: Recetas con esquema de gotas por ojo (OD/OI/AO), frecuencia y duración. Plantillas post-quirúrgicas.
+              - generic [ref=e253]:
+                - generic [ref=e254]: Pediatría
+                - paragraph [ref=e255]: Dosificación automática por peso del paciente. Alerta de medicamentos contraindicados por edad.
+        - generic [ref=e257]:
+          - generic [ref=e258]:
+            - img [ref=e260]
+            - heading "Vademécum integrado" [level=4] [ref=e262]
+            - paragraph [ref=e263]: Autocompletado con el catálogo venezolano de medicamentos. Presentación, concentración y vía — todo correcto.
+          - generic [ref=e264]:
+            - img [ref=e266]
+            - heading "Verificación de interacciones" [level=4] [ref=e268]
+            - paragraph [ref=e269]: Alerta automática si hay interacciones medicamentosas, contraindicaciones o alergias conocidas del paciente.
+          - generic [ref=e270]:
+            - img [ref=e272]
+            - heading "Firma digital" [level=4] [ref=e277]
+            - paragraph [ref=e278]: Tu firma electrónica vinculada a tu número SACS. Validez legal y trazabilidad completa.
+          - generic [ref=e279]:
+            - img [ref=e281]
+            - heading "Plantillas reutilizables" [level=4] [ref=e284]
+            - paragraph [ref=e285]: Guardá las combinaciones que más prescribís. Un clic para generar la receta completa.
+          - generic [ref=e286]:
+            - img [ref=e288]
+            - heading "Exportación PDF" [level=4] [ref=e292]
+            - paragraph [ref=e293]: PDF con tu membrete, logo, firma y código QR de verificación. Imprimí o enviá directamente al paciente.
+          - generic [ref=e294]:
+            - img [ref=e296]
+            - heading "Trazabilidad completa" [level=4] [ref=e298]
+            - paragraph [ref=e299]: Cada receta queda vinculada al paciente, la consulta y el diagnóstico. Historial completo de prescripciones.
+      - generic [ref=e302]:
+        - generic [ref=e303]:
+          - generic [ref=e304]:
+            - img [ref=e306]
+            - generic [ref=e309]:
+              - heading "Historia Clínica" [level=2] [ref=e310]
+              - paragraph [ref=e311]: Cada dato del paciente, siempre accesible.
+          - paragraph [ref=e312]: La historia clínica digital es el corazón de Red Salud. Cada consulta, cada resultado de laboratorio, cada imagen diagnóstica, cada receta — todo queda registrado en un timeline cronológico que te da la película completa del paciente en segundos. Ya no necesitás pedir archivos, buscar carpetas o depender de lo que el paciente recuerda. Los documentos se adjuntan directamente (fotos, PDFs, resultados escaneados) y quedan organizados por categoría. Las alergias y antecedentes familiares están siempre visibles como banderas en la ficha, y la historia se puede compartir de forma segura con otro profesional para una interconsulta, con el consentimiento del paciente.
+          - generic [ref=e313]:
+            - generic [ref=e314]:
+              - img [ref=e315]
+              - generic [ref=e317]: Adaptado por especialidad
+            - generic [ref=e318]:
+              - generic [ref=e319]:
+                - generic [ref=e320]: Ginecología
+                - paragraph [ref=e321]: Historial obstétrico completo con gestas, partos, cesáreas, abortos. Control prenatal con curvas de crecimiento fetal.
+              - generic [ref=e322]:
+                - generic [ref=e323]: Endocrinología
+                - paragraph [ref=e324]: Seguimiento longitudinal de HbA1c, perfil tiroideo, curvas de crecimiento. Gráficas de tendencia integradas.
+              - generic [ref=e325]:
+                - generic [ref=e326]: Neurología
+                - paragraph [ref=e327]: Registro de examen neurológico detallado, escala de Glasgow, Mini-Mental y seguimiento de crisis epilépticas.
+        - generic [ref=e329]:
+          - generic [ref=e330]:
+            - img [ref=e332]
+            - heading "Timeline cronológico" [level=4] [ref=e335]
+            - paragraph [ref=e336]: "Toda la historia del paciente en orden temporal: consultas, labs, imágenes, recetas. Filtrá por tipo o fecha."
+          - generic [ref=e337]:
+            - img [ref=e339]
+            - heading "Documentos adjuntos" [level=4] [ref=e342]
+            - paragraph [ref=e343]: Subí fotos, PDFs, resultados escaneados. Se categorizan automáticamente y quedan vinculados a la consulta.
+          - generic [ref=e344]:
+            - img [ref=e346]
+            - heading "Alergias y alertas" [level=4] [ref=e348]
+            - paragraph [ref=e349]: Alergias, condiciones crónicas y medicamentos actuales siempre visibles como banderas de seguridad.
+          - generic [ref=e350]:
+            - img [ref=e352]
+            - heading "Antecedentes familiares" [level=4] [ref=e356]
+            - paragraph [ref=e357]: Árbol de antecedentes heredofamiliares con condiciones relevantes por línea materna y paterna.
+          - generic [ref=e358]:
+            - img [ref=e360]
+            - heading "Compartir seguro" [level=4] [ref=e366]
+            - paragraph [ref=e367]: Compartí la historia con otro profesional para interconsulta. El paciente autoriza, vos controlás qué se comparte.
+          - generic [ref=e368]:
+            - img [ref=e370]
+            - heading "Acceso desde cualquier lugar" [level=4] [ref=e372]
+            - paragraph [ref=e373]: Consultá la historia desde tu computadora, tablet o celular. Datos cifrados en tránsito y en reposo.
+      - generic [ref=e376]:
+        - generic [ref=e377]:
+          - generic [ref=e378]:
+            - img [ref=e380]
+            - generic [ref=e392]:
+              - heading "IA Diagnóstica" [level=2] [ref=e393]
+              - paragraph [ref=e394]: Inteligencia artificial que acompaña, no reemplaza.
+          - paragraph [ref=e395]: "La IA Diagnóstica es tu co-piloto clínico. Mientras documentás la consulta, el sistema analiza los síntomas, signos y hallazgos que vas registrando y sugiere en tiempo real los códigos ICD-11 más probables, ordenados por relevancia. No es un diagnóstico automático — es una herramienta que amplifica tu criterio clínico. Si tenés dudas sobre un diagnóstico diferencial, podés consultar al asistente con el cuadro clínico y obtener una lista priorizada de posibilidades con la evidencia que las sustenta. La IA también detecta patrones en tu base de pacientes: si varios pacientes presentan síntomas similares en la misma semana, te alerta de una posible tendencia epidemiológica. Todo esto potenciado por Gemini, el modelo más avanzado de Google, entrenado con literatura médica actualizada."
+          - generic [ref=e396]:
+            - generic [ref=e397]:
+              - img [ref=e398]
+              - generic [ref=e400]: Adaptado por especialidad
+            - generic [ref=e401]:
+              - generic [ref=e402]:
+                - generic [ref=e403]: Medicina General
+                - paragraph [ref=e404]: Diagnóstico diferencial amplio para presentaciones comunes. Sugerencias de cuándo referir al especialista.
+              - generic [ref=e405]:
+                - generic [ref=e406]: Reumatología
+                - paragraph [ref=e407]: Asistencia con criterios clasificatorios (ACR/EULAR) para artritis reumatoide, lupus y vasculitis.
+              - generic [ref=e408]:
+                - generic [ref=e409]: Infectología
+                - paragraph [ref=e410]: Sugerencias de antibiograma empírico según foco infeccioso, resistencia local y guías nacionales.
+        - generic [ref=e412]:
+          - generic [ref=e413]:
+            - img [ref=e415]
+            - heading "Sugerencias en tiempo real" [level=4] [ref=e417]
+            - paragraph [ref=e418]: Mientras escribís, la IA sugiere códigos ICD-11 basados en los síntomas y signos que vas documentando.
+          - generic [ref=e419]:
+            - img [ref=e421]
+            - heading "Diagnóstico diferencial" [level=4] [ref=e426]
+            - paragraph [ref=e427]: Consultá un cuadro clínico y obtené una lista priorizada de diagnósticos posibles con evidencia de respaldo.
+          - generic [ref=e428]:
+            - img [ref=e430]
+            - heading "Alertas epidemiológicas" [level=4] [ref=e433]
+            - paragraph [ref=e434]: Detección de patrones en tu base de pacientes. Si algo inusual emerge, te enterás primero.
+          - generic [ref=e435]:
+            - img [ref=e437]
+            - heading "Referencias actualizadas" [level=4] [ref=e439]
+            - paragraph [ref=e440]: Cada sugerencia incluye referencias a guías clínicas y literatura médica para que verifiques por tu cuenta.
+          - generic [ref=e441]:
+            - img [ref=e443]
+            - heading "Privacidad ante todo" [level=4] [ref=e446]
+            - paragraph [ref=e447]: Los datos clínicos se procesan de forma anónima. Ninguna información identificable sale de tu consultorio.
+          - generic [ref=e448]:
+            - img [ref=e450]
+            - heading "Vos decidís siempre" [level=4] [ref=e454]
+            - paragraph [ref=e455]: La IA sugiere, vos confirmás. Cada diagnóstico lleva tu firma y tu criterio clínico, no el de un algoritmo.
+      - generic [ref=e458]:
+        - generic [ref=e459]:
+          - generic [ref=e460]:
+            - img [ref=e462]
+            - generic [ref=e464]:
+              - heading "Google Calendar" [level=2] [ref=e465]
+              - paragraph [ref=e466]: Tu agenda médica y personal, siempre sincronizadas.
+          - paragraph [ref=e467]: La integración con Google Calendar elimina la doble agenda. Conectá tu cuenta de Google y cada cita que agendés en Red Salud aparece automáticamente en tu calendario personal — con el nombre del paciente, tipo de consulta y ubicación. En la otra dirección, cuando bloqueás tiempo en Google Calendar (un congreso, una reunión o tiempo personal), Red Salud lo detecta y desactiva esos horarios para que ningún paciente pueda agendar en ese momento. Si un paciente cancela o reprograma, el cambio se refleja instantáneamente en ambos calendarios. Cero conflictos, cero trabajo manual. Tu secretaria también puede gestionar la agenda desde Google Calendar si lo preferís, con los permisos que vos definas.
+          - generic [ref=e468]:
+            - generic [ref=e469]:
+              - img [ref=e470]
+              - generic [ref=e472]: Adaptado por especialidad
+            - generic [ref=e473]:
+              - generic [ref=e474]:
+                - generic [ref=e475]: Cirugía
+                - paragraph [ref=e476]: Bloques quirúrgicos de varias horas sincronizados con el quirófano. Pre y post operatorio como eventos separados.
+              - generic [ref=e477]:
+                - generic [ref=e478]: Psicología
+                - paragraph [ref=e479]: Sesiones semanales recurrentes visibles en Google Calendar. Recordatorio discreto sin datos del paciente.
+              - generic [ref=e480]:
+                - generic [ref=e481]: Medicina del Trabajo
+                - paragraph [ref=e482]: Agendá exámenes preempleo y periódicos por empresa. Bloques especiales para evaluaciones grupales.
+        - generic [ref=e484]:
+          - generic [ref=e485]:
+            - img [ref=e487]
+            - heading "Sincronización bidireccional" [level=4] [ref=e492]
+            - paragraph [ref=e493]: Lo que pasa en Red Salud aparece en Google y viceversa. Cambios en tiempo real, sin delays.
+          - generic [ref=e494]:
+            - img [ref=e496]
+            - heading "Bloqueo automático" [level=4] [ref=e499]
+            - paragraph [ref=e500]: Eventos personales en Google Calendar bloquean automáticamente esos horarios en tu agenda médica.
+          - generic [ref=e501]:
+            - img [ref=e503]
+            - heading "Notificaciones nativas" [level=4] [ref=e505]
+            - paragraph [ref=e506]: Aprovechá las notificaciones de Google Calendar en tu celular. Sin instalar nada extra.
+          - generic [ref=e507]:
+            - img [ref=e509]
+            - heading "Acceso para secretaria" [level=4] [ref=e514]
+            - paragraph [ref=e515]: Tu secretaria puede ver y gestionar la agenda desde Google Calendar con permisos controlados.
+          - generic [ref=e516]:
+            - img [ref=e518]
+            - heading "Colores por tipo de cita" [level=4] [ref=e524]
+            - paragraph [ref=e525]: Primera consulta, control, urgencia — cada tipo se muestra con un color diferente en Google Calendar.
+          - generic [ref=e526]:
+            - img [ref=e528]
+            - heading "Multi-zona horaria" [level=4] [ref=e531]
+            - paragraph [ref=e532]: Si atendés pacientes internacionales por telemedicina, la hora se ajusta a la zona del paciente.
+      - generic [ref=e535]:
+        - generic [ref=e536]:
+          - generic [ref=e537]:
+            - img [ref=e539]
+            - generic [ref=e541]:
+              - heading "Estadísticas por Especialidad" [level=2] [ref=e542]
+              - paragraph [ref=e543]: Datos que te dicen cómo va tu práctica de verdad.
+          - paragraph [ref=e544]: "Las estadísticas genéricas no sirven. Un cardiólogo necesita saber cuántos ECGs realizó este mes; un dermatólogo, cuántas biopsias envió. Red Salud genera dashboards con los KPIs que realmente importan para tu especialidad, actualizados en tiempo real. Más allá de las métricas clínicas, tenés visibilidad completa de tu productividad: pacientes atendidos vs agendados, inasistencias, tiempo promedio por consulta y distribución de diagnósticos. El módulo financiero te muestra ingresos por tipo de consulta, comparación mensual y proyección. Todo con gráficas claras que podés exportar para tu contador o para presentaciones en junta médica. Sin Excel, sin fórmulas — los datos se generan solos a partir de tu trabajo diario."
+          - generic [ref=e545]:
+            - generic [ref=e546]:
+              - img [ref=e547]
+              - generic [ref=e549]: Adaptado por especialidad
+            - generic [ref=e550]:
+              - generic [ref=e551]:
+                - generic [ref=e552]: Cardiología
+                - paragraph [ref=e553]: ECGs realizados, ecocardiogramas solicitados, distribución de diagnósticos (HTA, ICC, arritmias) y tasa de referencia a hemodinamia.
+              - generic [ref=e554]:
+                - generic [ref=e555]: Neumología
+                - paragraph [ref=e556]: Espirometrías realizadas, exacerbaciones de EPOC, pacientes en oxigenoterapia domiciliaria y adherencia al tratamiento.
+              - generic [ref=e557]:
+                - generic [ref=e558]: Gastroenterología
+                - paragraph [ref=e559]: Endoscopías y colonoscopías realizadas, hallazgos por tipo, tasa de detección de pólipos y seguimiento de biopsias.
+        - generic [ref=e561]:
+          - generic [ref=e562]:
+            - img [ref=e564]
+            - heading "KPIs por especialidad" [level=4] [ref=e566]
+            - paragraph [ref=e567]: "Métricas clínicas específicas para tu área: procedimientos, diagnósticos frecuentes, tasas de seguimiento."
+          - generic [ref=e568]:
+            - img [ref=e570]
+            - heading "Tendencias de pacientes" [level=4] [ref=e573]
+            - paragraph [ref=e574]: Distribución por edad, sexo, motivo de consulta. Detectá cambios en tu perfil de pacientes.
+          - generic [ref=e575]:
+            - img [ref=e577]
+            - heading "Módulo financiero" [level=4] [ref=e579]
+            - paragraph [ref=e580]: Ingresos por tipo de consulta, comparación mes a mes, proyección trimestral. Tu contador te lo va a agradecer.
+          - generic [ref=e581]:
+            - img [ref=e583]
+            - heading "Productividad" [level=4] [ref=e586]
+            - paragraph [ref=e587]: Pacientes atendidos, inasistencias, tiempo promedio por consulta. Optimizá tu agenda con datos reales.
+          - generic [ref=e588]:
+            - img [ref=e590]
+            - heading "Exportación de reportes" [level=4] [ref=e594]
+            - paragraph [ref=e595]: Descargá reportes en PDF o CSV para tu contador, la clínica o presentaciones profesionales.
+          - generic [ref=e596]:
+            - img [ref=e598]
+            - heading "Metas configurables" [level=4] [ref=e602]
+            - paragraph [ref=e603]: Definí metas mensuales de pacientes, ingresos o procedimientos y seguí tu progreso en tiempo real.
+      - generic [ref=e606]:
+        - generic [ref=e607]:
+          - generic [ref=e608]:
+            - img [ref=e610]
+            - generic [ref=e613]:
+              - heading "Verificación SACS" [level=2] [ref=e614]
+              - paragraph [ref=e615]: Tu credencial profesional, verificada y visible.
+          - paragraph [ref=e616]: "En un ecosistema de salud digital, la confianza es fundamental. La verificación SACS conecta directamente con el registro del Sistema Autónomo de Certificación Sanitaria de Venezuela para validar tu matrícula profesional, especialidad y habilitación vigente. Una vez verificado, tu perfil muestra un badge que los pacientes reconocen como garantía de legitimidad. El proceso es automático: ingresás tu número de registro, el sistema consulta la base del SACS y en minutos tenés tu verificación activa. Si tu registro se renueva, Red Salud te notifica antes del vencimiento para que mantengas tu estatus. Para las clínicas y centros de salud, la verificación SACS de sus médicos es un diferenciador de calidad que genera confianza en los pacientes."
+          - generic [ref=e617]:
+            - generic [ref=e618]:
+              - img [ref=e619]
+              - generic [ref=e621]: Adaptado por especialidad
+            - generic [ref=e622]:
+              - generic [ref=e623]:
+                - generic [ref=e624]: Cualquier especialidad
+                - paragraph [ref=e625]: Verificación de título médico base y de cada especialidad registrada ante el SACS. Múltiples especialidades soportadas.
+              - generic [ref=e626]:
+                - generic [ref=e627]: Cirugía Plástica
+                - paragraph [ref=e628]: Verificación crítica en un área con alto intrusismo. El badge SACS diferencia al especialista certificado.
+              - generic [ref=e629]:
+                - generic [ref=e630]: Medicina Estética
+                - paragraph [ref=e631]: Validación de que el profesional tiene la formación requerida para realizar procedimientos estéticos.
+        - generic [ref=e633]:
+          - generic [ref=e634]:
+            - img [ref=e636]
+            - heading "Validación automática" [level=4] [ref=e639]
+            - paragraph [ref=e640]: Ingresá tu número SACS y el sistema verifica tu matrícula, especialidad y habilitación en minutos.
+          - generic [ref=e641]:
+            - img [ref=e643]
+            - heading "Badge de confianza" [level=4] [ref=e646]
+            - paragraph [ref=e647]: Tu perfil muestra un badge verificado que los pacientes reconocen como garantía profesional.
+          - generic [ref=e648]:
+            - img [ref=e650]
+            - heading "Renovación proactiva" [level=4] [ref=e655]
+            - paragraph [ref=e656]: Te notificamos antes del vencimiento de tu registro para que nunca pierdas tu estatus verificado.
+          - generic [ref=e657]:
+            - img [ref=e659]
+            - heading "Verificación institucional" [level=4] [ref=e663]
+            - paragraph [ref=e664]: Las clínicas pueden verificar a todos sus médicos desde un panel centralizado. Cumplimiento normativo simple.
+          - generic [ref=e665]:
+            - img [ref=e667]
+            - heading "Código QR verificable" [level=4] [ref=e673]
+            - paragraph [ref=e674]: Generá un QR que cualquiera puede escanear para confirmar tu registro profesional en tiempo real.
+          - generic [ref=e675]:
+            - img [ref=e677]
+            - heading "Datos protegidos" [level=4] [ref=e680]
+            - paragraph [ref=e681]: Solo se muestra la información pública de tu registro. Tus datos personales permanecen privados.
+      - generic [ref=e683]:
+        - generic [ref=e684]:
+          - heading "¿Por qué Red Salud vs hojas de cálculo o papel?" [level=2] [ref=e685]
+          - paragraph [ref=e686]: Comparamos honestamente. Mirá qué te ofrece cada opción y decidí con información real.
+        - generic [ref=e687]:
+          - generic [ref=e688]:
+            - generic [ref=e689]: Funcionalidad
+            - generic [ref=e690]: Red Salud
+            - generic [ref=e691]: Excel
+            - generic [ref=e692]: Papel
+          - generic [ref=e693]:
+            - generic [ref=e694]: Agenda con recordatorios automáticos
+            - img [ref=e698]
+            - img [ref=e703]
+            - img [ref=e709]
+          - generic [ref=e712]:
+            - generic [ref=e713]: Consultas con formato SOAP por especialidad
+            - img [ref=e717]
+            - img [ref=e722]
+            - img [ref=e728]
+          - generic [ref=e731]:
+            - generic [ref=e732]: Recetas con firma digital y verificación
+            - img [ref=e736]
+            - img [ref=e741]
+            - img [ref=e747]
+          - generic [ref=e750]:
+            - generic [ref=e751]: Historia clínica con timeline cronológico
+            - img [ref=e755]
+            - img [ref=e760]
+            - img [ref=e766]
+          - generic [ref=e769]:
+            - generic [ref=e770]: Asistencia de IA para diagnóstico
+            - img [ref=e774]
+            - img [ref=e779]
+            - img [ref=e785]
+          - generic [ref=e788]:
+            - generic [ref=e789]: Sincronización con Google Calendar
+            - img [ref=e793]
+            - img [ref=e798]
+            - img [ref=e804]
+          - generic [ref=e807]:
+            - generic [ref=e808]: Estadísticas y KPIs automáticos
+            - img [ref=e812]
+            - img [ref=e817]
+            - img [ref=e822]
+          - generic [ref=e825]:
+            - generic [ref=e826]: Verificación profesional SACS
+            - img [ref=e830]
+            - img [ref=e835]
+            - img [ref=e841]
+          - generic [ref=e844]:
+            - generic [ref=e845]: Acceso desde cualquier dispositivo
+            - img [ref=e849]
+            - img [ref=e854]
+            - img [ref=e859]
+          - generic [ref=e862]:
+            - generic [ref=e863]: Respaldo automático en la nube
+            - img [ref=e867]
+            - img [ref=e872]
+            - img [ref=e878]
+          - generic [ref=e881]:
+            - generic [ref=e882]: Cumplimiento de normativa sanitaria
+            - img [ref=e886]
+            - img [ref=e891]
+            - img [ref=e897]
+          - generic [ref=e900]:
+            - generic [ref=e901]: Cero configuración técnica
+            - img [ref=e905]
+            - img [ref=e910]
+            - img [ref=e916]
+        - paragraph [ref=e918]: Y eso es solo el comienzo. Red Salud se actualiza constantemente con nuevas funcionalidades basadas en lo que los médicos realmente necesitan.
+      - generic [ref=e920]:
+        - heading "Llevá tu consultorio al siguiente nivel" [level=2] [ref=e921]
+        - paragraph [ref=e922]: Unite a la comunidad de médicos que ya están transformando la atención médica en Venezuela.
+        - link "Crear Mi Cuenta Gratis" [ref=e924] [cursor=pointer]:
+          - /url: /auth/register
+          - text: Crear Mi Cuenta Gratis
+          - img [ref=e925]
+        - paragraph [ref=e927]: Sin tarjeta de crédito · Configuración en 5 minutos
+  - contentinfo [ref=e928]:
+    - generic [ref=e930]:
+      - generic [ref=e931]:
+        - link "Red Salud" [ref=e932] [cursor=pointer]:
+          - /url: /
+          - img [ref=e934]
+          - generic [ref=e936]: Red Salud
+        - paragraph [ref=e937]: La plataforma clínica que se adapta a tu especialidad médica.
+      - generic [ref=e938]:
+        - heading "Producto" [level=3] [ref=e939]
+        - list [ref=e940]:
+          - listitem [ref=e941]:
+            - link "Funcionalidades" [ref=e942] [cursor=pointer]:
+              - /url: /#funcionalidades
+          - listitem [ref=e943]:
+            - link "Especialidades" [ref=e944] [cursor=pointer]:
+              - /url: /#especialidades
+          - listitem [ref=e945]:
+            - link "Precios" [ref=e946] [cursor=pointer]:
+              - /url: /precios
+          - listitem [ref=e947]:
+            - link "Actualizaciones" [ref=e948] [cursor=pointer]:
+              - /url: "#"
+      - generic [ref=e949]:
+        - heading "Especialidades" [level=3] [ref=e950]
+        - list [ref=e951]:
+          - listitem [ref=e952]:
+            - link "Medicina General" [ref=e953] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e954]:
+            - link "Cardiología" [ref=e955] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e956]:
+            - link "Pediatría" [ref=e957] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e958]:
+            - link "Odontología" [ref=e959] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e960]:
+            - link "Ginecología" [ref=e961] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e962]:
+            - link "Ver todas" [ref=e963] [cursor=pointer]:
+              - /url: /especialidades
+      - generic [ref=e964]:
+        - heading "Recursos" [level=3] [ref=e965]
+        - list [ref=e966]:
+          - listitem [ref=e967]:
+            - link "Centro de Ayuda" [ref=e968] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e969]:
+            - link "Blog" [ref=e970] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e971]:
+            - link "API" [ref=e972] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e973]:
+            - link "Estado del Sistema" [ref=e974] [cursor=pointer]:
+              - /url: "#"
+      - generic [ref=e975]:
+        - heading "Legal" [level=3] [ref=e976]
+        - list [ref=e977]:
+          - listitem [ref=e978]:
+            - link "Privacidad" [ref=e979] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e980]:
+            - link "Términos" [ref=e981] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e982]:
+            - link "Seguridad" [ref=e983] [cursor=pointer]:
+              - /url: "#"
+    - generic [ref=e985]:
+      - paragraph [ref=e986]: © 2024 Red Salud. Todos los derechos reservados.
+      - paragraph [ref=e987]: Hecho con amor en Venezuela

@@ -452,7 +452,7 @@ export async function getInvoiceWithItems(
       *,
       pharmacy_invoice_items (
         *,
-        pharmacy_products (name, generic_name, presentation)
+        pharmacy_products:pharmacy_products!product_id (name, generic_name, presentation)
       )
     `
     )

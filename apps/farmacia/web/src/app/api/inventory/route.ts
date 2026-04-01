@@ -1,55 +1,50 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { batchSchema } from '@red-salud/types';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 // ============================================================================
-// GET /api/pharmacy/inventory
+// LEGACY API ROUTE — /api/inventory
+//
+// NOTA: Esta ruta usa las tablas con prefijo farmacia_* del esquema actual.
+// Tablas anteriores (batches, products, warehouses) ya no existen.
+//
+// Tablas actuales:
+//   farmacia_inventario  — Lotes/batches de inventario
+//   farmacia_productos   — Productos (joined via product_id)
+// ============================================================================
+
+// ============================================================================
+// GET /api/inventory — Listar inventario con filtros
 // ============================================================================
 export async function GET(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const searchParams = request.nextUrl.searchParams;
-    const warehouse_id = searchParams.get('warehouse_id');
-    const zone = searchParams.get('zone');
-    const expiry_days = searchParams.get('expiry_days');
-    const low_stock = searchParams.get('low_stock');
+    const pharmacy_id = searchParams.get("pharmacy_id");
+    const expiry_days = searchParams.get("expiry_days");
+    const low_stock = searchParams.get("low_stock");
 
     let query = supabase
-      .from('batches')
-      .select(`
-        *,
-        products!inner(*),
-        warehouses!inner(*)
-      `);
+      .from("farmacia_inventario")
+      .select("*");
 
-    // Filter by warehouse
-    if (warehouse_id) {
-      query = query.eq('warehouse_id', warehouse_id);
+    if (pharmacy_id) {
+      query = query.eq("pharmacy_id", pharmacy_id);
     }
 
-    // Filter by zone
-    if (zone) {
-      query = query.eq('zone', zone);
-    }
-
-    // Filter by expiry
+    // Filtrar por fecha de caducidad proxima
     if (expiry_days) {
       const days = parseInt(expiry_days);
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + days);
-      query = query.lte('expiry_date', expiryDate.toISOString());
+      query = query.lte("expiry_date", expiryDate.toISOString());
     }
 
-    // Filter by low stock
-    if (low_stock === 'true') {
-      query = query.lte('quantity', 'products.min_stock');
+    // Filtrar por stock bajo
+    if (low_stock === "true") {
+      query = query.lte("quantity_available", 10); // Umbral de stock bajo
     }
 
-    const { data, error } = await query.order('expiry_date', { ascending: true });
+    const { data, error } = await query.order("expiry_date", { ascending: true });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -57,28 +52,20 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data });
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
 
 // ============================================================================
-// POST /api/pharmacy/inventory
+// POST /api/inventory — Agregar lote al inventario
 // ============================================================================
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const body = await request.json();
 
-    // Validate batch data
-    const batchResult = batchSchema.safeParse(body);
-    if (!batchResult.success) {
-      return NextResponse.json(
-        { error: 'Invalid batch data', details: batchResult.error },
-        { status: 400 }
-      );
-    }
-
     const { data, error } = await supabase
-      .from('batches')
+      .from("farmacia_inventario")
       .insert([body])
       .select()
       .single();
@@ -87,45 +74,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Log the action
-    await supabase.from('audit_logs').insert([{
-      user_id: body.user_id,
-      action: 'create_batch',
-      entity_type: 'batch',
-      entity_id: data.id,
-      new_values: data
-    }]);
-
     return NextResponse.json({ data }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
 
 // ============================================================================
-// PATCH /api/pharmacy/inventory
+// PATCH /api/inventory — Actualizar lote
 // ============================================================================
 export async function PATCH(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const body = await request.json();
     const { id, ...updates } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'Batch ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Se requiere el ID del lote" },
+        { status: 400 },
+      );
     }
 
-    // Get current values for audit
-    const { data: current } = await supabase
-      .from('batches')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    // Update batch
     const { data, error } = await supabase
-      .from('batches')
+      .from("farmacia_inventario")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -133,63 +107,39 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Log the action
-    await supabase.from('audit_logs').insert([{
-      user_id: updates.user_id,
-      action: 'update_batch',
-      entity_type: 'batch',
-      entity_id: id,
-      old_values: current,
-      new_values: data
-    }]);
-
     return NextResponse.json({ data });
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
 
 // ============================================================================
-// DELETE /api/pharmacy/inventory
+// DELETE /api/inventory — Eliminar lote
 // ============================================================================
 export async function DELETE(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const searchParams = request.nextUrl.searchParams;
-    const id = searchParams.get('id');
-    const user_id = searchParams.get('user_id');
+    const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json({ error: 'Batch ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Se requiere el ID del lote" },
+        { status: 400 },
+      );
     }
 
-    // Get current values for audit
-    const { data: current } = await supabase
-      .from('batches')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    // Delete batch
     const { error } = await supabase
-      .from('batches')
+      .from("farmacia_inventario")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Log the action
-    await supabase.from('audit_logs').insert([{
-      user_id,
-      action: 'delete_batch',
-      entity_type: 'batch',
-      entity_id: id,
-      old_values: current
-    }]);
-
     return NextResponse.json({ success: true });
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
