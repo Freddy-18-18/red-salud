@@ -10,7 +10,7 @@ import MapGL, {
   NavigationControl,
   Popup,
   Source,
-  type MapLayerMouseEvent,
+  type MapMouseEvent,
   type MapRef,
 } from 'react-map-gl/mapbox'
 
@@ -150,7 +150,7 @@ export default function InteractiveMapInner({
   }, [])
 
   const onMouseMove = useCallback(
-    (e: MapLayerMouseEvent) => {
+    (e: MapMouseEvent) => {
       const feature = e.features?.[0]
       if (!feature || !mapRef.current) {
         clearHover()
@@ -255,7 +255,7 @@ export default function InteractiveMapInner({
   )
 
   const onClick = useCallback(
-    (e: MapLayerMouseEvent) => {
+    (e: MapMouseEvent) => {
       const feature = e.features?.[0]
       if (!feature) return
       const props = feature.properties as VenezuelaStateFeatureProperties
