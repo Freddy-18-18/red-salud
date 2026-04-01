@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, XCircle, Pill } from "lucide-react";
+
 import { formatBs, type PharmacyMedicationPrice } from "@/lib/services/pharmacy-comparator-service";
 
 interface MedicationLineItemProps {

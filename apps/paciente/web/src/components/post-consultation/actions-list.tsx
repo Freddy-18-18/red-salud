@@ -1,8 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { CheckCircle, Clock } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 import { ActionCard } from "./action-card";
+
 import type {
   PostConsultationAction,
   PostConsultationSummary,

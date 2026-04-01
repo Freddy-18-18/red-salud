@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import { X, Plus } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
 interface TagInputProps {
   label: string;

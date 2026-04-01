@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@red-salud/core/utils";
 import {
   ArrowLeft,
   Clock,
@@ -8,7 +9,7 @@ import {
   Eye,
   User,
 } from "lucide-react";
-import { cn } from "@red-salud/core/utils";
+
 import { DoctorBadge } from "@/components/community/doctor-badge";
 import type { HealthArticle } from "@/lib/services/community-service";
 
@@ -43,7 +44,7 @@ export function ArticleReader({
   relatedArticles = [],
   onArticleClick,
 }: ArticleReaderProps) {
-  const authorName = article.author?.full_name || "Red Salud";
+  const authorName = article.author?.full_name || "Red-Salud";
   const isDoctor = article.author?.role === "medico";
   const categoryLabel =
     ARTICLE_CATEGORY_LABELS[article.category] || "General";

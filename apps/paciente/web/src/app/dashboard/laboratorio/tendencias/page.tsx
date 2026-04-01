@@ -1,14 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
-import {
-  useMonitoredParameters,
-  useParameterHistory,
-} from "@/hooks/use-lab-results";
-import { TrendChart } from "@/components/lab/trend-chart";
-import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import {
   ArrowLeft,
   Activity,
@@ -18,6 +9,17 @@ import {
   Share2,
   ChevronDown,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { TrendChart } from "@/components/lab/trend-chart";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+import {
+  useMonitoredParameters,
+  useParameterHistory,
+} from "@/hooks/use-lab-results";
+import { supabase } from "@/lib/supabase/client";
+
 
 type TimeRange = 3 | 6 | 12 | 0;
 
@@ -62,10 +64,14 @@ export default function TendenciasPage() {
   const [sharing, setSharing] = useState(false);
 
   const { parameters, loading: paramsLoading } = useMonitoredParameters(userId);
+
+  // Derive the effective parameter: user selection takes priority, else first available
+  const effectiveParam = selectedParam || (parameters.length > 0 ? parameters[0].parameter_name : "");
+
   const months = timeRange === 0 ? 120 : timeRange; // 0 = "all" → 10 years
   const { history, loading: historyLoading } = useParameterHistory(
     userId,
-    selectedParam || undefined,
+    effectiveParam || undefined,
     months,
   );
 
@@ -80,21 +86,14 @@ export default function TendenciasPage() {
     loadUser();
   }, []);
 
-  // Auto-select first parameter if none selected
-  useEffect(() => {
-    if (!selectedParam && parameters.length > 0) {
-      setSelectedParam(parameters[0].parameter_name);
-    }
-  }, [parameters, selectedParam]);
-
   const handleShare = async () => {
     setSharing(true);
-    const shareUrl = `${window.location.origin}/dashboard/laboratorio/tendencias?parametro=${encodeURIComponent(selectedParam)}`;
+    const shareUrl = `${window.location.origin}/dashboard/laboratorio/tendencias?parametro=${encodeURIComponent(effectiveParam)}`;
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Tendencia: ${selectedParam} - Red Salud`,
-          text: `Mis tendencias de ${selectedParam}`,
+          title: `Tendencia: ${effectiveParam} - Red-Salud`,
+          text: `Mis tendencias de ${effectiveParam}`,
           url: shareUrl,
         });
       } catch {
@@ -150,7 +149,7 @@ export default function TendenciasPage() {
             className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 hover:bg-gray-50 transition"
           >
             <span className="truncate">
-              {selectedParam || "Seleccionar parametro"}
+              {effectiveParam || "Seleccionar parametro"}
             </span>
             <ChevronDown
               className={`h-4 w-4 text-gray-400 transition-transform ${selectorOpen ? "rotate-180" : ""}`}
@@ -166,7 +165,7 @@ export default function TendenciasPage() {
                     setSelectorOpen(false);
                   }}
                   className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition first:rounded-t-xl last:rounded-b-xl ${
-                    selectedParam === p.parameter_name
+                    effectiveParam === p.parameter_name
                       ? "bg-emerald-50 text-emerald-700 font-medium"
                       : "text-gray-700"
                   }`}

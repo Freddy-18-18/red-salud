@@ -1,7 +1,8 @@
 "use client";
 
-import type { LeaderboardEntry } from "@/lib/services/referral-service";
 import { Trophy, Medal } from "lucide-react";
+
+import type { LeaderboardEntry } from "@/lib/services/referral-service";
 
 const RANK_ICONS: Record<number, { emoji: string; color: string }> = {
   1: { emoji: "1", color: "bg-amber-400 text-white" },
@@ -29,7 +30,7 @@ export function Leaderboard({ entries }: LeaderboardProps) {
     <div className="space-y-2">
       {entries.map((entry) => {
         const rankConfig = RANK_ICONS[entry.rank];
-        const initials = entry.nombre_completo
+        const initials = entry.full_name
           .split(" ")
           .map((w) => w[0])
           .join("")
@@ -59,7 +60,7 @@ export function Leaderboard({ entries }: LeaderboardProps) {
               {entry.avatar_url ? (
                 <img
                   src={entry.avatar_url}
-                  alt={entry.nombre_completo}
+                  alt={entry.full_name}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -76,7 +77,7 @@ export function Leaderboard({ entries }: LeaderboardProps) {
                   entry.is_current_user ? "text-emerald-800" : "text-gray-900"
                 }`}
               >
-                {entry.nombre_completo}
+                {entry.full_name}
                 {entry.is_current_user && (
                   <span className="text-xs text-emerald-600 ml-1">(vos)</span>
                 )}

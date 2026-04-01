@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, Eye, X, Plus } from "lucide-react";
 import { cn } from "@red-salud/core/utils";
+import { ArrowLeft, Eye, X, Plus } from "lucide-react";
+import { useState } from "react";
+
 import type { PostCategory, CreatePostData } from "@/lib/services/community-service";
 
 interface CreatePostFormProps {

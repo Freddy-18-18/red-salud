@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { useReferrals } from "@/hooks/use-referrals";
-import { ShareButtons } from "@/components/referral/share-buttons";
-import { ReferralList } from "@/components/referral/referral-list";
-import { Leaderboard } from "@/components/referral/leaderboard";
-import { Skeleton, SkeletonList } from "@/components/ui/skeleton";
 import { Users, Gift, Star, Trophy, UserPlus } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { Leaderboard } from "@/components/referral/leaderboard";
+import { ReferralList } from "@/components/referral/referral-list";
+import { ShareButtons } from "@/components/referral/share-buttons";
+import { Skeleton, SkeletonList } from "@/components/ui/skeleton";
+import { useReferrals } from "@/hooks/use-referrals";
+import { supabase } from "@/lib/supabase/client";
 
 export default function ReferidosPage() {
   const [userId, setUserId] = useState<string | undefined>();
@@ -19,7 +20,6 @@ export default function ReferidosPage() {
     stats,
     leaderboard,
     loading: referralsLoading,
-    shareLink,
     whatsappLink,
     copyLink,
     nativeShare,
@@ -58,7 +58,7 @@ export default function ReferidosPage() {
           </h1>
         </div>
         <p className="text-gray-500 mt-1">
-          Comparte Red Salud y gana puntos por cada amigo que se registre
+          Comparte Red-Salud y gana puntos por cada amigo que se registre
         </p>
       </div>
 

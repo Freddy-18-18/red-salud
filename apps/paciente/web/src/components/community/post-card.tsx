@@ -6,6 +6,7 @@ import {
   ChevronUp,
   Tag,
 } from "lucide-react";
+
 import { DoctorBadge } from "@/components/community/doctor-badge";
 import type { CommunityPost } from "@/lib/services/community-service";
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Star, ThumbsUp, MessageSquare, ChevronDown } from "lucide-react";
+import { useState } from "react";
+
 import { RatingDisplay } from "@/components/directory/rating-display";
 import { ReviewForm } from "@/components/directory/review-form";
 import type {

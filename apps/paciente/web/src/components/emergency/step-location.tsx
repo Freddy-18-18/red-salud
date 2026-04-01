@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { MapPin, Navigation, Loader2, Edit3 } from "lucide-react";
+import { useState, useEffect } from "react";
+
 import { useGeolocation } from "@/hooks/use-emergency";
 import type { EmergencyLocation } from "@/lib/services/emergency-service";
 

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import {
   ArrowUpCircle,
   ArrowDownCircle,
-  Filter,
   Clock,
 } from "lucide-react";
+import { useState } from "react";
+
 import type { RewardTransaction } from "@/lib/services/rewards-service";
 
 interface PointsHistoryProps {

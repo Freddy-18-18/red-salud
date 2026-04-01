@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Truck,
   Navigation,
@@ -12,7 +11,10 @@ import {
   Phone,
   Loader2,
 } from "lucide-react";
+import { useState } from "react";
+
 import { MedicalIdCard } from "./medical-id-card";
+
 import type {
   EmergencyRequest,
   EmergencyStatus,
@@ -116,7 +118,6 @@ export function StepTracking({
               const stepIndex = getStatusIndex(step.key);
               const isDone = currentIndex > stepIndex;
               const isActive = currentIndex === stepIndex;
-              const isPending = currentIndex < stepIndex;
               const isLast = idx === STATUS_STEPS.length - 1;
 
               return (

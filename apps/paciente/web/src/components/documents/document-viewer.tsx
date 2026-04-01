@@ -12,6 +12,7 @@ import {
   FileText,
   StickyNote,
 } from "lucide-react";
+
 import {
   type PatientDocument,
   getCategoryLabel,

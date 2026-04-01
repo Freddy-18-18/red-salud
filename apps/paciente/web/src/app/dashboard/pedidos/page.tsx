@@ -1,25 +1,25 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
-import { OrderTracker, OrderTrackerCompact } from "@/components/pharmacy/order-tracker";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SkeletonList, Skeleton } from "@/components/ui/skeleton";
 import {
   Package,
   ChevronLeft,
   ShoppingBag,
   Clock,
   CheckCircle2,
-  XCircle,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+
+import { OrderTracker, OrderTrackerCompact } from "@/components/pharmacy/order-tracker";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SkeletonList, Skeleton } from "@/components/ui/skeleton";
 import {
   getMyOrders,
   subscribeToAllOrderUpdates,
   type PharmacyOrder,
   type OrderStatus,
 } from "@/lib/services/pharmacy-comparator-service";
+import { supabase } from "@/lib/supabase/client";
 
 type TabValue = "active" | "completed" | "all";
 

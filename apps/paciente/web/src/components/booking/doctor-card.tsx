@@ -1,6 +1,7 @@
 "use client";
 
 import { Star, MapPin, Shield, Clock } from "lucide-react";
+
 import type { DoctorProfile } from "@/lib/services/booking-service";
 
 interface DoctorCardProps {
@@ -10,7 +11,7 @@ interface DoctorCardProps {
 }
 
 export function DoctorCard({ doctor, isSelected, onSelect }: DoctorCardProps) {
-  const initials = doctor.profile.nombre_completo
+  const initials = doctor.profile.full_name
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -32,7 +33,7 @@ export function DoctorCard({ doctor, isSelected, onSelect }: DoctorCardProps) {
           {doctor.profile.avatar_url ? (
             <img
               src={doctor.profile.avatar_url}
-              alt={doctor.profile.nombre_completo}
+              alt={doctor.profile.full_name}
               className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover"
             />
           ) : (
@@ -53,7 +54,7 @@ export function DoctorCard({ doctor, isSelected, onSelect }: DoctorCardProps) {
           <div className="flex items-start justify-between gap-2">
             <div>
               <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
-                Dr. {doctor.profile.nombre_completo}
+                Dr. {doctor.profile.full_name}
               </h3>
               <p className="text-sm text-gray-500">{doctor.specialty.name}</p>
             </div>
@@ -81,19 +82,19 @@ export function DoctorCard({ doctor, isSelected, onSelect }: DoctorCardProps) {
             )}
 
             {/* Experience */}
-            {doctor.anos_experiencia && doctor.anos_experiencia > 0 && (
+            {doctor.years_experience && doctor.years_experience > 0 && (
               <div className="flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-gray-400" />
-                <span>{doctor.anos_experiencia} anos exp.</span>
+                <span>{doctor.years_experience} anos exp.</span>
               </div>
             )}
 
             {/* Location */}
-            {(doctor.profile.ciudad || doctor.profile.estado) && (
+            {(doctor.profile.city || doctor.profile.state) && (
               <div className="flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5 text-gray-400" />
                 <span>
-                  {[doctor.profile.ciudad, doctor.profile.estado]
+                  {[doctor.profile.city, doctor.profile.state]
                     .filter(Boolean)
                     .join(", ")}
                 </span>

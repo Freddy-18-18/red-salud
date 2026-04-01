@@ -1,4 +1,4 @@
-import { Calendar, Clock, MoreVertical } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 
 type AppointmentStatus = "pending" | "confirmed" | "completed" | "cancelled";
 

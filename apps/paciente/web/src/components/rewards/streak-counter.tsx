@@ -1,6 +1,7 @@
 "use client";
 
 import { Flame, Zap } from "lucide-react";
+
 import type { StreakInfo } from "@/lib/services/rewards-service";
 
 interface StreakCounterProps {
@@ -23,11 +24,6 @@ function getCalendarDays(activityDays: string[]): { date: string; active: boolea
   }
 
   return days;
-}
-
-function formatWeekday(dateStr: string): string {
-  const date = new Date(dateStr + "T00:00:00");
-  return date.toLocaleDateString("es-VE", { weekday: "narrow" });
 }
 
 export function StreakCounter({ streak }: StreakCounterProps) {

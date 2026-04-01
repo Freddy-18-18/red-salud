@@ -1,17 +1,18 @@
 "use client";
 
+import { ClipboardCheck, Bell, ArrowRight } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/lib/supabase/client";
+
 import { ActionsList } from "@/components/post-consultation/actions-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonList, Skeleton } from "@/components/ui/skeleton";
-import { ClipboardCheck, Bell, ArrowRight } from "lucide-react";
 import {
   getPostConsultationSummaries,
   markActionViewed,
   markActionCompleted,
   type PostConsultationSummary,
 } from "@/lib/services/post-consultation-service";
+import { supabase } from "@/lib/supabase/client";
 
 export default function PostConsultaPage() {
   const [userId, setUserId] = useState<string>();

@@ -1,7 +1,8 @@
 "use client";
 
-import type { MonitoredParameter } from "@/lib/services/lab-results-service";
 import { TrendingUp, TrendingDown, Minus, ArrowRight } from "lucide-react";
+
+import type { MonitoredParameter } from "@/lib/services/lab-results-service";
 
 function TrendIcon({ trend }: { trend: "up" | "down" | "stable" }) {
   switch (trend) {

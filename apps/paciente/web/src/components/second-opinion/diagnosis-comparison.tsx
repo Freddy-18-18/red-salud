@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, XCircle, Stethoscope } from "lucide-react";
+
 import type { SecondOpinionRequest } from "@/lib/services/second-opinion-service";
 
 interface DiagnosisComparisonProps {
@@ -62,7 +63,7 @@ export function DiagnosisComparison({ request }: DiagnosisComparisonProps) {
                 Diagnostico Original
               </h4>
               <p className="text-xs text-gray-500">
-                Dr. {request.original_doctor?.nombre_completo || "Doctor"}
+                Dr. {request.original_doctor?.full_name || "Doctor"}
               </p>
             </div>
           </div>
@@ -84,7 +85,7 @@ export function DiagnosisComparison({ request }: DiagnosisComparisonProps) {
                 Segunda Opinion
               </h4>
               <p className="text-xs text-gray-500">
-                Dr. {request.reviewing_doctor?.nombre_completo || "Revisor"}
+                Dr. {request.reviewing_doctor?.full_name || "Revisor"}
               </p>
             </div>
           </div>

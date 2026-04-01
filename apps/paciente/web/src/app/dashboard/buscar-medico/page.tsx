@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { useMedicalSpecialties, useAvailableDoctors } from "@/hooks/use-appointments";
-import { DoctorCard } from "@/components/ui/doctor-card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SkeletonList } from "@/components/ui/skeleton";
 import {
   Search,
   SlidersHorizontal,
   X,
   Stethoscope,
-  ChevronDown,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useState, useMemo } from "react";
+
+import { DoctorCard } from "@/components/ui/doctor-card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { useMedicalSpecialties, useAvailableDoctors } from "@/hooks/use-appointments";
+
 
 export default function BuscarMedicoPage() {
   const searchParams = useSearchParams();
@@ -32,7 +33,7 @@ export default function BuscarMedicoPage() {
     if (!searchQuery.trim()) return doctors;
     const q = searchQuery.toLowerCase();
     return doctors.filter((d) =>
-      d.profile?.nombre_completo?.toLowerCase().includes(q) ||
+      d.profile?.full_name?.toLowerCase().includes(q) ||
       d.specialty?.name.toLowerCase().includes(q) ||
       d.biografia?.toLowerCase().includes(q)
     );
@@ -211,11 +212,11 @@ export default function BuscarMedicoPage() {
                     <DoctorCard
                       key={doctor.id}
                       id={doctor.id}
-                      name={doctor.profile?.nombre_completo || "Medico"}
+                      name={doctor.profile?.full_name || "Medico"}
                       specialty={doctor.specialty?.name || ""}
                       avatarUrl={doctor.profile?.avatar_url}
-                      fee={doctor.tarifa_consulta}
-                      yearsExperience={doctor.anos_experiencia}
+                      fee={doctor.consultation_fee}
+                      yearsExperience={doctor.years_experience}
                       verified={doctor.verified}
                       onBook={() => {
                         window.location.href = `/dashboard/agendar?doctor=${doctor.id}`;
@@ -260,17 +261,17 @@ export default function BuscarMedicoPage() {
                   {selectedDoctor.profile?.avatar_url ? (
                     <img
                       src={selectedDoctor.profile.avatar_url}
-                      alt={selectedDoctor.profile?.nombre_completo}
+                      alt={selectedDoctor.profile?.full_name}
                       className="h-full w-full object-cover"
                     />
                   ) : (
                     <span className="text-2xl font-bold text-emerald-600">
-                      {selectedDoctor.profile?.nombre_completo?.charAt(0) || "D"}
+                      {selectedDoctor.profile?.full_name?.charAt(0) || "D"}
                     </span>
                   )}
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Dr. {selectedDoctor.profile?.nombre_completo}
+                  Dr. {selectedDoctor.profile?.full_name}
                 </h2>
                 <p className="text-gray-500">{selectedDoctor.specialty?.name}</p>
                 {selectedDoctor.verified && (
@@ -290,16 +291,16 @@ export default function BuscarMedicoPage() {
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
-                  {selectedDoctor.anos_experiencia != null && selectedDoctor.anos_experiencia > 0 && (
+                  {selectedDoctor.years_experience != null && selectedDoctor.years_experience > 0 && (
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <p className="text-xs text-gray-500">Experiencia</p>
-                      <p className="text-sm font-semibold text-gray-900">{selectedDoctor.anos_experiencia} anos</p>
+                      <p className="text-sm font-semibold text-gray-900">{selectedDoctor.years_experience} anos</p>
                     </div>
                   )}
-                  {selectedDoctor.tarifa_consulta != null && (
+                  {selectedDoctor.consultation_fee != null && (
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <p className="text-xs text-gray-500">Consulta</p>
-                      <p className="text-sm font-semibold text-emerald-600">${selectedDoctor.tarifa_consulta.toFixed(2)}</p>
+                      <p className="text-sm font-semibold text-emerald-600">${selectedDoctor.consultation_fee.toFixed(2)}</p>
                     </div>
                   )}
                 </div>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { AlertCircle, AlertTriangle, Activity } from "lucide-react";
+import { useState } from "react";
+
 import type { EmergencyPriority } from "@/lib/services/emergency-service";
 
 interface StepPriorityProps {

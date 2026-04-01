@@ -1,16 +1,17 @@
 "use client";
 
+import { Trophy, Award, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { useRewards } from "@/hooks/use-rewards";
-import { LevelProgress } from "@/components/rewards/level-progress";
-import { StreakCounter } from "@/components/rewards/streak-counter";
+
 import { BadgeGrid } from "@/components/rewards/badge-grid";
+import { LevelProgress } from "@/components/rewards/level-progress";
+import { PointsEarnedToast } from "@/components/rewards/points-earned-toast";
 import { PointsHistory } from "@/components/rewards/points-history";
 import { RedeemStore } from "@/components/rewards/redeem-store";
-import { PointsEarnedToast } from "@/components/rewards/points-earned-toast";
+import { StreakCounter } from "@/components/rewards/streak-counter";
 import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
-import { Trophy, Award, ArrowLeft } from "lucide-react";
+import { useRewards } from "@/hooks/use-rewards";
+import { supabase } from "@/lib/supabase/client";
 
 export default function RecompensasPage() {
   const [userId, setUserId] = useState<string>();
@@ -31,13 +32,11 @@ export default function RecompensasPage() {
     rewards,
     transactions,
     allBadges,
-    earned,
     earnedMap,
     streak,
     loading,
     // Computed
     currentLevel,
-    nextLevelPoints,
     progressPercent,
     progressPoints,
     progressNeeded,

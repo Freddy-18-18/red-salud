@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, Loader2, Clock } from "lucide-react";
+
 import type { TimeSlotGroup } from "@/lib/services/booking-service";
 
 interface TimeSlotGridProps {

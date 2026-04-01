@@ -1,17 +1,17 @@
 "use client";
 
+import { cn } from "@red-salud/core/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/design-system";
 import { ScrollArea } from "@red-salud/design-system";
-import { cn } from "@red-salud/core/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { useEffect, useRef } from "react";
 import { FileText, Download } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 // TODO: Import Message from shared types package once available
 interface MessageSender {
   id: string;
-  nombre_completo?: string;
+  full_name?: string;
   avatar_url?: string;
   role?: string;
 }
@@ -59,7 +59,7 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
             index === 0 ||
             messages[index - 1]?.sender_id !== message.sender_id;
 
-          const initials = message.sender?.nombre_completo
+          const initials = message.sender?.full_name
             ?.split(" ")
             .map((n) => n[0])
             .join("")
@@ -91,7 +91,7 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
               >
                 {showAvatar && !isOwn && (
                   <span className="text-xs font-medium mb-1">
-                    {message.sender?.nombre_completo}
+                    {message.sender?.full_name}
                   </span>
                 )}
 

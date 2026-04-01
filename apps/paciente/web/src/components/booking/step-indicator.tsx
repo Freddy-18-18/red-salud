@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+
 import type { BookingStep } from "@/hooks/use-booking";
 
 interface StepInfo {

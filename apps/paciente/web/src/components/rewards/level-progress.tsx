@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Trophy, Star, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface LevelProgressProps {
   level: number;
@@ -21,7 +21,7 @@ export function LevelProgress({
   pointsToNextLevel,
 }: LevelProgressProps) {
   const [animatedPercent, setAnimatedPercent] = useState(0);
-  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [showLevelUp] = useState(false);
 
   useEffect(() => {
     // Animate the progress bar

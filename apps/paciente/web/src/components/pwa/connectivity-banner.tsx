@@ -1,19 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import { WifiOff, Wifi } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+
 import { onStatusChange, isOnline, flushQueue } from "@/lib/offline/offline-manager";
 
 export function ConnectivityBanner() {
-  const [online, setOnline] = useState(true);
+  const [online, setOnline] = useState(() => isOnline());
   const [showRestored, setShowRestored] = useState(false);
   const wasOfflineRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    // Set initial state
-    setOnline(isOnline());
-
     const unsub = onStatusChange((nowOnline) => {
       setOnline(nowOnline);
 

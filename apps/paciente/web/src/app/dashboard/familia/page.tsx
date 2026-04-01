@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { Users, UserPlus, Heart } from "lucide-react";
+import { useState } from "react";
+
+import { DeleteConfirm } from "@/components/family/delete-confirm";
+import { MemberCard } from "@/components/family/member-card";
+import { MemberDetail } from "@/components/family/member-detail";
+import { MemberForm } from "@/components/family/member-form";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton, SkeletonList } from "@/components/ui/skeleton";
 import { useFamily } from "@/hooks/use-family";
 import { type FamilyMember, type CreateFamilyMember } from "@/lib/services/family-service";
-import { MemberCard } from "@/components/family/member-card";
-import { MemberForm } from "@/components/family/member-form";
-import { MemberDetail } from "@/components/family/member-detail";
-import { DeleteConfirm } from "@/components/family/delete-confirm";
-import { Skeleton, SkeletonCard, SkeletonList } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
 
 type ModalState =
   | { type: "closed" }
@@ -47,10 +48,6 @@ export default function FamiliaPage() {
 
   const openEdit = (member: FamilyMember) => {
     setModal({ type: "edit", member });
-  };
-
-  const openDeleteFromDetail = (member: FamilyMember) => {
-    setModal({ type: "delete", member });
   };
 
   if (loading) {

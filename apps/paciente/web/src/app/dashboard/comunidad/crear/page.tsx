@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+
 import { CreatePostForm } from "@/components/community/create-post-form";
 import { Skeleton } from "@/components/ui/skeleton";
 import {

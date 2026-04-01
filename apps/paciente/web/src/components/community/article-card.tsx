@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock, Heart, User } from "lucide-react";
+
 import type { HealthArticle } from "@/lib/services/community-service";
 
 interface ArticleCardProps {
@@ -23,7 +24,7 @@ const ARTICLE_CATEGORY_LABELS: Record<string, string> = {
 };
 
 export function ArticleCard({ article, onClick }: ArticleCardProps) {
-  const authorName = article.author?.full_name || "Red Salud";
+  const authorName = article.author?.full_name || "Red-Salud";
   const categoryLabel =
     ARTICLE_CATEGORY_LABELS[article.category] || "General";
 

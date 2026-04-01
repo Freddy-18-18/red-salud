@@ -1,7 +1,8 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
 import { cn } from "@red-salud/core/utils";
+import { CheckCircle2 } from "lucide-react";
+
 import { DoctorBadge } from "@/components/community/doctor-badge";
 import { VoteButton } from "@/components/community/vote-button";
 import type { CommunityReply } from "@/lib/services/community-service";

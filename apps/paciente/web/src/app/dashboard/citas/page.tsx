@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { usePatientAppointments, useCancelAppointment } from "@/hooks/use-appointments";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SkeletonList } from "@/components/ui/skeleton";
 import {
   Calendar,
   Clock,
   Plus,
-  Search,
   AlertCircle,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { EmptyState } from "@/components/ui/empty-state";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { usePatientAppointments, useCancelAppointment } from "@/hooks/use-appointments";
+import { supabase } from "@/lib/supabase/client";
 
 type TabValue = "upcoming" | "past" | "cancelled";
 
@@ -133,7 +133,7 @@ export default function MisCitasPage() {
         <div className="space-y-3">
           {displayedAppointments.map((appointment) => {
             const statusConfig = STATUS_CONFIG[appointment.status] || STATUS_CONFIG.pending;
-            const initials = (appointment.doctor?.nombre_completo || "D")
+            const initials = (appointment.doctor?.full_name || "D")
               .split(" ")
               .map((n) => n[0])
               .join("")
@@ -151,7 +151,7 @@ export default function MisCitasPage() {
                     {appointment.doctor?.avatar_url ? (
                       <img
                         src={appointment.doctor.avatar_url}
-                        alt={appointment.doctor.nombre_completo}
+                        alt={appointment.doctor.full_name}
                         className="h-full w-full object-cover rounded-xl"
                       />
                     ) : (
@@ -163,7 +163,7 @@ export default function MisCitasPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-semibold text-gray-900">
-                        Dr. {appointment.doctor?.nombre_completo || "Medico"}
+                        Dr. {appointment.doctor?.full_name || "Medico"}
                       </h3>
                       <span className={`px-2 py-0.5 text-xs font-medium rounded-full whitespace-nowrap ${statusConfig.bg} ${statusConfig.text}`}>
                         {statusConfig.label}

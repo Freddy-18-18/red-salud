@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import { ChevronDown, User, Users, Check } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+
 import type { FamilyMember } from "@/lib/services/family-service";
 import { calculateAge, getRelationshipLabel } from "@/lib/services/family-service";
 

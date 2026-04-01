@@ -1,20 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Clock,
   Shield,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
-import { useEmergency } from "@/hooks/use-emergency";
-import { StepWho } from "@/components/emergency/step-who";
-import { StepPriority } from "@/components/emergency/step-priority";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { MedicalIdCard } from "@/components/emergency/medical-id-card";
 import { StepLocation } from "@/components/emergency/step-location";
+import { StepPriority } from "@/components/emergency/step-priority";
 import { StepRequesting } from "@/components/emergency/step-requesting";
 import { StepTracking } from "@/components/emergency/step-tracking";
-import { MedicalIdCard } from "@/components/emergency/medical-id-card";
+import { StepWho } from "@/components/emergency/step-who";
+import { useEmergency } from "@/hooks/use-emergency";
+import { supabase } from "@/lib/supabase/client";
 
 export default function EmergenciaPage() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function EmergenciaPage() {
     if (userId && emergency.step === "idle") {
       emergency.startEmergency();
     }
-  }, [userId, emergency.step]);
+  }, [userId, emergency]);
 
   const renderStep = () => {
     switch (emergency.step) {

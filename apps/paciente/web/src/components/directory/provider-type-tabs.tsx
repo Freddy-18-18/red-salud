@@ -7,6 +7,7 @@ import {
   FlaskConical,
   LayoutGrid,
 } from "lucide-react";
+
 import type { ProviderType } from "@/lib/services/directory-service";
 
 type TabValue = ProviderType | "all";

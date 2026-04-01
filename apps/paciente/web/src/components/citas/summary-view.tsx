@@ -1,11 +1,11 @@
 "use client";
 
-import { useFormContext } from "react-hook-form";
+import { Button } from "@red-salud/design-system";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@red-salud/design-system";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar, Clock, Video, MapPin, Activity, CreditCard } from "lucide-react";
-import { Button } from "@red-salud/design-system";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@red-salud/design-system";
+import { useFormContext } from "react-hook-form";
 
 interface SummaryViewProps {
     loading: boolean;

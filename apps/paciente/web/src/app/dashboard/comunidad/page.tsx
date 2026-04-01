@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@red-salud/design-system";
 import {
   Search,
   Plus,
@@ -10,7 +9,9 @@ import {
   Lightbulb,
   FileText,
 } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@red-salud/design-system";
+import { useRouter } from "next/navigation";
+import { useState, useMemo } from "react";
+
 import { PostCard } from "@/components/community/post-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,7 +46,7 @@ export default function CommunityPage() {
   const categoryFilter =
     activeTab === "all" ? undefined : (activeTab as PostCategory);
 
-  const { posts, loading, totalCount } = useCommunityPosts({
+  const { posts, loading } = useCommunityPosts({
     category: categoryFilter,
     search: debouncedSearch || undefined,
   });

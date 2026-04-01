@@ -9,11 +9,12 @@ import {
   Filter,
 } from "lucide-react";
 import { useState } from "react";
-import { useSecondOpinionList } from "@/hooks/use-second-opinion";
+
 import { RequestCard } from "@/components/second-opinion/request-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonList, Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
+import { useSecondOpinionList } from "@/hooks/use-second-opinion";
 import type { SecondOpinionStatus } from "@/lib/services/second-opinion-service";
 
 type FilterValue = "all" | SecondOpinionStatus;

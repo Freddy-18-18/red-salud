@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Copy, Check, Share2, MessageCircle } from "lucide-react";
+import { useState } from "react";
 
 interface ShareButtonsProps {
   whatsappLink: string;

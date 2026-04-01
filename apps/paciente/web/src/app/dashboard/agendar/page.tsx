@@ -1,15 +1,17 @@
 "use client";
 
-import { useBooking } from "@/hooks/use-booking";
-import { StepIndicator } from "@/components/booking/step-indicator";
-import { SpecialtyGrid } from "@/components/booking/specialty-grid";
-import { DoctorList } from "@/components/booking/doctor-list";
-import { CalendarPicker } from "@/components/booking/calendar-picker";
-import { TimeSlotGrid } from "@/components/booking/time-slot-grid";
-import { BookingDetails } from "@/components/booking/booking-details";
-import { BookingSummary } from "@/components/booking/booking-summary";
-import { BookingSuccess } from "@/components/booking/booking-success";
 import { AlertCircle } from "lucide-react";
+
+import { BookingDetails } from "@/components/booking/booking-details";
+import { BookingSuccess } from "@/components/booking/booking-success";
+import { BookingSummary } from "@/components/booking/booking-summary";
+import { CalendarPicker } from "@/components/booking/calendar-picker";
+import { DoctorList } from "@/components/booking/doctor-list";
+import { SpecialtyGrid } from "@/components/booking/specialty-grid";
+import { StepIndicator } from "@/components/booking/step-indicator";
+import { TimeSlotGrid } from "@/components/booking/time-slot-grid";
+import { useBooking } from "@/hooks/use-booking";
+
 
 function formatDateLabel(dateStr: string): string {
   const date = new Date(dateStr + "T12:00:00");
@@ -100,7 +102,7 @@ export default function AgendarCitaPage() {
           availableDates={booking.availableDates}
           loading={booking.loadingDates}
           selectedDate={state.date}
-          doctorName={state.doctor?.profile.nombre_completo || ""}
+          doctorName={state.doctor?.profile.full_name || ""}
           onSelectDate={booking.selectDate}
           onBack={booking.prevStep}
           onContinue={booking.nextStep}

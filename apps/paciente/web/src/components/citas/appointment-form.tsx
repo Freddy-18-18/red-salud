@@ -1,8 +1,6 @@
 "use client";
 
-import React from "react";
-import { useFormContext } from "react-hook-form";
-import { Clock } from "lucide-react";
+import { cn } from "@red-salud/core/utils";
 import {
     Card,
     CardContent,
@@ -24,8 +22,10 @@ import {
     Calendar,
     Button,
 } from "@red-salud/design-system";
-import { cn } from "@red-salud/core/utils";
 import { format, getDay } from "date-fns";
+import { Clock } from "lucide-react";
+import React from "react";
+import { useFormContext } from "react-hook-form";
 
 // TODO: Import from shared specialty-reasons-data once available in patient app
 // For now, provide basic suggestions inline

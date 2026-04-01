@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { cn } from "@red-salud/core/utils";
 import {
   ArrowLeft,
   Eye,
@@ -9,10 +9,11 @@ import {
   Send,
   Tag,
 } from "lucide-react";
-import { cn } from "@red-salud/core/utils";
+import { useState } from "react";
+
 import { DoctorBadge } from "@/components/community/doctor-badge";
-import { VoteButton } from "@/components/community/vote-button";
 import { ReplyCard } from "@/components/community/reply-card";
+import { VoteButton } from "@/components/community/vote-button";
 import type {
   CommunityPost,
   CommunityReply,

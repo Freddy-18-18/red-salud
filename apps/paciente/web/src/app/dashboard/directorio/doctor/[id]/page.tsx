@@ -1,17 +1,5 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
-import {
-  useProviderDetail,
-  useProviderReviews,
-  useSubmitReview,
-} from "@/hooks/use-directory";
-import { RatingDisplay } from "@/components/directory/rating-display";
-import { HoursDisplay } from "@/components/directory/hours-display";
-import { ReviewsSection } from "@/components/directory/reviews-section";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft,
   Shield,
@@ -25,7 +13,20 @@ import {
   Stethoscope,
   Building,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
+
+import { HoursDisplay } from "@/components/directory/hours-display";
+import { RatingDisplay } from "@/components/directory/rating-display";
+import { ReviewsSection } from "@/components/directory/reviews-section";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useProviderDetail,
+  useProviderReviews,
+  useSubmitReview,
+} from "@/hooks/use-directory";
 import type { DoctorDetail } from "@/lib/services/directory-service";
+import { supabase } from "@/lib/supabase/client";
 
 export default function DoctorDetailPage({
   params,

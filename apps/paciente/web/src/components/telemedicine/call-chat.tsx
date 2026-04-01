@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import { Send, X } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+
 import { useTelemedicineChat } from "@/hooks/use-telemedicine";
 
 interface CallChatProps {
@@ -83,13 +84,13 @@ export function CallChat({ sessionId, currentUserId, onClose }: CallChatProps) {
                     : "bg-gray-100 text-gray-900 rounded-bl-md"
                 }`}
               >
-                {!isOwn && msg.sender?.nombre_completo && (
+                {!isOwn && msg.sender?.full_name && (
                   <p
                     className={`text-xs font-medium mb-0.5 ${
                       isOwn ? "text-emerald-100" : "text-emerald-600"
                     }`}
                   >
-                    {msg.sender.nombre_completo}
+                    {msg.sender.full_name}
                   </p>
                 )}
                 <p className="text-sm whitespace-pre-wrap break-words">

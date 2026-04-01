@@ -1,10 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { useTelemedicineSessions } from "@/hooks/use-telemedicine";
-import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
 import {
   Video,
   Calendar,
@@ -15,6 +10,12 @@ import {
   Monitor,
   Settings,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+import { useTelemedicineSessions } from "@/hooks/use-telemedicine";
+import { supabase } from "@/lib/supabase/client";
 
 function formatRelativeDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -68,10 +69,20 @@ export default function TelemedicinePage() {
   }, []);
 
   const nextSession = upcoming[0];
-  const isSessionSoon =
-    nextSession &&
-    new Date(nextSession.scheduled_at).getTime() - Date.now() <
-      30 * 60 * 1000;
+  const [isSessionSoon, setIsSessionSoon] = useState(false);
+  /* eslint-disable react-hooks/set-state-in-effect -- sync with external clock via interval */
+  useEffect(() => {
+    if (!nextSession) {
+      setIsSessionSoon(false);
+      return;
+    }
+    const check = () =>
+      new Date(nextSession.scheduled_at).getTime() - Date.now() < 30 * 60 * 1000;
+    setIsSessionSoon(check());
+    const interval = setInterval(() => setIsSessionSoon(check()), 60_000);
+    return () => clearInterval(interval);
+  }, [nextSession]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (loading || sessionsLoading) {
     return (
@@ -114,7 +125,7 @@ export default function TelemedicinePage() {
           </div>
 
           <h2 className="text-xl font-bold mb-1">
-            Dr. {nextSession.doctor?.nombre_completo || "Medico"}
+            Dr. {nextSession.doctor?.full_name || "Medico"}
           </h2>
           <p className="text-emerald-100 text-sm mb-4">
             {formatRelativeDate(nextSession.scheduled_at)} -{" "}
@@ -179,12 +190,12 @@ export default function TelemedicinePage() {
               >
                 <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
                   <span className="text-lg font-semibold text-emerald-600">
-                    {session.doctor?.nombre_completo?.charAt(0) || "D"}
+                    {session.doctor?.full_name?.charAt(0) || "D"}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 text-sm truncate">
-                    Dr. {session.doctor?.nombre_completo || "Medico"}
+                    Dr. {session.doctor?.full_name || "Medico"}
                   </h3>
                   <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                     <div className="flex items-center gap-1">
@@ -231,12 +242,12 @@ export default function TelemedicinePage() {
               >
                 <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-semibold text-gray-500">
-                    {session.doctor?.nombre_completo?.charAt(0) || "D"}
+                    {session.doctor?.full_name?.charAt(0) || "D"}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-gray-900 text-sm truncate">
-                    Dr. {session.doctor?.nombre_completo || "Medico"}
+                    Dr. {session.doctor?.full_name || "Medico"}
                   </h3>
                   <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
                     <span>{formatDate(session.scheduled_at)}</span>

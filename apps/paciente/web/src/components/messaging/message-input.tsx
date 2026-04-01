@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@red-salud/design-system";
 import { Textarea } from "@red-salud/design-system";
 import { Send, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>;

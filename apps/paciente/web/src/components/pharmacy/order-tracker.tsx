@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Clock,
   CheckCircle2,
@@ -13,6 +12,8 @@ import {
   Store,
   ArrowRight,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import {
   formatBs,
   subscribeToOrderUpdates,
@@ -228,18 +229,18 @@ export function OrderTracker({ order: initialOrder, onOrderUpdate }: OrderTracke
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {order.pharmacy.nombre_completo}
+                {order.pharmacy.full_name}
               </p>
-              {order.pharmacy.direccion && (
+              {order.pharmacy.address && (
                 <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                   <MapPin className="h-3 w-3" />
-                  {order.pharmacy.direccion}
+                  {order.pharmacy.address}
                 </p>
               )}
             </div>
-            {order.pharmacy.telefono && (
+            {order.pharmacy.phone && (
               <a
-                href={`tel:${order.pharmacy.telefono}`}
+                href={`tel:${order.pharmacy.phone}`}
                 className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center hover:bg-emerald-100 transition-colors"
                 title="Llamar farmacia"
               >
@@ -325,7 +326,7 @@ export function OrderTrackerCompact({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <h3 className="text-sm font-semibold text-gray-900 truncate">
-              {order.pharmacy?.nombre_completo || "Farmacia"}
+              {order.pharmacy?.full_name || "Farmacia"}
             </h3>
             <span className="text-sm font-bold text-gray-900 flex-shrink-0">
               {formatBs(order.total_bs)}

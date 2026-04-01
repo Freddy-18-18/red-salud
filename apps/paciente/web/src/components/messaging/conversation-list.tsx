@@ -1,17 +1,17 @@
 "use client";
 
+import { cn } from "@red-salud/core/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/design-system";
 import { Badge } from "@red-salud/design-system";
 import { ScrollArea } from "@red-salud/design-system";
-import { cn } from "@red-salud/core/utils";
-import { MessageSquare, Archive } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { MessageSquare, Archive } from "lucide-react";
 
 // TODO: Import Conversation from shared types package once available
 interface ConversationUser {
   id: string;
-  nombre_completo?: string;
+  full_name?: string;
   email?: string;
   avatar_url?: string;
 }
@@ -74,7 +74,7 @@ export function ConversationList({
               ? conversation.doctor
               : conversation.patient;
 
-          const initials = otherUser?.nombre_completo
+          const initials = otherUser?.full_name
             ?.split(" ")
             .map((n) => n[0])
             .join("")
@@ -106,7 +106,7 @@ export function ConversationList({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-medium truncate">
-                      {otherUser?.nombre_completo}
+                      {otherUser?.full_name}
                     </p>
                     {lastMessageTime && (
                       <span className="text-xs text-muted-foreground">

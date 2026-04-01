@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { X, Search, Send, Loader2, Check, UserCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+
 import { supabase } from "@/lib/supabase/client";
 
 interface Doctor {
   id: string;
-  nombre_completo: string;
+  full_name: string;
   specialty: string | null;
 }
 
@@ -46,7 +47,7 @@ export function ShareDialog({
       // Get doctors from past appointments
       const { data } = await supabase
         .from("appointments")
-        .select("doctor_id, doctor:profiles!doctor_id(id, nombre_completo)")
+        .select("doctor_id, doctor:profiles!doctor_id(id, full_name)")
         .eq("patient_id", user.id)
         .not("doctor_id", "is", null);
 
@@ -57,7 +58,7 @@ export function ShareDialog({
           if (doc?.id && !uniqueDoctors.has(doc.id)) {
             uniqueDoctors.set(doc.id, {
               id: doc.id,
-              nombre_completo: doc.nombre_completo || "Doctor",
+              full_name: doc.full_name || "Doctor",
               specialty: null,
             });
           }
@@ -72,7 +73,7 @@ export function ShareDialog({
 
   const filteredDoctors = search
     ? doctors.filter((d) =>
-        d.nombre_completo.toLowerCase().includes(search.toLowerCase())
+        d.full_name.toLowerCase().includes(search.toLowerCase())
       )
     : doctors;
 
@@ -157,12 +158,12 @@ export function ShareDialog({
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
                       <span className="text-sm font-semibold text-emerald-700">
-                        {doctor.nombre_completo.charAt(0)}
+                        {doctor.full_name.charAt(0)}
                       </span>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">
-                        Dr. {doctor.nombre_completo}
+                        Dr. {doctor.full_name}
                       </p>
                       {doctor.specialty && (
                         <p className="text-xs text-gray-500">

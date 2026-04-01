@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+
 import type { ParameterHistory } from "@/lib/services/lab-results-service";
 
 interface TrendChartProps {

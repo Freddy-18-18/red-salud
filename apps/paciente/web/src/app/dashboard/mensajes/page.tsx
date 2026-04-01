@@ -1,7 +1,14 @@
 "use client";
 
+import { MessageSquare, ArrowLeft } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/lib/supabase/client";
+
+import { ConversationList } from "@/components/messaging/conversation-list";
+import { MessageInput } from "@/components/messaging/message-input";
+import { MessageThread } from "@/components/messaging/message-thread";
+import { NewConversationDialog } from "@/components/messaging/new-conversation-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getUserConversations,
   getConversationMessages,
@@ -10,17 +17,11 @@ import {
   subscribeToMessages,
   createConversation,
 } from "@/lib/services/messaging-service";
-import { ConversationList } from "@/components/messaging/conversation-list";
-import { MessageThread } from "@/components/messaging/message-thread";
-import { MessageInput } from "@/components/messaging/message-input";
-import { NewConversationDialog } from "@/components/messaging/new-conversation-dialog";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
-import { MessageSquare, ArrowLeft } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
 
 interface MessageSender {
   id: string;
-  nombre_completo?: string;
+  full_name?: string;
   avatar_url?: string;
   role?: string;
 }
@@ -39,7 +40,7 @@ interface Message {
 
 interface ConversationUser {
   id: string;
-  nombre_completo?: string;
+  full_name?: string;
   email?: string;
   avatar_url?: string;
 }
@@ -149,21 +150,21 @@ export default function MensajesPage() {
       .select(`
         id,
         specialty:specialties(name),
-        profile:profiles!inner(nombre_completo, avatar_url)
+        profile:profiles!inner(full_name, avatar_url)
       `)
       .eq("verified", true);
 
     return (data || []).map((d: Record<string, unknown>) => ({
       id: d.id as string,
-      profile: d.profile as { nombre_completo?: string; avatar_url?: string },
+      profile: d.profile as { full_name?: string; avatar_url?: string },
       specialty: d.specialty as { name: string },
     }));
   };
 
   const otherUserName = selectedConversation
     ? (selectedConversation.patient_id === userId
-        ? selectedConversation.doctor?.nombre_completo
-        : selectedConversation.patient?.nombre_completo) || "Doctor"
+        ? selectedConversation.doctor?.full_name
+        : selectedConversation.patient?.full_name) || "Doctor"
     : "";
 
   return (

@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { useLabOrders, useMonitoredParameters } from "@/hooks/use-lab-results";
-import { OrderCard } from "@/components/lab/order-card";
-import { ParameterCard } from "@/components/lab/parameter-card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton, SkeletonList } from "@/components/ui/skeleton";
 import {
   FlaskConical,
   Activity,
   ArrowRight,
   FileSearch,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { OrderCard } from "@/components/lab/order-card";
+import { ParameterCard } from "@/components/lab/parameter-card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton, SkeletonList } from "@/components/ui/skeleton";
+import { useLabOrders, useMonitoredParameters } from "@/hooks/use-lab-results";
+import { supabase } from "@/lib/supabase/client";
 
 export default function LaboratorioPage() {
   const [userId, setUserId] = useState<string | undefined>();

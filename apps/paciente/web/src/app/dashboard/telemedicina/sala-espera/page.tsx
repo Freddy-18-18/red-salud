@@ -1,12 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import {
-  useTelemedicineSession,
-} from "@/hooks/use-telemedicine";
-import { DeviceCheck } from "@/components/telemedicine/device-check";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Video,
   Clock,
@@ -15,6 +8,15 @@ import {
   UserCircle,
   Loader2,
 } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { DeviceCheck } from "@/components/telemedicine/device-check";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useTelemedicineSession,
+} from "@/hooks/use-telemedicine";
+
 
 const WAITING_TIPS = [
   "Asegurate de estar en un lugar tranquilo y bien iluminado",
@@ -105,7 +107,7 @@ export default function WaitingRoomPage() {
     );
   }
 
-  const doctorName = session.doctor?.nombre_completo || "tu doctor";
+  const doctorName = session.doctor?.full_name || "tu doctor";
   const scheduledTime = new Date(session.scheduled_at).toLocaleTimeString(
     "es-VE",
     {

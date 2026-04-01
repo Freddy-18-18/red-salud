@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Pill,
   Check,
@@ -11,6 +10,8 @@ import {
   ChevronUp,
   Plus,
 } from "lucide-react";
+import { useState } from "react";
+
 import type { TodayMedicationEntry } from "@/hooks/use-reminders";
 
 interface MedicationTrackerProps {

@@ -10,13 +10,13 @@ import Image from "next/image";
 interface DoctorProfile {
   id: string;
   specialty_id?: string;
-  anos_experiencia?: number;
+  years_experience?: number;
   biografia?: string;
-  tarifa_consulta?: number;
+  consultation_fee?: number;
   verified?: boolean;
   profile?: {
     id?: string;
-    nombre_completo?: string;
+    full_name?: string;
     email?: string;
     avatar_url?: string;
   };
@@ -28,9 +28,9 @@ interface DoctorProfile {
 }
 
 interface DoctorProfileExtended extends DoctorProfile {
-  direccion?: string;
-  ciudad?: string;
-  estado?: string;
+  address?: string;
+  city?: string;
+  state?: string;
   telefono?: string;
   horario?: string;
 }
@@ -66,24 +66,24 @@ export function DoctorSelector({ doctors, selectedDoctor, selectedSpecialtyName,
                   <div className="flex items-start gap-4">
                     <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {doctor.profile?.avatar_url ? (
-                        <Image src={doctor.profile.avatar_url} alt={doctor.profile?.nombre_completo || "Doctor"} width={64} height={64} className="rounded-full object-cover" />
+                        <Image src={doctor.profile.avatar_url} alt={doctor.profile?.full_name || "Doctor"} width={64} height={64} className="rounded-full object-cover" />
                       ) : (
-                        <span className="text-2xl font-semibold text-primary">{doctor.profile?.nombre_completo?.charAt(0) || "D"}</span>
+                        <span className="text-2xl font-semibold text-primary">{doctor.profile?.full_name?.charAt(0) || "D"}</span>
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="font-semibold text-lg">Dr. {doctor.profile?.nombre_completo || "Médico"}</h3>
+                          <h3 className="font-semibold text-lg">Dr. {doctor.profile?.full_name || "Médico"}</h3>
                           <p className="text-sm text-muted-foreground">{doctor.specialty?.name}</p>
                         </div>
                         {doctor.verified && (<Badge className="bg-green-100 text-green-800">Verificado</Badge>)}
                       </div>
                       <div className="mt-2 space-y-1">
-                        {doctor.anos_experiencia && doctor.anos_experiencia > 0 && (<p className="text-sm text-gray-600">{doctor.anos_experiencia} años de experiencia</p>)}
-                        {doctor.tarifa_consulta && (<p className="text-sm font-medium text-green-600">${doctor.tarifa_consulta.toFixed(2)} por consulta</p>)}
-                        {(doctor.ciudad || doctor.estado) && (
-                          <p className="text-sm text-gray-600 flex items-center gap-1"><MapPin className="h-3 w-3" />{doctor.ciudad && doctor.estado ? `${doctor.ciudad}, ${doctor.estado}` : doctor.direccion || doctor.ciudad || doctor.estado}</p>
+                        {doctor.years_experience && doctor.years_experience > 0 && (<p className="text-sm text-gray-600">{doctor.years_experience} años de experiencia</p>)}
+                        {doctor.consultation_fee && (<p className="text-sm font-medium text-green-600">${doctor.consultation_fee.toFixed(2)} por consulta</p>)}
+                        {(doctor.city || doctor.state) && (
+                          <p className="text-sm text-gray-600 flex items-center gap-1"><MapPin className="h-3 w-3" />{doctor.city && doctor.state ? `${doctor.city}, ${doctor.state}` : doctor.address || doctor.city || doctor.state}</p>
                         )}
                         {doctor.telefono && (<p className="text-sm text-gray-600 flex items-center gap-1"><Phone className="h-3 w-3" />{doctor.telefono}</p>)}
                         {doctor.horario && (<p className="text-sm text-gray-600 flex items-center gap-1"><Clock className="h-3 w-3" />Horarios disponibles</p>)}

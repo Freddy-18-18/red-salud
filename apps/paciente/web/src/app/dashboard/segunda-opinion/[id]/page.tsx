@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   Clock,
@@ -11,17 +10,17 @@ import {
   User,
   Calendar,
   Shield,
-  Star,
-  MapPin,
   Video,
   Building2,
   Stethoscope,
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { useSecondOpinionDetail } from "@/hooks/use-second-opinion";
+import { useParams } from "next/navigation";
+
 import { DiagnosisComparison } from "@/components/second-opinion/diagnosis-comparison";
 import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+import { useSecondOpinionDetail } from "@/hooks/use-second-opinion";
 import type { SecondOpinionStatus } from "@/lib/services/second-opinion-service";
 
 // --- Status Timeline ---
@@ -217,7 +216,7 @@ export default function SecondOpinionDetailPage() {
   }
 
   const originalDoctorInitials =
-    request.original_doctor?.nombre_completo
+    request.original_doctor?.full_name
       ?.split(" ")
       .map((n) => n[0])
       .join("")
@@ -225,7 +224,7 @@ export default function SecondOpinionDetailPage() {
       .slice(0, 2) || "D";
 
   const reviewerInitials =
-    request.reviewing_doctor?.nombre_completo
+    request.reviewing_doctor?.full_name
       ?.split(" ")
       .map((n) => n[0])
       .join("")
@@ -270,7 +269,7 @@ export default function SecondOpinionDetailPage() {
                 {request.original_doctor?.avatar_url ? (
                   <img
                     src={request.original_doctor.avatar_url}
-                    alt={request.original_doctor.nombre_completo}
+                    alt={request.original_doctor.full_name}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (
@@ -282,7 +281,7 @@ export default function SecondOpinionDetailPage() {
                 )}
                 <div>
                   <p className="text-sm font-semibold text-gray-900">
-                    Dr. {request.original_doctor?.nombre_completo || "Doctor"}
+                    Dr. {request.original_doctor?.full_name || "Doctor"}
                   </p>
                   <p className="text-xs text-gray-500">
                     {request.specialty?.name}
@@ -379,7 +378,7 @@ export default function SecondOpinionDetailPage() {
                   {request.reviewing_doctor.avatar_url ? (
                     <img
                       src={request.reviewing_doctor.avatar_url}
-                      alt={request.reviewing_doctor.nombre_completo}
+                      alt={request.reviewing_doctor.full_name}
                       className="w-16 h-16 rounded-full object-cover mb-3"
                     />
                   ) : (
@@ -390,7 +389,7 @@ export default function SecondOpinionDetailPage() {
                     </div>
                   )}
                   <h4 className="font-semibold text-gray-900">
-                    Dr. {request.reviewing_doctor.nombre_completo}
+                    Dr. {request.reviewing_doctor.full_name}
                   </h4>
                   <p className="text-sm text-gray-500 mt-0.5">
                     {request.specialty?.name}

@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { ArrowLeft, Video, AlertTriangle, Monitor } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { useEffect, useState, useRef, useCallback } from "react";
+
+import { CallChat } from "@/components/telemedicine/call-chat";
+import { CallControls } from "@/components/telemedicine/call-controls";
+import { VideoPlaceholder } from "@/components/telemedicine/video-placeholder";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useTelemedicineSession,
   useMediaDevices,
 } from "@/hooks/use-telemedicine";
 import { updateSessionStatus } from "@/lib/services/telemedicine-service";
-import { CallControls } from "@/components/telemedicine/call-controls";
-import { CallChat } from "@/components/telemedicine/call-chat";
-import { VideoPlaceholder } from "@/components/telemedicine/video-placeholder";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Video, AlertTriangle, Monitor } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
+
 
 export default function VideoCallPage() {
   const params = useParams();
@@ -185,7 +187,7 @@ export default function VideoCallPage() {
     );
   }
 
-  const doctorName = session.doctor?.nombre_completo || "Doctor";
+  const doctorName = session.doctor?.full_name || "Doctor";
   const doctorInitials =
     doctorName
       .split(" ")

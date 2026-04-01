@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Sparkles, Trophy, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface PointsNotification {
   id: string;

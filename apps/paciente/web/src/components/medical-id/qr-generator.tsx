@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useRef } from "react";
 import { Download, Share2, Copy, Check } from "lucide-react";
+import { useMemo, useRef } from "react";
 import { useState } from "react";
+
 import { generateQRSvg } from "@/lib/services/medical-id-service";
 
 interface QRGeneratorProps {
@@ -114,7 +115,7 @@ export function QRGenerator({
             try {
               await navigator.share({
                 title: `QR Medico - ${patientName}`,
-                text: "Mi identificacion medica de Red Salud",
+                text: "Mi identificacion medica de Red-Salud",
                 files: [file],
               });
             } catch {

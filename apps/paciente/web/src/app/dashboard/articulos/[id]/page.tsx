@@ -1,7 +1,8 @@
 "use client";
 
-import { use } from "react";
 import { useRouter } from "next/navigation";
+import { use } from "react";
+
 import { ArticleReader } from "@/components/community/article-reader";
 import { Skeleton } from "@/components/ui/skeleton";
 import {

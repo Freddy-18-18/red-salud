@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef } from "react";
 import { Printer, Download, AlertTriangle, Phone, Heart } from "lucide-react";
+import { useRef } from "react";
+
 import {
   type MedicalIdData,
   type QRPreferences,

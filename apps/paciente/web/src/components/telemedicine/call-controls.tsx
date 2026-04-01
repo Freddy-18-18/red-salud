@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Camera,
   CameraOff,
@@ -13,6 +12,8 @@ import {
   Minimize,
   Clock,
 } from "lucide-react";
+import { useState } from "react";
+
 import { useCallTimer } from "@/hooks/use-telemedicine";
 
 interface CallControlsProps {

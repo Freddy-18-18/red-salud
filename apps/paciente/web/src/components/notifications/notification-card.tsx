@@ -13,6 +13,7 @@ import {
   Trash2,
   ExternalLink,
 } from "lucide-react";
+
 import type { AppNotification, NotificationType } from "@/lib/services/notification-service";
 
 interface NotificationCardProps {
@@ -23,17 +24,71 @@ interface NotificationCardProps {
 
 const TYPE_CONFIG: Record<
   NotificationType,
-  { icon: typeof Pill; color: string; bgColor: string }
+  { icon: typeof Pill; color: string; bgColor: string; darkBgColor: string; darkColor: string }
 > = {
-  medication: { icon: Pill, color: "text-blue-600", bgColor: "bg-blue-50" },
-  appointment: { icon: CalendarCheck, color: "text-emerald-600", bgColor: "bg-emerald-50" },
-  lab_result: { icon: FlaskConical, color: "text-purple-600", bgColor: "bg-purple-50" },
-  message: { icon: MessageCircle, color: "text-sky-600", bgColor: "bg-sky-50" },
-  reward: { icon: Trophy, color: "text-amber-600", bgColor: "bg-amber-50" },
-  insurance: { icon: Shield, color: "text-indigo-600", bgColor: "bg-indigo-50" },
-  emergency: { icon: Siren, color: "text-red-600", bgColor: "bg-red-50" },
-  community: { icon: Users, color: "text-teal-600", bgColor: "bg-teal-50" },
-  system: { icon: Info, color: "text-gray-600", bgColor: "bg-gray-100" },
+  appointment: {
+    icon: CalendarCheck,
+    color: "text-blue-600",
+    bgColor: "bg-blue-50",
+    darkColor: "dark:text-blue-400",
+    darkBgColor: "dark:bg-blue-950/40",
+  },
+  message: {
+    icon: MessageCircle,
+    color: "text-green-600",
+    bgColor: "bg-green-50",
+    darkColor: "dark:text-green-400",
+    darkBgColor: "dark:bg-green-950/40",
+  },
+  lab_result: {
+    icon: FlaskConical,
+    color: "text-purple-600",
+    bgColor: "bg-purple-50",
+    darkColor: "dark:text-purple-400",
+    darkBgColor: "dark:bg-purple-950/40",
+  },
+  medication: {
+    icon: Pill,
+    color: "text-orange-600",
+    bgColor: "bg-orange-50",
+    darkColor: "dark:text-orange-400",
+    darkBgColor: "dark:bg-orange-950/40",
+  },
+  reward: {
+    icon: Trophy,
+    color: "text-amber-600",
+    bgColor: "bg-amber-50",
+    darkColor: "dark:text-amber-400",
+    darkBgColor: "dark:bg-amber-950/40",
+  },
+  insurance: {
+    icon: Shield,
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50",
+    darkColor: "dark:text-indigo-400",
+    darkBgColor: "dark:bg-indigo-950/40",
+  },
+  emergency: {
+    icon: Siren,
+    color: "text-red-600",
+    bgColor: "bg-red-50",
+    darkColor: "dark:text-red-400",
+    darkBgColor: "dark:bg-red-950/40",
+  },
+  community: {
+    icon: Users,
+    color: "text-teal-600",
+    bgColor: "bg-teal-50",
+    darkColor: "dark:text-teal-400",
+    darkBgColor: "dark:bg-teal-950/40",
+  },
+  system: {
+    icon: Info,
+    color: "text-gray-600",
+    bgColor: "bg-gray-100",
+    darkColor: "dark:text-gray-400",
+    darkBgColor: "dark:bg-gray-800",
+  },
 };
 
 function formatTime(dateStr: string): string {
@@ -44,9 +99,10 @@ function formatTime(dateStr: string): string {
   const diffHour = Math.floor(diffMs / 3600000);
   const diffDay = Math.floor(diffMs / 86400000);
 
-  if (diffMin < 1) return "Ahora";
-  if (diffMin < 60) return `hace ${diffMin}min`;
+  if (diffMin < 1) return "ahora";
+  if (diffMin < 60) return `hace ${diffMin} min`;
   if (diffHour < 24) return `hace ${diffHour}h`;
+  if (diffDay === 1) return "ayer";
   if (diffDay < 7) return `hace ${diffDay}d`;
 
   return date.toLocaleDateString("es-VE", {
@@ -71,10 +127,10 @@ export function NotificationCard({
 
   return (
     <div
-      className={`flex gap-3 p-3 rounded-xl transition-colors ${
+      className={`relative group flex gap-3 p-3.5 rounded-xl transition-all duration-200 cursor-pointer ${
         notification.is_read
-          ? "bg-white"
-          : "bg-emerald-50/40 border border-emerald-100"
+          ? "bg-white dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-800/60"
+          : "bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 hover:bg-emerald-50/80 dark:hover:bg-emerald-950/30"
       }`}
       onClick={handleClick}
       role="button"
@@ -83,11 +139,16 @@ export function NotificationCard({
         if (e.key === "Enter" || e.key === " ") handleClick();
       }}
     >
+      {/* Unread indicator bar */}
+      {!notification.is_read && (
+        <div className="absolute left-0 top-3 bottom-3 w-0.5 bg-emerald-500 rounded-full" />
+      )}
+
       {/* Icon */}
       <div
-        className={`flex-shrink-0 w-10 h-10 rounded-full ${config.bgColor} flex items-center justify-center`}
+        className={`flex-shrink-0 w-10 h-10 rounded-full ${config.bgColor} ${config.darkBgColor} flex items-center justify-center`}
       >
-        <Icon className={`h-5 w-5 ${config.color}`} />
+        <Icon className={`h-5 w-5 ${config.color} ${config.darkColor}`} />
       </div>
 
       {/* Content */}
@@ -95,18 +156,25 @@ export function NotificationCard({
         <div className="flex items-start justify-between gap-2">
           <p
             className={`text-sm leading-snug ${
-              notification.is_read ? "text-gray-700" : "text-gray-900 font-medium"
+              notification.is_read
+                ? "text-gray-700 dark:text-gray-300"
+                : "text-gray-900 dark:text-white font-medium"
             }`}
           >
             {notification.title}
           </p>
-          <span className="text-[11px] text-gray-400 flex-shrink-0 mt-0.5">
-            {formatTime(notification.created_at)}
-          </span>
+          <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+            {!notification.is_read && (
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+            )}
+            <span className="text-[11px] text-gray-400 dark:text-gray-500">
+              {formatTime(notification.created_at)}
+            </span>
+          </div>
         </div>
 
         {notification.body && (
-          <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
             {notification.body}
           </p>
         )}
@@ -117,7 +185,7 @@ export function NotificationCard({
             <a
               href={notification.action_url}
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
             >
               <ExternalLink className="h-3 w-3" />
               {notification.action_label || "Ver detalle"}
@@ -129,20 +197,13 @@ export function NotificationCard({
               e.stopPropagation();
               onDelete(notification.id);
             }}
-            className="ml-auto p-1 text-gray-300 hover:text-red-400 transition-colors"
+            className="ml-auto p-1 text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 hover:text-red-400 dark:hover:text-red-400 transition-all"
             aria-label="Eliminar notificacion"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
-
-      {/* Unread dot */}
-      {!notification.is_read && (
-        <div className="flex-shrink-0 mt-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500" />
-        </div>
-      )}
     </div>
   );
 }

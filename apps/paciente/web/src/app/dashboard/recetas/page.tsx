@@ -1,19 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SkeletonList, Skeleton } from "@/components/ui/skeleton";
 import {
   FileText,
   Pill,
   Clock,
   Calendar,
-  User,
   ChevronDown,
   ChevronUp,
-  AlertCircle,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { EmptyState } from "@/components/ui/empty-state";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { supabase } from "@/lib/supabase/client";
 
 type TabValue = "active" | "expired" | "all";
 
@@ -35,7 +34,7 @@ interface Prescription {
   expires_at?: string;
   status: "active" | "expired" | "dispensed";
   doctor?: {
-    nombre_completo?: string;
+    full_name?: string;
     avatar_url?: string;
   };
   medications?: PrescriptionMedication[];
@@ -60,7 +59,6 @@ function formatDate(dateStr: string): string {
 }
 
 export default function RecetasPage() {
-  const [userId, setUserId] = useState<string | undefined>();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabValue>("active");
@@ -70,14 +68,13 @@ export default function RecetasPage() {
     const loadData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      setUserId(user.id);
 
       try {
         const { data, error } = await supabase
           .from("prescriptions")
           .select(`
             *,
-            doctor:profiles!prescriptions_doctor_id_fkey(nombre_completo, avatar_url),
+            doctor:profiles!prescriptions_doctor_id_fkey(full_name, avatar_url),
             medications:prescription_medications(*)
           `)
           .eq("patient_id", user.id)
@@ -190,7 +187,7 @@ export default function RecetasPage() {
           {displayedPrescriptions.map((prescription) => {
             const isExpanded = expandedId === prescription.id;
             const statusConfig = STATUS_CONFIG[prescription.status] || STATUS_CONFIG.active;
-            const initials = (prescription.doctor?.nombre_completo || "D")
+            const initials = (prescription.doctor?.full_name || "D")
               .split(" ")
               .map((n) => n[0])
               .join("")
@@ -214,7 +211,7 @@ export default function RecetasPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <h3 className="font-semibold text-gray-900 text-sm">
-                            Dr. {prescription.doctor?.nombre_completo || "Medico"}
+                            Dr. {prescription.doctor?.full_name || "Medico"}
                           </h3>
                           {prescription.diagnosis && (
                             <p className="text-xs text-gray-500 mt-0.5 truncate">{prescription.diagnosis}</p>

@@ -1,12 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
-import {
-  useTelemedicineSession,
-  useSessionRating,
-} from "@/hooks/use-telemedicine";
-import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import {
   ArrowLeft,
   Clock,
@@ -20,6 +13,15 @@ import {
   Video,
   ArrowRight,
 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+import {
+  useTelemedicineSession,
+  useSessionRating,
+} from "@/hooks/use-telemedicine";
+
 
 function StarRating({
   value,
@@ -64,7 +66,7 @@ export default function SessionSummaryPage() {
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [showRatingForm, setShowRatingForm] = useState(true);
+  const [showRatingForm] = useState(true);
 
   const handleRate = async () => {
     if (rating === 0) return;
@@ -103,7 +105,7 @@ export default function SessionSummaryPage() {
     );
   }
 
-  const doctorName = session.doctor?.nombre_completo || "Doctor";
+  const doctorName = session.doctor?.full_name || "Doctor";
   const scheduledDate = new Date(session.scheduled_at).toLocaleDateString(
     "es-VE",
     {

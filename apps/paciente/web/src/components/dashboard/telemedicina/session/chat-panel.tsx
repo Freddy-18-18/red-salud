@@ -1,12 +1,12 @@
 "use client";
 
+import { cn } from "@red-salud/core/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@red-salud/design-system";
 import { ScrollArea } from "@red-salud/design-system";
 import { Input } from "@red-salud/design-system";
 import { Button } from "@red-salud/design-system";
 import { TabsContent } from "@red-salud/design-system";
 import { Send } from "lucide-react";
-import { cn } from "@red-salud/core/utils";
 
 // TODO: Import TelemedicineChatMessage from shared types package once available
 interface TelemedicineChatMessage {
@@ -15,7 +15,7 @@ interface TelemedicineChatMessage {
   message: string;
   created_at: string;
   sender?: {
-    nombre_completo?: string;
+    full_name?: string;
   };
 }
 
@@ -42,7 +42,7 @@ export function ChatPanel({ messages, userId, messageText, onMessageTextChange, 
                 return (
                   <div key={msg.id} className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
                     <div className={cn("max-w-[80%] rounded-lg px-4 py-2", isOwn ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900")}>
-                      {!isOwn && (<p className="text-xs font-semibold mb-1">{msg.sender?.nombre_completo || "Doctor"}</p>)}
+                      {!isOwn && (<p className="text-xs font-semibold mb-1">{msg.sender?.full_name || "Doctor"}</p>)}
                       <p className="text-sm">{msg.message}</p>
                       <p className={cn("text-xs mt-1", isOwn ? "text-blue-100" : "text-gray-500")}>
                         {new Date(msg.created_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}

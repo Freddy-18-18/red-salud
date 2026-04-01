@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import {
   Gift,
   ShoppingBag,
   Video,
   Pill,
   FlaskConical,
-  X,
   Check,
-  AlertCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { createElement } from "react";
+import { useState } from "react";
 
 interface RedeemableReward {
   id: string;
@@ -90,6 +89,10 @@ interface ConfirmDialogProps {
   redeeming: boolean;
 }
 
+function RewardIcon({ iconName, className }: { iconName: string; className?: string }) {
+  return createElement(ICON_MAP[iconName] || Gift, { className });
+}
+
 function ConfirmDialog({
   reward,
   totalPoints,
@@ -97,8 +100,6 @@ function ConfirmDialog({
   onCancel,
   redeeming,
 }: ConfirmDialogProps) {
-  const Icon = ICON_MAP[reward.icon] || Gift;
-
   return (
     <div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -110,7 +111,7 @@ function ConfirmDialog({
       >
         <div className="text-center">
           <div className="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-4">
-            <Icon className="h-8 w-8 text-amber-500" />
+            <RewardIcon iconName={reward.icon} className="h-8 w-8 text-amber-500" />
           </div>
 
           <h3 className="text-lg font-bold text-gray-900 mb-1">
@@ -212,7 +213,6 @@ export function RedeemStore({ totalPoints, onRedeem }: RedeemStoreProps) {
 
         <div className="space-y-3">
           {REDEEMABLE_REWARDS.map((reward) => {
-            const Icon = ICON_MAP[reward.icon] || Gift;
             const canAfford = totalPoints >= reward.pointCost;
 
             return (
@@ -231,7 +231,7 @@ export function RedeemStore({ totalPoints, onRedeem }: RedeemStoreProps) {
                       : "bg-gray-50 text-gray-400"
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
+                  <RewardIcon iconName={reward.icon} className="h-5 w-5" />
                 </div>
 
                 <div className="flex-1 min-w-0">

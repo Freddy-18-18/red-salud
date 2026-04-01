@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Download, X } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const DISMISS_KEY = "pwa_install_dismissed_at";
 const DISMISS_DAYS = 7;
@@ -77,7 +77,7 @@ export function InstallPrompt() {
 
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-900">
-              Instala Red Salud
+              Instala Red-Salud
             </p>
             <p className="text-xs text-gray-500 mt-0.5">
               Agrega la app a tu pantalla de inicio para acceso rapido, incluso

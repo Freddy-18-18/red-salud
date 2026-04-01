@@ -10,7 +10,7 @@ export function NotificationBell({ unreadCount }: NotificationBellProps) {
   return (
     <a
       href="/dashboard/notificaciones"
-      className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition"
+      className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition"
       aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ""}`}
     >
       <Bell className="h-5 w-5" />

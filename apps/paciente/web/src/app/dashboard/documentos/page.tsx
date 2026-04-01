@@ -1,27 +1,26 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import {
   FolderOpen,
   Search,
   Upload,
-  Camera,
   LayoutGrid,
   List,
   Syringe,
-  ArrowRight,
   X,
 } from "lucide-react";
-import { useDocuments, useVaccinations } from "@/hooks/use-documents";
-import { type DocumentCategory, type PatientDocument } from "@/lib/services/documents-service";
-import { DocumentCard } from "@/components/documents/document-card";
+import { useState, useCallback } from "react";
+
 import { CategoryGrid } from "@/components/documents/category-grid";
-import { UploadModal } from "@/components/documents/upload-modal";
+import { DocumentCard } from "@/components/documents/document-card";
 import { DocumentViewer } from "@/components/documents/document-viewer";
 import { ShareDialog } from "@/components/documents/share-dialog";
+import { UploadModal } from "@/components/documents/upload-modal";
 import { VaccinationRecord } from "@/components/documents/vaccination-record";
-import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+import { useDocuments, useVaccinations } from "@/hooks/use-documents";
+import { type DocumentCategory, type PatientDocument } from "@/lib/services/documents-service";
 
 type ViewMode = "grid" | "list";
 type Tab = "documentos" | "vacunas";

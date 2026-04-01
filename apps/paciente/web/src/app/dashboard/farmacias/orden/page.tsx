@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { PartyPopper } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { useEffect, useState, Suspense } from "react";
+
 import { OrderForm } from "@/components/pharmacy/order-form";
 import { OrderTracker } from "@/components/pharmacy/order-tracker";
 import { SkeletonList, Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle2, PartyPopper } from "lucide-react";
 import {
   comparePrices,
   createOrder,
   type FulfillmentOption,
-  type DeliveryType,
   type CreateOrderData,
   type PharmacyOrder,
 } from "@/lib/services/pharmacy-comparator-service";
+import { supabase } from "@/lib/supabase/client";
 
 function OrdenPageContent() {
   const router = useRouter();

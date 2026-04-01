@@ -1,12 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
-import { useLabOrderDetail } from "@/hooks/use-lab-results";
-import { StatusTimeline } from "@/components/lab/status-timeline";
-import { ResultTable } from "@/components/lab/result-table";
-import { Skeleton, SkeletonList } from "@/components/ui/skeleton";
 import {
   ArrowLeft,
   Calendar,
@@ -19,6 +12,14 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useMemo, useState } from "react";
+
+import { ResultTable } from "@/components/lab/result-table";
+import { StatusTimeline } from "@/components/lab/status-timeline";
+import { Skeleton, SkeletonList } from "@/components/ui/skeleton";
+import { useLabOrderDetail } from "@/hooks/use-lab-results";
+
 
 function formatDate(dateStr: string): string {
   try {
@@ -36,15 +37,13 @@ export default function LabOrderDetailPage() {
   const params = useParams();
   const orderId = params.id as string;
   const { order, results, loading, error } = useLabOrderDetail(orderId);
+  const defaultExpanded = useMemo(
+    () => (results.length > 0 ? results[0].id : null),
+    [results],
+  );
   const [expandedResult, setExpandedResult] = useState<string | null>(null);
+  const activeExpanded = expandedResult ?? defaultExpanded;
   const [sharing, setSharing] = useState(false);
-
-  // Auto-expand first result
-  useEffect(() => {
-    if (results.length > 0 && !expandedResult) {
-      setExpandedResult(results[0].id);
-    }
-  }, [results, expandedResult]);
 
   const handleShareWithDoctor = async () => {
     setSharing(true);
@@ -53,7 +52,7 @@ export default function LabOrderDetailPage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Resultados de laboratorio - Red Salud",
+          title: "Resultados de laboratorio - Red-Salud",
           text: `Mis resultados de laboratorio - Orden ${order?.order_number || orderId}`,
           url: shareUrl,
         });
@@ -121,10 +120,10 @@ export default function LabOrderDetailPage() {
             <Calendar className="h-4 w-4" />
             {formatDate(order.ordered_at)}
           </div>
-          {order.doctor?.nombre_completo && (
+          {order.doctor?.full_name && (
             <div className="flex items-center gap-1">
               <User className="h-4 w-4" />
-              Dr. {order.doctor.nombre_completo}
+              Dr. {order.doctor.full_name}
             </div>
           )}
           {(order.laboratory as Record<string, unknown>)?.name ? (
@@ -153,7 +152,7 @@ export default function LabOrderDetailPage() {
         {results.length > 0 ? (
           <div className="space-y-3">
             {results.map((result) => {
-              const isExpanded = expandedResult === result.id;
+              const isExpanded = activeExpanded === result.id;
               return (
                 <div
                   key={result.id}

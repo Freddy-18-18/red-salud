@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   IdCard,
   AlertTriangle,
@@ -18,13 +17,14 @@ import {
   X,
   Loader2,
   Check,
-  Plus,
 } from "lucide-react";
-import { useMedicalId } from "@/hooks/use-medical-id";
-import { QRGenerator } from "@/components/medical-id/qr-generator";
+import { useState } from "react";
+
 import { PrintableCard } from "@/components/medical-id/printable-card";
+import { QRGenerator } from "@/components/medical-id/qr-generator";
 import { QRScanner } from "@/components/medical-id/qr-scanner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMedicalId } from "@/hooks/use-medical-id";
 import {
   BLOOD_TYPES,
   type QRPreferences,

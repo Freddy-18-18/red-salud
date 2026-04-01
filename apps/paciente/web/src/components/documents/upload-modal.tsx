@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
 import {
   X,
   Upload,
   Camera,
   FileText,
-  Image,
   AlertCircle,
   Check,
   Loader2,
 } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+
 import {
   type DocumentCategory,
   type DocumentMetadata,
@@ -53,6 +53,14 @@ export function UploadModal({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    setCameraActive(false);
+  }, []);
+
   const resetForm = useCallback(() => {
     setSelectedFile(null);
     setPreview(null);
@@ -64,7 +72,7 @@ export function UploadModal({
     setFileError(null);
     setSuccess(false);
     stopCamera();
-  }, []);
+  }, [stopCamera]);
 
   const handleClose = () => {
     resetForm();
@@ -154,14 +162,6 @@ export function UploadModal({
       "image/jpeg",
       0.85
     );
-  };
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    setCameraActive(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

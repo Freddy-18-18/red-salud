@@ -12,6 +12,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
+
 import type { BookingState } from "@/hooks/use-booking";
 
 interface BookingSummaryProps {
@@ -41,7 +42,7 @@ export function BookingSummary({
   onBack,
 }: BookingSummaryProps) {
   const doctorName =
-    state.doctor?.profile.nombre_completo || "Doctor";
+    state.doctor?.profile.full_name || "Doctor";
   const fee = state.doctor?.consultation_fee;
 
   return (

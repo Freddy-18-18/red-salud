@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
+
 import { RequestFlow } from "@/components/second-opinion/request-flow";
 
 export default function SolicitarSegundaOpinionPage() {

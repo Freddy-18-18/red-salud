@@ -1,19 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import { Bell, ArrowLeft } from "lucide-react";
-import { useRemindersDashboard } from "@/hooks/use-reminders";
-import { getHealthMetrics } from "@/lib/services/reminders-service";
-import type { HealthMetric, HealthMetricType } from "@/lib/services/reminders-service";
-import { MedicationTracker } from "@/components/reminders/medication-tracker";
+import { useState } from "react";
+
+import { AddMedicationForm } from "@/components/reminders/add-medication-form";
+import { AppointmentsPreview } from "@/components/reminders/appointments-preview";
+import { GoalsTracker } from "@/components/reminders/goals-tracker";
 import {
   HealthMetricLogger,
   MetricTrendChart,
 } from "@/components/reminders/health-metric-logger";
-import { GoalsTracker } from "@/components/reminders/goals-tracker";
-import { AppointmentsPreview } from "@/components/reminders/appointments-preview";
-import { AddMedicationForm } from "@/components/reminders/add-medication-form";
+import { MedicationTracker } from "@/components/reminders/medication-tracker";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRemindersDashboard } from "@/hooks/use-reminders";
+import { getHealthMetrics } from "@/lib/services/reminders-service";
+import type { HealthMetric, HealthMetricType } from "@/lib/services/reminders-service";
 
 function getTodayHeader(): string {
   const now = new Date();
@@ -96,7 +97,6 @@ export default function RecordatoriosPage() {
       {/* Today Summary */}
       <div className="grid grid-cols-4 gap-2">
         {(() => {
-          const today = new Date().getDay();
           const entries = medications.entries;
           const taken = entries.filter((e) => e.status === "taken").length;
           const pending = entries.filter((e) => e.status === "pending").length;

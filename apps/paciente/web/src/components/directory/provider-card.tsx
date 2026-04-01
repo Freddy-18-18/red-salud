@@ -2,7 +2,6 @@
 
 import {
   MapPin,
-  Phone,
   Stethoscope,
   Pill,
   Building2,
@@ -14,6 +13,7 @@ import {
   Clock,
   DollarSign,
 } from "lucide-react";
+
 import { RatingDisplay } from "@/components/directory/rating-display";
 import type { ProviderResult, ProviderType } from "@/lib/services/directory-service";
 

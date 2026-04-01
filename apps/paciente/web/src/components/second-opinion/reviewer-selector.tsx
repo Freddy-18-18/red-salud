@@ -1,6 +1,7 @@
 "use client";
 
 import { Star, MapPin, Clock, Shield, Loader2 } from "lucide-react";
+
 import type { ReviewerDoctor } from "@/lib/services/second-opinion-service";
 
 interface ReviewerSelectorProps {
@@ -80,7 +81,7 @@ export function ReviewerSelector({
       <div className="space-y-3">
         {doctors.map((doctor) => {
           const isSelected = selected?.id === doctor.id;
-          const initials = doctor.profile.nombre_completo
+          const initials = doctor.profile.full_name
             .split(" ")
             .map((n) => n[0])
             .join("")
@@ -103,7 +104,7 @@ export function ReviewerSelector({
                   {doctor.profile.avatar_url ? (
                     <img
                       src={doctor.profile.avatar_url}
-                      alt={doctor.profile.nombre_completo}
+                      alt={doctor.profile.full_name}
                       className="w-14 h-14 rounded-full object-cover"
                     />
                   ) : (
@@ -124,7 +125,7 @@ export function ReviewerSelector({
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <h3 className="font-semibold text-gray-900">
-                        Dr. {doctor.profile.nombre_completo}
+                        Dr. {doctor.profile.full_name}
                       </h3>
                     </div>
                     {doctor.verified && (
@@ -148,18 +149,18 @@ export function ReviewerSelector({
                       </div>
                     )}
 
-                    {doctor.anos_experiencia && doctor.anos_experiencia > 0 && (
+                    {doctor.years_experience && doctor.years_experience > 0 && (
                       <div className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5 text-gray-400" />
-                        <span>{doctor.anos_experiencia} anos exp.</span>
+                        <span>{doctor.years_experience} anos exp.</span>
                       </div>
                     )}
 
-                    {(doctor.profile.ciudad || doctor.profile.estado) && (
+                    {(doctor.profile.city || doctor.profile.state) && (
                       <div className="flex items-center gap-1">
                         <MapPin className="h-3.5 w-3.5 text-gray-400" />
                         <span>
-                          {[doctor.profile.ciudad, doctor.profile.estado]
+                          {[doctor.profile.city, doctor.profile.state]
                             .filter(Boolean)
                             .join(", ")}
                         </span>

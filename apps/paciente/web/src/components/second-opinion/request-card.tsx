@@ -8,6 +8,7 @@ import {
   FileCheck,
   ArrowRight,
 } from "lucide-react";
+
 import type { SecondOpinionRequest, SecondOpinionStatus } from "@/lib/services/second-opinion-service";
 
 function formatDate(dateStr: string): string {
@@ -72,10 +73,10 @@ export function RequestCard({ request }: RequestCardProps) {
   const StatusIcon = statusConfig.icon;
 
   const reviewerName =
-    request.reviewing_doctor?.nombre_completo || "Pendiente de asignacion";
+    request.reviewing_doctor?.full_name || "Pendiente de asignacion";
   const specialtyName = request.specialty?.name || "Especialidad";
 
-  const reviewerInitials = request.reviewing_doctor?.nombre_completo
+  const reviewerInitials = request.reviewing_doctor?.full_name
     ?.split(" ")
     .map((n) => n[0])
     .join("")

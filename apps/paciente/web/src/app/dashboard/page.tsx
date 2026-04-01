@@ -1,11 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { usePatientAppointments } from "@/hooks/use-appointments";
-import { StatCard } from "@/components/ui/stat-card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import {
   Calendar,
   MessageSquare,
@@ -17,6 +11,14 @@ import {
   Stethoscope,
   ClipboardList,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/stat-card";
+import { usePatientAppointments } from "@/hooks/use-appointments";
+import { getUnreadMessagesCount } from "@/lib/services/messaging-service";
+import { supabase } from "@/lib/supabase/client";
 
 const HEALTH_TIPS = [
   "Recuerda beber al menos 8 vasos de agua al dia para mantenerte hidratado.",
@@ -63,6 +65,8 @@ export default function PatientDashboard() {
   const [userId, setUserId] = useState<string>();
   const [userName, setUserName] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [activePrescriptionsCount, setActivePrescriptionsCount] = useState<number | null>(null);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState<number | null>(null);
   const { appointments, loading: appointmentsLoading } = usePatientAppointments(userId);
 
   useEffect(() => {
@@ -73,16 +77,30 @@ export default function PatientDashboard() {
         // Load profile name
         const { data: profile } = await supabase
           .from("profiles")
-          .select("nombre_completo")
+          .select("full_name")
           .eq("id", user.id)
           .maybeSingle();
 
         setUserName(
-          profile?.nombre_completo ||
+          profile?.full_name ||
           user.user_metadata?.full_name ||
-          user.user_metadata?.nombre_completo ||
           ""
         );
+
+        // Load active prescriptions count
+        supabase
+          .from("prescriptions")
+          .select("*", { count: "exact", head: true })
+          .eq("patient_id", user.id)
+          .eq("status", "active")
+          .then(({ count }) => {
+            setActivePrescriptionsCount(count ?? 0);
+          });
+
+        // Load unread messages count
+        getUnreadMessagesCount(user.id).then(({ data }) => {
+          setUnreadMessagesCount(data);
+        });
       }
       setLoading(false);
     };
@@ -152,14 +170,14 @@ export default function PatientDashboard() {
         <StatCard
           icon={FileText}
           label="Recetas activas"
-          value={0}
+          value={activePrescriptionsCount ?? "-"}
           color="bg-amber-50 text-amber-600"
           href="/dashboard/recetas"
         />
         <StatCard
           icon={MessageSquare}
           label="Mensajes"
-          value={0}
+          value={unreadMessagesCount ?? "-"}
           color="bg-purple-50 text-purple-600"
           href="/dashboard/mensajes"
         />
@@ -214,12 +232,12 @@ export default function PatientDashboard() {
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
                     <span className="text-lg font-semibold text-emerald-600">
-                      {apt.doctor?.nombre_completo?.charAt(0) || "D"}
+                      {apt.doctor?.full_name?.charAt(0) || "D"}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 text-sm truncate">
-                      Dr. {apt.doctor?.nombre_completo || "Medico"}
+                      Dr. {apt.doctor?.full_name || "Medico"}
                     </h3>
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                       <div className="flex items-center gap-1">

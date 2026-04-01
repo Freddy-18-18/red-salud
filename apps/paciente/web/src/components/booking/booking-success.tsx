@@ -2,6 +2,7 @@
 
 import { CheckCircle, Calendar, Download, Plus } from "lucide-react";
 import Link from "next/link";
+
 import type { BookingState } from "@/hooks/use-booking";
 import type { AppointmentResult } from "@/lib/services/booking-service";
 
@@ -29,7 +30,7 @@ function generateICSContent(
   if (!state.date || !state.timeSlot) return "";
 
   const doctorName =
-    state.doctor?.profile.nombre_completo || "Doctor";
+    state.doctor?.profile.full_name || "Doctor";
 
   // Parse start time
   const [startH, startM] = state.timeSlot.start.split(":").map(Number);
@@ -51,7 +52,7 @@ function generateICSContent(
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Red Salud//Citas//ES",
+    "PRODID:-//Red-Salud//Citas//ES",
     "BEGIN:VEVENT",
     `UID:${uid}@redsalud.com`,
     `DTSTART:${formatICSDate(start)}`,
@@ -76,7 +77,7 @@ export function BookingSuccess({
   onBookAnother,
 }: BookingSuccessProps) {
   const doctorName =
-    state.doctor?.profile.nombre_completo || "Doctor";
+    state.doctor?.profile.full_name || "Doctor";
 
   const handleDownloadICS = () => {
     const icsContent = generateICSContent(state, appointment);

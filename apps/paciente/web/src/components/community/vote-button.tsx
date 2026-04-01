@@ -1,7 +1,8 @@
 "use client";
 
-import { ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@red-salud/core/utils";
+import { ChevronUp, ChevronDown } from "lucide-react";
+
 import type { VoteType } from "@/lib/services/community-service";
 
 interface VoteButtonProps {

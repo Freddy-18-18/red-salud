@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import {
   Search,
   Heart,
@@ -12,6 +11,8 @@ import {
   Activity,
   Loader2,
 } from "lucide-react";
+import { useMemo, useState } from "react";
+
 import type { Specialty } from "@/lib/services/booking-service";
 
 // Map specialty names to icons

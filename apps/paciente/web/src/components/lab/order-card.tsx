@@ -1,6 +1,5 @@
 "use client";
 
-import type { LabOrder } from "@/lib/services/lab-results-service";
 import {
   FlaskConical,
   Calendar,
@@ -9,6 +8,8 @@ import {
   AlertCircle,
   ChevronRight,
 } from "lucide-react";
+
+import type { LabOrder } from "@/lib/services/lab-results-service";
 
 const STATUS_CONFIG: Record<
   string,
@@ -103,9 +104,9 @@ export function OrderCard({ order }: OrderCardProps) {
               <Calendar className="h-3 w-3" />
               {formatDate(order.ordered_at)}
             </div>
-            {order.doctor?.nombre_completo && (
+            {order.doctor?.full_name && (
               <span className="truncate">
-                Dr. {order.doctor.nombre_completo}
+                Dr. {order.doctor.full_name}
               </span>
             )}
           </div>

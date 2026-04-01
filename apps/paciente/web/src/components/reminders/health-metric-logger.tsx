@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Activity,
   ChevronDown,
@@ -10,6 +9,8 @@ import {
   Minus,
   Clock,
 } from "lucide-react";
+import { useState } from "react";
+
 import type { HealthMetricType, HealthMetric } from "@/lib/services/reminders-service";
 
 interface MetricWithLatest {
@@ -406,7 +407,7 @@ export function MetricTrendChart({
 
         {/* Bar chart */}
         <div className="flex items-end gap-1 h-40 mt-4">
-          {metrics.map((m, i) => {
+          {metrics.map((m, _i) => {
             const height = ((m.value - minVal) / range) * 100;
             const barHeight = Math.max(height, 4); // Minimum visible bar
             const badge = getValueBadge(m.value, metricType.name);

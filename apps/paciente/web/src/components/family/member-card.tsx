@@ -1,6 +1,7 @@
 "use client";
 
-import { User, Pencil, AlertTriangle, Droplets, Pill } from "lucide-react";
+import { Pencil, AlertTriangle, Droplets, Pill } from "lucide-react";
+
 import {
   type FamilyMember,
   calculateAge,

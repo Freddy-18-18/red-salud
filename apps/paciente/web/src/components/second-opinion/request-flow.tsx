@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import {
   Check,
   FileText,
@@ -15,11 +14,13 @@ import {
   AlertCircle,
   Calendar,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+import { ReviewerSelector } from "@/components/second-opinion/reviewer-selector";
 import {
   useSecondOpinionFlow,
   type RequestStep,
 } from "@/hooks/use-second-opinion";
-import { ReviewerSelector } from "@/components/second-opinion/reviewer-selector";
 import type { MedicalRecordSummary, ReviewerDoctor } from "@/lib/services/second-opinion-service";
 
 // --- Step Indicator ---
@@ -597,7 +598,7 @@ function ReviewStep({
   onBack: () => void;
 }) {
   const doctorInitials =
-    state.selectedDoctor?.profile.nombre_completo
+    state.selectedDoctor?.profile.full_name
       ?.split(" ")
       .map((n) => n[0])
       .join("")
@@ -639,7 +640,7 @@ function ReviewStep({
             {state.selectedDoctor?.profile.avatar_url ? (
               <img
                 src={state.selectedDoctor.profile.avatar_url}
-                alt={state.selectedDoctor.profile.nombre_completo}
+                alt={state.selectedDoctor.profile.full_name}
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
@@ -651,7 +652,7 @@ function ReviewStep({
             )}
             <div>
               <p className="text-sm font-semibold text-gray-900">
-                Dr. {state.selectedDoctor?.profile.nombre_completo}
+                Dr. {state.selectedDoctor?.profile.full_name}
               </p>
               <p className="text-xs text-gray-500">
                 {state.selectedSpecialtyName}

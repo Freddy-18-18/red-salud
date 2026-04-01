@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Target,
   ChevronDown,
@@ -9,6 +8,8 @@ import {
   Trophy,
   Calendar,
 } from "lucide-react";
+import { useState } from "react";
+
 import type { HealthGoal, CreateHealthGoal } from "@/lib/services/reminders-service";
 
 interface GoalsTrackerProps {

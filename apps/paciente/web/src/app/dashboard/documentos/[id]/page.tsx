@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { FileX } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useDocument } from "@/hooks/use-documents";
+import { useState } from "react";
+
 import { DocumentViewer } from "@/components/documents/document-viewer";
 import { ShareDialog } from "@/components/documents/share-dialog";
-import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { FileX } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDocument } from "@/hooks/use-documents";
 import { documentsService } from "@/lib/services/documents-service";
+import { supabase } from "@/lib/supabase/client";
 
 export default function DocumentDetailPage() {
   const params = useParams();

@@ -1,7 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { X, Camera, Loader2 } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
+import { useState } from "react";
+
+import { MedicationInput } from "./medication-input";
+import { TagInput } from "./tag-input";
+
 import {
   RELATIONSHIPS,
   BLOOD_TYPES,
@@ -13,8 +17,7 @@ import {
   type EmergencyContact,
   type Medication,
 } from "@/lib/services/family-service";
-import { TagInput } from "./tag-input";
-import { MedicationInput } from "./medication-input";
+
 
 interface MemberFormProps {
   member?: FamilyMember | null;

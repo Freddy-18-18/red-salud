@@ -1,7 +1,8 @@
 "use client";
 
-import type { LabResultValue } from "@/lib/services/lab-results-service";
 import { ArrowUp, ArrowDown, Minus, AlertTriangle } from "lucide-react";
+
+import type { LabResultValue } from "@/lib/services/lab-results-service";
 
 const STATUS_CONFIG: Record<
   string,

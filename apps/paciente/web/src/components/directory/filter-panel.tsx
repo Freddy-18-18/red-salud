@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   SlidersHorizontal,
   X,
@@ -11,6 +10,8 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { useState } from "react";
+
 import type { ProviderType, DirectoryFilters } from "@/lib/services/directory-service";
 
 interface FilterPanelProps {

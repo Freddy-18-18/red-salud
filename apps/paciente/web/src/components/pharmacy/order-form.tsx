@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Truck,
   ShoppingBag,
@@ -12,6 +11,8 @@ import {
   ChevronLeft,
   CheckCircle2,
 } from "lucide-react";
+import { useState } from "react";
+
 import {
   formatBs,
   type FulfillmentOption,
@@ -248,11 +249,11 @@ export function OrderForm({
             <p className="text-sm font-medium text-gray-900">
               {option.pharmacy_name}
             </p>
-            {option.pharmacy.direccion && (
+            {option.pharmacy.address && (
               <p className="text-xs text-gray-500 flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                {option.pharmacy.direccion}
-                {option.pharmacy.ciudad && `, ${option.pharmacy.ciudad}`}
+                {option.pharmacy.address}
+                {option.pharmacy.city && `, ${option.pharmacy.city}`}
               </p>
             )}
             <p className="text-xs text-blue-600">

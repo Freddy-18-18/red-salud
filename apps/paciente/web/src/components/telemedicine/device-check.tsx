@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import {
   Camera,
   Mic,
@@ -10,6 +9,8 @@ import {
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
 import { useMediaDevices } from "@/hooks/use-telemedicine";
 
 interface DeviceCheckProps {

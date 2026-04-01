@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,14 +19,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@red-salud/design-system";
-import { MessageSquarePlus, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/design-system";
+import { MessageSquarePlus, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 // TODO: Import DoctorProfile from shared types package once available
 interface DoctorProfile {
   id: string;
   profile?: {
-    nombre_completo?: string;
+    full_name?: string;
     avatar_url?: string;
   };
   specialty?: {
@@ -124,7 +124,7 @@ export function NewConversationDialog({
               </SelectTrigger>
               <SelectContent>
                 {doctors.map((doctor) => {
-                  const initials = doctor.profile?.nombre_completo
+                  const initials = doctor.profile?.full_name
                     ?.split(" ")
                     .map((n) => n[0])
                     .join("")
@@ -142,7 +142,7 @@ export function NewConversationDialog({
                         </Avatar>
                         <div>
                           <p className="font-medium">
-                            {doctor.profile?.nombre_completo}
+                            {doctor.profile?.full_name}
                           </p>
                           {doctor.specialty && (
                             <p className="text-xs text-muted-foreground">

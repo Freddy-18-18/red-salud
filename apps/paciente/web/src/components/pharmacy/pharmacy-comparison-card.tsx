@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import {
   Trophy,
   Truck,
-  Clock,
   CheckCircle2,
   AlertTriangle,
   XCircle,
@@ -15,12 +13,16 @@ import {
   ShoppingBag,
   Store,
 } from "lucide-react";
+import { useState } from "react";
+
+import { MedicationLineItem } from "./medication-line-item";
+
 import {
   formatBs,
   formatUsd,
   type FulfillmentOption,
 } from "@/lib/services/pharmacy-comparator-service";
-import { MedicationLineItem } from "./medication-line-item";
+
 
 interface PharmacyComparisonCardProps {
   option: FulfillmentOption;
@@ -182,23 +184,23 @@ export function PharmacyComparisonCard({
           {option.pharmacy && (
             <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
               <div className="flex flex-col gap-1.5 text-xs text-gray-500">
-                {option.pharmacy.direccion && (
+                {option.pharmacy.address && (
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-3 w-3 flex-shrink-0" />
-                    <span>{option.pharmacy.direccion}</span>
-                    {option.pharmacy.ciudad && (
-                      <span>, {option.pharmacy.ciudad}</span>
+                    <span>{option.pharmacy.address}</span>
+                    {option.pharmacy.city && (
+                      <span>, {option.pharmacy.city}</span>
                     )}
                   </div>
                 )}
-                {option.pharmacy.telefono && (
+                {option.pharmacy.phone && (
                   <div className="flex items-center gap-1.5">
                     <Phone className="h-3 w-3 flex-shrink-0" />
                     <a
-                      href={`tel:${option.pharmacy.telefono}`}
+                      href={`tel:${option.pharmacy.phone}`}
                       className="text-emerald-600 hover:underline"
                     >
-                      {option.pharmacy.telefono}
+                      {option.pharmacy.phone}
                     </a>
                   </div>
                 )}

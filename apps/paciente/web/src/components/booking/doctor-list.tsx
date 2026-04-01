@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   ArrowLeft,
   Loader2,
@@ -8,7 +7,10 @@ import {
   SlidersHorizontal,
   ChevronDown,
 } from "lucide-react";
+import { useState } from "react";
+
 import { DoctorCard } from "./doctor-card";
+
 import type { DoctorProfile, DoctorFilters } from "@/lib/services/booking-service";
 
 interface DoctorListProps {

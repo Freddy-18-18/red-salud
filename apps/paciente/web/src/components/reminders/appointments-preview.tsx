@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Calendar,
   Clock,
@@ -8,6 +7,7 @@ import {
   ChevronUp,
   ArrowRight,
 } from "lucide-react";
+import { useState } from "react";
 
 interface AppointmentRecord {
   id: string;
@@ -18,7 +18,7 @@ interface AppointmentRecord {
   status: string;
   doctor?: {
     id: string;
-    nombre_completo?: string;
+    full_name?: string;
     avatar_url?: string;
   } | null;
 }
@@ -132,7 +132,7 @@ export function AppointmentsPreview({
             <>
               {appointments.map((apt) => {
                 const doctor = apt.doctor;
-                const doctorName = doctor?.nombre_completo || "Medico";
+                const doctorName = doctor?.full_name || "Medico";
                 const relativeDate = formatRelativeDate(apt.fecha_hora);
                 const time = formatTime(apt.fecha_hora);
                 const date = formatDate(apt.fecha_hora);

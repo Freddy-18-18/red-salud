@@ -1,7 +1,8 @@
 "use client";
 
-import type { Referral } from "@/lib/services/referral-service";
 import { CheckCircle2, Clock, XCircle, User, Star } from "lucide-react";
+
+import type { Referral } from "@/lib/services/referral-service";
 
 const STATUS_CONFIG: Record<
   string,
@@ -65,7 +66,7 @@ export function ReferralList({ referrals }: ReferralListProps) {
         const config = STATUS_CONFIG[referral.status] || STATUS_CONFIG.pending;
         const StatusIcon = config.icon;
         const name =
-          referral.referred_profile?.nombre_completo ||
+          referral.referred_profile?.full_name ||
           referral.referred_name ||
           referral.referred_email ||
           "Invitado";

@@ -1,6 +1,7 @@
 "use client";
 
 import { Lightbulb, ArrowRight, BookOpen } from "lucide-react";
+
 import { useDailyTip } from "@/hooks/use-community";
 
 const FALLBACK_TIPS = [

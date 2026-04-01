@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Phone } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 const LONG_PRESS_MS = 500;
 

@@ -1,12 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useInsurance } from "@/hooks/use-insurance";
-import { InsuranceCard } from "@/components/insurance/insurance-card";
-import { InsuranceForm } from "@/components/insurance/insurance-form";
-import { CoverageDetail } from "@/components/insurance/coverage-detail";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SkeletonList } from "@/components/ui/skeleton";
 import {
   Shield,
   Plus,
@@ -21,6 +14,14 @@ import {
   DollarSign,
   ClipboardList,
 } from "lucide-react";
+import { useState } from "react";
+
+import { CoverageDetail } from "@/components/insurance/coverage-detail";
+import { InsuranceCard } from "@/components/insurance/insurance-card";
+import { InsuranceForm } from "@/components/insurance/insurance-form";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { useInsurance } from "@/hooks/use-insurance";
 import {
   type PatientInsurance,
   type CreateInsuranceData,

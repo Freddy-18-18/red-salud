@@ -1,7 +1,9 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+
 import { MedicalIdCard } from "./medical-id-card";
+
 import type { MedicalSummary } from "@/lib/services/emergency-service";
 
 interface StepRequestingProps {

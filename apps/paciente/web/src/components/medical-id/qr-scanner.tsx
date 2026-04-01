@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Camera,
   X,
@@ -12,6 +11,8 @@ import {
   Shield,
   ScanLine,
 } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+
 import {
   medicalIdService,
   type QRPayload,
@@ -60,14 +61,11 @@ export function QRScanner({ open, onClose }: QRScannerProps) {
     }
   };
 
-  // Cleanup on unmount or close
+  // Cleanup camera when modal closes or component unmounts
   useEffect(() => {
-    if (!open) {
+    return () => {
       stopCamera();
-      setScannedData(null);
-      setManualInput("");
-      setError(null);
-    }
+    };
   }, [open, stopCamera]);
 
   const handleManualDecode = () => {

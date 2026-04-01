@@ -1,6 +1,6 @@
 "use client";
 
-import { Trophy, Flame, ArrowRight, Star } from "lucide-react";
+import { Trophy, Flame, ArrowRight } from "lucide-react";
 
 interface RewardsWidgetProps {
   level: number;

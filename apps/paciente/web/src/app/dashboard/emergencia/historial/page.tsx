@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ArrowLeft, Clock, AlertCircle, MapPin, CheckCircle2, X } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
+
 import {
   getEmergencyHistory,
   type EmergencyRequest,
   type EmergencyPriority,
   type EmergencyStatus,
 } from "@/lib/services/emergency-service";
+import { supabase } from "@/lib/supabase/client";
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("es-VE", {

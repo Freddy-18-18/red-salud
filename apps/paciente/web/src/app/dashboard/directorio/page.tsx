@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { Search, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useDirectorySearch, useDirectorySpecialties } from "@/hooks/use-directory";
-import { SearchBar } from "@/components/directory/search-bar";
-import { ProviderTypeTabs } from "@/components/directory/provider-type-tabs";
-import { ProviderCard } from "@/components/directory/provider-card";
+import { useState, useCallback, useRef, useEffect } from "react";
+
 import { FilterPanel } from "@/components/directory/filter-panel";
+import { ProviderCard } from "@/components/directory/provider-card";
+import { ProviderTypeTabs } from "@/components/directory/provider-type-tabs";
+import { SearchBar } from "@/components/directory/search-bar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonList } from "@/components/ui/skeleton";
-import { Search, Loader2 } from "lucide-react";
+import { useDirectorySearch, useDirectorySpecialties } from "@/hooks/use-directory";
 import type { ProviderResult, ProviderType, DirectoryFilters } from "@/lib/services/directory-service";
 
 export default function DirectorioPage() {
@@ -95,7 +96,7 @@ export default function DirectorioPage() {
           Directorio
         </h1>
         <p className="text-gray-500 mt-1">
-          Busca doctores, farmacias, clinicas y laboratorios en Red Salud
+          Busca doctores, farmacias, clinicas y laboratorios en Red-Salud
         </p>
       </div>
 

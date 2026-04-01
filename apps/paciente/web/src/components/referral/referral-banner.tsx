@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, ArrowRight, Gift } from "lucide-react";
+import { ArrowRight, Gift } from "lucide-react";
 
 export function ReferralBanner() {
   return (

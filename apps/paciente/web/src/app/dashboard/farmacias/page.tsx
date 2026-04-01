@@ -1,11 +1,5 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
-import { PharmacyComparisonCard } from "@/components/pharmacy/pharmacy-comparison-card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SkeletonList, Skeleton } from "@/components/ui/skeleton";
 import {
   Pill,
   ChevronLeft,
@@ -13,10 +7,17 @@ import {
   ArrowUpDown,
   Filter,
 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+
+import { PharmacyComparisonCard } from "@/components/pharmacy/pharmacy-comparison-card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SkeletonList, Skeleton } from "@/components/ui/skeleton";
 import {
   comparePrices,
   type FulfillmentOption,
 } from "@/lib/services/pharmacy-comparator-service";
+import { supabase } from "@/lib/supabase/client";
 
 type SortOption = "price" | "availability" | "delivery";
 
@@ -25,7 +26,6 @@ function FarmaciasPageContent() {
   const searchParams = useSearchParams();
   const prescriptionId = searchParams.get("prescription_id");
 
-  const [userId, setUserId] = useState<string>();
   const [options, setOptions] = useState<FulfillmentOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("price");
@@ -38,7 +38,6 @@ function FarmaciasPageContent() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
-      setUserId(user.id);
 
       if (!prescriptionId) {
         setLoading(false);

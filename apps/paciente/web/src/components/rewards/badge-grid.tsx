@@ -1,7 +1,8 @@
 "use client";
 
+import { X, Lock, Award, Heart, Users, Target } from "lucide-react";
 import { useState } from "react";
-import { X, Lock, Award, Heart, Users, MessageCircle, Target } from "lucide-react";
+
 import type { Badge, PatientBadge } from "@/lib/services/rewards-service";
 
 interface BadgeGridProps {
@@ -15,20 +16,6 @@ const CATEGORY_ICONS: Record<string, typeof Award> = {
   engagement: Target,
   community: Users,
   milestone: Award,
-};
-
-// Badge icon mapping by name
-const BADGE_ICONS: Record<string, string> = {
-  "Primera Cita": "calendar-check",
-  "Perfil Completo": "user-check",
-  "Familia Unida": "users",
-  "Constante": "flame",
-  "Saludable": "heart-pulse",
-  "Preventivo": "shield-check",
-  "Comunicador": "message-circle",
-  "Embajador": "megaphone",
-  "Nivel 5": "star",
-  "Nivel 10": "crown",
 };
 
 function getBadgeCondition(badge: Badge): string {
@@ -48,7 +35,7 @@ function getBadgeCondition(badge: Badge): string {
     case "Comunicador":
       return "Envia 5 mensajes a tus doctores";
     case "Embajador":
-      return "Referi a 3 personas a Red Salud";
+      return "Referi a 3 personas a Red-Salud";
     case "Nivel 5":
       return "Alcanza el nivel 5";
     case "Nivel 10":

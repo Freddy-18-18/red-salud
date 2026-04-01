@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Syringe,
   Plus,
@@ -17,6 +16,8 @@ import {
   Loader2,
   Check,
 } from "lucide-react";
+import { useState } from "react";
+
 import {
   type VaccinationRecord as VaccRecord,
   type CreateVaccinationData,

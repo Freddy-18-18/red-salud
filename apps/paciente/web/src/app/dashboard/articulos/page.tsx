@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   Search,
   ChevronLeft,
   ChevronRight,
   BookOpen,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
+
 import { ArticleCard } from "@/components/community/article-card";
 import { CategoryChips } from "@/components/community/category-chips";
 import { EmptyState } from "@/components/ui/empty-state";

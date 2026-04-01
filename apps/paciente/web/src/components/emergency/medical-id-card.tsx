@@ -9,6 +9,7 @@ import {
   User,
   Activity,
 } from "lucide-react";
+
 import type { MedicalSummary } from "@/lib/services/emergency-service";
 
 interface MedicalIdCardProps {
@@ -181,7 +182,7 @@ export function MedicalIdCard({ summary, compact = false }: MedicalIdCardProps) 
       {/* Footer */}
       <div className="bg-gray-50 px-5 py-3 border-t border-gray-100">
         <p className="text-[10px] text-gray-400 text-center">
-          ID MÉDICO · Red Salud · Información para personal de emergencia
+          ID MÉDICO · Red-Salud · Información para personal de emergencia
         </p>
       </div>
     </div>
