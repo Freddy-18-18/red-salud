@@ -49,7 +49,7 @@ export default function HistorialTimelinePage() {
           const seen = new Set<string>();
           const unique: Array<{ id: string; name: string }> = [];
           for (const row of data) {
-            const doctor = row.doctor as Record<string, unknown> | null;
+            const doctor = row.doctor as unknown as Record<string, unknown> | null;
             const id = doctor?.id as string;
             const name = doctor?.full_name as string;
             if (id && name && !seen.has(id)) {

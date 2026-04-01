@@ -228,7 +228,7 @@ export const queueService = {
       .eq("status", "waiting")
       .lt("joined_at", data.joined_at as string);
 
-    const totalAhead = aheadCount ?? Number(data.total_ahead) || 0;
+    const totalAhead = aheadCount ?? (Number(data.total_ahead) || 0);
 
     return {
       position: totalAhead + 1,

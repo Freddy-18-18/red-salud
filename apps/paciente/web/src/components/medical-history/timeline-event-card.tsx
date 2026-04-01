@@ -199,12 +199,7 @@ export function TimelineEventCard({ event }: TimelineEventCardProps) {
                 </div>
 
                 {/* Doctor */}
-                {event.doctor_name && (
-                  <div>
-                    <p className="text-xs text-gray-500">Doctor</p>
-                    <p className="text-sm font-medium text-gray-900">Dr. {event.doctor_name}</p>
-                  </div>
-                )}
+                <DoctorName name={event.doctor_name} />
 
                 {/* Summary */}
                 <div>
@@ -266,6 +261,16 @@ export function TimelineEventCard({ event }: TimelineEventCardProps) {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function DoctorName({ name }: { name?: string }) {
+  if (!name) return null;
+  return (
+    <div>
+      <p className="text-xs text-gray-500">Doctor</p>
+      <p className="text-sm font-medium text-gray-900">Dr. {name}</p>
     </div>
   );
 }
