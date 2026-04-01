@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { WifiOff, RefreshCw, Pill, AlertTriangle, Heart, Phone } from "lucide-react";
+import { useState } from "react";
+
 import {
   getMedicalId,
   getMedications,
@@ -15,21 +16,12 @@ import {
 } from "@/lib/offline/offline-manager";
 
 export default function OfflinePage() {
-  const [medicalId, setMedicalId] = useState<MedicalIdData | null>(null);
-  const [medications, setMedications] = useState<CachedMedication[]>([]);
-  const [allergies, setAllergies] = useState<string[]>([]);
-  const [conditions, setConditions] = useState<string[]>([]);
-  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([]);
-  const [lastSync, setLastSync] = useState<string | null>(null);
-
-  useEffect(() => {
-    setMedicalId(getMedicalId());
-    setMedications(getMedications());
-    setAllergies(getAllergies());
-    setConditions(getConditions());
-    setEmergencyContacts(getEmergencyContacts());
-    setLastSync(getLastSync());
-  }, []);
+  const [medicalId] = useState<MedicalIdData | null>(() => getMedicalId());
+  const [medications] = useState<CachedMedication[]>(() => getMedications());
+  const [allergies] = useState<string[]>(() => getAllergies());
+  const [conditions] = useState<string[]>(() => getConditions());
+  const [emergencyContacts] = useState<EmergencyContact[]>(() => getEmergencyContacts());
+  const [lastSync] = useState<string | null>(() => getLastSync());
 
   const handleRetry = () => {
     window.location.href = "/dashboard";

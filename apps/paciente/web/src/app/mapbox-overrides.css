@@ -1,0 +1,5 @@
+/* Override mapbox-gl.css defaults — loaded separately from Tailwind layers */
+.mapboxgl-map {
+  min-height: 550px !important;
+  height: auto !important;
+}

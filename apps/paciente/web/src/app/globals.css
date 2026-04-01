@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #10B981;
   --color-primary-dark: #059669;
@@ -19,14 +21,64 @@
 }
 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 160 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 10% 10%;
+    --muted: 150 10% 96%;
+    --muted-foreground: 160 5% 45%;
+    --border: 150 10% 90%;
+    --ring: 160 84% 39%;
+    --surface-elevated: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 160 10% 5%;
+    --foreground: 150 10% 95%;
+    --card: 160 10% 8%;
+    --card-foreground: 150 10% 95%;
+    --muted: 160 10% 15%;
+    --muted-foreground: 150 5% 60%;
+    --border: 160 10% 18%;
+    --ring: 160 84% 39%;
+    --surface-elevated: 160 10% 10%;
+  }
+
   * {
     box-sizing: border-box;
   }
   body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* Marquee scroll animations for specialty grid */
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scroll-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.marquee-row-left {
+  animation: scroll-left 30s linear infinite;
+}
+
+.marquee-row-right {
+  animation: scroll-right 30s linear infinite;
+}
+
+.marquee-track:hover .marquee-row-left,
+.marquee-track:hover .marquee-row-right {
+  animation-play-state: paused;
 }
 
 /* Skeleton loading animation */
@@ -133,6 +185,49 @@
   animation: emergency-glow 2s ease-in-out infinite;
 }
 
+/* Fade-in-up animation for scroll reveals */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade-in-left animation */
+@keyframes fade-in-left {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Float animation for decorative elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Soft pulse for background blobs */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Slide-in-right animation for panels */
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in-up { animation: fade-in-up 0.6s ease-out both; }
+.animate-fade-in-left { animation: fade-in-left 0.6s ease-out both; }
+.animate-slide-in-right { animation: slide-in-right 0.3s ease-out both; }
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-pulse-soft { animation: pulse-soft 4s ease-in-out infinite; }
+
+/* Stagger delays for sequential animations */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
 /* Print styles for medical ID card */
 @media print {
   body * {
@@ -148,15 +243,6 @@
     top: 50%;
     transform: translate(-50%, -50%);
     width: 86mm;
-  }
-  .print\\:hidden {
-    display: none !important;
-  }
-  .print\\:shadow-none {
-    box-shadow: none !important;
-  }
-  .print\\:mt-0 {
-    margin-top: 0 !important;
   }
   nav,
   aside,

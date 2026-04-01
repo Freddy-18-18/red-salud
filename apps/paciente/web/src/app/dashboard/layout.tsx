@@ -1,40 +1,48 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { PatientNavbar } from "@/components/layout/patient-navbar";
-import { PatientSidebar } from "@/components/layout/patient-sidebar";
-import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
-import { getUnreadMessagesCount } from "@/lib/services/messaging-service";
+
 import { EmergencyButton } from "@/components/emergency/emergency-button";
+import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
+import { PatientNavbar } from "@/components/layout/dashboard-navbar";
+import { PatientSidebar } from "@/components/layout/patient-sidebar";
+import { OnboardingModal } from "@/components/onboarding/onboarding-modal";
 import { ConnectivityBanner } from "@/components/pwa/connectivity-banner";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
-import { getUnreadCount } from "@/lib/services/notification-service";
 import { cachePatientData } from "@/lib/offline/offline-manager";
+import { getUnreadMessagesCount } from "@/lib/services/messaging-service";
+import { getUnreadCount } from "@/lib/services/notification-service";
+import { supabase } from "@/lib/supabase/client";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [userName, setUserName] = useState<string>();
   const [avatarUrl, setAvatarUrl] = useState<string>();
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifCount, setNotifCount] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      setUserName(user.user_metadata?.full_name || user.user_metadata?.nombre_completo || "");
+      setUserName(user.user_metadata?.full_name || "");
       setAvatarUrl(user.user_metadata?.avatar_url);
 
       // Load profile for potentially more complete data
       const { data: profile } = await supabase
         .from("profiles")
-        .select("nombre_completo, avatar_url")
+        .select("full_name, avatar_url, state")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (profile?.nombre_completo) setUserName(profile.nombre_completo);
+      if (profile?.full_name) setUserName(profile.full_name);
       if (profile?.avatar_url) setAvatarUrl(profile.avatar_url);
+
+      // Check if profile is incomplete → show onboarding
+      if (!profile?.full_name || !profile?.state) {
+        setShowOnboarding(true);
+      }
 
       // Get unread messages count
       const result = await getUnreadMessagesCount(user.id);
@@ -45,7 +53,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       if (notifResult.success) setNotifCount(notifResult.data);
 
       // Cache patient data for offline access
-      cachePatientData(user.id).catch(console.error);
+      cachePatientData(user.id).catch(() => {});
     };
 
     loadUser();
@@ -85,6 +93,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <MobileTabBar />
       <EmergencyButton />
       <InstallPrompt />
+      {showOnboarding && (
+        <OnboardingModal
+          onComplete={() => {
+            setShowOnboarding(false);
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }

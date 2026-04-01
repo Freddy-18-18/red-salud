@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import {
   Home,
   Search,
@@ -15,6 +14,7 @@ import {
   IdCard,
   type LucideIcon,
 } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 interface NavItem {
   label: string;

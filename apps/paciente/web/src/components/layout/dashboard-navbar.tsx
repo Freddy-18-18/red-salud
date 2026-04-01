@@ -1,18 +1,20 @@
-"use client";
+'use client'
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
 import {
-  Heart,
-  Search,
-  MessageSquare,
-  LogOut,
-  User,
-  Settings,
   ChevronDown,
-} from "lucide-react";
+  Heart,
+  LogOut,
+  MessageSquare,
+  Search,
+  User,
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { supabase } from "@/lib/supabase/client";
+
+
 
 interface PatientNavbarProps {
   userName?: string;
@@ -70,7 +72,7 @@ export function PatientNavbar({
           <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
             <Heart className="h-5 w-5 text-white" />
           </div>
-          <span className="text-lg font-bold text-gray-900 hidden sm:block">Red Salud</span>
+          <span className="text-lg font-bold text-gray-900 hidden sm:block">Red-Salud</span>
         </a>
 
         {/* Search bar (hidden on mobile, shown on md+) */}
@@ -134,14 +136,6 @@ export function PatientNavbar({
                 >
                   <User className="h-4 w-4" />
                   Mi Perfil
-                </a>
-                <a
-                  href="/dashboard/perfil"
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <Settings className="h-4 w-4" />
-                  Configuracion
                 </a>
                 <div className="border-t border-gray-100 my-1" />
                 <button

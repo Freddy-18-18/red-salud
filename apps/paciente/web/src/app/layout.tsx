@@ -1,21 +1,33 @@
 import type { Metadata, Viewport } from 'next';
+import { cookies } from 'next/headers';
+
+import { ThemeProvider } from '@/components/theme/theme-provider';
+import { CountryProvider } from '@/lib/context/country-context';
+import { QueryProvider } from '@/components/providers/query-provider';
 import './globals.css';
+import './mapbox-overrides.css';
 
-// Force dynamic rendering for all pages since they require Supabase auth
-export const dynamic = 'force-dynamic';
-
+// eslint-disable-next-line react-refresh/only-export-components
 export const metadata: Metadata = {
-  title: 'Red Salud - Portal del Paciente',
+  title: 'Red-Salud - Portal del Paciente',
   description: 'Tu salud en un solo lugar. Busca tu medico, agenda tu cita y cuida tu salud.',
   keywords: ['salud', 'medico', 'citas', 'paciente', 'Venezuela'],
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.svg', type: 'image/svg+xml' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: '/icons/icon-192.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Red Salud',
+    title: 'Red-Salud',
   },
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const viewport: Viewport = {
   themeColor: '#10B981',
   width: 'device-width',
@@ -24,18 +36,25 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const country = cookieStore.get('rs-country')?.value ?? 'VE';
+
   return (
-    <html lang="es">
-      <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-      </head>
-      <body className="min-h-screen bg-white text-gray-900 antialiased">
-        {children}
+    <html lang="es" suppressHydrationWarning>
+      <head />
+      <body className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased">
+        <QueryProvider>
+          <ThemeProvider>
+            <CountryProvider countryCode={country}>
+              {children}
+            </CountryProvider>
+          </ThemeProvider>
+        </QueryProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `

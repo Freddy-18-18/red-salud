@@ -62,6 +62,31 @@ export const registerSchema = z
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
+// Simplified registration schema — only credentials + terms
+// Personal data is collected in the onboarding modal after registration
+export const simpleRegisterSchema = z
+  .object({
+    email: z
+      .string()
+      .min(1, 'El email es requerido')
+      .email('Ingresa un email valido'),
+    password: z
+      .string()
+      .min(8, 'La contrasena debe tener al menos 8 caracteres'),
+    confirmPassword: z
+      .string()
+      .min(1, 'Confirma tu contrasena'),
+    acceptTerms: z
+      .boolean()
+      .refine((val) => val === true, 'Debes aceptar los terminos y condiciones'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Las contrasenas no coinciden',
+    path: ['confirmPassword'],
+  });
+
+export type SimpleRegisterFormData = z.infer<typeof simpleRegisterSchema>;
+
 export const forgotPasswordSchema = z.object({
   email: z
     .string()

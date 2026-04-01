@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import {
   Home,
   CalendarPlus,
@@ -9,6 +8,7 @@ import {
   User,
   type LucideIcon,
 } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 interface TabItem {
   label: string;

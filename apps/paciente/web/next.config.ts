@@ -15,6 +15,14 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.supabase.in' },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/icons/icon-192.png',
+      },
+    ];
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',

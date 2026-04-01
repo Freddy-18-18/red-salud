@@ -1,11 +1,46 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
-const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/callback'];
+const PUBLIC_PATHS = [
+  '/',
+  '/especialidades',
+  '/buscar',
+  '/medicos',
+  '/nosotros',
+  '/soporte',
+  '/seguridad',
+  '/para-profesionales',
+  '/descargar',
+];
+
+function isPublicPath(pathname: string): boolean {
+  if (pathname.startsWith('/auth/')) return true;
+  return PUBLIC_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
+  // Public paths skip auth entirely — no Supabase call
+  if (isPublicPath(pathname)) {
+    const response = NextResponse.next();
+
+    // Set geo cookie if not present
+    if (!request.cookies.get('rs-country')) {
+      const country = request.headers.get('x-vercel-ip-country') ?? 'VE';
+      const validCountry = ['VE', 'CO', 'MX'].includes(country) ? country : 'VE';
+      response.cookies.set('rs-country', validCountry, {
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+        path: '/',
+        sameSite: 'lax',
+      });
+    }
+
+    return response;
+  }
+
   const supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -28,17 +63,26 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const isPublicPath = publicPaths.some((path) => pathname === path || pathname.startsWith('/auth/'));
-
-  if (!user && !isPublicPath) {
+  if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/login';
     return NextResponse.redirect(url);
+  }
+
+  // Set geo cookie on authenticated responses too
+  if (!request.cookies.get('rs-country')) {
+    const country = request.headers.get('x-vercel-ip-country') ?? 'VE';
+    const validCountry = ['VE', 'CO', 'MX'].includes(country) ? country : 'VE';
+    supabaseResponse.cookies.set('rs-country', validCountry, {
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: '/',
+      sameSite: 'lax',
+    });
   }
 
   return supabaseResponse;
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|api/|sw\\.js|manifest\\.json|icons/).*)'],
 };

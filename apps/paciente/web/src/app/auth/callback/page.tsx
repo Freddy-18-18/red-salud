@@ -1,10 +1,12 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
 import { Loader2, Heart, AlertCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+
+import { supabase } from "@/lib/supabase/client";
+
 
 type CallbackStatus = "processing" | "success" | "error";
 
@@ -116,14 +118,14 @@ function CallbackHandler() {
   }, [router, searchParams]);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+    <div className="bg-[hsl(var(--card))] rounded-2xl shadow-sm border border-[hsl(var(--border))] p-8">
       {status === "processing" && (
         <>
           <Loader2 className="h-12 w-12 text-emerald-600 animate-spin mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 mb-2">
+          <h1 className="text-xl font-bold text-[hsl(var(--foreground))] mb-2">
             {message}
           </h1>
-          <p className="text-gray-500">
+          <p className="text-[hsl(var(--muted-foreground))]">
             Estamos verificando tu solicitud. Un momento por favor.
           </p>
         </>
@@ -131,13 +133,13 @@ function CallbackHandler() {
 
       {status === "success" && (
         <>
-          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="h-8 w-8 text-emerald-600" />
+          <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">
+          <h1 className="text-xl font-bold text-[hsl(var(--foreground))] mb-2">
             {message}
           </h1>
-          <p className="text-gray-500">
+          <p className="text-[hsl(var(--muted-foreground))]">
             Seras redirigido automaticamente.
           </p>
         </>
@@ -145,14 +147,14 @@ function CallbackHandler() {
 
       {status === "error" && (
         <>
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="h-8 w-8 text-red-600" />
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">
+          <h1 className="text-xl font-bold text-[hsl(var(--foreground))] mb-2">
             {message}
           </h1>
           {errorDetail && (
-            <p className="text-gray-600 mb-6">{errorDetail}</p>
+            <p className="text-[hsl(var(--muted-foreground))] mb-6">{errorDetail}</p>
           )}
           <div className="space-y-3">
             <Link
@@ -163,7 +165,7 @@ function CallbackHandler() {
             </Link>
             <Link
               href="/auth/register"
-              className="block w-full py-3 px-4 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition text-center"
+              className="block w-full py-3 px-4 border border-[hsl(var(--border))] text-[hsl(var(--foreground))] font-medium rounded-xl hover:bg-[hsl(var(--muted))] transition text-center"
             >
               Crear una cuenta
             </Link>
@@ -176,12 +178,12 @@ function CallbackHandler() {
 
 function CallbackLoading() {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+    <div className="bg-[hsl(var(--card))] rounded-2xl shadow-sm border border-[hsl(var(--border))] p-8">
       <Loader2 className="h-12 w-12 text-emerald-600 animate-spin mx-auto mb-4" />
-      <h1 className="text-xl font-bold text-gray-900 mb-2 text-center">
+      <h1 className="text-xl font-bold text-[hsl(var(--foreground))] mb-2 text-center">
         Procesando...
       </h1>
-      <p className="text-gray-500 text-center">
+      <p className="text-[hsl(var(--muted-foreground))] text-center">
         Estamos verificando tu solicitud. Un momento por favor.
       </p>
     </div>
@@ -190,11 +192,11 @@ function CallbackLoading() {
 
 export default function AuthCallbackPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center p-6 bg-gray-50">
+    <main className="flex min-h-screen items-center justify-center p-6 bg-[hsl(var(--background))]">
       <div className="w-full max-w-md text-center">
         <div className="flex items-center justify-center gap-2 mb-8">
           <Heart className="h-8 w-8 text-emerald-600 fill-emerald-600" />
-          <span className="text-2xl font-bold text-gray-900">Red Salud</span>
+          <span className="text-2xl font-bold text-[hsl(var(--foreground))]">Red-Salud</span>
         </div>
 
         <Suspense fallback={<CallbackLoading />}>
