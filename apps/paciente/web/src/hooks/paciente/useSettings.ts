@@ -52,18 +52,29 @@ export interface NotificationSettings {
   resultados_lab_push: boolean;
   recordatorios_medicamentos_push: boolean;
   novedades_email: boolean;
+  // Legacy aliases used by NotificationsCard
+  appointment_reminders: boolean;
+  lab_results: boolean;
 }
 
 export interface PrivacySettings {
   historial_visibilidad: "solo_yo" | "mis_doctores" | "cualquier_doctor";
   compartir_datos_auto: boolean;
   encontrar_por_nombre: boolean;
+  // Legacy aliases used by PrivacyCard
+  profile_public: boolean;
+  share_medical_history: boolean;
 }
 
 export interface SecuritySettings {
   two_factor_enabled: boolean;
   phone_verified: boolean;
   cedula_verified: boolean;
+}
+
+export interface UserPreferences {
+  dark_mode: boolean;
+  desktop_notifications: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -79,12 +90,16 @@ const DEFAULT_NOTIFICATIONS: NotificationSettings = {
   resultados_lab_push: true,
   recordatorios_medicamentos_push: true,
   novedades_email: false,
+  appointment_reminders: true,
+  lab_results: true,
 };
 
 const DEFAULT_PRIVACY: PrivacySettings = {
   historial_visibilidad: "mis_doctores",
   compartir_datos_auto: false,
   encontrar_por_nombre: true,
+  profile_public: false,
+  share_medical_history: false,
 };
 
 const DEFAULT_SECURITY: SecuritySettings = {
