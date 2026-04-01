@@ -30,6 +30,8 @@ export interface Profile {
 
 export interface PatientDetails {
   grupo_sanguineo?: string;
+  altura_cm?: number;
+  peso_kg?: number;
   alergias?: string[];
   condiciones_cronicas?: string[];
   medicamentos_actuales?: { nombre: string; dosis: string; frecuencia: string }[];
