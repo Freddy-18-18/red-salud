@@ -187,3 +187,9 @@ nul
 *.tfstate
 *.tfstate.backup
 .terraform/
+
+# ========================
+# Debug screenshots
+# ========================
+*.png
+!**/public/**/*.png
