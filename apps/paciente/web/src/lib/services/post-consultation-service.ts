@@ -72,7 +72,7 @@ export interface PostConsultationAction {
   created_at: string;
   updated_at: string;
   doctor?: {
-    nombre_completo?: string;
+    full_name?: string;
     avatar_url?: string;
   };
   appointment?: {
@@ -102,7 +102,7 @@ export async function getPostConsultationActions(
       .select(`
         *,
         doctor:profiles!post_consultation_actions_doctor_id_fkey(
-          nombre_completo, avatar_url
+          full_name, avatar_url
         ),
         appointment:appointments!post_consultation_actions_appointment_id_fkey(
           appointment_date, appointment_time, specialty
@@ -130,7 +130,7 @@ export async function getActionsByAppointment(
       .select(`
         *,
         doctor:profiles!post_consultation_actions_doctor_id_fkey(
-          nombre_completo, avatar_url
+          full_name, avatar_url
         ),
         appointment:appointments!post_consultation_actions_appointment_id_fkey(
           appointment_date, appointment_time, specialty
@@ -168,7 +168,7 @@ export async function getPostConsultationSummaries(
       const first = actions[0];
       summaries.push({
         appointment_id: appointmentId,
-        doctor_name: first.doctor?.nombre_completo || "Medico",
+        doctor_name: first.doctor?.full_name || "Medico",
         specialty: first.appointment?.specialty || "",
         date: first.appointment?.appointment_date || "",
         time: first.appointment?.appointment_time || "",

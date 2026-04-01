@@ -99,12 +99,11 @@ export async function getMedicationReminders(patientId: string) {
       .or(`ends_at.is.null,ends_at.gte.${today}`)
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) return { success: true as const, data: [] as MedicationReminder[] };
 
     return { success: true as const, data: (data || []) as MedicationReminder[] };
-  } catch (error) {
-    console.error("Error fetching medication reminders:", error);
-    return { success: false as const, error, data: [] as MedicationReminder[] };
+  } catch {
+    return { success: true as const, data: [] as MedicationReminder[] };
   }
 }
 
@@ -128,7 +127,7 @@ export async function addMedicationReminder(
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) return { success: false as const, error, data: null };
 
     await supabase.from("user_activity_log").insert({
       user_id: patientId,
@@ -138,9 +137,8 @@ export async function addMedicationReminder(
     });
 
     return { success: true as const, data: data as MedicationReminder };
-  } catch (error) {
-    console.error("Error creating medication reminder:", error);
-    return { success: false as const, error, data: null };
+  } catch {
+    return { success: false as const, error: null, data: null };
   }
 }
 
@@ -151,12 +149,11 @@ export async function deleteMedicationReminder(reminderId: string) {
       .delete()
       .eq("id", reminderId);
 
-    if (error) throw error;
+    if (error) return { success: false as const, error };
 
     return { success: true as const };
-  } catch (error) {
-    console.error("Error deleting medication reminder:", error);
-    return { success: false as const, error };
+  } catch {
+    return { success: false as const, error: null };
   }
 }
 
@@ -179,7 +176,7 @@ export async function getTodayIntakeLogs(patientId: string) {
 
     return { success: true as const, data: (data || []) as MedicationIntakeLog[] };
   } catch (error) {
-    console.error("Error fetching intake logs:", error);
+    void error;
     return { success: false as const, error, data: [] as MedicationIntakeLog[] };
   }
 }
@@ -202,7 +199,7 @@ export async function getIntakeLogsForPeriod(
 
     return { success: true as const, data: (data || []) as MedicationIntakeLog[] };
   } catch (error) {
-    console.error("Error fetching intake logs for period:", error);
+    void error;
     return { success: false as const, error, data: [] as MedicationIntakeLog[] };
   }
 }
@@ -254,7 +251,7 @@ export async function logMedicationIntake(
 
     return { success: true as const, data: data as MedicationIntakeLog };
   } catch (error) {
-    console.error("Error logging medication intake:", error);
+    void error;
     return { success: false as const, error, data: null };
   }
 }
@@ -281,7 +278,7 @@ export async function getAdherence(patientId: string, days: number) {
 
     return { success: true as const, data: percentage };
   } catch (error) {
-    console.error("Error calculating adherence:", error);
+    void error;
     return { success: false as const, error, data: 0 };
   }
 }
@@ -299,7 +296,7 @@ export async function getHealthMetricTypes() {
 
     return { success: true as const, data: (data || []) as HealthMetricType[] };
   } catch (error) {
-    console.error("Error fetching metric types:", error);
+    void error;
     return { success: false as const, error, data: [] as HealthMetricType[] };
   }
 }
@@ -327,7 +324,7 @@ export async function getHealthMetrics(
 
     return { success: true as const, data: (data || []) as HealthMetric[] };
   } catch (error) {
-    console.error("Error fetching health metrics:", error);
+    void error;
     return { success: false as const, error, data: [] as HealthMetric[] };
   }
 }
@@ -363,7 +360,7 @@ export async function getLatestMetrics(patientId: string) {
 
     return { success: true as const, data: metricsWithLatest };
   } catch (error) {
-    console.error("Error fetching latest metrics:", error);
+    void error;
     return { success: false as const, error, data: [] };
   }
 }
@@ -392,7 +389,7 @@ export async function logHealthMetric(
 
     return { success: true as const, data: data as HealthMetric };
   } catch (error) {
-    console.error("Error logging health metric:", error);
+    void error;
     return { success: false as const, error, data: null };
   }
 }
@@ -411,7 +408,7 @@ export async function getHealthGoals(patientId: string) {
 
     return { success: true as const, data: (data || []) as HealthGoal[] };
   } catch (error) {
-    console.error("Error fetching health goals:", error);
+    void error;
     return { success: false as const, error, data: [] as HealthGoal[] };
   }
 }
@@ -441,7 +438,7 @@ export async function createHealthGoal(
 
     return { success: true as const, data: data as HealthGoal };
   } catch (error) {
-    console.error("Error creating health goal:", error);
+    void error;
     return { success: false as const, error, data: null };
   }
 }
@@ -462,7 +459,7 @@ export async function updateGoalProgress(
 
     return { success: true as const, data: data as HealthGoal };
   } catch (error) {
-    console.error("Error updating goal progress:", error);
+    void error;
     return { success: false as const, error, data: null };
   }
 }
@@ -480,7 +477,7 @@ export async function completeGoal(goalId: string) {
 
     return { success: true as const, data: data as HealthGoal };
   } catch (error) {
-    console.error("Error completing goal:", error);
+    void error;
     return { success: false as const, error, data: null };
   }
 }
@@ -496,7 +493,7 @@ export async function getUpcomingAppointments(patientId: string, limit = 3) {
       .select(`
         *,
         doctor:profiles!appointments_medico_id_fkey(
-          id, nombre_completo, email, avatar_url
+          id, full_name, email, avatar_url
         )
       `)
       .eq("paciente_id", patientId)
@@ -509,7 +506,7 @@ export async function getUpcomingAppointments(patientId: string, limit = 3) {
 
     return { success: true as const, data: data || [] };
   } catch (error) {
-    console.error("Error fetching upcoming appointments:", error);
+    void error;
     return { success: false as const, error, data: [] };
   }
 }

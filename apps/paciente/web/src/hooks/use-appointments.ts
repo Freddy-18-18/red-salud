@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/lib/supabase/client";
 
 // TODO: Import types from @red-salud/types once available
@@ -18,13 +19,13 @@ interface Appointment {
   updated_at: string;
   doctor?: {
     id: string;
-    nombre_completo?: string;
+    full_name?: string;
     email?: string;
     avatar_url?: string;
   };
   patient?: {
     id: string;
-    nombre_completo?: string;
+    full_name?: string;
     email?: string;
     avatar_url?: string;
   };
@@ -40,13 +41,13 @@ interface MedicalSpecialty {
 interface DoctorProfile {
   id: string;
   specialty_id?: string;
-  anos_experiencia?: number;
+  years_experience?: number;
   biografia?: string;
-  tarifa_consulta?: number;
+  consultation_fee?: number;
   verified?: boolean;
   profile?: {
     id?: string;
-    nombre_completo?: string;
+    full_name?: string;
     email?: string;
     avatar_url?: string;
   };
@@ -73,24 +74,22 @@ interface CreateAppointmentData {
 
 // Hook para citas del paciente
 export function usePatientAppointments(patientId: string | undefined) {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const refreshAppointments = useCallback(async () => {
-    if (!patientId) return;
-    setLoading(true);
-    setError(null);
-    try {
+  const query = useQuery({
+    queryKey: ["appointments", patientId],
+    queryFn: async () => {
       // TODO: Replace with @red-salud/api-client call
       const { data, error: fetchError } = await supabase
         .from("appointments")
-        .select(`
+        .select(
+          `
           *,
           doctor:profiles!appointments_medico_id_fkey(
-            id, nombre_completo, email, avatar_url
+            id, full_name, email, avatar_url
           )
-        `)
+        `
+        )
         .eq("paciente_id", patientId)
         .order("fecha_hora", { ascending: false });
 
@@ -102,11 +101,18 @@ export function usePatientAppointments(patientId: string | undefined) {
           id: apt.id,
           patient_id: apt.paciente_id,
           doctor_id: apt.medico_id,
-          appointment_date: fechaHora.toISOString().split('T')[0],
-          appointment_time: fechaHora.toTimeString().split(' ')[0],
+          appointment_date: fechaHora.toISOString().split("T")[0],
+          appointment_time: fechaHora.toTimeString().split(" ")[0],
           duration: apt.duracion_minutos,
-          status: apt.status === 'pendiente' ? 'pending' : apt.status === 'confirmada' ? 'confirmed' : apt.status === 'completada' ? 'completed' : 'cancelled',
-          consultation_type: 'presencial' as const,
+          status:
+            apt.status === "pendiente"
+              ? "pending"
+              : apt.status === "confirmada"
+                ? "confirmed"
+                : apt.status === "completada"
+                  ? "completed"
+                  : "cancelled",
+          consultation_type: "presencial" as const,
           reason: apt.motivo,
           notes: apt.notas,
           created_at: apt.created_at,
@@ -115,110 +121,100 @@ export function usePatientAppointments(patientId: string | undefined) {
         } as Appointment;
       });
 
-      setAppointments(mapped);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error loading appointments');
-    } finally {
-      setLoading(false);
-    }
-  }, [patientId]);
+      return mapped;
+    },
+    enabled: !!patientId,
+  });
 
-  useEffect(() => {
-    if (patientId) {
-      refreshAppointments();
-    }
-  }, [patientId, refreshAppointments]);
-
-  return { appointments, loading, error, refreshAppointments };
+  return {
+    appointments: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error?.message ?? null,
+    refreshAppointments: query.refetch,
+  };
 }
 
 // Hook para especialidades médicas
 export function useMedicalSpecialties(onlyWithDoctors: boolean = false) {
-  const [specialties, setSpecialties] = useState<MedicalSpecialty[]>([]);
-  const [loading, setLoading] = useState(true);
+  const query = useQuery({
+    queryKey: ["specialties", onlyWithDoctors],
+    queryFn: async () => {
+      // TODO: Replace with @red-salud/api-client call
+      let query = supabase.from("specialties").select("*").order("name");
 
-  useEffect(() => {
-    const loadSpecialties = async () => {
-      try {
-        // TODO: Replace with @red-salud/api-client call
-        let query = supabase.from("specialties").select("*").order("name");
+      if (onlyWithDoctors) {
+        // Filter to specialties that have at least one verified doctor
+        const { data: doctorSpecialties } = await supabase
+          .from("doctor_details")
+          .select("specialty_id")
+          .eq("verified", true);
 
-        if (onlyWithDoctors) {
-          // Filter to specialties that have at least one verified doctor
-          const { data: doctorSpecialties } = await supabase
-            .from("doctor_details")
-            .select("especialidad_id")
-            .eq("verified", true);
-
-          const specialtyIds = [...new Set((doctorSpecialties || []).map(d => d.especialidad_id))];
-          if (specialtyIds.length > 0) {
-            query = query.in("id", specialtyIds);
-          }
+        const specialtyIds = [
+          ...new Set((doctorSpecialties || []).map((d) => d.specialty_id)),
+        ];
+        if (specialtyIds.length > 0) {
+          query = query.in("id", specialtyIds);
         }
-
-        const { data, error } = await query;
-        if (error) throw error;
-        setSpecialties(data || []);
-      } catch (error) {
-        console.error('Error loading specialties:', error);
-      } finally {
-        setLoading(false);
       }
-    };
 
-    loadSpecialties();
-  }, [onlyWithDoctors]);
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data || []) as MedicalSpecialty[];
+    },
+  });
 
-  return { specialties, loading };
+  return {
+    specialties: query.data ?? [],
+    loading: query.isLoading,
+  };
 }
 
 // Hook para doctores disponibles
 export function useAvailableDoctors(specialtyId?: string) {
-  const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
-  const [loading, setLoading] = useState(true);
+  const query = useQuery({
+    queryKey: ["doctors", specialtyId],
+    queryFn: async () => {
+      // TODO: Replace with @red-salud/api-client call
+      let query = supabase
+        .from("doctor_details")
+        .select(
+          `
+          *,
+          specialty:specialties(id, name, description),
+          profile:profiles!inner(id, full_name, email, avatar_url)
+        `
+        )
+        .eq("verified", true);
 
-  useEffect(() => {
-    const loadDoctors = async () => {
-      setLoading(true);
-      try {
-        // TODO: Replace with @red-salud/api-client call
-        let query = supabase
-          .from("doctor_details")
-          .select(`
-            *,
-            specialty:specialties(id, name, description),
-            profile:profiles!inner(id, nombre_completo, email, avatar_url)
-          `)
-          .eq("verified", true);
-
-        if (specialtyId) {
-          query = query.eq("especialidad_id", specialtyId);
-        }
-
-        const { data, error } = await query;
-        if (error) throw error;
-
-        const mapped = (data || []).map((d: Record<string, unknown>) => ({
-          id: d.id,
-          specialty_id: d.especialidad_id,
-          anos_experiencia: d.anos_experiencia,
-          biografia: d.biografia,
-          tarifa_consulta: d.tarifa_consulta ? parseFloat(d.tarifa_consulta as string) : undefined,
-          verified: d.verified,
-          profile: d.profile,
-          specialty: d.specialty,
-        })) as DoctorProfile[];
-
-        setDoctors(mapped);
-      } finally {
-        setLoading(false);
+      if (specialtyId) {
+        query = query.eq("specialty_id", specialtyId);
       }
-    };
 
-    loadDoctors();
-  }, [specialtyId]);
+      const { data, error } = await query;
+      if (error) throw error;
 
-  return { doctors, loading };
+      const mapped = (data || []).map((d: Record<string, unknown>) => ({
+        id: d.id,
+        specialty_id: d.specialty_id,
+        years_experience: d.years_experience,
+        biografia: d.biografia,
+        consultation_fee: d.consultation_fee
+          ? parseFloat(d.consultation_fee as string)
+          : undefined,
+        verified: d.verified,
+        profile: d.profile,
+        specialty: d.specialty,
+      })) as DoctorProfile[];
+
+      return mapped;
+    },
+    enabled: !!specialtyId,
+  });
+
+  return {
+    doctors: query.data ?? [],
+    loading: query.isLoading,
+  };
 }
 
 // Hook para slots de tiempo disponibles
@@ -226,106 +222,104 @@ export function useAvailableTimeSlots(
   doctorId: string | undefined,
   date: string | undefined
 ) {
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [loading, setLoading] = useState(false);
+  const query = useQuery({
+    queryKey: ["timeSlots", doctorId, date],
+    queryFn: async () => {
+      const dayOfWeek = new Date(date!).getDay();
+      const startOfDay = new Date(`${date!}T00:00:00`);
+      const endOfDay = new Date(`${date!}T23:59:59.999`);
 
-  useEffect(() => {
-    const loadTimeSlots = async () => {
-      if (!doctorId || !date) {
-        setTimeSlots([]);
-        return;
+      // Get doctor availability for this day of week
+      const { data: availability } = await supabase
+        .from("doctor_availability")
+        .select("hora_inicio, hora_fin")
+        .eq("doctor_id", doctorId!)
+        .eq("dia_semana", dayOfWeek)
+        .eq("activo", true);
+
+      if (!availability || availability.length === 0) {
+        return [] as TimeSlot[];
       }
 
-      setLoading(true);
-      try {
-        const dayOfWeek = new Date(date).getDay();
-        const startOfDay = new Date(`${date}T00:00:00`);
-        const endOfDay = new Date(`${date}T23:59:59.999`);
+      // Get existing appointments for this date
+      const { data: appointments } = await supabase
+        .from("appointments")
+        .select("id, fecha_hora, duracion_minutos, status")
+        .eq("medico_id", doctorId!)
+        .gte("fecha_hora", startOfDay.toISOString())
+        .lte("fecha_hora", endOfDay.toISOString())
+        .not("status", "in", '("cancelada","rechazada")');
 
-        // Get doctor availability for this day of week
-        const { data: availability } = await supabase
-          .from("doctor_availability")
-          .select("hora_inicio, hora_fin")
-          .eq("doctor_id", doctorId)
-          .eq("dia_semana", dayOfWeek)
-          .eq("activo", true);
+      const slotDuration = 30; // Default duration
 
-        if (!availability || availability.length === 0) {
-          setTimeSlots([]);
-          return;
+      const toMinutes = (value: string) => {
+        const [hoursStr = "0", minutesStr = "0"] = value.split(":");
+        return (Number(hoursStr) || 0) * 60 + (Number(minutesStr) || 0);
+      };
+
+      const toTimeString = (minutes: number) => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:00`;
+      };
+
+      const appointmentIntervals = (
+        appointments || []
+      ).map((apt: Record<string, unknown>) => {
+        const startDate = new Date(apt.fecha_hora as string);
+        const start =
+          startDate.getHours() * 60 + startDate.getMinutes();
+        return {
+          start,
+          end: start + ((apt.duracion_minutos as number) || slotDuration),
+        };
+      });
+
+      const hasConflict = (start: number, end: number) =>
+        appointmentIntervals.some(
+          (interval: { start: number; end: number }) =>
+            interval.start < end && interval.end > start
+        );
+
+      const slots: TimeSlot[] = [];
+
+      availability.forEach((slot: Record<string, unknown>) => {
+        const startMinutes = toMinutes(slot.hora_inicio as string);
+        const endMinutes = toMinutes(slot.hora_fin as string);
+        let cursor = startMinutes;
+
+        while (cursor + slotDuration <= endMinutes) {
+          slots.push({
+            time: toTimeString(cursor),
+            available: !hasConflict(cursor, cursor + slotDuration),
+          });
+          cursor += slotDuration;
         }
+      });
 
-        // Get existing appointments for this date
-        const { data: appointments } = await supabase
-          .from("appointments")
-          .select("id, fecha_hora, duracion_minutos, status")
-          .eq("medico_id", doctorId)
-          .gte("fecha_hora", startOfDay.toISOString())
-          .lte("fecha_hora", endOfDay.toISOString())
-          .not("status", "in", '("cancelada","rechazada")');
+      return slots;
+    },
+    enabled: !!doctorId && !!date,
+  });
 
-        const slotDuration = 30; // Default duration
-
-        const toMinutes = (value: string) => {
-          const [hoursStr = '0', minutesStr = '0'] = value.split(':');
-          return (Number(hoursStr) || 0) * 60 + (Number(minutesStr) || 0);
-        };
-
-        const toTimeString = (minutes: number) => {
-          const hours = Math.floor(minutes / 60);
-          const mins = minutes % 60;
-          return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:00`;
-        };
-
-        const appointmentIntervals = (appointments || []).map((apt: Record<string, unknown>) => {
-          const startDate = new Date(apt.fecha_hora as string);
-          const start = startDate.getHours() * 60 + startDate.getMinutes();
-          return { start, end: start + ((apt.duracion_minutos as number) || slotDuration) };
-        });
-
-        const hasConflict = (start: number, end: number) =>
-          appointmentIntervals.some((interval: { start: number; end: number }) => interval.start < end && interval.end > start);
-
-        const slots: TimeSlot[] = [];
-
-        availability.forEach((slot: Record<string, unknown>) => {
-          const startMinutes = toMinutes(slot.hora_inicio as string);
-          const endMinutes = toMinutes(slot.hora_fin as string);
-          let cursor = startMinutes;
-
-          while (cursor + slotDuration <= endMinutes) {
-            slots.push({
-              time: toTimeString(cursor),
-              available: !hasConflict(cursor, cursor + slotDuration),
-            });
-            cursor += slotDuration;
-          }
-        });
-
-        setTimeSlots(slots);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadTimeSlots();
-  }, [doctorId, date]);
-
-  return { timeSlots, loading };
+  return {
+    timeSlots: query.data ?? [],
+    loading: query.isLoading,
+  };
 }
 
 // Hook para crear cita
 export function useCreateAppointment() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const create = async (
-    patientId: string,
-    appointmentData: CreateAppointmentData
-  ) => {
-    setLoading(true);
-    setError(null);
-    try {
+  const mutation = useMutation({
+    mutationFn: async ({
+      patientId,
+      appointmentData,
+    }: {
+      patientId: string;
+      appointmentData: CreateAppointmentData;
+    }) => {
       const fechaHora = `${appointmentData.appointment_date}T${appointmentData.appointment_time}`;
 
       const { data, error: insertError } = await supabase
@@ -335,7 +329,7 @@ export function useCreateAppointment() {
           medico_id: appointmentData.doctor_id,
           fecha_hora: fechaHora,
           duracion_minutos: 30,
-          motivo: appointmentData.reason || '',
+          motivo: appointmentData.reason || "",
           status: "pendiente",
         })
         .select()
@@ -351,37 +345,54 @@ export function useCreateAppointment() {
         status: "success",
       });
 
+      return data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["appointments", variables.patientId],
+      });
+    },
+  });
+
+  const create = async (
+    patientId: string,
+    appointmentData: CreateAppointmentData
+  ) => {
+    try {
+      const data = await mutation.mutateAsync({
+        patientId,
+        appointmentData,
+      });
       return { success: true as const, data };
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      setError(errorMsg);
       return { success: false as const, error: err, data: null };
-    } finally {
-      setLoading(false);
     }
   };
 
-  return { create, loading, error };
+  return { create, loading: mutation.isPending, error: mutation.error?.message ?? null };
 }
 
 // Hook para cancelar cita
 export function useCancelAppointment() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const cancel = async (
-    appointmentId: string,
-    userId: string,
-    reason?: string
-  ) => {
-    setLoading(true);
-    setError(null);
-    try {
+  const mutation = useMutation({
+    mutationFn: async ({
+      appointmentId,
+      userId,
+      reason,
+    }: {
+      appointmentId: string;
+      userId: string;
+      reason?: string;
+    }) => {
       const { error: updateError } = await supabase
         .from("appointments")
         .update({
           status: "cancelada",
-          notas: reason ? `Cancelada: ${reason}` : 'Cancelada por paciente',
+          notas: reason
+            ? `Cancelada: ${reason}`
+            : "Cancelada por paciente",
         })
         .eq("id", appointmentId);
 
@@ -394,14 +405,25 @@ export function useCancelAppointment() {
         status: "success",
       });
 
+      return null;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+    },
+  });
+
+  const cancel = async (
+    appointmentId: string,
+    userId: string,
+    reason?: string
+  ) => {
+    try {
+      await mutation.mutateAsync({ appointmentId, userId, reason });
       return { success: true as const, data: null };
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
       return { success: false as const, error: err, data: null };
-    } finally {
-      setLoading(false);
     }
   };
 
-  return { cancel, loading, error };
+  return { cancel, loading: mutation.isPending, error: mutation.error?.message ?? null };
 }

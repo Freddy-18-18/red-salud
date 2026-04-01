@@ -17,13 +17,13 @@ export interface Appointment {
   updated_at: string;
   doctor?: {
     id: string;
-    nombre_completo?: string;
+    full_name?: string;
     email?: string;
     avatar_url?: string;
   };
   patient?: {
     id: string;
-    nombre_completo: string;
+    full_name: string;
     email: string;
     avatar_url?: string;
   };
@@ -40,16 +40,16 @@ export interface DoctorProfile {
   id: string;
   specialty_id?: string;
   license_number?: string;
-  anos_experiencia?: number;
+  years_experience?: number;
   biografia?: string;
-  tarifa_consulta?: number;
+  consultation_fee?: number;
   consultation_duration?: number;
   verified?: boolean;
   created_at?: string;
   updated_at?: string;
   profile?: {
     id?: string;
-    nombre_completo?: string;
+    full_name?: string;
     email?: string;
     avatar_url?: string;
   };

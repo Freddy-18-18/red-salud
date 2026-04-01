@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useCallback } from "react";
+
 import {
   getRewards,
   getTransactions,
@@ -7,7 +9,6 @@ import {
   awardPoints,
   redeemPoints,
   checkAndAwardBadges,
-  calculateLevel,
   pointsForNextLevel,
   type PatientRewards,
   type RewardTransaction,
@@ -42,30 +43,24 @@ interface BadgeNotification {
   badge: Badge;
 }
 
+const DEFAULT_REWARDS: PatientRewards = {
+  patient_id: "",
+  total_points: 0,
+  level: 1,
+  streak_days: 0,
+  longest_streak: 0,
+  last_activity_at: null,
+};
+
+const DEFAULT_STREAK: StreakInfo = {
+  current: 0,
+  longest: 0,
+  lastActivity: null,
+  activityDays: [],
+};
+
 export function useRewards(patientId: string | undefined) {
-  const [state, setState] = useState<RewardsState>({
-    rewards: {
-      patient_id: "",
-      total_points: 0,
-      level: 1,
-      streak_days: 0,
-      longest_streak: 0,
-      last_activity_at: null,
-    },
-    transactions: [],
-    earned: [],
-    available: [],
-    allBadges: [],
-    earnedMap: [],
-    streak: {
-      current: 0,
-      longest: 0,
-      lastActivity: null,
-      activityDays: [],
-    },
-    loading: true,
-    error: null,
-  });
+  const queryClient = useQueryClient();
 
   const [pointsNotifications, setPointsNotifications] = useState<
     PointsNotification[]
@@ -74,20 +69,18 @@ export function useRewards(patientId: string | undefined) {
     BadgeNotification[]
   >([]);
 
-  const loadAll = useCallback(async () => {
-    if (!patientId) return;
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["rewards", patientId],
+    queryFn: async () => {
       const [rewardsResult, transactionsResult, badgesResult, streakResult] =
         await Promise.all([
-          getRewards(patientId),
-          getTransactions(patientId),
-          getBadges(patientId),
-          getStreak(patientId),
+          getRewards(patientId!),
+          getTransactions(patientId!),
+          getBadges(patientId!),
+          getStreak(patientId!),
         ]);
 
-      setState({
+      return {
         rewards: rewardsResult.data,
         transactions: transactionsResult.data,
         earned: badgesResult.data.earned,
@@ -95,41 +88,56 @@ export function useRewards(patientId: string | undefined) {
         allBadges: badgesResult.data.all,
         earnedMap: badgesResult.data.earnedMap,
         streak: streakResult.data,
-        loading: false,
-        error: null,
-      });
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : "Error cargando recompensas",
-      }));
-    }
-  }, [patientId]);
+      };
+    },
+    enabled: !!patientId,
+  });
 
-  useEffect(() => {
-    if (patientId) {
-      loadAll();
-    }
-  }, [patientId, loadAll]);
+  const state: RewardsState = {
+    rewards: data?.rewards ?? DEFAULT_REWARDS,
+    transactions: data?.transactions ?? [],
+    earned: data?.earned ?? [],
+    available: data?.available ?? [],
+    allBadges: data?.allBadges ?? [],
+    earnedMap: data?.earnedMap ?? [],
+    streak: data?.streak ?? DEFAULT_STREAK,
+    loading: isLoading,
+    error: error
+      ? error instanceof Error
+        ? error.message
+        : "Error cargando recompensas"
+      : null,
+  };
 
-  const addPoints = useCallback(
-    async (
-      action: ActionType,
-      description: string,
-      points: number,
-      referenceId?: string
-    ) => {
-      if (!patientId) return;
-
+  const addPointsMutation = useMutation({
+    mutationFn: async ({
+      action,
+      description,
+      points,
+      referenceId,
+    }: {
+      action: ActionType;
+      description: string;
+      points: number;
+      referenceId?: string;
+    }) => {
       const result = await awardPoints(
-        patientId,
+        patientId!,
         action,
         description,
         points,
         referenceId
       );
 
+      if (result.success && result.data) {
+        const badgeResult: { success: boolean; data: Badge[] } =
+          await checkAndAwardBadges(patientId!);
+        return { result, badgeResult };
+      }
+
+      return { result, badgeResult: null as { success: boolean; data: Badge[] } | null };
+    },
+    onSuccess: ({ result, badgeResult }, { description }) => {
       if (result.success && result.data) {
         const notifId = crypto.randomUUID();
         setPointsNotifications((prev) => [
@@ -145,59 +153,70 @@ export function useRewards(patientId: string | undefined) {
           },
         ]);
 
-        // Auto-dismiss after 3 seconds
         setTimeout(() => {
-          setPointsNotifications((prev) =>
-            prev.filter((n) => n.id !== notifId)
-          );
+          setPointsNotifications((prev) => prev.filter((n) => n.id !== notifId));
         }, 3000);
 
-        // Check for new badges
-        const badgeResult = await checkAndAwardBadges(patientId);
-        if (badgeResult.success && badgeResult.data.length > 0) {
-          const newBadgeNotifs = badgeResult.data.map((badge) => ({
+        if (badgeResult?.success && badgeResult.data.length > 0) {
+          const newBadgeNotifs = badgeResult.data.map((badge: Badge) => ({
             id: crypto.randomUUID(),
             badge,
           }));
           setBadgeNotifications((prev) => [...prev, ...newBadgeNotifs]);
 
-          // Auto-dismiss badge notifications after 5 seconds
           setTimeout(() => {
             setBadgeNotifications((prev) =>
-              prev.filter(
-                (n) => !newBadgeNotifs.find((nb) => nb.id === n.id)
-              )
+              prev.filter((n) => !newBadgeNotifs.find((nb: BadgeNotification) => nb.id === n.id))
             );
           }, 5000);
         }
 
-        // Reload all data
-        await loadAll();
+        queryClient.invalidateQueries({ queryKey: ["rewards", patientId] });
       }
-
-      return result;
     },
-    [patientId, loadAll]
+  });
+
+  const redeemMutation = useMutation({
+    mutationFn: async ({
+      rewardId,
+      pointCost,
+      rewardName,
+    }: {
+      rewardId: string;
+      pointCost: number;
+      rewardName: string;
+    }) => {
+      return redeemPoints(patientId!, rewardId, pointCost, rewardName);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rewards", patientId] });
+    },
+  });
+
+  const addPoints = useCallback(
+    async (
+      action: ActionType,
+      description: string,
+      points: number,
+      referenceId?: string
+    ) => {
+      if (!patientId) return;
+      return addPointsMutation.mutateAsync({
+        action,
+        description,
+        points,
+        referenceId,
+      });
+    },
+    [patientId, addPointsMutation]
   );
 
   const redeem = useCallback(
     async (rewardId: string, pointCost: number, rewardName: string) => {
       if (!patientId) return;
-
-      const result = await redeemPoints(
-        patientId,
-        rewardId,
-        pointCost,
-        rewardName
-      );
-
-      if (result.success) {
-        await loadAll();
-      }
-
-      return result;
+      return redeemMutation.mutateAsync({ rewardId, pointCost, rewardName });
     },
-    [patientId, loadAll]
+    [patientId, redeemMutation]
   );
 
   const dismissPointsNotification = useCallback((id: string) => {
@@ -236,6 +255,6 @@ export function useRewards(patientId: string | undefined) {
     // Actions
     addPoints,
     redeem,
-    refresh: loadAll,
+    refresh: refetch,
   };
 }

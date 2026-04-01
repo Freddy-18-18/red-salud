@@ -260,7 +260,7 @@ export const documentsService = {
   async getSharedDoctors(documentId: string): Promise<SharedDocument[]> {
     const { data, error } = await supabase
       .from("shared_documents")
-      .select("*, doctor:profiles!doctor_id(nombre_completo)")
+      .select("*, doctor:profiles!doctor_id(full_name)")
       .eq("document_id", documentId)
       .order("shared_at", { ascending: false });
 
@@ -274,7 +274,7 @@ export const documentsService = {
       document_id: row.document_id as string,
       doctor_id: row.doctor_id as string,
       shared_at: row.shared_at as string,
-      doctor_name: (row.doctor as Record<string, unknown>)?.nombre_completo as string | undefined,
+      doctor_name: (row.doctor as Record<string, unknown>)?.full_name as string | undefined,
     }));
   },
 

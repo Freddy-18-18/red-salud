@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+
 import {
   labResultsService,
   type LabOrder,
@@ -11,89 +12,62 @@ import {
  * Hook for the lab orders list.
  */
 export function useLabOrders(patientId: string | undefined) {
-  const [orders, setOrders] = useState<LabOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ["lab-orders", patientId],
+    queryFn: async () => {
+      if (!patientId) return [];
+      return labResultsService.getOrders(patientId);
+    },
+    enabled: !!patientId,
+  });
 
-  const refresh = useCallback(async () => {
-    if (!patientId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await labResultsService.getOrders(patientId);
-      setOrders(data);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error cargando ordenes",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [patientId]);
-
-  useEffect(() => {
-    if (patientId) refresh();
-  }, [patientId, refresh]);
-
-  return { orders, loading, error, refresh };
+  return {
+    orders: (query.data ?? []) as LabOrder[],
+    loading: query.isLoading,
+    error: query.error?.message ?? null,
+    refresh: () => query.refetch(),
+  };
 }
 
 /**
  * Hook for a single lab order detail with results.
  */
 export function useLabOrderDetail(orderId: string | undefined) {
-  const [order, setOrder] = useState<LabOrder | null>(null);
-  const [results, setResults] = useState<LabResult[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ["lab-order-detail", orderId],
+    queryFn: async () => {
+      if (!orderId) return { order: null, results: [] };
+      return labResultsService.getOrderDetail(orderId);
+    },
+    enabled: !!orderId,
+  });
 
-  useEffect(() => {
-    if (!orderId) return;
-    setLoading(true);
-    setError(null);
-
-    labResultsService
-      .getOrderDetail(orderId)
-      .then((data) => {
-        setOrder(data.order);
-        setResults(data.results);
-      })
-      .catch((err) => {
-        setError(
-          err instanceof Error ? err.message : "Error cargando detalle",
-        );
-      })
-      .finally(() => setLoading(false));
-  }, [orderId]);
-
-  return { order, results, loading, error };
+  return {
+    order: query.data?.order ?? null,
+    results: (query.data?.results ?? []) as LabResult[],
+    loading: query.isLoading,
+    error: query.error?.message ?? null,
+  };
 }
 
 /**
  * Hook for monitored parameters (unique parameters with latest values).
  */
 export function useMonitoredParameters(patientId: string | undefined) {
-  const [parameters, setParameters] = useState<MonitoredParameter[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ["lab-monitored-parameters", patientId],
+    queryFn: async () => {
+      if (!patientId) return [];
+      return labResultsService.getMonitoredParameters(patientId);
+    },
+    enabled: !!patientId,
+  });
 
-  useEffect(() => {
-    if (!patientId) return;
-    setLoading(true);
-    setError(null);
-
-    labResultsService
-      .getMonitoredParameters(patientId)
-      .then(setParameters)
-      .catch((err) => {
-        setError(
-          err instanceof Error ? err.message : "Error cargando parametros",
-        );
-      })
-      .finally(() => setLoading(false));
-  }, [patientId]);
-
-  return { parameters, loading, error };
+  return {
+    parameters: (query.data ?? []) as MonitoredParameter[],
+    loading: query.isLoading,
+    error: query.error?.message ?? null,
+  };
 }
 
 /**
@@ -104,28 +78,18 @@ export function useParameterHistory(
   parameterName: string | undefined,
   months: number = 12,
 ) {
-  const [history, setHistory] = useState<ParameterHistory | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ["lab-parameter-history", patientId, parameterName, months],
+    queryFn: async () => {
+      if (!patientId || !parameterName) return null;
+      return labResultsService.getParameterHistory(patientId, parameterName, months);
+    },
+    enabled: !!patientId && !!parameterName,
+  });
 
-  useEffect(() => {
-    if (!patientId || !parameterName) {
-      setHistory(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-
-    labResultsService
-      .getParameterHistory(patientId, parameterName, months)
-      .then(setHistory)
-      .catch((err) => {
-        setError(
-          err instanceof Error ? err.message : "Error cargando historial",
-        );
-      })
-      .finally(() => setLoading(false));
-  }, [patientId, parameterName, months]);
-
-  return { history, loading, error };
+  return {
+    history: (query.data ?? null) as ParameterHistory | null,
+    loading: query.isLoading,
+    error: query.error?.message ?? null,
+  };
 }

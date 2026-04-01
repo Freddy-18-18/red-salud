@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import {
   createEmergencyRequest,
   cancelEmergencyRequest,
-  getRequestStatus,
   getEmergencyHistory,
   getMedicalSummary,
   getFamilyMembers,
@@ -110,40 +111,53 @@ export type EmergencyStep =
   | "tracking";
 
 export function useEmergency(userId: string | undefined) {
-  // Flow state
+  // Flow state — local UI state, stays as useState
   const [step, setStep] = useState<EmergencyStep>("idle");
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null); // null = self
   const [priority, setPriority] = useState<EmergencyPriority | null>(null);
   const [symptoms, setSymptoms] = useState("");
   const [location, setLocation] = useState<EmergencyLocation | null>(null);
-
-  // Data
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
-  const [medicalSummary, setMedicalSummary] = useState<MedicalSummary | null>(null);
   const [activeRequest, setActiveRequest] = useState<EmergencyRequest | null>(null);
-  const [history, setHistory] = useState<EmergencyRequest[]>([]);
 
-  // UI state
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+  const queryClient = useQueryClient();
   const unsubRef = useRef<(() => void) | null>(null);
 
-  // Load family members on mount
-  useEffect(() => {
-    if (!userId) return;
-    getFamilyMembers(userId).then((result) => {
-      if (result.success) setFamilyMembers(result.data);
-    });
-  }, [userId]);
+  // Family members → useQuery
+  const familyMembersQuery = useQuery({
+    queryKey: ["emergency", "family-members", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const result = await getFamilyMembers(userId);
+      return result.data;
+    },
+    enabled: !!userId,
+  });
 
-  // Load medical summary when the flow starts
-  useEffect(() => {
-    if (!userId || step === "idle") return;
-    getMedicalSummary(userId).then((result) => {
-      if (result.success) setMedicalSummary(result.data);
-    });
-  }, [userId, step]);
+  // Medical summary → useQuery (enabled when flow starts)
+  const medicalSummaryQuery = useQuery({
+    queryKey: ["emergency", "medical-summary", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const result = await getMedicalSummary(userId);
+      return result.data;
+    },
+    enabled: !!userId && step !== "idle",
+  });
+
+  // Emergency history → useQuery
+  const historyQuery = useQuery({
+    queryKey: ["emergency", "history", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const result = await getEmergencyHistory(userId);
+      return result.data;
+    },
+    enabled: !!userId,
+  });
+
+  const familyMembers = familyMembersQuery.data ?? [];
+  const medicalSummary = medicalSummaryQuery.data ?? null;
+  const history = historyQuery.data ?? [];
 
   // Flush offline queue when we come online
   useEffect(() => {
@@ -175,7 +189,6 @@ export function useEmergency(userId: string | undefined) {
 
   const startEmergency = useCallback(() => {
     setStep("who");
-    setError(null);
   }, []);
 
   const selectPerson = useCallback((familyMemberId: string | null) => {
@@ -202,16 +215,35 @@ export function useEmergency(userId: string | undefined) {
     setSymptoms("");
     setLocation(null);
     setActiveRequest(null);
-    setError(null);
-    setLoading(false);
   }, []);
+
+  // Submit request → useMutation
+  const submitMutation = useMutation({
+    mutationFn: async (data: CreateEmergencyData) => {
+      return createEmergencyRequest(data);
+    },
+    onSuccess: (result) => {
+      if (result.success && result.data) {
+        setActiveRequest(result.data);
+        setStep("tracking");
+
+        // Subscribe to realtime updates
+        unsubRef.current?.();
+        unsubRef.current = subscribeToEmergencyStatus(result.data.id, (updated) => {
+          setActiveRequest(updated);
+          // Auto-transition to idle when completed or cancelled
+          if (updated.status === "completed" || updated.status === "cancelled") {
+            setTimeout(() => reset(), 3000);
+          }
+        });
+      }
+    },
+  });
 
   const submitRequest = useCallback(async () => {
     if (!userId || !priority || !location) return;
 
     setStep("requesting");
-    setLoading(true);
-    setError(null);
 
     const requestData: CreateEmergencyData = {
       patientId: userId,
@@ -224,55 +256,60 @@ export function useEmergency(userId: string | undefined) {
     // If offline, queue for later
     if (!navigator.onLine) {
       addToOfflineQueue(requestData);
-      setError("Sin conexión. La solicitud se enviará cuando vuelvas a tener internet.");
-      setLoading(false);
       return;
     }
 
-    const result = await createEmergencyRequest(requestData);
+    const result = await submitMutation.mutateAsync(requestData);
 
-    if (result.success && result.data) {
-      setActiveRequest(result.data);
-      setStep("tracking");
-
-      // Subscribe to realtime updates
-      unsubRef.current?.();
-      unsubRef.current = subscribeToEmergencyStatus(result.data.id, (updated) => {
-        setActiveRequest(updated);
-        // Auto-transition to idle when completed or cancelled
-        if (updated.status === "completed" || updated.status === "cancelled") {
-          setTimeout(() => reset(), 3000);
-        }
-      });
-    } else {
-      setError("No se pudo enviar la solicitud. Intentá de nuevo.");
+    if (!result.success) {
       setStep("location"); // Go back to let them retry
     }
+  }, [userId, priority, location, symptoms, selectedPerson, submitMutation, reset]);
 
-    setLoading(false);
-  }, [userId, priority, location, symptoms, selectedPerson, reset]);
+  // Cancel request → useMutation
+  const cancelMutation = useMutation({
+    mutationFn: async ({
+      requestId,
+      patientId,
+    }: {
+      requestId: string;
+      patientId: string;
+    }) => {
+      return cancelEmergencyRequest(requestId, patientId);
+    },
+    onSuccess: (_result, variables) => {
+      setActiveRequest((prev) => prev ? { ...prev, status: "cancelled" } : null);
+      setTimeout(() => reset(), 1500);
+    },
+  });
 
   const cancelRequest = useCallback(async () => {
     if (!activeRequest || !userId) return;
-
-    setLoading(true);
-    const result = await cancelEmergencyRequest(activeRequest.id, userId);
-    if (result.success) {
-      setActiveRequest({ ...activeRequest, status: "cancelled" });
-      setTimeout(() => reset(), 1500);
-    } else {
-      setError("No se pudo cancelar la solicitud.");
+    const result = await cancelMutation.mutateAsync({
+      requestId: activeRequest.id,
+      patientId: userId,
+    });
+    if (!result.success) {
+      // Error handled via mutation state
     }
-    setLoading(false);
-  }, [activeRequest, userId, reset]);
+  }, [activeRequest, userId, cancelMutation, reset]);
 
   const loadHistory = useCallback(async () => {
     if (!userId) return;
-    setLoading(true);
-    const result = await getEmergencyHistory(userId);
-    if (result.success) setHistory(result.data);
-    setLoading(false);
-  }, [userId]);
+    await historyQuery.refetch();
+  }, [userId, historyQuery]);
+
+  const isLoading =
+    submitMutation.isPending ||
+    cancelMutation.isPending ||
+    familyMembersQuery.isLoading ||
+    medicalSummaryQuery.isLoading;
+  const error =
+    submitMutation.error?.message ??
+    cancelMutation.error?.message ??
+    familyMembersQuery.error?.message ??
+    medicalSummaryQuery.error?.message ??
+    null;
 
   return {
     // State
@@ -285,7 +322,7 @@ export function useEmergency(userId: string | undefined) {
     medicalSummary,
     activeRequest,
     history,
-    loading,
+    loading: isLoading,
     error,
 
     // Actions

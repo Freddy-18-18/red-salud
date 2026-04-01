@@ -1,12 +1,13 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase/client";
+
 import {
   secondOpinionService,
-  type SecondOpinionRequest,
   type MedicalRecordSummary,
   type ReviewerDoctor,
   type ConsultationType,
 } from "@/lib/services/second-opinion-service";
+import { supabase } from "@/lib/supabase/client";
 
 // --- Types ---
 
@@ -52,94 +53,89 @@ const STEP_ORDER: RequestStep[] = [
 // --- Hook: List & Detail ---
 
 export function useSecondOpinionList() {
-  const [requests, setRequests] = useState<SecondOpinionRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [userId, setUserId] = useState<string | null>(null);
-
-  const loadRequests = useCallback(async (patientId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await secondOpinionService.getPatientRequests(patientId);
-      setRequests(data);
-    } catch (err) {
-      console.error("Error loading second opinion requests:", err);
-      setError("No se pudieron cargar las solicitudes");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     const getUser = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        loadRequests(user.id);
-      } else {
-        setLoading(false);
-      }
+      if (user) setUserId(user.id);
     };
     getUser();
-  }, [loadRequests]);
+  }, []);
 
-  // Real-time subscription
+  const {
+    data,
+    isFetching,
+    error,
+    refetch: refresh,
+  } = useQuery({
+    queryKey: ["secondOpinionRequests", userId],
+    queryFn: async () => {
+      return await secondOpinionService.getPatientRequests(userId!);
+    },
+    enabled: !!userId,
+  });
+
+  // Real-time subscription stays as useEffect
   useEffect(() => {
     if (!userId) return;
 
     const unsubscribe = secondOpinionService.subscribeToPatientRequests(
       userId,
       () => {
-        loadRequests(userId);
+        queryClient.invalidateQueries({
+          queryKey: ["secondOpinionRequests", userId],
+        });
       }
     );
 
     return unsubscribe;
-  }, [userId, loadRequests]);
+  }, [userId, queryClient]);
 
-  return { requests, loading, error, refresh: () => userId && loadRequests(userId) };
+  return {
+    requests: data ?? [],
+    loading: isFetching,
+    error: error ? "No se pudieron cargar las solicitudes" : null,
+    refresh: () => userId && refresh(),
+  };
 }
 
 export function useSecondOpinionDetail(requestId: string) {
-  const [request, setRequest] = useState<SecondOpinionRequest | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await secondOpinionService.getRequestById(requestId);
-        setRequest(data);
-      } catch (err) {
-        console.error("Error loading request detail:", err);
-        setError("No se pudo cargar la solicitud");
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [requestId]);
+  const { data, isFetching, error } = useQuery({
+    queryKey: ["secondOpinionRequest", requestId],
+    queryFn: async () => {
+      return await secondOpinionService.getRequestById(requestId);
+    },
+    enabled: !!requestId,
+  });
 
-  // Real-time subscription
+  // Real-time subscription stays as useEffect
   useEffect(() => {
     if (!requestId) return;
 
     const unsubscribe = secondOpinionService.subscribeToRequest(
       requestId,
       (updated) => {
-        setRequest(updated);
+        queryClient.setQueryData(
+          ["secondOpinionRequest", requestId],
+          updated
+        );
       }
     );
 
     return unsubscribe;
-  }, [requestId]);
+  }, [requestId, queryClient]);
 
-  return { request, loading, error };
+  return {
+    request: data ?? null,
+    loading: isFetching,
+    error: error ? "No se pudo cargar la solicitud" : null,
+  };
 }
 
 // --- Hook: Request Flow ---
@@ -147,21 +143,6 @@ export function useSecondOpinionDetail(requestId: string) {
 export function useSecondOpinionFlow() {
   const [state, setState] = useState<RequestFlowState>(INITIAL_FLOW_STATE);
   const [userId, setUserId] = useState<string | null>(null);
-
-  // Data for steps
-  const [medicalRecords, setMedicalRecords] = useState<MedicalRecordSummary[]>(
-    []
-  );
-  const [specialties, setSpecialties] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [reviewerDoctors, setReviewerDoctors] = useState<ReviewerDoctor[]>([]);
-
-  // Loading states
-  const [loadingRecords, setLoadingRecords] = useState(false);
-  const [loadingDoctors, setLoadingDoctors] = useState(false);
-  const [loadingSubmit, setLoadingSubmit] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
 
   // Get current user on mount
@@ -175,65 +156,78 @@ export function useSecondOpinionFlow() {
     getUser();
   }, []);
 
-  // Load medical records on mount
-  useEffect(() => {
-    if (!userId) return;
+  // Load medical records + extract specialties
+  const {
+    data: recordsData,
+    isFetching: loadingRecords,
+  } = useQuery({
+    queryKey: ["patientMedicalRecords", userId],
+    queryFn: async () => {
+      const data =
+        await secondOpinionService.getPatientMedicalRecords(userId!);
+      return data;
+    },
+    enabled: !!userId,
+  });
 
-    const load = async () => {
-      setLoadingRecords(true);
-      try {
-        const data =
-          await secondOpinionService.getPatientMedicalRecords(userId);
-        setMedicalRecords(data);
+  const medicalRecords = recordsData ?? [];
 
-        // Extract unique specialties from records
-        const uniqueSpecialties = new Map<string, string>();
-        data.forEach((r) => {
-          if (r.specialty_id) {
-            uniqueSpecialties.set(r.specialty_id, r.specialty_name);
-          }
-        });
-        setSpecialties(
-          Array.from(uniqueSpecialties.entries()).map(([id, name]) => ({
-            id,
-            name,
-          }))
-        );
-      } catch (err) {
-        console.error("Error loading medical records:", err);
-        setError("No se pudieron cargar tus registros medicos");
-      } finally {
-        setLoadingRecords(false);
+  const specialties = (() => {
+    if (!recordsData) return [];
+    const unique = new Map<string, string>();
+    recordsData.forEach((r) => {
+      if (r.specialty_id) {
+        unique.set(r.specialty_id, r.specialty_name);
       }
-    };
-    load();
-  }, [userId]);
+    });
+    return Array.from(unique.entries()).map(([id, name]) => ({ id, name }));
+  })();
 
   // Load reviewer doctors when specialty changes
-  useEffect(() => {
-    if (!state.selectedSpecialtyId || !state.selectedRecord) {
-      setReviewerDoctors([]);
-      return;
-    }
+  const {
+    data: reviewerDoctors,
+    isFetching: loadingDoctors,
+  } = useQuery({
+    queryKey: [
+      "reviewerDoctors",
+      state.selectedSpecialtyId,
+      state.selectedRecord?.doctor_id,
+    ],
+    queryFn: async () => {
+      return await secondOpinionService.getReviewerDoctors(
+        state.selectedSpecialtyId!,
+        state.selectedRecord!.doctor_id
+      );
+    },
+    enabled: !!state.selectedSpecialtyId && !!state.selectedRecord,
+  });
 
-    const load = async () => {
-      setLoadingDoctors(true);
-      setError(null);
-      try {
-        const data = await secondOpinionService.getReviewerDoctors(
-          state.selectedSpecialtyId!,
-          state.selectedRecord!.doctor_id
-        );
-        setReviewerDoctors(data);
-      } catch (err) {
-        console.error("Error loading reviewer doctors:", err);
-        setError("No se pudieron cargar los doctores disponibles");
-      } finally {
-        setLoadingDoctors(false);
-      }
-    };
-    load();
-  }, [state.selectedSpecialtyId, state.selectedRecord]);
+  // Submit mutation
+  const { mutateAsync: submitMutation, isPending: loadingSubmit } =
+    useMutation({
+      mutationFn: async () => {
+        if (
+          !userId ||
+          !state.selectedRecord ||
+          !state.selectedSpecialtyId ||
+          !state.selectedDoctor ||
+          !state.reason.trim()
+        ) {
+          throw new Error("Faltan datos para enviar la solicitud");
+        }
+
+        return await secondOpinionService.createRequest(userId, {
+          original_medical_record_id: state.selectedRecord.id,
+          original_doctor_id: state.selectedRecord.doctor_id,
+          original_diagnosis: state.selectedRecord.diagnosis,
+          specialty_id: state.selectedSpecialtyId,
+          reviewing_doctor_id: state.selectedDoctor.profile_id,
+          reason: state.reason,
+          patient_notes: state.patientNotes || undefined,
+          consultation_type: state.consultationType,
+        });
+      },
+    });
 
   // --- Actions ---
 
@@ -241,24 +235,20 @@ export function useSecondOpinionFlow() {
     setState((prev) => ({
       ...prev,
       selectedRecord: record,
-      // Auto-select specialty from the record
       selectedSpecialtyId: record.specialty_id,
       selectedSpecialtyName: record.specialty_name,
       selectedDoctor: null,
     }));
   }, []);
 
-  const selectSpecialty = useCallback(
-    (id: string, name: string) => {
-      setState((prev) => ({
-        ...prev,
-        selectedSpecialtyId: id,
-        selectedSpecialtyName: name,
-        selectedDoctor: null,
-      }));
-    },
-    []
-  );
+  const selectSpecialty = useCallback((id: string, name: string) => {
+    setState((prev) => ({
+      ...prev,
+      selectedSpecialtyId: id,
+      selectedSpecialtyName: name,
+      selectedDoctor: null,
+    }));
+  }, []);
 
   const selectDoctor = useCallback((doctor: ReviewerDoctor) => {
     setState((prev) => ({ ...prev, selectedDoctor: doctor }));
@@ -272,9 +262,12 @@ export function useSecondOpinionFlow() {
     setState((prev) => ({ ...prev, patientNotes }));
   }, []);
 
-  const setConsultationType = useCallback((consultationType: ConsultationType) => {
-    setState((prev) => ({ ...prev, consultationType }));
-  }, []);
+  const setConsultationType = useCallback(
+    (consultationType: ConsultationType) => {
+      setState((prev) => ({ ...prev, consultationType }));
+    },
+    []
+  );
 
   const goToStep = useCallback((step: RequestStep) => {
     setState((prev) => ({ ...prev, step }));
@@ -304,32 +297,9 @@ export function useSecondOpinionFlow() {
   }, []);
 
   const submitRequest = useCallback(async (): Promise<string | null> => {
-    if (
-      !userId ||
-      !state.selectedRecord ||
-      !state.selectedSpecialtyId ||
-      !state.selectedDoctor ||
-      !state.reason.trim()
-    ) {
-      setError("Faltan datos para enviar la solicitud");
-      return null;
-    }
-
-    setLoadingSubmit(true);
     setError(null);
-
     try {
-      const result = await secondOpinionService.createRequest(userId, {
-        original_medical_record_id: state.selectedRecord.id,
-        original_doctor_id: state.selectedRecord.doctor_id,
-        original_diagnosis: state.selectedRecord.diagnosis,
-        specialty_id: state.selectedSpecialtyId,
-        reviewing_doctor_id: state.selectedDoctor.profile_id,
-        reason: state.reason,
-        patient_notes: state.patientNotes || undefined,
-        consultation_type: state.consultationType,
-      });
-
+      const result = await submitMutation();
       return result.id;
     } catch (err) {
       console.error("Error creating second opinion request:", err);
@@ -339,14 +309,11 @@ export function useSecondOpinionFlow() {
           : "No se pudo crear la solicitud. Intenta de nuevo."
       );
       return null;
-    } finally {
-      setLoadingSubmit(false);
     }
-  }, [userId, state]);
+  }, [submitMutation]);
 
   const resetFlow = useCallback(() => {
     setState(INITIAL_FLOW_STATE);
-    setReviewerDoctors([]);
     setError(null);
   }, []);
 
@@ -362,7 +329,7 @@ export function useSecondOpinionFlow() {
     // Data
     medicalRecords,
     specialties,
-    reviewerDoctors,
+    reviewerDoctors: reviewerDoctors ?? [],
 
     // Loading
     loadingRecords,

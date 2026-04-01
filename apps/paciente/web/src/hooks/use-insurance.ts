@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { useState, useCallback, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import {
   insuranceService,
   type PatientInsurance,
@@ -9,136 +10,151 @@ import {
   type CreatePreauthorizationData,
   type CreateClaimData,
 } from "@/lib/services/insurance-service";
+import { supabase } from "@/lib/supabase/client";
 
 export function useInsurance() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [insurances, setInsurances] = useState<PatientInsurance[]>([]);
-  const [preauthorizations, setPreauthorizations] = useState<
-    InsurancePreauthorization[]
-  >([]);
-  const [claims, setClaims] = useState<InsuranceClaim[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+
+  const queryClient = useQueryClient();
 
   // Get current user
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    supabase.auth.getUser().then(({ data: { user } }) => {
       setUserId(user?.id ?? null);
-    };
-    getUser();
+    });
   }, []);
 
-  // Load all insurance data when userId is available
-  const loadAll = useCallback(async () => {
-    if (!userId) return;
+  // Insurances → useQuery
+  const insurancesQuery = useQuery({
+    queryKey: ["insurance", "insurances", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      return insuranceService.getInsurances(userId);
+    },
+    enabled: !!userId,
+  });
 
-    setLoading(true);
-    setError(null);
-    try {
-      const [ins, preauths, cls] = await Promise.all([
-        insuranceService.getInsurances(userId),
-        insuranceService.getPreauthorizations(userId),
-        insuranceService.getClaims(userId),
-      ]);
-      setInsurances(ins);
-      setPreauthorizations(preauths);
-      setClaims(cls);
-    } catch {
-      setError("No se pudieron cargar los datos de seguro");
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
+  // Preauthorizations → useQuery
+  const preauthorizationsQuery = useQuery({
+    queryKey: ["insurance", "preauthorizations", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      return insuranceService.getPreauthorizations(userId);
+    },
+    enabled: !!userId,
+  });
 
-  useEffect(() => {
-    if (userId) loadAll();
-  }, [userId, loadAll]);
+  // Claims → useQuery
+  const claimsQuery = useQuery({
+    queryKey: ["insurance", "claims", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      return insuranceService.getClaims(userId);
+    },
+    enabled: !!userId,
+  });
+
+  const insurances = insurancesQuery.data ?? [];
+  const preauthorizations = preauthorizationsQuery.data ?? [];
+  const claims = claimsQuery.data ?? [];
+
+  const isLoading = insurancesQuery.isLoading || preauthorizationsQuery.isLoading || claimsQuery.isLoading;
+  const queryError =
+    insurancesQuery.error?.message ??
+    preauthorizationsQuery.error?.message ??
+    claimsQuery.error?.message ??
+    null;
 
   // ---- Insurance CRUD ----
+
+  const addInsuranceMutation = useMutation({
+    mutationFn: async (data: CreateInsuranceData) => {
+      if (!userId) throw new Error("No user");
+      return insuranceService.addInsurance(userId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["insurance", "insurances", userId] });
+    },
+  });
 
   const addInsurance = useCallback(
     async (
       data: CreateInsuranceData
     ): Promise<{ success: boolean; insurance?: PatientInsurance }> => {
       if (!userId) return { success: false };
-
-      setSaving(true);
-      setError(null);
       try {
-        const insurance = await insuranceService.addInsurance(userId, data);
-        setInsurances((prev) => [insurance, ...prev]);
+        const insurance = await addInsuranceMutation.mutateAsync(data);
         return { success: true, insurance };
       } catch {
-        setError("No se pudo agregar el seguro");
         return { success: false };
-      } finally {
-        setSaving(false);
       }
     },
-    [userId]
+    [userId, addInsuranceMutation]
   );
+
+  const updateInsuranceMutation = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<CreateInsuranceData> & { is_active?: boolean };
+    }) => {
+      return insuranceService.updateInsurance(id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["insurance", "insurances", userId] });
+    },
+  });
 
   const updateInsurance = useCallback(
     async (
       id: string,
       data: Partial<CreateInsuranceData> & { is_active?: boolean }
     ): Promise<{ success: boolean }> => {
-      setSaving(true);
-      setError(null);
-
-      const snapshot = insurances.find((i) => i.id === id);
-      setInsurances((prev) =>
-        prev.map((i) => (i.id === id ? { ...i, ...data } : i))
-      );
-
       try {
-        const updated = await insuranceService.updateInsurance(id, data);
-        setInsurances((prev) =>
-          prev.map((i) => (i.id === id ? updated : i))
-        );
+        await updateInsuranceMutation.mutateAsync({ id, data });
         return { success: true };
       } catch {
-        if (snapshot) {
-          setInsurances((prev) =>
-            prev.map((i) => (i.id === id ? snapshot : i))
-          );
-        }
-        setError("No se pudo actualizar el seguro");
         return { success: false };
-      } finally {
-        setSaving(false);
       }
     },
-    [insurances]
+    [updateInsuranceMutation]
   );
+
+  const deleteInsuranceMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await insuranceService.deleteInsurance(id);
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["insurance", "insurances", userId] });
+    },
+  });
 
   const deleteInsurance = useCallback(
     async (id: string): Promise<{ success: boolean }> => {
-      setSaving(true);
-      setError(null);
-
-      const snapshot = [...insurances];
-      setInsurances((prev) => prev.filter((i) => i.id !== id));
-
       try {
-        await insuranceService.deleteInsurance(id);
+        await deleteInsuranceMutation.mutateAsync(id);
         return { success: true };
       } catch {
-        setInsurances(snapshot);
-        setError("No se pudo eliminar el seguro");
         return { success: false };
-      } finally {
-        setSaving(false);
       }
     },
-    [insurances]
+    [deleteInsuranceMutation]
   );
 
   // ---- Preauthorizations ----
+
+  const requestPreauthMutation = useMutation({
+    mutationFn: async (data: CreatePreauthorizationData) => {
+      if (!userId) throw new Error("No user");
+      return insuranceService.createPreauthorization(userId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["insurance", "preauthorizations", userId] });
+    },
+  });
 
   const requestPreauthorization = useCallback(
     async (
@@ -148,66 +164,62 @@ export function useInsurance() {
       preauthorization?: InsurancePreauthorization;
     }> => {
       if (!userId) return { success: false };
-
-      setSaving(true);
-      setError(null);
       try {
-        const preauth = await insuranceService.createPreauthorization(
-          userId,
-          data
-        );
-        setPreauthorizations((prev) => [preauth, ...prev]);
+        const preauth = await requestPreauthMutation.mutateAsync(data);
         return { success: true, preauthorization: preauth };
       } catch {
-        setError("No se pudo solicitar la pre-autorizacion");
         return { success: false };
-      } finally {
-        setSaving(false);
       }
     },
-    [userId]
+    [userId, requestPreauthMutation]
   );
 
   // ---- Claims ----
+
+  const createClaimMutation = useMutation({
+    mutationFn: async (data: CreateClaimData) => {
+      if (!userId) throw new Error("No user");
+      return insuranceService.createClaim(userId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["insurance", "claims", userId] });
+    },
+  });
 
   const createClaim = useCallback(
     async (
       data: CreateClaimData
     ): Promise<{ success: boolean; claim?: InsuranceClaim }> => {
       if (!userId) return { success: false };
-
-      setSaving(true);
-      setError(null);
       try {
-        const claim = await insuranceService.createClaim(userId, data);
-        setClaims((prev) => [claim, ...prev]);
+        const claim = await createClaimMutation.mutateAsync(data);
         return { success: true, claim };
       } catch {
-        setError("No se pudo crear el reclamo");
         return { success: false };
-      } finally {
-        setSaving(false);
       }
     },
-    [userId]
+    [userId, createClaimMutation]
   );
+
+  const submitClaimMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return insuranceService.submitClaim(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["insurance", "claims", userId] });
+    },
+  });
 
   const submitClaim = useCallback(
     async (id: string): Promise<{ success: boolean }> => {
-      setSaving(true);
-      setError(null);
       try {
-        const updated = await insuranceService.submitClaim(id);
-        setClaims((prev) => prev.map((c) => (c.id === id ? updated : c)));
+        await submitClaimMutation.mutateAsync(id);
         return { success: true };
       } catch {
-        setError("No se pudo enviar el reclamo");
         return { success: false };
-      } finally {
-        setSaving(false);
       }
     },
-    []
+    [submitClaimMutation]
   );
 
   // ---- Derived state ----
@@ -215,6 +227,24 @@ export function useInsurance() {
   const activeInsurances = insurances.filter((i) => i.is_active);
   const recentPreauthorizations = preauthorizations.slice(0, 5);
   const recentClaims = claims.slice(0, 5);
+
+  const saving =
+    addInsuranceMutation.isPending ||
+    updateInsuranceMutation.isPending ||
+    deleteInsuranceMutation.isPending ||
+    requestPreauthMutation.isPending ||
+    createClaimMutation.isPending ||
+    submitClaimMutation.isPending;
+
+  const error =
+    queryError ??
+    addInsuranceMutation.error?.message ??
+    updateInsuranceMutation.error?.message ??
+    deleteInsuranceMutation.error?.message ??
+    requestPreauthMutation.error?.message ??
+    createClaimMutation.error?.message ??
+    submitClaimMutation.error?.message ??
+    null;
 
   return {
     userId,
@@ -224,7 +254,7 @@ export function useInsurance() {
     recentPreauthorizations,
     claims,
     recentClaims,
-    loading,
+    loading: isLoading,
     saving,
     error,
     addInsurance,
@@ -233,6 +263,10 @@ export function useInsurance() {
     requestPreauthorization,
     createClaim,
     submitClaim,
-    refresh: loadAll,
+    refresh: () => {
+      insurancesQuery.refetch();
+      preauthorizationsQuery.refetch();
+      claimsQuery.refetch();
+    },
   };
 }

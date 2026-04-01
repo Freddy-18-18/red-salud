@@ -1,7 +1,8 @@
 "use client";
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/lib/supabase/client";
+
 import {
   getUpcomingSessions,
   getSessionHistory,
@@ -12,172 +13,200 @@ import {
   rateSession,
   subscribeToSession,
   subscribeToChatMessages,
-  type TelemedicineSession,
   type ChatMessage,
 } from "@/lib/services/telemedicine-service";
+import { supabase } from "@/lib/supabase/client";
 
 // Hook for telemedicine sessions list
 export function useTelemedicineSessions(patientId: string | undefined) {
-  const [upcoming, setUpcoming] = useState<TelemedicineSession[]>([]);
-  const [history, setHistory] = useState<TelemedicineSession[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    if (!patientId) return;
-    setLoading(true);
-    setError(null);
-
-    try {
+  const {
+    data,
+    isFetching,
+    error,
+    refetch: refresh,
+  } = useQuery({
+    queryKey: ["telemedicineSessions", patientId],
+    queryFn: async () => {
       const [upcomingResult, historyResult] = await Promise.all([
-        getUpcomingSessions(patientId),
-        getSessionHistory(patientId),
+        getUpcomingSessions(patientId!),
+        getSessionHistory(patientId!),
       ]);
 
-      if (upcomingResult.success) setUpcoming(upcomingResult.data);
-      if (historyResult.success) setHistory(historyResult.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error cargando sesiones");
-    } finally {
-      setLoading(false);
-    }
-  }, [patientId]);
+      if (!upcomingResult.success || !historyResult.success)
+        throw new Error("Error cargando sesiones");
 
-  useEffect(() => {
-    if (patientId) refresh();
-  }, [patientId, refresh]);
+      return {
+        upcoming: upcomingResult.data,
+        history: historyResult.data,
+      };
+    },
+    enabled: !!patientId,
+  });
 
-  return { upcoming, history, loading, error, refresh };
+  return {
+    upcoming: data?.upcoming ?? [],
+    history: data?.history ?? [],
+    loading: isFetching,
+    error: error ? "Error cargando sesiones" : null,
+    refresh,
+  };
 }
 
 // Hook for a single telemedicine session with real-time updates
 export function useTelemedicineSession(sessionId: string | undefined) {
-  const [session, setSession] = useState<TelemedicineSession | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
+  const { data, isFetching, error } = useQuery({
+    queryKey: ["telemedicineSession", sessionId],
+    queryFn: async () => {
+      const result = await getSessionDetail(sessionId!);
+      if (!result.success || !result.data)
+        throw new Error("No se pudo cargar la sesion");
+      return result.data;
+    },
+    enabled: !!sessionId,
+  });
+
+  // Subscribe to real-time updates — stays as useEffect
   useEffect(() => {
     if (!sessionId) return;
 
-    const loadSession = async () => {
-      setLoading(true);
-      const result = await getSessionDetail(sessionId);
-      if (result.success && result.data) {
-        setSession(result.data);
-      } else {
-        setError("No se pudo cargar la sesion");
-      }
-      setLoading(false);
-    };
-
-    loadSession();
-
-    // Subscribe to real-time updates
     const unsubscribe = subscribeToSession(sessionId, (updated) => {
-      setSession(updated);
+      queryClient.setQueryData(
+        ["telemedicineSession", sessionId],
+        updated
+      );
     });
 
     return unsubscribe;
-  }, [sessionId]);
+  }, [sessionId, queryClient]);
+
+  const { mutateAsync: joinMutation } = useMutation({
+    mutationFn: async () => {
+      const result = await joinWaitingRoom(sessionId!);
+      if (!result.success) throw new Error("Error joining waiting room");
+      return result;
+    },
+    onSuccess: (result) => {
+      if (result.data) {
+        queryClient.setQueryData(
+          ["telemedicineSession", sessionId],
+          result.data
+        );
+      }
+    },
+  });
 
   const join = useCallback(async () => {
     if (!sessionId) return;
-    const result = await joinWaitingRoom(sessionId);
-    if (result.success && result.data) {
-      setSession(result.data);
-    }
-    return result;
-  }, [sessionId]);
+    return joinMutation();
+  }, [sessionId, joinMutation]);
 
-  return { session, loading, error, join };
+  return {
+    session: data ?? null,
+    loading: isFetching,
+    error: error ? "No se pudo cargar la sesion" : null,
+    join,
+  };
 }
 
 // Hook for in-call chat
 export function useTelemedicineChat(sessionId: string | undefined) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
+  const queryClient = useQueryClient();
 
+  const { data, isFetching } = useQuery({
+    queryKey: ["telemedicineChat", sessionId],
+    queryFn: async () => {
+      const result = await getChatMessages(sessionId!);
+      if (!result.success) throw new Error("Error loading messages");
+      return result.data;
+    },
+    enabled: !!sessionId,
+  });
+
+  // Subscribe to new messages — stays as useEffect
   useEffect(() => {
     if (!sessionId) return;
 
-    const loadMessages = async () => {
-      setLoading(true);
-      const result = await getChatMessages(sessionId);
-      if (result.success) {
-        setMessages(result.data);
-      }
-      setLoading(false);
-    };
-
-    loadMessages();
-
-    // Subscribe to new messages
     const unsubscribe = subscribeToChatMessages(sessionId, (newMessage) => {
-      setMessages((prev) => {
-        // Avoid duplicates
-        if (prev.some((m) => m.id === newMessage.id)) return prev;
-        return [...prev, newMessage];
-      });
+      queryClient.setQueryData<ChatMessage[]>(
+        ["telemedicineChat", sessionId],
+        (prev) => {
+          if (!prev) return [newMessage];
+          if (prev.some((m) => m.id === newMessage.id)) return prev;
+          return [...prev, newMessage];
+        }
+      );
     });
 
     return unsubscribe;
-  }, [sessionId]);
+  }, [sessionId, queryClient]);
+
+  const { mutateAsync: sendMutation, isPending: sending } = useMutation({
+    mutationFn: async (content: string) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      return await sendChatMessage(sessionId!, user.id, content);
+    },
+    onSuccess: (result) => {
+      if (result.success && result.data) {
+        queryClient.setQueryData<ChatMessage[]>(
+          ["telemedicineChat", sessionId],
+          (prev) => {
+            if (!prev) return [result.data!];
+            if (prev.some((m) => m.id === result.data!.id)) return prev;
+            return [...prev, result.data!];
+          }
+        );
+      }
+    },
+  });
 
   const send = useCallback(
     async (content: string) => {
       if (!sessionId) return;
-      setSending(true);
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const result = await sendChatMessage(sessionId, user.id, content);
-        if (result.success && result.data) {
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === result.data!.id)) return prev;
-            return [...prev, result.data!];
-          });
-        }
-        return result;
-      } finally {
-        setSending(false);
-      }
+      return sendMutation(content);
     },
-    [sessionId]
+    [sessionId, sendMutation]
   );
 
-  return { messages, loading, sending, send };
+  return { messages: data ?? [], loading: isFetching, sending, send };
 }
 
 // Hook for session rating
 export function useSessionRating(sessionId: string | undefined) {
-  const [loading, setLoading] = useState(false);
   const [rated, setRated] = useState(false);
+
+  const { mutateAsync: rateMutation, isPending } = useMutation({
+    mutationFn: async ({
+      rating,
+      comment,
+    }: {
+      rating: number;
+      comment?: string;
+    }) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      return await rateSession(sessionId!, user.id, rating, comment);
+    },
+    onSuccess: (result) => {
+      if (result.success) setRated(true);
+    },
+  });
 
   const rate = useCallback(
     async (rating: number, comment?: string) => {
       if (!sessionId) return;
-      setLoading(true);
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const result = await rateSession(sessionId, user.id, rating, comment);
-        if (result.success) setRated(true);
-        return result;
-      } finally {
-        setLoading(false);
-      }
+      return rateMutation({ rating, comment });
     },
-    [sessionId]
+    [sessionId, rateMutation]
   );
 
-  return { rate, loading, rated };
+  return { rate, loading: isPending, rated };
 }
 
 // Hook for media device access (camera, microphone)

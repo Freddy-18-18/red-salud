@@ -13,7 +13,7 @@ export interface Referral {
   created_at: string;
   registered_at?: string;
   referred_profile?: {
-    nombre_completo?: string;
+    full_name?: string;
     avatar_url?: string;
   };
 }
@@ -28,7 +28,7 @@ export interface ReferralStats {
 export interface LeaderboardEntry {
   rank: number;
   user_id: string;
-  nombre_completo: string;
+  full_name: string;
   avatar_url?: string;
   referral_count: number;
   is_current_user?: boolean;
@@ -45,7 +45,7 @@ export const referralService = {
     // Check if user already has a referral code in profiles
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("referral_code, nombre_completo")
+      .select("referral_code, full_name")
       .eq("id", patientId)
       .single();
 
@@ -56,7 +56,7 @@ export const referralService = {
     }
 
     // Generate a new code: first name + random 4 chars
-    const firstName = ((profile?.nombre_completo as string) || "USER")
+    const firstName = ((profile?.full_name as string) || "USER")
       .split(" ")[0]
       .toUpperCase()
       .replace(/[^A-Z]/g, "");
@@ -86,7 +86,7 @@ export const referralService = {
       .from("referrals")
       .select(`
         *,
-        referred_profile:profiles!referrals_referred_id_fkey(nombre_completo, avatar_url)
+        referred_profile:profiles!referrals_referred_id_fkey(full_name, avatar_url)
       `)
       .eq("referrer_id", patientId)
       .order("created_at", { ascending: false });
@@ -131,7 +131,7 @@ export const referralService = {
       .from("referrals")
       .select(`
         referrer_id,
-        referrer:profiles!referrals_referrer_id_fkey(nombre_completo, avatar_url)
+        referrer:profiles!referrals_referrer_id_fkey(full_name, avatar_url)
       `)
       .eq("status", "registered")
       .gte("registered_at", startOfMonth.toISOString());
@@ -141,7 +141,7 @@ export const referralService = {
     // Aggregate counts by referrer
     const counts = new Map<
       string,
-      { count: number; nombre_completo: string; avatar_url?: string }
+      { count: number; full_name: string; avatar_url?: string }
     >();
 
     for (const row of data || []) {
@@ -153,7 +153,7 @@ export const referralService = {
       } else {
         counts.set(id, {
           count: 1,
-          nombre_completo: (referrer?.nombre_completo as string) || "Usuario",
+          full_name: (referrer?.full_name as string) || "Usuario",
           avatar_url: referrer?.avatar_url as string | undefined,
         });
       }
@@ -167,7 +167,7 @@ export const referralService = {
     return sorted.map(([userId, info], index) => ({
       rank: index + 1,
       user_id: userId,
-      nombre_completo: info.nombre_completo,
+      full_name: info.full_name,
       avatar_url: info.avatar_url,
       referral_count: info.count,
       is_current_user: userId === currentUserId,
@@ -190,7 +190,7 @@ export const referralService = {
    */
   generateWhatsAppLink(code: string): string {
     const shareLink = referralService.generateShareLink(code);
-    const message = `Te invito a Red Salud, la mejor plataforma para cuidar tu salud. Registrate con mi codigo ${code} y gana 100 puntos de bienvenida: ${shareLink}`;
+    const message = `Te invito a Red-Salud, la mejor plataforma para cuidar tu salud. Registrate con mi codigo ${code} y gana 100 puntos de bienvenida: ${shareLink}`;
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   },
 };

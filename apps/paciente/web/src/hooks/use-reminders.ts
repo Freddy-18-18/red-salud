@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
+
 import {
   getMedicationReminders,
   getTodayIntakeLogs,
@@ -17,15 +18,12 @@ import {
   updateGoalProgress,
   completeGoal,
   getUpcomingAppointments,
-  type MedicationReminder,
   type MedicationIntakeLog,
-  type HealthMetricType,
-  type HealthMetric,
-  type HealthGoal,
   type CreateMedicationReminder,
   type CreateHealthMetric,
   type CreateHealthGoal,
 } from "@/lib/services/reminders-service";
+import { supabase } from "@/lib/supabase/client";
 
 // ─── Medication Schedule ─────────────────────────────────────────────────────
 
@@ -38,26 +36,20 @@ export interface TodayMedicationEntry {
 }
 
 export function useTodayMedications(patientId: string | undefined) {
-  const [entries, setEntries] = useState<TodayMedicationEntry[]>([]);
-  const [adherence, setAdherence] = useState(0);
-  const [streak, setStreak] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const refresh = useCallback(async () => {
-    if (!patientId) return;
-    setLoading(true);
-    setError(null);
-
-    try {
+  const { data, isFetching, error } = useQuery({
+    queryKey: ["todayMedications", patientId],
+    queryFn: async () => {
       const [remindersResult, intakeResult, adherenceResult] =
         await Promise.all([
-          getMedicationReminders(patientId),
-          getTodayIntakeLogs(patientId),
-          getAdherence(patientId, 7),
+          getMedicationReminders(patientId!),
+          getTodayIntakeLogs(patientId!),
+          getAdherence(patientId!, 7),
         ]);
 
-      if (!remindersResult.success) throw new Error("Error cargando recordatorios");
+      if (!remindersResult.success)
+        throw new Error("Error cargando recordatorios");
 
       const reminders = remindersResult.data;
       const intakes = intakeResult.success ? intakeResult.data : [];
@@ -73,7 +65,6 @@ export function useTodayMedications(patientId: string | undefined) {
           const scheduledAt = `${today}T${time}:00`;
           const scheduledDate = new Date(scheduledAt);
 
-          // Find matching intake log
           const intake = intakes.find(
             (log) =>
               log.medication_reminder_id === reminder.id &&
@@ -84,7 +75,6 @@ export function useTodayMedications(patientId: string | undefined) {
           if (intake?.status === "taken") {
             status = "taken";
           } else if (scheduledDate < now) {
-            // Past time, no intake recorded
             status = "missed";
           } else {
             status = "pending";
@@ -100,227 +90,291 @@ export function useTodayMedications(patientId: string | undefined) {
         }
       }
 
-      // Sort by time
       todayEntries.sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime));
 
-      setEntries(todayEntries);
-      setAdherence(adherenceResult.success ? adherenceResult.data : 0);
-
       // Calculate streak (consecutive days with 100% adherence)
-      await calculateStreak(patientId);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
-      setLoading(false);
-    }
-  }, [patientId]);
+      let currentStreak = 0;
+      for (let i = 1; i <= 90; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(checkDate.getDate() - i);
+        const dateStr = checkDate.toISOString().split("T")[0];
 
-  const calculateStreak = async (pid: string) => {
-    let currentStreak = 0;
-    const today = new Date();
+        const result = await getIntakeLogsForPeriod(patientId!, dateStr, dateStr);
+        if (!result.success || result.data.length === 0) break;
 
-    for (let i = 1; i <= 90; i++) {
-      const checkDate = new Date(today);
-      checkDate.setDate(checkDate.getDate() - i);
-      const dateStr = checkDate.toISOString().split("T")[0];
-
-      const result = await getIntakeLogsForPeriod(pid, dateStr, dateStr);
-      if (!result.success || result.data.length === 0) break;
-
-      const allTaken = result.data.every((log) => log.status === "taken");
-      if (allTaken) {
-        currentStreak++;
-      } else {
-        break;
+        const allTaken = result.data.every((log) => log.status === "taken");
+        if (allTaken) {
+          currentStreak++;
+        } else {
+          break;
+        }
       }
-    }
 
-    setStreak(currentStreak);
-  };
+      return {
+        entries: todayEntries,
+        adherence: adherenceResult.success ? adherenceResult.data : 0,
+        streak: currentStreak,
+      };
+    },
+    enabled: !!patientId,
+  });
+
+  const { mutateAsync: markMutation } = useMutation({
+    mutationFn: async ({
+      reminderId,
+      scheduledAt,
+    }: {
+      reminderId: string;
+      scheduledAt: string;
+    }) => {
+      return await logMedicationIntake(patientId!, reminderId, scheduledAt);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["todayMedications", patientId],
+      });
+    },
+  });
 
   const markAsTaken = async (reminderId: string, scheduledAt: string) => {
     if (!patientId) return;
-
-    const result = await logMedicationIntake(patientId, reminderId, scheduledAt);
-    if (result.success) {
-      await refresh();
-    }
-    return result;
+    return markMutation({ reminderId, scheduledAt });
   };
 
-  useEffect(() => {
-    if (patientId) {
-      refresh();
-    }
-  }, [patientId, refresh]);
+  const refresh = useCallback(
+    () => queryClient.refetchQueries({ queryKey: ["todayMedications", patientId] }),
+    [queryClient, patientId]
+  );
 
-  return { entries, adherence, streak, loading, error, refresh, markAsTaken };
+  return {
+    entries: data?.entries ?? [],
+    adherence: data?.adherence ?? 0,
+    streak: data?.streak ?? 0,
+    loading: isFetching,
+    error: error ? (error instanceof Error ? error.message : "Error desconocido") : null,
+    refresh,
+    markAsTaken,
+  };
 }
 
 // ─── Medication CRUD ─────────────────────────────────────────────────────────
 
 export function useMedicationReminders(patientId: string | undefined) {
-  const [reminders, setReminders] = useState<MedicationReminder[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const refresh = useCallback(async () => {
-    if (!patientId) return;
-    setLoading(true);
-    const result = await getMedicationReminders(patientId);
-    if (result.success) setReminders(result.data);
-    setLoading(false);
-  }, [patientId]);
+  const {
+    data,
+    isFetching,
+    refetch: refresh,
+  } = useQuery({
+    queryKey: ["medicationReminders", patientId],
+    queryFn: async () => {
+      const result = await getMedicationReminders(patientId!);
+      if (!result.success) throw new Error("Error loading reminders");
+      return result.data;
+    },
+    enabled: !!patientId,
+  });
+
+  const addMutation = useMutation({
+    mutationFn: async (data: CreateMedicationReminder) => {
+      if (!patientId) throw new Error("No patient");
+      return await addMedicationReminder(patientId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["medicationReminders", patientId],
+      });
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async (reminderId: string) => {
+      return await deleteMedicationReminder(reminderId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["medicationReminders", patientId],
+      });
+    },
+  });
 
   const add = async (data: CreateMedicationReminder) => {
-    if (!patientId) return { success: false as const, error: "No patient", data: null };
-    const result = await addMedicationReminder(patientId, data);
-    if (result.success) await refresh();
-    return result;
+    if (!patientId)
+      return { success: false as const, error: "No patient", data: null };
+    return addMutation.mutateAsync(data);
   };
 
   const remove = async (reminderId: string) => {
-    const result = await deleteMedicationReminder(reminderId);
-    if (result.success) await refresh();
-    return result;
+    return removeMutation.mutateAsync(reminderId);
   };
 
-  useEffect(() => {
-    if (!patientId) return;
-    const load = async () => { await refresh(); };
-    load();
-  }, [patientId, refresh]);
-
-  return { reminders, loading, refresh, add, remove };
+  return { reminders: data ?? [], loading: isFetching, refresh, add, remove };
 }
 
 // ─── Health Metrics ──────────────────────────────────────────────────────────
 
 export function useHealthMetrics(patientId: string | undefined) {
-  const [metricTypes, setMetricTypes] = useState<HealthMetricType[]>([]);
-  const [latestMetrics, setLatestMetrics] = useState<
-    Array<{ metricType: HealthMetricType; latest: HealthMetric | null }>
-  >([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const refresh = useCallback(async () => {
-    if (!patientId) return;
-    setLoading(true);
+  const { data, isFetching } = useQuery({
+    queryKey: ["healthMetrics", patientId],
+    queryFn: async () => {
+      const [typesResult, latestResult] = await Promise.all([
+        getHealthMetricTypes(),
+        getLatestMetrics(patientId!),
+      ]);
 
-    const [typesResult, latestResult] = await Promise.all([
-      getHealthMetricTypes(),
-      getLatestMetrics(patientId),
-    ]);
+      return {
+        metricTypes: typesResult.success ? typesResult.data : [],
+        latestMetrics: latestResult.success ? latestResult.data : [],
+      };
+    },
+    enabled: !!patientId,
+  });
 
-    if (typesResult.success) setMetricTypes(typesResult.data);
-    if (latestResult.success) setLatestMetrics(latestResult.data);
-
-    setLoading(false);
-  }, [patientId]);
+  const logMutation = useMutation({
+    mutationFn: async (data: CreateHealthMetric) => {
+      if (!patientId) throw new Error("No patient");
+      return await logHealthMetric(patientId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["healthMetrics", patientId],
+      });
+    },
+  });
 
   const log = async (data: CreateHealthMetric) => {
-    if (!patientId) return { success: false as const, error: "No patient", data: null };
-    const result = await logHealthMetric(patientId, data);
-    if (result.success) await refresh();
-    return result;
+    if (!patientId)
+      return { success: false as const, error: "No patient", data: null };
+    return logMutation.mutateAsync(data);
   };
 
   const getHistory = async (metricTypeId: string, days: number) => {
-    if (!patientId) return { success: false as const, error: "No patient", data: [] };
+    if (!patientId)
+      return { success: false as const, error: "No patient", data: [] };
     return getHealthMetrics(patientId, metricTypeId, days);
   };
 
-  useEffect(() => {
-    if (!patientId) return;
-    const load = async () => { await refresh(); };
-    load();
-  }, [patientId, refresh]);
+  const refresh = useCallback(
+    () => queryClient.refetchQueries({ queryKey: ["healthMetrics", patientId] }),
+    [queryClient, patientId]
+  );
 
-  return { metricTypes, latestMetrics, loading, refresh, log, getHistory };
+  return {
+    metricTypes: data?.metricTypes ?? [],
+    latestMetrics: data?.latestMetrics ?? [],
+    loading: isFetching,
+    refresh,
+    log,
+    getHistory,
+  };
 }
 
 // ─── Health Goals ────────────────────────────────────────────────────────────
 
 export function useHealthGoals(patientId: string | undefined) {
-  const [goals, setGoals] = useState<HealthGoal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const refresh = useCallback(async () => {
-    if (!patientId) return;
-    setLoading(true);
-    const result = await getHealthGoals(patientId);
-    if (result.success) setGoals(result.data);
-    setLoading(false);
-  }, [patientId]);
+  const {
+    data,
+    isFetching,
+    refetch: refresh,
+  } = useQuery({
+    queryKey: ["healthGoals", patientId],
+    queryFn: async () => {
+      const result = await getHealthGoals(patientId!);
+      if (!result.success) throw new Error("Error loading goals");
+      return result.data;
+    },
+    enabled: !!patientId,
+  });
+
+  const addMutation = useMutation({
+    mutationFn: async (data: CreateHealthGoal) => {
+      if (!patientId) throw new Error("No patient");
+      return await createHealthGoal(patientId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["healthGoals", patientId] });
+    },
+  });
+
+  const updateProgressMutation = useMutation({
+    mutationFn: async ({
+      goalId,
+      value,
+    }: {
+      goalId: string;
+      value: number;
+    }) => {
+      return await updateGoalProgress(goalId, value);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["healthGoals", patientId] });
+    },
+  });
+
+  const completeMutation = useMutation({
+    mutationFn: async (goalId: string) => {
+      return await completeGoal(goalId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["healthGoals", patientId] });
+    },
+  });
 
   const add = async (data: CreateHealthGoal) => {
-    if (!patientId) return { success: false as const, error: "No patient", data: null };
-    const result = await createHealthGoal(patientId, data);
-    if (result.success) await refresh();
-    return result;
+    if (!patientId)
+      return { success: false as const, error: "No patient", data: null };
+    return addMutation.mutateAsync(data);
   };
 
   const updateProgress = async (goalId: string, value: number) => {
-    const result = await updateGoalProgress(goalId, value);
-    if (result.success) await refresh();
-    return result;
+    return updateProgressMutation.mutateAsync({ goalId, value });
   };
 
   const complete = async (goalId: string) => {
-    const result = await completeGoal(goalId);
-    if (result.success) await refresh();
-    return result;
+    return completeMutation.mutateAsync(goalId);
   };
 
-  useEffect(() => {
-    if (!patientId) return;
-    const load = async () => { await refresh(); };
-    load();
-  }, [patientId, refresh]);
-
-  return { goals, loading, refresh, add, updateProgress, complete };
+  return { goals: data ?? [], loading: isFetching, refresh, add, updateProgress, complete };
 }
 
 // ─── Upcoming Appointments ───────────────────────────────────────────────────
 
 export function useUpcomingAppointments(patientId: string | undefined) {
-  const [appointments, setAppointments] = useState<
-    Array<Record<string, unknown>>
-  >([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data,
+    isFetching,
+    refetch: refresh,
+  } = useQuery({
+    queryKey: ["upcomingAppointments", patientId],
+    queryFn: async () => {
+      const result = await getUpcomingAppointments(patientId!);
+      if (!result.success) throw new Error("Error loading appointments");
+      return result.data;
+    },
+    enabled: !!patientId,
+  });
 
-  const refresh = useCallback(async () => {
-    if (!patientId) return;
-    setLoading(true);
-    const result = await getUpcomingAppointments(patientId);
-    if (result.success) setAppointments(result.data);
-    setLoading(false);
-  }, [patientId]);
-
-  useEffect(() => {
-    if (!patientId) return;
-    const load = async () => { await refresh(); };
-    load();
-  }, [patientId, refresh]);
-
-  return { appointments, loading, refresh };
+  return { appointments: data ?? [], loading: isFetching, refresh };
 }
 
 // ─── Combined Dashboard Hook ─────────────────────────────────────────────────
 
 export function useRemindersDashboard() {
-  const [userId, setUserId] = useState<string>();
-  const [initialLoading, setInitialLoading] = useState(true);
-
-  useEffect(() => {
-    const loadUser = async () => {
+  const { data: userId, isLoading: initialLoading } = useQuery({
+    queryKey: ["currentUserId"],
+    queryFn: async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
-      setInitialLoading(false);
-    };
-    loadUser();
-  }, []);
+      return user?.id;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   const medications = useTodayMedications(userId);
   const metrics = useHealthMetrics(userId);

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/lib/supabase/client";
 
 // TODO: Import from shared services once @red-salud/api-client is available
@@ -7,14 +8,13 @@ import { supabase } from "@/lib/supabase/client";
 export interface PatientProfile {
   id: string;
   email: string;
-  nombre_completo: string;
-  telefono?: string;
-  cedula?: string;
-  fecha_nacimiento?: string;
-  direccion?: string;
-  ciudad?: string;
-  estado?: string;
-  codigo_postal?: string;
+  full_name: string;
+  phone?: string;
+  national_id?: string;
+  date_of_birth?: string;
+  address?: string;
+  city?: string;
+  state?: string;
   avatar_url?: string;
   grupo_sanguineo?: string;
   alergias?: string[];
@@ -29,47 +29,43 @@ export interface PatientProfile {
 }
 
 export function usePatientProfile(userId: string | undefined) {
-  const [profile, setProfile] = useState<PatientProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!userId) return;
+  const query = useQuery({
+    queryKey: ["patient-profile", userId],
+    queryFn: async () => {
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId!)
+        .maybeSingle();
 
-    const loadData = async () => {
-      setLoading(true);
+      if (profileError) throw profileError;
+
+      let medicalData = null;
       try {
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .maybeSingle();
-
-        if (profileError) throw profileError;
-
-        const { data: medicalData } = await supabase
+        const { data, error } = await supabase
           .from("patient_details")
           .select("*")
-          .eq("profile_id", userId)
+          .eq("profile_id", userId!)
           .maybeSingle();
-
-        setProfile({
-          ...profileData,
-          ...medicalData,
-        } as PatientProfile);
+        if (!error) medicalData = data;
       } catch {
-        setError('Error loading profile data');
-      } finally {
-        setLoading(false);
+        // patient_details table may not exist yet — skip silently
       }
-    };
 
-    loadData();
-  }, [userId]);
+      return {
+        ...profileData,
+        ...medicalData,
+      } as PatientProfile;
+    },
+    enabled: !!userId,
+  });
 
-  const updateProfile = async (data: Partial<PatientProfile>) => {
-    if (!userId) return { success: false };
-    try {
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: Partial<PatientProfile>) => {
+      if (!userId) throw new Error("No user ID");
+
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -79,44 +75,49 @@ export function usePatientProfile(userId: string | undefined) {
         .eq("id", userId);
 
       if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(
+        ["patient-profile", userId],
+        (old: PatientProfile | undefined) =>
+          old ? { ...old, ...data } : old
+      );
+    },
+  });
 
-      if (profile) {
-        setProfile({ ...profile, ...data });
-      }
-      return { success: true };
-    } catch (err) {
-      console.error("Error updating profile:", err);
-      return { success: false };
-    }
-  };
+  const updateMedicalMutation = useMutation({
+    mutationFn: async (data: Partial<PatientProfile>) => {
+      if (!userId) throw new Error("No user ID");
 
-  const updateMedical = async (data: Partial<PatientProfile>) => {
-    if (!userId) return { success: false };
-    try {
       const { error } = await supabase
         .from("patient_details")
-        .upsert({
-          profile_id: userId,
-          ...data,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: "profile_id" });
+        .upsert(
+          {
+            profile_id: userId,
+            ...data,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "profile_id" }
+        );
 
       if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(
+        ["patient-profile", userId],
+        (old: PatientProfile | undefined) =>
+          old ? { ...old, ...data } : old
+      );
+    },
+  });
 
-      if (profile) {
-        setProfile({ ...profile, ...data });
-      }
-      return { success: true };
-    } catch (err) {
-      console.error("Error updating medical info:", err);
-      return { success: false };
-    }
-  };
+  const updateAvatarMutation = useMutation({
+    mutationFn: async (file: File) => {
+      if (!userId) throw new Error("No user ID");
 
-  const updateAvatar = async (file: File) => {
-    if (!userId) return { success: false };
-    try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const filePath = `avatars/${userId}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
@@ -125,29 +126,60 @@ export function usePatientProfile(userId: string | undefined) {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
       await supabase
         .from("profiles")
-        .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+        .update({
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", userId);
 
-      if (profile) {
-        setProfile({ ...profile, avatar_url: publicUrl });
-      }
-      return { success: true, url: publicUrl };
-    } catch (err) {
-      console.error("Error uploading avatar:", err);
+      return publicUrl;
+    },
+    onSuccess: (publicUrl) => {
+      queryClient.setQueryData(
+        ["patient-profile", userId],
+        (old: PatientProfile | undefined) =>
+          old ? { ...old, avatar_url: publicUrl } : old
+      );
+    },
+  });
+
+  const updateProfile = async (data: Partial<PatientProfile>) => {
+    try {
+      await updateProfileMutation.mutateAsync(data);
+      return { success: true };
+    } catch {
+      return { success: false };
+    }
+  };
+
+  const updateMedical = async (data: Partial<PatientProfile>) => {
+    try {
+      await updateMedicalMutation.mutateAsync(data);
+      return { success: true };
+    } catch {
+      return { success: false };
+    }
+  };
+
+  const updateAvatar = async (file: File) => {
+    try {
+      const url = await updateAvatarMutation.mutateAsync(file);
+      return { success: true, url };
+    } catch {
       return { success: false };
     }
   };
 
   return {
-    profile,
-    loading,
-    error,
+    profile: query.data ?? null,
+    loading: query.isLoading,
+    error: query.error?.message ?? null,
     updateProfile,
     updateMedical,
     updateAvatar,

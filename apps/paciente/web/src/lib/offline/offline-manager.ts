@@ -76,17 +76,30 @@ export async function cachePatientData(patientId: string): Promise<void> {
     // Fetch profile for medical ID
     const { data: profile } = await supabase
       .from("profiles")
-      .select("nombre_completo, cedula, blood_type, allergies, conditions")
+      .select("full_name, national_id")
       .eq("id", patientId)
       .maybeSingle();
 
+    // Fetch medical details for allergies/conditions
+    let medical = null;
+    try {
+      const { data, error } = await supabase
+        .from("patient_details")
+        .select("grupo_sanguineo, alergias, enfermedades_cronicas")
+        .eq("profile_id", patientId)
+        .maybeSingle();
+      if (!error) medical = data;
+    } catch {
+      // patient_details table may not exist yet
+    }
+
     if (profile) {
       const medicalId: MedicalIdData = {
-        full_name: profile.nombre_completo || "",
-        blood_type: profile.blood_type,
-        cedula: profile.cedula,
-        allergies: profile.allergies || [],
-        conditions: profile.conditions || [],
+        full_name: profile.full_name || "",
+        blood_type: medical?.grupo_sanguineo || undefined,
+        cedula: profile.national_id,
+        allergies: medical?.alergias || [],
+        conditions: medical?.enfermedades_cronicas || [],
         emergency_contacts: [],
       };
 
@@ -96,38 +109,46 @@ export async function cachePatientData(patientId: string): Promise<void> {
     }
 
     // Fetch emergency contacts
-    const { data: contacts } = await supabase
-      .from("emergency_contacts")
-      .select("name, phone, relationship")
-      .eq("patient_id", patientId);
+    try {
+      const { data: contacts, error: contactsErr } = await supabase
+        .from("emergency_contacts")
+        .select("name, phone, relationship")
+        .eq("patient_id", patientId);
 
-    if (contacts) {
-      safeSet(KEYS.emergencyContacts, contacts);
+      if (!contactsErr && contacts) {
+        safeSet(KEYS.emergencyContacts, contacts);
 
-      // Update medical ID with contacts
-      const medId = safeGet<MedicalIdData | null>(KEYS.medicalId, null);
-      if (medId) {
-        medId.emergency_contacts = contacts as EmergencyContact[];
-        safeSet(KEYS.medicalId, medId);
+        // Update medical ID with contacts
+        const medId = safeGet<MedicalIdData | null>(KEYS.medicalId, null);
+        if (medId) {
+          medId.emergency_contacts = contacts as EmergencyContact[];
+          safeSet(KEYS.medicalId, medId);
+        }
       }
+    } catch {
+      // emergency_contacts table may not exist yet
     }
 
     // Fetch active medication reminders
-    const today = new Date().toISOString().split("T")[0];
-    const { data: meds } = await supabase
-      .from("medication_reminders")
-      .select("id, medication_name, dosage, schedule_times")
-      .eq("patient_id", patientId)
-      .lte("starts_at", today)
-      .or(`ends_at.is.null,ends_at.gte.${today}`);
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const { data: meds, error: medsErr } = await supabase
+        .from("medication_reminders")
+        .select("id, medication_name, dosage, schedule_times")
+        .eq("patient_id", patientId)
+        .lte("starts_at", today)
+        .or(`ends_at.is.null,ends_at.gte.${today}`);
 
-    if (meds) {
-      safeSet(KEYS.medications, meds);
+      if (!medsErr && meds) {
+        safeSet(KEYS.medications, meds);
+      }
+    } catch {
+      // medication_reminders table may not exist yet
     }
 
     safeSet(KEYS.lastSync, new Date().toISOString());
-  } catch (err) {
-    console.error("Error caching patient data for offline:", err);
+  } catch {
+    // Silently ignore caching errors — offline cache is best-effort
   }
 }
 

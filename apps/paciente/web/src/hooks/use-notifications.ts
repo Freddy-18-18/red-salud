@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+
 import {
   getNotifications,
   getUnreadCount,
@@ -16,129 +18,225 @@ interface UseNotificationsOptions {
   autoFetch?: boolean;
 }
 
-export function useNotifications({ patientId, autoFetch = true }: UseNotificationsOptions) {
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<NotificationType | undefined>(undefined);
-  const pageRef = useRef(0);
+export function useNotifications({
+  patientId,
+  autoFetch = true,
+}: UseNotificationsOptions) {
+  const queryClient = useQueryClient();
 
-  // ── Fetch ────────────────────────────────────────────────────────────────
+  // ── Local state ─────────────────────────────────────────────────────────
+  const [accumulated, setAccumulated] = useState<AppNotification[]>([]);
+  const pageRef = useRef(0);
+  const isLoadMoreRef = useRef(false);
+  const [filter, setFilter] = useState<NotificationType | undefined>(undefined);
+  const [unreadOnly, setUnreadOnly] = useState(false);
+
+  // ── Queries ─────────────────────────────────────────────────────────────
+
+  const { data: queryData, isLoading } = useQuery({
+    queryKey: ["notifications", patientId, filter],
+    queryFn: async () => {
+      const result = await getNotifications(patientId!, filter, 0);
+      if (!result.success)
+        throw new Error("Error cargando notificaciones");
+      return result.data;
+    },
+    enabled: autoFetch && !!patientId,
+    refetchInterval: 30000,
+  });
+
+  // Sync query data → accumulated list
+  /* eslint-disable react-hooks/set-state-in-effect -- merging query results into accumulated list */
+  useEffect(() => {
+    if (isLoadMoreRef.current) {
+      isLoadMoreRef.current = false;
+      return;
+    }
+    if (!queryData) return;
+    setAccumulated((prev) => {
+      // Initial load or after reset: replace
+      if (prev.length === 0) return queryData.notifications;
+      // Refetch / auto-refresh: dedup and merge
+      const existingIds = new Set(prev.map((n) => n.id));
+      const newItems = queryData.notifications.filter(
+        (n) => !existingIds.has(n.id)
+      );
+      return newItems.length > 0 ? [...prev, ...newItems] : prev;
+    });
+  }, [queryData]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const { data: unreadCountData } = useQuery({
+    queryKey: ["notifications-unread", patientId],
+    queryFn: async () => {
+      const result = await getUnreadCount(patientId!);
+      if (!result.success) throw new Error("Error");
+      return result.data;
+    },
+    enabled: !!patientId,
+    refetchInterval: 30000,
+  });
+
+  const unreadCount = unreadCountData ?? 0;
+  const total = queryData?.total ?? 0;
+  const hasMore = queryData?.has_more ?? false;
+
+  // ── Filtered view ───────────────────────────────────────────────────────
+
+  const filteredNotifications = useMemo(() => {
+    if (!unreadOnly) return accumulated;
+    return accumulated.filter((n) => !n.is_read);
+  }, [accumulated, unreadOnly]);
+
+  // ── Mutations ───────────────────────────────────────────────────────────
+
+  const markAsReadMutation = useMutation({
+    mutationFn: (notificationId: string) => markAsRead(notificationId),
+    onMutate: (notificationId) => {
+      setAccumulated((prev) =>
+        prev.map((n) =>
+          n.id === notificationId ? { ...n, is_read: true } : n
+        )
+      );
+      queryClient.setQueryData<number>(
+        ["notifications-unread", patientId],
+        (c) => Math.max(0, (c ?? 1) - 1)
+      );
+    },
+    onError: (_err, notificationId) => {
+      setAccumulated((prev) =>
+        prev.map((n) =>
+          n.id === notificationId ? { ...n, is_read: false } : n
+        )
+      );
+      queryClient.invalidateQueries({
+        queryKey: ["notifications-unread", patientId],
+      });
+    },
+  });
+
+  const markAllAsReadMutation = useMutation({
+    mutationFn: () => markAllAsRead(patientId!),
+    onMutate: () => {
+      setAccumulated((prev) => prev.map((n) => ({ ...n, is_read: true })));
+      queryClient.setQueryData(["notifications-unread", patientId], 0);
+    },
+    onError: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["notifications", patientId, filter],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["notifications-unread", patientId],
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (notificationId: string) => deleteNotification(notificationId),
+    onMutate: (notificationId) => {
+      setAccumulated((prev) => prev.filter((n) => n.id !== notificationId));
+    },
+    onError: (_err, _notificationId) => {
+      // Re-fetch to restore deleted notification
+      queryClient.invalidateQueries({
+        queryKey: ["notifications", patientId, filter],
+      });
+    },
+  });
+
+  // ── Actions ─────────────────────────────────────────────────────────────
 
   const fetchNotifications = useCallback(
-    async (reset = true) => {
+    async (_reset = true) => {
       if (!patientId) return;
-
-      setLoading(true);
-      const page = reset ? 0 : pageRef.current + 1;
-
-      const result = await getNotifications(patientId, filter, page);
-
-      if (result.success) {
-        if (reset) {
-          setNotifications(result.data.notifications);
-        } else {
-          setNotifications((prev) => [...prev, ...result.data.notifications]);
-        }
-        setTotal(result.data.total);
-        setHasMore(result.data.has_more);
-        pageRef.current = page;
-      }
-
-      setLoading(false);
+      setAccumulated([]);
+      pageRef.current = 0;
+      await queryClient.refetchQueries({
+        queryKey: ["notifications", patientId, filter],
+      });
     },
-    [patientId, filter],
+    [patientId, filter, queryClient]
   );
 
-  const refreshUnreadCount = useCallback(async () => {
+  const loadMore = useCallback(async () => {
     if (!patientId) return;
-    const result = await getUnreadCount(patientId);
-    if (result.success) setUnreadCount(result.data);
-  }, [patientId]);
-
-  // ── Actions ──────────────────────────────────────────────────────────────
+    const nextPage = pageRef.current + 1;
+    isLoadMoreRef.current = true;
+    const result = await getNotifications(patientId, filter, nextPage);
+    if (result.success) {
+      setAccumulated((prev) => [...prev, ...result.data.notifications]);
+      pageRef.current = nextPage;
+    }
+  }, [patientId, filter]);
 
   const handleMarkAsRead = useCallback(
-    async (notificationId: string) => {
-      const result = await markAsRead(notificationId);
-      if (result.success) {
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n)),
-        );
-        setUnreadCount((c) => Math.max(0, c - 1));
-      }
+    (notificationId: string) => {
+      markAsReadMutation.mutate(notificationId);
     },
-    [],
+    [markAsReadMutation]
   );
 
-  const handleMarkAllAsRead = useCallback(async () => {
+  const handleMarkAllAsRead = useCallback(() => {
     if (!patientId) return;
-    const result = await markAllAsRead(patientId);
-    if (result.success) {
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-      setUnreadCount(0);
-    }
-  }, [patientId]);
+    markAllAsReadMutation.mutate();
+  }, [patientId, markAllAsReadMutation]);
 
-  const handleDelete = useCallback(async (notificationId: string) => {
-    const result = await deleteNotification(notificationId);
-    if (result.success) {
-      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-      setTotal((t) => t - 1);
-    }
-  }, []);
-
-  const loadMore = useCallback(() => {
-    fetchNotifications(false);
-  }, [fetchNotifications]);
+  const handleDelete = useCallback(
+    (notificationId: string) => {
+      deleteMutation.mutate(notificationId);
+    },
+    [deleteMutation]
+  );
 
   const changeFilter = useCallback((f: NotificationType | undefined) => {
     setFilter(f);
+    setAccumulated([]);
     pageRef.current = 0;
   }, []);
 
-  // ── Effects ──────────────────────────────────────────────────────────────
+  const toggleUnreadOnly = useCallback((value: boolean) => {
+    setUnreadOnly(value);
+  }, []);
 
-  // Fetch when filter or patientId changes
-  useEffect(() => {
-    if (autoFetch) {
-      fetchNotifications(true);
-      refreshUnreadCount();
-    }
-  }, [autoFetch, fetchNotifications, refreshUnreadCount]);
+  // ── Realtime subscription ───────────────────────────────────────────────
 
-  // Realtime subscription
   useEffect(() => {
     if (!patientId) return;
 
     const unsub = subscribeToNewNotifications(patientId, (newNotif) => {
-      setNotifications((prev) => [newNotif, ...prev]);
-      setTotal((t) => t + 1);
+      setAccumulated((prev) => [newNotif, ...prev]);
       if (!newNotif.is_read) {
-        setUnreadCount((c) => c + 1);
+        queryClient.setQueryData<number>(
+          ["notifications-unread", patientId],
+          (c) => (c ?? 0) + 1
+        );
       }
     });
 
     return unsub;
-  }, [patientId]);
+  }, [patientId, queryClient]);
 
   return {
-    notifications,
+    notifications: filteredNotifications,
+    allNotifications: accumulated,
     unreadCount,
     total,
     hasMore,
-    loading,
+    loading: isLoading,
     filter,
+    unreadOnly,
 
     fetchNotifications,
-    refreshUnreadCount,
+    refreshUnreadCount: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["notifications-unread", patientId],
+      }),
     markAsRead: handleMarkAsRead,
     markAllAsRead: handleMarkAllAsRead,
     deleteNotification: handleDelete,
     loadMore,
     changeFilter,
+    toggleUnreadOnly,
   };
 }
 

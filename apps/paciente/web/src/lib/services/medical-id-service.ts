@@ -79,15 +79,12 @@ export const medicalIdService = {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select(
-        "nombre_completo, fecha_nacimiento, avatar_url, tipo_sangre, alergias, medicamentos, condiciones, contacto_emergencia_nombre, contacto_emergencia_telefono, contacto_emergencia_parentesco, donante_organos, notas_medicas"
+        "full_name, date_of_birth, avatar_url"
       )
       .eq("id", patientId)
       .maybeSingle();
 
-    if (profileError) {
-      console.error("Error fetching medical ID data:", profileError);
-      throw profileError;
-    }
+    if (profileError) throw profileError;
 
     // Load active insurance if any
     const { data: insurance } = await supabase
@@ -99,31 +96,46 @@ export const medicalIdService = {
       .limit(1)
       .maybeSingle();
 
-    const birthDate = profile?.fecha_nacimiento
-      ? new Date(profile.fecha_nacimiento)
+    const birthDate = profile?.date_of_birth
+      ? new Date(profile.date_of_birth)
       : null;
     const age = birthDate ? calculateAge(birthDate) : null;
 
+    // Load patient_details for medical info
+    let medical = null;
+    try {
+      const { data, error: medErr } = await supabase
+        .from("patient_details")
+        .select(
+          "grupo_sanguineo, alergias, medicamentos_actuales, enfermedades_cronicas, contacto_emergencia_nombre, contacto_emergencia_telefono, contacto_emergencia_relacion"
+        )
+        .eq("profile_id", patientId)
+        .maybeSingle();
+      if (!medErr) medical = data;
+    } catch {
+      // patient_details table may not exist yet
+    }
+
     return {
       patient_id: patientId,
-      full_name: (profile?.nombre_completo as string) || "",
-      date_of_birth: (profile?.fecha_nacimiento as string) || null,
+      full_name: (profile?.full_name as string) || "",
+      date_of_birth: (profile?.date_of_birth as string) || null,
       age,
-      blood_type: (profile?.tipo_sangre as string) || null,
+      blood_type: (medical?.grupo_sanguineo as string) || null,
       photo_url: (profile?.avatar_url as string) || null,
-      allergies: parseJsonArray(profile?.alergias),
-      medications: parseJsonArray(profile?.medicamentos),
-      conditions: parseJsonArray(profile?.condiciones),
+      allergies: parseJsonArray(medical?.alergias),
+      medications: medical?.medicamentos_actuales ? [medical.medicamentos_actuales as string] : [],
+      conditions: parseJsonArray(medical?.enfermedades_cronicas),
       emergency_contact_name:
-        (profile?.contacto_emergencia_nombre as string) || null,
+        (medical?.contacto_emergencia_nombre as string) || null,
       emergency_contact_phone:
-        (profile?.contacto_emergencia_telefono as string) || null,
+        (medical?.contacto_emergencia_telefono as string) || null,
       emergency_contact_relationship:
-        (profile?.contacto_emergencia_parentesco as string) || null,
+        (medical?.contacto_emergencia_relacion as string) || null,
       insurance_company: (insurance?.insurance_company as string) || null,
       insurance_policy: (insurance?.policy_number as string) || null,
-      organ_donor: (profile?.donante_organos as boolean) || false,
-      notes: (profile?.notas_medicas as string) || null,
+      organ_donor: false,
+      notes: null,
     };
   },
 
@@ -190,7 +202,7 @@ export const medicalIdService = {
       .maybeSingle();
 
     if (error) {
-      console.error("Error fetching QR preferences:", error);
+      void error;
       return { ...DEFAULT_PREFERENCES };
     }
 
@@ -215,7 +227,7 @@ export const medicalIdService = {
     );
 
     if (error) {
-      console.error("Error updating QR preferences:", error);
+      void error;
       throw error;
     }
   },
@@ -243,7 +255,7 @@ export const medicalIdService = {
       .eq("id", patientId);
 
     if (error) {
-      console.error("Error updating medical info:", error);
+      void error;
       throw error;
     }
   },

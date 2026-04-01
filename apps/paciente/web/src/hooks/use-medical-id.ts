@@ -1,95 +1,107 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useCallback } from "react";
+
 import {
   medicalIdService,
-  type MedicalIdData,
   type QRPreferences,
   DEFAULT_PREFERENCES,
 } from "@/lib/services/medical-id-service";
+import { supabase } from "@/lib/supabase/client";
 
 export function useMedicalId() {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [medicalData, setMedicalData] = useState<MedicalIdData | null>(null);
-  const [preferences, setPreferences] = useState<QRPreferences>(DEFAULT_PREFERENCES);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Get current user
-  useEffect(() => {
-    const getUser = async () => {
+  // ── User ID query ───────────────────────────────────────────────────────
+
+  const { data: userId } = useQuery({
+    queryKey: ["auth-user-id"],
+    queryFn: async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      setUserId(user?.id ?? null);
-    };
-    getUser();
-  }, []);
+      return user?.id ?? null;
+    },
+  });
 
-  // Load medical data and preferences
-  const loadAll = useCallback(async () => {
-    if (!userId) return;
+  // ── Data queries ────────────────────────────────────────────────────────
 
-    setLoading(true);
-    setError(null);
-    try {
-      const [data, prefs] = await Promise.all([
-        medicalIdService.getMedicalIdData(userId),
-        medicalIdService.getPreferences(userId),
-      ]);
-      setMedicalData(data);
-      setPreferences(prefs);
-    } catch {
-      setError("No se pudo cargar la informacion medica");
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
+  const { data: medicalData, isLoading: loadingMedical } = useQuery({
+    queryKey: ["medical-id-data", userId],
+    queryFn: () => medicalIdService.getMedicalIdData(userId!),
+    enabled: !!userId,
+  });
 
-  useEffect(() => {
-    if (userId) loadAll();
-  }, [userId, loadAll]);
+  const { data: preferences, isLoading: loadingPrefs } = useQuery({
+    queryKey: ["medical-id-prefs", userId],
+    queryFn: () => medicalIdService.getPreferences(userId!),
+    enabled: !!userId,
+  });
 
-  // Generate QR payload
-  const qrPayload = medicalData
-    ? medicalIdService.generateQRPayload(medicalData, preferences)
-    : null;
+  const loading = loadingMedical || loadingPrefs;
 
-  // Generate QR URL (for the QR to encode)
-  const qrUrl = medicalData
-    ? `${typeof window !== "undefined" ? window.location.origin : ""}/id/${medicalData.patient_id}`
-    : null;
+  // ── Mutations ───────────────────────────────────────────────────────────
 
-  // Full QR content: URL + embedded data as fragment for offline
-  const qrContent = qrPayload && qrUrl ? `${qrUrl}#${qrPayload}` : null;
+  const updatePreferencesMutation = useMutation({
+    mutationFn: async (newPrefs: QRPreferences) => {
+      await medicalIdService.updatePreferences(userId!, newPrefs);
+    },
+    onMutate: (newPrefs) => {
+      queryClient.setQueryData(["medical-id-prefs", userId], newPrefs);
+    },
+    onError: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["medical-id-prefs", userId],
+      });
+      setError("No se pudieron guardar las preferencias");
+    },
+  });
 
-  // Update preferences
+  const updateMedicalInfoMutation = useMutation({
+    mutationFn: async (
+      data: Parameters<typeof medicalIdService.updateMedicalInfo>[1]
+    ) => {
+      await medicalIdService.updateMedicalInfo(userId!, data);
+      return medicalIdService.getMedicalIdData(userId!);
+    },
+    onMutate: () => {
+      setError(null);
+    },
+    onSuccess: (freshData) => {
+      queryClient.setQueryData(["medical-id-data", userId], freshData);
+    },
+    onError: () => {
+      setError("No se pudo actualizar la informacion medica");
+    },
+  });
+
+  // ── Actions ─────────────────────────────────────────────────────────────
+
   const updatePreferences = useCallback(
     async (
       newPrefs: Partial<QRPreferences>
     ): Promise<{ success: boolean }> => {
       if (!userId) return { success: false };
 
-      const merged = { ...preferences, ...newPrefs };
-      const snapshot = { ...preferences };
-      setPreferences(merged);
+      const currentPrefs =
+        queryClient.getQueryData<QRPreferences>(["medical-id-prefs", userId]) ??
+        DEFAULT_PREFERENCES;
+      const merged = { ...currentPrefs, ...newPrefs };
 
       setSaving(true);
       try {
-        await medicalIdService.updatePreferences(userId, merged);
+        await updatePreferencesMutation.mutateAsync(merged);
         return { success: true };
       } catch {
-        setPreferences(snapshot);
-        setError("No se pudieron guardar las preferencias");
         return { success: false };
       } finally {
         setSaving(false);
       }
     },
-    [userId, preferences]
+    [userId, queryClient, updatePreferencesMutation]
   );
 
-  // Update medical info
   const updateMedicalInfo = useCallback(
     async (
       data: Parameters<typeof medicalIdService.updateMedicalInfo>[1]
@@ -97,27 +109,43 @@ export function useMedicalId() {
       if (!userId) return { success: false };
 
       setSaving(true);
-      setError(null);
       try {
-        await medicalIdService.updateMedicalInfo(userId, data);
-        // Reload to get fresh data
-        const fresh = await medicalIdService.getMedicalIdData(userId);
-        setMedicalData(fresh);
+        await updateMedicalInfoMutation.mutateAsync(data);
         return { success: true };
       } catch {
-        setError("No se pudo actualizar la informacion medica");
         return { success: false };
       } finally {
         setSaving(false);
       }
     },
-    [userId]
+    [userId, updateMedicalInfoMutation]
   );
 
+  // ── Computed ────────────────────────────────────────────────────────────
+
+  const qrPayload =
+    medicalData && preferences
+      ? medicalIdService.generateQRPayload(medicalData, preferences)
+      : null;
+
+  const qrUrl = medicalData
+    ? `${
+        typeof window !== "undefined" ? window.location.origin : ""
+      }/id/${medicalData.patient_id}`
+    : null;
+
+  const qrContent =
+    qrPayload && qrUrl ? `${qrUrl}#${qrPayload}` : null;
+
+  const refresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["medical-id-data", userId] });
+    queryClient.invalidateQueries({ queryKey: ["medical-id-prefs", userId] });
+  }, [queryClient, userId]);
+
   return {
-    userId,
-    medicalData,
-    preferences,
+    userId: userId ?? null,
+    medicalData: medicalData ?? null,
+    preferences: preferences ?? DEFAULT_PREFERENCES,
     qrPayload,
     qrUrl,
     qrContent,
@@ -126,6 +154,6 @@ export function useMedicalId() {
     error,
     updatePreferences,
     updateMedicalInfo,
-    refresh: loadAll,
+    refresh,
   };
 }

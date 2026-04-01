@@ -32,12 +32,12 @@ export interface SecondOpinionRequest {
   // Joined data
   original_doctor?: {
     id: string;
-    nombre_completo: string;
+    full_name: string;
     avatar_url: string | null;
   };
   reviewing_doctor?: {
     id: string;
-    nombre_completo: string;
+    full_name: string;
     avatar_url: string | null;
   };
   specialty?: {
@@ -68,15 +68,15 @@ export interface ReviewerDoctor {
   profile_id: string;
   specialty_id: string;
   consultation_fee: number | null;
-  anos_experiencia: number | null;
+  years_experience: number | null;
   biografia: string | null;
   verified: boolean;
   profile: {
     id: string;
-    nombre_completo: string;
+    full_name: string;
     avatar_url: string | null;
-    ciudad: string | null;
-    estado: string | null;
+    city: string | null;
+    state: string | null;
   };
   avg_rating: number | null;
   review_count: number;
@@ -107,8 +107,8 @@ export const secondOpinionService = {
       .select(
         `
         *,
-        original_doctor:profiles!second_opinion_requests_original_doctor_id_fkey(id, nombre_completo, avatar_url),
-        reviewing_doctor:profiles!second_opinion_requests_reviewing_doctor_id_fkey(id, nombre_completo, avatar_url),
+        original_doctor:profiles!second_opinion_requests_original_doctor_id_fkey(id, full_name, avatar_url),
+        reviewing_doctor:profiles!second_opinion_requests_reviewing_doctor_id_fkey(id, full_name, avatar_url),
         specialty:specialties!second_opinion_requests_specialty_id_fkey(id, name)
       `
       )
@@ -130,8 +130,8 @@ export const secondOpinionService = {
       .select(
         `
         *,
-        original_doctor:profiles!second_opinion_requests_original_doctor_id_fkey(id, nombre_completo, avatar_url),
-        reviewing_doctor:profiles!second_opinion_requests_reviewing_doctor_id_fkey(id, nombre_completo, avatar_url),
+        original_doctor:profiles!second_opinion_requests_original_doctor_id_fkey(id, full_name, avatar_url),
+        reviewing_doctor:profiles!second_opinion_requests_reviewing_doctor_id_fkey(id, full_name, avatar_url),
         specialty:specialties!second_opinion_requests_specialty_id_fkey(id, name),
         medical_record:medical_records!second_opinion_requests_original_medical_record_id_fkey(id, diagnosis, notes, created_at)
       `
@@ -158,7 +158,7 @@ export const secondOpinionService = {
         notes,
         created_at,
         doctor_id,
-        doctor:profiles!medical_records_doctor_id_fkey(nombre_completo),
+        doctor:profiles!medical_records_doctor_id_fkey(full_name),
         specialty:specialties!medical_records_specialty_id_fkey(id, name)
       `
       )
@@ -170,7 +170,7 @@ export const secondOpinionService = {
 
     return (data || []).map(
       (record: Record<string, unknown>) => {
-        const doctor = record.doctor as { nombre_completo: string } | null;
+        const doctor = record.doctor as { full_name: string } | null;
         const specialty = record.specialty as {
           id: string;
           name: string;
@@ -182,7 +182,7 @@ export const secondOpinionService = {
           notes: record.notes as string | null,
           created_at: record.created_at as string,
           doctor_id: record.doctor_id as string,
-          doctor_name: doctor?.nombre_completo || "Doctor",
+          doctor_name: doctor?.full_name || "Doctor",
           specialty_name: specialty?.name || "Especialidad",
           specialty_id: specialty?.id || "",
         };
@@ -202,10 +202,10 @@ export const secondOpinionService = {
       .select(
         `
         *,
-        profile:profiles!inner(id, nombre_completo, avatar_url, ciudad, estado)
+        profile:profiles!inner(id, full_name, avatar_url, city, state)
       `
       )
-      .eq("especialidad_id", specialtyId)
+      .eq("specialty_id", specialtyId)
       .eq("verified", true)
       .neq("profile_id", excludeDoctorId);
 
@@ -241,21 +241,21 @@ export const secondOpinionService = {
     return data.map((d: Record<string, unknown>) => {
       const profileData = d.profile as {
         id: string;
-        nombre_completo: string;
+        full_name: string;
         avatar_url: string | null;
-        ciudad: string | null;
-        estado: string | null;
+        city: string | null;
+        state: string | null;
       };
       const ratingInfo = ratingMap.get(profileData.id);
 
       return {
         id: d.id as string,
         profile_id: d.profile_id as string,
-        specialty_id: d.especialidad_id as string,
-        consultation_fee: d.tarifa_consulta
-          ? parseFloat(d.tarifa_consulta as string)
+        specialty_id: d.specialty_id as string,
+        consultation_fee: d.consultation_fee
+          ? parseFloat(d.consultation_fee as string)
           : null,
-        anos_experiencia: (d.anos_experiencia as number) || null,
+        years_experience: (d.years_experience as number) || null,
         biografia: (d.biografia as string) || null,
         verified: true,
         profile: profileData,
@@ -321,7 +321,7 @@ export const secondOpinionService = {
           table: "second_opinion_requests",
           filter: `id=eq.${requestId}`,
         },
-        async (payload) => {
+        async () => {
           // Refetch with joined data
           const updated = await secondOpinionService.getRequestById(
             requestId

@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase/client";
 // TODO: Import types from @red-salud/types once available
 interface MessageSender {
   id: string;
-  nombre_completo?: string;
+  full_name?: string;
   avatar_url?: string;
   role?: string;
 }
@@ -60,10 +60,10 @@ export async function getUserConversations(userId: string) {
       .select(`
         *,
         patient:profiles!conversations_patient_id_fkey(
-          id, nombre_completo, email, avatar_url
+          id, full_name, email, avatar_url
         ),
         doctor:profiles!conversations_doctor_id_fkey(
-          id, nombre_completo, email, avatar_url
+          id, full_name, email, avatar_url
         )
       `)
       .or(`patient_id.eq.${userId},doctor_id.eq.${userId}`)
@@ -86,7 +86,7 @@ export async function getUserConversations(userId: string) {
           .select(`
             *,
             sender:profiles!messages_new_sender_id_fkey(
-              id, nombre_completo, avatar_url, role
+              id, full_name, avatar_url, role
             )
           `)
           .eq("conversation_id", conv.id)
@@ -183,7 +183,7 @@ export async function getConversationMessages(conversationId: string) {
       .select(`
         *,
         sender:profiles!messages_new_sender_id_fkey(
-          id, nombre_completo, avatar_url, role
+          id, full_name, avatar_url, role
         )
       `)
       .eq("conversation_id", conversationId)
@@ -217,7 +217,7 @@ export async function sendMessage(
       .select(`
         *,
         sender:profiles!messages_new_sender_id_fkey(
-          id, nombre_completo, avatar_url, role
+          id, full_name, avatar_url, role
         )
       `)
       .single();
@@ -277,7 +277,7 @@ export function subscribeToMessages(
           .select(`
             *,
             sender:profiles!messages_new_sender_id_fkey(
-              id, nombre_completo, avatar_url, role
+              id, full_name, avatar_url, role
             )
           `)
           .eq("id", payload.new.id)

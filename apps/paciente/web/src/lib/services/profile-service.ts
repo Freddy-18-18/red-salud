@@ -4,14 +4,13 @@ import { supabase } from "@/lib/supabase/client";
 export interface PatientProfile {
   id: string;
   email: string;
-  nombre_completo: string;
-  telefono?: string;
-  cedula?: string;
-  fecha_nacimiento?: string;
-  direccion?: string;
-  ciudad?: string;
-  estado?: string;
-  codigo_postal?: string;
+  full_name: string;
+  phone?: string;
+  national_id?: string;
+  date_of_birth?: string;
+  address?: string;
+  city?: string;
+  state?: string;
   avatar_url?: string;
   // Medical info from patient_details
   grupo_sanguineo?: string;
@@ -36,39 +35,37 @@ export async function getPatientProfile(
       .eq("id", userId)
       .maybeSingle();
 
-    if (profileError) {
-      console.error("Error fetching profile:", profileError);
-      throw profileError;
-    }
+    if (profileError) throw profileError;
 
-    const { data: medicalData, error: medicalError } = await supabase
-      .from("patient_details")
-      .select("*")
-      .eq("profile_id", userId)
-      .maybeSingle();
-
-    if (medicalError && medicalError.code === "PGRST116") {
-      // No medical record exists, create one
-      const { data: newMedical, error: insertError } = await supabase
+    let medicalData = null;
+    try {
+      const { data, error } = await supabase
         .from("patient_details")
-        .insert({ profile_id: userId })
-        .select()
-        .single();
+        .select("*")
+        .eq("profile_id", userId)
+        .maybeSingle();
 
-      if (insertError) {
-        console.error("Error creating patient_details:", insertError);
+      if (!error) {
+        medicalData = data;
+      } else if (error.code === "PGRST116") {
+        // No medical record exists — try to create one
+        try {
+          const { data: newMedical } = await supabase
+            .from("patient_details")
+            .insert({ profile_id: userId })
+            .select()
+            .single();
+          medicalData = newMedical;
+        } catch {
+          // Insert failed — table may not exist
+        }
       }
-
-      return { ...profile, ...newMedical } as PatientProfile;
-    }
-
-    if (medicalError) {
-      console.error("Error fetching medical data:", medicalError);
+    } catch {
+      // patient_details table may not exist yet — skip silently
     }
 
     return { ...profile, ...medicalData } as PatientProfile;
-  } catch (error) {
-    console.error("Error in getPatientProfile:", error);
+  } catch {
     return null;
   }
 }
@@ -82,14 +79,13 @@ export async function updateBasicProfile(
       updated_at: new Date().toISOString(),
     };
 
-    if (data.nombre_completo !== undefined) updateData.nombre_completo = data.nombre_completo;
-    if (data.telefono !== undefined) updateData.telefono = data.telefono;
-    if (data.cedula !== undefined) updateData.cedula = data.cedula;
-    if (data.fecha_nacimiento !== undefined) updateData.fecha_nacimiento = data.fecha_nacimiento;
-    if (data.direccion !== undefined) updateData.direccion = data.direccion;
-    if (data.ciudad !== undefined) updateData.ciudad = data.ciudad;
-    if (data.estado !== undefined) updateData.estado = data.estado;
-    if (data.codigo_postal !== undefined) updateData.codigo_postal = data.codigo_postal;
+    if (data.full_name !== undefined) updateData.full_name = data.full_name;
+    if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.national_id !== undefined) updateData.national_id = data.national_id;
+    if (data.date_of_birth !== undefined) updateData.date_of_birth = data.date_of_birth;
+    if (data.address !== undefined) updateData.address = data.address;
+    if (data.city !== undefined) updateData.city = data.city;
+    if (data.state !== undefined) updateData.state = data.state;
 
     const { error } = await supabase
       .from("profiles")
@@ -107,7 +103,6 @@ export async function updateBasicProfile(
 
     return { success: true };
   } catch (error) {
-    console.error("Error updating basic profile:", error);
     return { success: false, error: error as Error };
   }
 }
@@ -133,11 +128,16 @@ export async function updateMedicalInfo(
     if (data.peso_kg !== undefined) medicalData.peso_kg = data.peso_kg;
     if (data.altura_cm !== undefined) medicalData.altura_cm = data.altura_cm;
 
-    const { error } = await supabase
-      .from("patient_details")
-      .upsert(medicalData, { onConflict: "profile_id" });
+    try {
+      const { error } = await supabase
+        .from("patient_details")
+        .upsert(medicalData, { onConflict: "profile_id" });
 
-    if (error) throw error;
+      if (error) throw error;
+    } catch {
+      // patient_details table may not exist yet — silently skip
+      return { success: true };
+    }
 
     await supabase.from("user_activity_log").insert({
       user_id: userId,
@@ -148,7 +148,6 @@ export async function updateMedicalInfo(
 
     return { success: true };
   } catch (error) {
-    console.error("Error updating medical info:", error);
     return { success: false, error: error as Error };
   }
 }

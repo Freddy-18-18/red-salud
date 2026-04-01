@@ -18,7 +18,7 @@ export interface TelemedicineSession {
   updated_at: string;
   doctor?: {
     id: string;
-    nombre_completo?: string;
+    full_name?: string;
     email?: string;
     avatar_url?: string;
   };
@@ -30,7 +30,7 @@ export interface TelemedicineSession {
   };
   doctor_detail?: {
     id: string;
-    especialidad_id?: string;
+    specialty_id?: string;
     specialty?: {
       id: string;
       name: string;
@@ -46,7 +46,7 @@ export interface ChatMessage {
   created_at: string;
   sender?: {
     id: string;
-    nombre_completo?: string;
+    full_name?: string;
     avatar_url?: string;
     role?: string;
   };
@@ -66,7 +66,7 @@ export async function getUpcomingSessions(patientId: string) {
       .select(`
         *,
         doctor:profiles!telemedicine_sessions_doctor_id_fkey(
-          id, nombre_completo, email, avatar_url
+          id, full_name, email, avatar_url
         )
       `)
       .eq("patient_id", patientId)
@@ -91,7 +91,7 @@ export async function getSessionHistory(patientId: string, limit = 20) {
       .select(`
         *,
         doctor:profiles!telemedicine_sessions_doctor_id_fkey(
-          id, nombre_completo, email, avatar_url
+          id, full_name, email, avatar_url
         )
       `)
       .eq("patient_id", patientId)
@@ -116,7 +116,7 @@ export async function getSessionDetail(sessionId: string) {
       .select(`
         *,
         doctor:profiles!telemedicine_sessions_doctor_id_fkey(
-          id, nombre_completo, email, avatar_url
+          id, full_name, email, avatar_url
         )
       `)
       .eq("id", sessionId)
@@ -197,7 +197,7 @@ export async function sendChatMessage(
       .select(`
         *,
         sender:profiles!telemedicine_chat_messages_sender_id_fkey(
-          id, nombre_completo, avatar_url, role
+          id, full_name, avatar_url, role
         )
       `)
       .single();
@@ -219,7 +219,7 @@ export async function getChatMessages(sessionId: string) {
       .select(`
         *,
         sender:profiles!telemedicine_chat_messages_sender_id_fkey(
-          id, nombre_completo, avatar_url, role
+          id, full_name, avatar_url, role
         )
       `)
       .eq("session_id", sessionId)
@@ -290,7 +290,7 @@ export function subscribeToSession(
           .select(`
             *,
             doctor:profiles!telemedicine_sessions_doctor_id_fkey(
-              id, nombre_completo, email, avatar_url
+              id, full_name, email, avatar_url
             )
           `)
           .eq("id", payload.new.id)
@@ -329,7 +329,7 @@ export function subscribeToChatMessages(
           .select(`
             *,
             sender:profiles!telemedicine_chat_messages_sender_id_fkey(
-              id, nombre_completo, avatar_url, role
+              id, full_name, avatar_url, role
             )
           `)
           .eq("id", payload.new.id)

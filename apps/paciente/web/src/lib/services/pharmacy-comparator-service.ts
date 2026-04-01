@@ -58,11 +58,11 @@ export interface PharmacyMedicationPrice {
 
 export interface PharmacyDetails {
   id: string;
-  nombre_completo?: string;
-  telefono?: string;
-  direccion?: string;
-  ciudad?: string;
-  estado?: string;
+  full_name?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
   avatar_url?: string;
   horario?: string;
   rating?: number;
@@ -151,7 +151,7 @@ export async function comparePrices(
         // Get pharmacy profile
         const { data: pharmacy } = await supabase
           .from("profiles")
-          .select("id, nombre_completo, telefono, direccion, ciudad, estado, avatar_url")
+          .select("id, full_name, phone, address, city, state, avatar_url")
           .eq("id", option.pharmacy_id)
           .maybeSingle();
 
@@ -211,7 +211,7 @@ export async function getPharmacyDetails(
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, nombre_completo, telefono, direccion, ciudad, estado, avatar_url")
+      .select("id, full_name, phone, address, city, state, avatar_url")
       .eq("id", pharmacyId)
       .maybeSingle();
 
@@ -272,7 +272,7 @@ export async function getOrderStatus(
       .select(`
         *,
         pharmacy:profiles!pharmacy_orders_pharmacy_id_fkey(
-          id, nombre_completo, telefono, direccion, ciudad, estado, avatar_url
+          id, full_name, phone, address, city, state, avatar_url
         )
       `)
       .eq("id", orderId)
@@ -296,7 +296,7 @@ export async function getMyOrders(
       .select(`
         *,
         pharmacy:profiles!pharmacy_orders_pharmacy_id_fkey(
-          id, nombre_completo, telefono, direccion, ciudad, estado, avatar_url
+          id, full_name, phone, address, city, state, avatar_url
         )
       `)
       .eq("patient_id", patientId)

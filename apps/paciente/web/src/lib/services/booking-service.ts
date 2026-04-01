@@ -15,17 +15,16 @@ export interface DoctorProfile {
   specialty_id: string;
   consultation_fee: number | null;
   accepts_insurance: boolean;
-  anos_experiencia: number | null;
+  years_experience: number | null;
   biografia: string | null;
   verified: boolean;
   profile: {
     id: string;
-    nombre_completo: string;
+    full_name: string;
     email: string;
     avatar_url: string | null;
-    ciudad: string | null;
-    estado: string | null;
-    genero: string | null;
+    city: string | null;
+    state: string | null;
   };
   specialty: {
     id: string;
@@ -94,13 +93,13 @@ export const bookingService = {
       // Get specialties that have at least one verified doctor
       const { data: doctorSpecialties } = await supabase
         .from("doctor_details")
-        .select("especialidad_id")
+        .select("specialty_id")
         .eq("verified", true);
 
       const specialtyIds = [
         ...new Set(
           (doctorSpecialties || []).map(
-            (d: { especialidad_id: string }) => d.especialidad_id
+            (d: { specialty_id: string }) => d.specialty_id
           )
         ),
       ];
@@ -140,10 +139,10 @@ export const bookingService = {
         `
         *,
         specialty:specialties(id, name),
-        profile:profiles!inner(id, nombre_completo, email, avatar_url, ciudad, estado, genero)
+        profile:profiles!inner(id, full_name, email, avatar_url, city, state)
       `
       )
-      .eq("especialidad_id", specialtyId)
+      .eq("specialty_id", specialtyId)
       .eq("verified", true);
 
     if (error) throw error;
@@ -180,23 +179,22 @@ export const bookingService = {
       (d: Record<string, unknown>) => {
         const profileData = d.profile as {
           id: string;
-          nombre_completo: string;
+          full_name: string;
           email: string;
           avatar_url: string | null;
-          ciudad: string | null;
-          estado: string | null;
-          genero: string | null;
+          city: string | null;
+          state: string | null;
         };
         const ratingInfo = ratingMap.get(profileData.id);
         return {
           id: d.id as string,
           profile_id: d.profile_id as string,
-          specialty_id: d.especialidad_id as string,
-          consultation_fee: d.tarifa_consulta
-            ? parseFloat(d.tarifa_consulta as string)
+          specialty_id: d.specialty_id as string,
+          consultation_fee: d.consultation_fee
+            ? parseFloat(d.consultation_fee as string)
             : null,
           accepts_insurance: (d.accepts_insurance as boolean) || false,
-          anos_experiencia: (d.anos_experiencia as number) || null,
+          years_experience: (d.years_experience as number) || null,
           biografia: (d.biografia as string) || null,
           verified: true,
           profile: profileData,
@@ -214,18 +212,13 @@ export const bookingService = {
     if (filters?.city) {
       doctors = doctors.filter(
         (d) =>
-          d.profile.ciudad
+          d.profile.city
             ?.toLowerCase()
             .includes(filters.city!.toLowerCase())
       );
     }
     if (filters?.accepts_insurance) {
       doctors = doctors.filter((d) => d.accepts_insurance);
-    }
-    if (filters?.gender) {
-      doctors = doctors.filter(
-        (d) => d.profile.genero === filters.gender
-      );
     }
 
     // Sort

@@ -651,7 +651,7 @@ export async function checkArticleLiked(userId: string, articleId: string) {
       .maybeSingle();
 
     return { success: true, liked: !!data };
-  } catch (error) {
+  } catch {
     return { success: false, liked: false };
   }
 }

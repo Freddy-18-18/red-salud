@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { useState, useCallback, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import {
   documentsService,
   type PatientDocument,
@@ -9,139 +10,150 @@ import {
   type CreateVaccinationData,
   type CategoryCount,
 } from "@/lib/services/documents-service";
+import { supabase } from "@/lib/supabase/client";
 
 export function useDocuments(filterCategory?: DocumentCategory) {
   const [userId, setUserId] = useState<string | null>(null);
-  const [documents, setDocuments] = useState<PatientDocument[]>([]);
-  const [categoryCounts, setCategoryCounts] = useState<CategoryCount[]>([]);
-  const [recentDocuments, setRecentDocuments] = useState<PatientDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const queryClient = useQueryClient();
 
   // Get current user
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    supabase.auth.getUser().then(({ data: { user } }) => {
       setUserId(user?.id ?? null);
-    };
-    getUser();
+    });
   }, []);
 
-  // Load documents
-  const loadDocuments = useCallback(async () => {
-    if (!userId) return;
+  const documentsQuery = useQuery({
+    queryKey: ["documents", userId, filterCategory, searchQuery],
+    queryFn: async () => {
+      if (!userId) return [];
+      if (searchQuery) {
+        return documentsService.searchDocuments(userId, searchQuery);
+      }
+      return documentsService.getDocuments(userId, filterCategory);
+    },
+    enabled: !!userId,
+  });
 
-    setLoading(true);
-    setError(null);
-    try {
-      const [docs, counts, recent] = await Promise.all([
-        searchQuery
-          ? documentsService.searchDocuments(userId, searchQuery)
-          : documentsService.getDocuments(userId, filterCategory),
-        documentsService.getDocumentsByCategory(userId),
-        documentsService.getRecentDocuments(userId, 5),
-      ]);
-      setDocuments(docs);
-      setCategoryCounts(counts);
-      setRecentDocuments(recent);
-    } catch {
-      setError("No se pudieron cargar los documentos");
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, filterCategory, searchQuery]);
+  const categoryCountsQuery = useQuery({
+    queryKey: ["documents", "category-counts", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      return documentsService.getDocumentsByCategory(userId);
+    },
+    enabled: !!userId,
+  });
 
-  useEffect(() => {
-    if (userId) loadDocuments();
-  }, [userId, loadDocuments]);
+  const recentDocumentsQuery = useQuery({
+    queryKey: ["documents", "recent", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      return documentsService.getRecentDocuments(userId, 5);
+    },
+    enabled: !!userId,
+  });
+
+  const isLoading = documentsQuery.isLoading || categoryCountsQuery.isLoading || recentDocumentsQuery.isLoading;
+  const error =
+    documentsQuery.error?.message ??
+    categoryCountsQuery.error?.message ??
+    recentDocumentsQuery.error?.message ??
+    null;
+
+  const documents = documentsQuery.data ?? [];
+  const categoryCounts = categoryCountsQuery.data ?? [];
+  const recentDocuments = recentDocumentsQuery.data ?? [];
 
   // Upload document
+  const uploadMutation = useMutation({
+    mutationFn: async ({
+      file,
+      metadata,
+    }: {
+      file: File;
+      metadata: DocumentMetadata;
+    }) => {
+      if (!userId) throw new Error("No user");
+      return documentsService.uploadDocument(userId, file, metadata);
+    },
+    onSuccess: (_doc, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["documents", userId] });
+      queryClient.invalidateQueries({ queryKey: ["documents", "category-counts", userId] });
+      queryClient.invalidateQueries({ queryKey: ["documents", "recent", userId] });
+    },
+  });
+
   const uploadDocument = useCallback(
     async (
       file: File,
       metadata: DocumentMetadata
     ): Promise<{ success: boolean; document?: PatientDocument }> => {
       if (!userId) return { success: false };
-
-      setUploading(true);
-      setError(null);
       try {
-        const doc = await documentsService.uploadDocument(
-          userId,
-          file,
-          metadata
-        );
-        setDocuments((prev) => [doc, ...prev]);
-        setRecentDocuments((prev) => [doc, ...prev.slice(0, 4)]);
-        // Update category counts
-        setCategoryCounts((prev) =>
-          prev.map((c) =>
-            c.category === metadata.category
-              ? { ...c, count: c.count + 1 }
-              : c
-          )
-        );
+        const doc = await uploadMutation.mutateAsync({ file, metadata });
         return { success: true, document: doc };
       } catch {
-        setError("No se pudo subir el documento");
         return { success: false };
-      } finally {
-        setUploading(false);
       }
     },
-    [userId]
+    [userId, uploadMutation]
   );
 
   // Delete document
+  const deleteMutation = useMutation({
+    mutationFn: async ({ id, fileUrl }: { id: string; fileUrl: string }) => {
+      await documentsService.deleteDocument(id, fileUrl);
+      return { id };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents", userId] });
+      queryClient.invalidateQueries({ queryKey: ["documents", "category-counts", userId] });
+      queryClient.invalidateQueries({ queryKey: ["documents", "recent", userId] });
+    },
+  });
+
   const deleteDocument = useCallback(
     async (id: string, fileUrl: string): Promise<{ success: boolean }> => {
-      const snapshot = [...documents];
-      const doc = documents.find((d) => d.id === id);
-      setDocuments((prev) => prev.filter((d) => d.id !== id));
-
       try {
-        await documentsService.deleteDocument(id, fileUrl);
-        if (doc) {
-          setCategoryCounts((prev) =>
-            prev.map((c) =>
-              c.category === doc.category
-                ? { ...c, count: Math.max(0, c.count - 1) }
-                : c
-            )
-          );
-        }
-        setRecentDocuments((prev) => prev.filter((d) => d.id !== id));
+        await deleteMutation.mutateAsync({ id, fileUrl });
         return { success: true };
       } catch {
-        setDocuments(snapshot);
-        setError("No se pudo eliminar el documento");
         return { success: false };
       }
     },
-    [documents]
+    [deleteMutation]
   );
 
   // Share with doctor
+  const shareMutation = useMutation({
+    mutationFn: async ({
+      documentId,
+      doctorId,
+    }: {
+      documentId: string;
+      doctorId: string;
+    }) => {
+      if (!userId) throw new Error("No user");
+      await documentsService.shareWithDoctor(documentId, doctorId, userId);
+    },
+  });
+
   const shareWithDoctor = useCallback(
     async (
       documentId: string,
       doctorId: string
     ): Promise<{ success: boolean }> => {
       if (!userId) return { success: false };
-
       try {
-        await documentsService.shareWithDoctor(documentId, doctorId, userId);
+        await shareMutation.mutateAsync({ documentId, doctorId });
         return { success: true };
       } catch {
-        setError("No se pudo compartir el documento");
         return { success: false };
       }
     },
-    [userId]
+    [userId, shareMutation]
   );
 
   // Search
@@ -152,13 +164,15 @@ export function useDocuments(filterCategory?: DocumentCategory) {
   // Derived
   const totalDocuments = categoryCounts.reduce((sum, c) => sum + c.count, 0);
 
+  const uploading = uploadMutation.isPending;
+
   return {
     userId,
     documents,
     categoryCounts,
     recentDocuments,
     totalDocuments,
-    loading,
+    loading: isLoading,
     uploading,
     error,
     searchQuery,
@@ -166,113 +180,101 @@ export function useDocuments(filterCategory?: DocumentCategory) {
     uploadDocument,
     deleteDocument,
     shareWithDoctor,
-    refresh: loadDocuments,
+    refresh: () => {
+      documentsQuery.refetch();
+      categoryCountsQuery.refetch();
+      recentDocumentsQuery.refetch();
+    },
   };
 }
 
 export function useDocument(documentId: string | null) {
-  const [document, setDocument] = useState<PatientDocument | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ["document", documentId],
+    queryFn: async () => {
+      if (!documentId) return null;
+      return documentsService.getDocument(documentId);
+    },
+    enabled: !!documentId,
+  });
 
-  useEffect(() => {
-    if (!documentId) {
-      setLoading(false);
-      return;
-    }
-
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const doc = await documentsService.getDocument(documentId);
-        setDocument(doc);
-      } catch {
-        setError("No se pudo cargar el documento");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, [documentId]);
-
-  return { document, loading, error };
+  return {
+    document: query.data ?? null,
+    loading: query.isLoading,
+    error: query.error?.message ?? null,
+  };
 }
 
 export function useVaccinations() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
+  const queryClient = useQueryClient();
+
+  // Get current user
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    supabase.auth.getUser().then(({ data: { user } }) => {
       setUserId(user?.id ?? null);
-    };
-    getUser();
+    });
   }, []);
 
-  const loadVaccinations = useCallback(async () => {
-    if (!userId) return;
+  const vaccinationsQuery = useQuery({
+    queryKey: ["vaccinations", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      return documentsService.getVaccinations(userId);
+    },
+    enabled: !!userId,
+  });
 
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await documentsService.getVaccinations(userId);
-      setVaccinations(data);
-    } catch {
-      setError("No se pudieron cargar las vacunas");
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
+  const vaccinations = vaccinationsQuery.data ?? [];
 
-  useEffect(() => {
-    if (userId) loadVaccinations();
-  }, [userId, loadVaccinations]);
+  // Add vaccination
+  const addMutation = useMutation({
+    mutationFn: async (data: CreateVaccinationData) => {
+      if (!userId) throw new Error("No user");
+      return documentsService.addVaccination(userId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vaccinations", userId] });
+    },
+  });
 
   const addVaccination = useCallback(
     async (
       data: CreateVaccinationData
     ): Promise<{ success: boolean; vaccination?: VaccinationRecord }> => {
       if (!userId) return { success: false };
-
-      setSaving(true);
-      setError(null);
       try {
-        const vaccination = await documentsService.addVaccination(userId, data);
-        setVaccinations((prev) => [vaccination, ...prev]);
+        const vaccination = await addMutation.mutateAsync(data);
         return { success: true, vaccination };
       } catch {
-        setError("No se pudo agregar la vacuna");
         return { success: false };
-      } finally {
-        setSaving(false);
       }
     },
-    [userId]
+    [userId, addMutation]
   );
+
+  // Delete vaccination
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await documentsService.deleteVaccination(id);
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vaccinations", userId] });
+    },
+  });
 
   const deleteVaccination = useCallback(
     async (id: string): Promise<{ success: boolean }> => {
-      const snapshot = [...vaccinations];
-      setVaccinations((prev) => prev.filter((v) => v.id !== id));
-
       try {
-        await documentsService.deleteVaccination(id);
+        await deleteMutation.mutateAsync(id);
         return { success: true };
       } catch {
-        setVaccinations(snapshot);
-        setError("No se pudo eliminar la vacuna");
         return { success: false };
       }
     },
-    [vaccinations]
+    [deleteMutation]
   );
 
   // Upcoming vaccines (those with next_dose_date in the future)
@@ -284,11 +286,11 @@ export function useVaccinations() {
     userId,
     vaccinations,
     upcomingVaccines,
-    loading,
-    saving,
-    error,
+    loading: vaccinationsQuery.isLoading,
+    saving: addMutation.isPending || deleteMutation.isPending,
+    error: vaccinationsQuery.error?.message ?? null,
     addVaccination,
     deleteVaccination,
-    refresh: loadVaccinations,
+    refresh: () => vaccinationsQuery.refetch(),
   };
 }

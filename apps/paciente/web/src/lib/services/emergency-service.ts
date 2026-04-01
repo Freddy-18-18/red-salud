@@ -81,23 +81,29 @@ export async function getMedicalSummary(
   try {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("nombre_completo, fecha_nacimiento")
+      .select("full_name, date_of_birth")
       .eq("id", patientId)
       .maybeSingle();
 
     if (profileError) throw profileError;
 
-    const { data: medical } = await supabase
-      .from("patient_details")
-      .select(
-        "grupo_sanguineo, alergias, medicamentos_actuales, enfermedades_cronicas, contacto_emergencia_nombre, contacto_emergencia_telefono, contacto_emergencia_relacion"
-      )
-      .eq("profile_id", patientId)
-      .maybeSingle();
+    let medical = null;
+    try {
+      const { data, error: medErr } = await supabase
+        .from("patient_details")
+        .select(
+          "grupo_sanguineo, alergias, medicamentos_actuales, enfermedades_cronicas, contacto_emergencia_nombre, contacto_emergencia_telefono, contacto_emergencia_relacion"
+        )
+        .eq("profile_id", patientId)
+        .maybeSingle();
+      if (!medErr) medical = data;
+    } catch {
+      // patient_details table may not exist yet
+    }
 
     let edad: number | null = null;
-    if (profile?.fecha_nacimiento) {
-      const birth = new Date(profile.fecha_nacimiento);
+    if (profile?.date_of_birth) {
+      const birth = new Date(profile.date_of_birth);
       const now = new Date();
       edad = now.getFullYear() - birth.getFullYear();
       const monthDiff = now.getMonth() - birth.getMonth();
@@ -107,7 +113,7 @@ export async function getMedicalSummary(
     }
 
     const summary: MedicalSummary = {
-      nombre_completo: profile?.nombre_completo || "Desconocido",
+      nombre_completo: profile?.full_name || "Desconocido",
       edad,
       grupo_sanguineo: medical?.grupo_sanguineo || null,
       alergias: medical?.alergias || [],
@@ -122,7 +128,7 @@ export async function getMedicalSummary(
 
     return { success: true, data: summary };
   } catch (error) {
-    console.error("Error building medical summary:", error);
+    void error;
     return { success: false, data: null };
   }
 }
@@ -170,7 +176,7 @@ export async function getFamilyMemberMedicalSummary(
 
     return { success: true, data: summary };
   } catch (error) {
-    console.error("Error building family member medical summary:", error);
+    void error;
     return { success: false, data: null };
   }
 }
@@ -215,7 +221,7 @@ export async function createEmergencyRequest(
 
     return { success: true, data: request as EmergencyRequest };
   } catch (error) {
-    console.error("Error creating emergency request:", error);
+    void error;
     return { success: false, data: null, error };
   }
 }
@@ -237,7 +243,7 @@ export async function getRequestStatus(
 
     return { success: true, data: data as EmergencyRequest | null };
   } catch (error) {
-    console.error("Error fetching emergency status:", error);
+    void error;
     return { success: false, data: null };
   }
 }
@@ -271,7 +277,7 @@ export async function cancelEmergencyRequest(
 
     return { success: true };
   } catch (error) {
-    console.error("Error cancelling emergency request:", error);
+    void error;
     return { success: false, error };
   }
 }
@@ -293,7 +299,7 @@ export async function getEmergencyHistory(
 
     return { success: true, data: (data || []) as EmergencyRequest[] };
   } catch (error) {
-    console.error("Error fetching emergency history:", error);
+    void error;
     return { success: false, data: [] };
   }
 }
@@ -315,7 +321,7 @@ export async function getFamilyMembers(
 
     return { success: true, data: (data || []) as FamilyMember[] };
   } catch (error) {
-    console.error("Error fetching family members:", error);
+    void error;
     return { success: false, data: [] };
   }
 }

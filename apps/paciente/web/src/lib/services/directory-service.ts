@@ -402,7 +402,7 @@ export const directoryService = {
         would_recommend,
         visit_date,
         created_at,
-        reviewer:profiles!provider_reviews_reviewer_id_fkey(nombre_completo, avatar_url)
+        reviewer:profiles!provider_reviews_reviewer_id_fkey(full_name, avatar_url)
       `
       )
       .eq("provider_id", providerId)
@@ -415,13 +415,13 @@ export const directoryService = {
     const mapped: ProviderReview[] = (reviews || []).map(
       (r: Record<string, unknown>) => {
         const reviewer = r.reviewer as {
-          nombre_completo: string | null;
+          full_name: string | null;
           avatar_url: string | null;
         } | null;
         return {
           id: r.id as string,
           reviewerId: r.reviewer_id as string,
-          reviewerName: reviewer?.nombre_completo || "Paciente",
+          reviewerName: reviewer?.full_name || "Paciente",
           reviewerAvatar: reviewer?.avatar_url || null,
           providerId: r.provider_id as string,
           providerType: r.provider_type as ProviderType,
@@ -495,13 +495,13 @@ export const directoryService = {
         `
         id,
         profile_id,
-        especialidad_id,
-        tarifa_consulta,
+        specialty_id,
+        consultation_fee,
         accepts_insurance,
-        anos_experiencia,
+        years_experience,
         office_hours,
         verified,
-        profile:profiles!inner(id, nombre_completo, avatar_url, ciudad, estado, telefono),
+        profile:profiles!inner(id, full_name, avatar_url, city, state, phone),
         specialty:specialties(id, name)
       `
       )
@@ -521,11 +521,11 @@ export const directoryService = {
     let results: ProviderResult[] = data.map((d: Record<string, unknown>) => {
       const profile = d.profile as {
         id: string;
-        nombre_completo: string;
+        full_name: string;
         avatar_url: string | null;
-        ciudad: string | null;
-        estado: string | null;
-        telefono: string | null;
+        city: string | null;
+        state: string | null;
+        phone: string | null;
       };
       const specialty = d.specialty as { id: string; name: string } | null;
       const { avg, count } = computeRating(
@@ -536,20 +536,20 @@ export const directoryService = {
       return {
         id: profile.id,
         type: "doctor" as ProviderType,
-        name: profile.nombre_completo,
+        name: profile.full_name,
         avatarUrl: profile.avatar_url,
-        city: profile.ciudad,
-        state: profile.estado,
-        phone: profile.telefono,
+        city: profile.city,
+        state: profile.state,
+        phone: profile.phone,
         avgRating: avg,
         reviewCount: count,
         specialty: specialty?.name,
         specialtyId: specialty?.id,
-        consultationFee: d.tarifa_consulta
-          ? parseFloat(d.tarifa_consulta as string)
+        consultationFee: d.consultation_fee
+          ? parseFloat(d.consultation_fee as string)
           : null,
         acceptsInsurance: (d.accepts_insurance as boolean) || false,
-        yearsExperience: (d.anos_experiencia as number) || null,
+        yearsExperience: (d.years_experience as number) || null,
         officeHours: (d.office_hours as string) || null,
       };
     });
@@ -609,7 +609,7 @@ export const directoryService = {
         pharmacy_type,
         office_hours,
         accepts_digital_prescriptions,
-        profile:profiles!inner(id, nombre_completo, avatar_url, ciudad, estado, telefono)
+        profile:profiles!inner(id, full_name, avatar_url, city, state, phone)
       `
       );
 
@@ -626,11 +626,11 @@ export const directoryService = {
     let results: ProviderResult[] = data.map((d: Record<string, unknown>) => {
       const profile = d.profile as {
         id: string;
-        nombre_completo: string;
+        full_name: string;
         avatar_url: string | null;
-        ciudad: string | null;
-        estado: string | null;
-        telefono: string | null;
+        city: string | null;
+        state: string | null;
+        phone: string | null;
       };
       const { avg, count } = computeRating(
         (reviews || []) as { provider_id: string; rating: number }[],
@@ -640,11 +640,11 @@ export const directoryService = {
       return {
         id: profile.id,
         type: "pharmacy" as ProviderType,
-        name: (d.business_name as string) || profile.nombre_completo,
+        name: (d.business_name as string) || profile.full_name,
         avatarUrl: profile.avatar_url,
-        city: profile.ciudad,
-        state: profile.estado,
-        phone: profile.telefono,
+        city: profile.city,
+        state: profile.state,
+        phone: profile.phone,
         avgRating: avg,
         reviewCount: count,
         businessName: d.business_name as string,
@@ -702,7 +702,7 @@ export const directoryService = {
         office_hours,
         bed_count,
         specialties,
-        profile:profiles!inner(id, nombre_completo, avatar_url, ciudad, estado, telefono)
+        profile:profiles!inner(id, full_name, avatar_url, city, state, phone)
       `
       );
 
@@ -719,11 +719,11 @@ export const directoryService = {
     let results: ProviderResult[] = data.map((d: Record<string, unknown>) => {
       const profile = d.profile as {
         id: string;
-        nombre_completo: string;
+        full_name: string;
         avatar_url: string | null;
-        ciudad: string | null;
-        estado: string | null;
-        telefono: string | null;
+        city: string | null;
+        state: string | null;
+        phone: string | null;
       };
       const { avg, count } = computeRating(
         (reviews || []) as { provider_id: string; rating: number }[],
@@ -733,11 +733,11 @@ export const directoryService = {
       return {
         id: profile.id,
         type: "clinic" as ProviderType,
-        name: (d.business_name as string) || profile.nombre_completo,
+        name: (d.business_name as string) || profile.full_name,
         avatarUrl: profile.avatar_url,
-        city: profile.ciudad,
-        state: profile.estado,
-        phone: profile.telefono,
+        city: profile.city,
+        state: profile.state,
+        phone: profile.phone,
         avgRating: avg,
         reviewCount: count,
         businessName: d.business_name as string,
@@ -793,7 +793,7 @@ export const directoryService = {
         office_hours,
         avg_delivery_time_hours,
         accepts_digital_orders,
-        profile:profiles!inner(id, nombre_completo, avatar_url, ciudad, estado, telefono)
+        profile:profiles!inner(id, full_name, avatar_url, city, state, phone)
       `
       );
 
@@ -810,11 +810,11 @@ export const directoryService = {
     let results: ProviderResult[] = data.map((d: Record<string, unknown>) => {
       const profile = d.profile as {
         id: string;
-        nombre_completo: string;
+        full_name: string;
         avatar_url: string | null;
-        ciudad: string | null;
-        estado: string | null;
-        telefono: string | null;
+        city: string | null;
+        state: string | null;
+        phone: string | null;
       };
       const { avg, count } = computeRating(
         (reviews || []) as { provider_id: string; rating: number }[],
@@ -824,11 +824,11 @@ export const directoryService = {
       return {
         id: profile.id,
         type: "laboratory" as ProviderType,
-        name: (d.business_name as string) || profile.nombre_completo,
+        name: (d.business_name as string) || profile.full_name,
         avatarUrl: profile.avatar_url,
-        city: profile.ciudad,
-        state: profile.estado,
-        phone: profile.telefono,
+        city: profile.city,
+        state: profile.state,
+        phone: profile.phone,
         avgRating: avg,
         reviewCount: count,
         businessName: d.business_name as string,
@@ -885,14 +885,14 @@ export const directoryService = {
         `
         id,
         profile_id,
-        especialidad_id,
-        tarifa_consulta,
+        specialty_id,
+        consultation_fee,
         accepts_insurance,
-        anos_experiencia,
+        years_experience,
         biografia,
         office_hours,
         verified,
-        profile:profiles!inner(id, nombre_completo, email, avatar_url, ciudad, estado, telefono),
+        profile:profiles!inner(id, full_name, email, avatar_url, city, state, phone),
         specialty:specialties(id, name)
       `
       )
@@ -904,12 +904,12 @@ export const directoryService = {
 
     const profile = data.profile as unknown as {
       id: string;
-      nombre_completo: string;
+      full_name: string;
       email: string | null;
       avatar_url: string | null;
-      ciudad: string | null;
-      estado: string | null;
-      telefono: string | null;
+      city: string | null;
+      state: string | null;
+      phone: string | null;
     };
     const specialty = data.specialty as unknown as { id: string; name: string };
 
@@ -942,19 +942,19 @@ export const directoryService = {
     return {
       id: data.id as string,
       profileId: profile.id,
-      name: profile.nombre_completo,
+      name: profile.full_name,
       avatarUrl: profile.avatar_url,
       email: profile.email,
-      city: profile.ciudad,
-      state: profile.estado,
-      phone: profile.telefono,
+      city: profile.city,
+      state: profile.state,
+      phone: profile.phone,
       specialty: specialty.name,
       specialtyId: specialty.id,
-      consultationFee: data.tarifa_consulta
-        ? parseFloat(data.tarifa_consulta as string)
+      consultationFee: data.consultation_fee
+        ? parseFloat(data.consultation_fee as string)
         : null,
       acceptsInsurance: (data.accepts_insurance as boolean) || false,
-      yearsExperience: (data.anos_experiencia as number) || null,
+      yearsExperience: (data.years_experience as number) || null,
       biography: (data.biografia as string) || null,
       verified: (data.verified as boolean) || false,
       avgRating,
@@ -985,7 +985,7 @@ export const directoryService = {
         pharmacy_type,
         office_hours,
         accepts_digital_prescriptions,
-        profile:profiles!inner(id, nombre_completo, avatar_url, ciudad, estado, telefono)
+        profile:profiles!inner(id, full_name, avatar_url, city, state, phone)
       `
       )
       .eq("profile_id", profileId)
@@ -996,11 +996,11 @@ export const directoryService = {
 
     const profile = data.profile as unknown as {
       id: string;
-      nombre_completo: string;
+      full_name: string;
       avatar_url: string | null;
-      ciudad: string | null;
-      estado: string | null;
-      telefono: string | null;
+      city: string | null;
+      state: string | null;
+      phone: string | null;
     };
 
     const { data: reviews } = await supabase
@@ -1025,11 +1025,11 @@ export const directoryService = {
     return {
       id: data.id as string,
       profileId: profile.id,
-      businessName: (data.business_name as string) || profile.nombre_completo,
+      businessName: (data.business_name as string) || profile.full_name,
       avatarUrl: profile.avatar_url,
-      city: profile.ciudad,
-      state: profile.estado,
-      phone: profile.telefono,
+      city: profile.city,
+      state: profile.state,
+      phone: profile.phone,
       pharmacyLicense: data.pharmacy_license as string | null,
       pharmacyType: data.pharmacy_type as string | null,
       officeHours: data.office_hours as string | null,
@@ -1053,7 +1053,7 @@ export const directoryService = {
         office_hours,
         bed_count,
         specialties,
-        profile:profiles!inner(id, nombre_completo, avatar_url, ciudad, estado, telefono)
+        profile:profiles!inner(id, full_name, avatar_url, city, state, phone)
       `
       )
       .eq("profile_id", profileId)
@@ -1064,11 +1064,11 @@ export const directoryService = {
 
     const profile = data.profile as unknown as {
       id: string;
-      nombre_completo: string;
+      full_name: string;
       avatar_url: string | null;
-      ciudad: string | null;
-      estado: string | null;
-      telefono: string | null;
+      city: string | null;
+      state: string | null;
+      phone: string | null;
     };
 
     const { data: reviews } = await supabase
@@ -1093,11 +1093,11 @@ export const directoryService = {
     return {
       id: data.id as string,
       profileId: profile.id,
-      businessName: (data.business_name as string) || profile.nombre_completo,
+      businessName: (data.business_name as string) || profile.full_name,
       avatarUrl: profile.avatar_url,
-      city: profile.ciudad,
-      state: profile.estado,
-      phone: profile.telefono,
+      city: profile.city,
+      state: profile.state,
+      phone: profile.phone,
       clinicLicense: data.clinic_license as string | null,
       clinicType: data.clinic_type as string | null,
       officeHours: data.office_hours as string | null,
@@ -1121,7 +1121,7 @@ export const directoryService = {
         office_hours,
         avg_delivery_time_hours,
         accepts_digital_orders,
-        profile:profiles!inner(id, nombre_completo, avatar_url, ciudad, estado, telefono)
+        profile:profiles!inner(id, full_name, avatar_url, city, state, phone)
       `
       )
       .eq("profile_id", profileId)
@@ -1132,11 +1132,11 @@ export const directoryService = {
 
     const profile = data.profile as unknown as {
       id: string;
-      nombre_completo: string;
+      full_name: string;
       avatar_url: string | null;
-      ciudad: string | null;
-      estado: string | null;
-      telefono: string | null;
+      city: string | null;
+      state: string | null;
+      phone: string | null;
     };
 
     const { data: reviews } = await supabase
@@ -1161,11 +1161,11 @@ export const directoryService = {
     return {
       id: data.id as string,
       profileId: profile.id,
-      businessName: (data.business_name as string) || profile.nombre_completo,
+      businessName: (data.business_name as string) || profile.full_name,
       avatarUrl: profile.avatar_url,
-      city: profile.ciudad,
-      state: profile.estado,
-      phone: profile.telefono,
+      city: profile.city,
+      state: profile.state,
+      phone: profile.phone,
       labLicense: data.laboratory_license as string | null,
       labType: data.laboratory_type as string | null,
       officeHours: data.office_hours as string | null,

@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+
 import {
   bookingService,
   type Specialty,
@@ -9,6 +10,7 @@ import {
   type TimeSlotGroup,
   type AppointmentResult,
 } from "@/lib/services/booking-service";
+import { supabase } from "@/lib/supabase/client";
 
 // --- Types ---
 
@@ -57,28 +59,17 @@ const STEP_ORDER: BookingStep[] = [
 
 export function useBooking() {
   const [state, setState] = useState<BookingState>(INITIAL_STATE);
-  const [userId, setUserId] = useState<string | null>(null);
+  const userIdRef = useRef<string | null>(null);
 
-  // Data for each step
-  const [specialties, setSpecialties] = useState<Specialty[]>([]);
-  const [doctors, setDoctors] = useState<DoctorProfile[]>([]);
-  const [availableDates, setAvailableDates] = useState<AvailableDate[]>([]);
-  const [timeSlotGroups, setTimeSlotGroups] = useState<TimeSlotGroup[]>([]);
-  const [createdAppointment, setCreatedAppointment] =
-    useState<AppointmentResult | null>(null);
-
-  // Loading states per step
-  const [loadingSpecialties, setLoadingSpecialties] = useState(false);
-  const [loadingDoctors, setLoadingDoctors] = useState(false);
-  const [loadingDates, setLoadingDates] = useState(false);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [loadingSubmit, setLoadingSubmit] = useState(false);
-
-  // Filters for doctor step
+  // Filters for doctor step (local UI state)
   const [doctorFilters, setDoctorFilters] = useState<DoctorFilters>({});
 
-  // Global error
+  // Global error (local UI state)
   const [error, setError] = useState<string | null>(null);
+
+  // Created appointment (local state, set on mutation success)
+  const [createdAppointment, setCreatedAppointment] =
+    useState<AppointmentResult | null>(null);
 
   // Get current user on mount
   useEffect(() => {
@@ -86,112 +77,67 @@ export function useBooking() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      setUserId(user?.id ?? null);
+      userIdRef.current = user?.id ?? null;
     };
     getUser();
   }, []);
 
-  // Load specialties on mount
-  useEffect(() => {
-    const load = async () => {
-      setLoadingSpecialties(true);
-      try {
-        const data = await bookingService.getSpecialties(true);
-        setSpecialties(data);
-      } catch (err) {
-        console.error("Error loading specialties:", err);
-        setError("No se pudieron cargar las especialidades");
-      } finally {
-        setLoadingSpecialties(false);
-      }
-    };
-    load();
-  }, []);
+  // --- Queries ---
 
-  // Load doctors when specialty changes
-  useEffect(() => {
-    if (!state.specialty) {
-      setDoctors([]);
-      return;
-    }
+  const specialtiesQuery = useQuery({
+    queryKey: ["booking-specialties"],
+    queryFn: () => bookingService.getSpecialties(true),
+  });
 
-    const load = async () => {
-      setLoadingDoctors(true);
-      setError(null);
-      try {
-        const data = await bookingService.getDoctorsBySpecialty(
-          state.specialty!.id,
-          doctorFilters
-        );
-        setDoctors(data);
-      } catch (err) {
-        console.error("Error loading doctors:", err);
-        setError("No se pudieron cargar los doctores");
-      } finally {
-        setLoadingDoctors(false);
-      }
-    };
-    load();
-  }, [state.specialty, doctorFilters]);
+  const doctorsQuery = useQuery({
+    queryKey: ["booking-doctors", state.specialty?.id, doctorFilters],
+    queryFn: () =>
+      bookingService.getDoctorsBySpecialty(state.specialty!.id, doctorFilters),
+    enabled: !!state.specialty,
+  });
 
-  // Load available dates when doctor changes
-  useEffect(() => {
-    if (!state.doctor) {
-      setAvailableDates([]);
-      return;
-    }
+  const availableDatesQuery = useQuery({
+    queryKey: ["booking-dates", state.doctor?.profile_id],
+    queryFn: () => {
+      const now = new Date();
+      const start = now.toISOString().split("T")[0];
+      const endDate = new Date(now);
+      endDate.setDate(endDate.getDate() + 30);
+      const end = endDate.toISOString().split("T")[0];
+      return bookingService.getAvailableDates(
+        state.doctor!.profile_id,
+        start,
+        end
+      );
+    },
+    enabled: !!state.doctor,
+  });
 
-    const load = async () => {
-      setLoadingDates(true);
-      setError(null);
-      try {
-        const now = new Date();
-        const start = now.toISOString().split("T")[0];
-        const endDate = new Date(now);
-        endDate.setDate(endDate.getDate() + 30);
-        const end = endDate.toISOString().split("T")[0];
+  const timeSlotsQuery = useQuery({
+    queryKey: ["booking-slots", state.doctor?.profile_id, state.date],
+    queryFn: () =>
+      bookingService.getAvailableSlots(state.doctor!.profile_id, state.date!),
+    enabled: !!state.doctor && !!state.date,
+  });
 
-        const data = await bookingService.getAvailableDates(
-          state.doctor!.profile_id,
-          start,
-          end
-        );
-        setAvailableDates(data);
-      } catch (err) {
-        console.error("Error loading dates:", err);
-        setError("No se pudieron cargar las fechas disponibles");
-      } finally {
-        setLoadingDates(false);
-      }
-    };
-    load();
-  }, [state.doctor]);
+  // --- Mutation ---
 
-  // Load time slots when date changes
-  useEffect(() => {
-    if (!state.doctor || !state.date) {
-      setTimeSlotGroups([]);
-      return;
-    }
-
-    const load = async () => {
-      setLoadingSlots(true);
-      setError(null);
-      try {
-        const data = await bookingService.getAvailableSlots(
-          state.doctor!.profile_id,
-          state.date!
-        );
-        setTimeSlotGroups(data);
-      } catch (err) {
-        console.error("Error loading slots:", err);
-        setError("No se pudieron cargar los horarios");
-      } finally {
-        setLoadingSlots(false);
-      }
-    };
-    load();
-  }, [state.doctor, state.date]);
+  const createAppointmentMutation = useMutation({
+    mutationFn: async ({
+      userId,
+      data,
+    }: {
+      userId: string;
+      data: {
+        doctor_id: string;
+        scheduled_at: string;
+        duration_minutes: number;
+        reason: string;
+        notes: string | undefined;
+        appointment_type: "presencial" | "telemedicina";
+      };
+    }) => bookingService.createAppointment(userId, data),
+  });
 
   // --- Actions ---
 
@@ -275,6 +221,7 @@ export function useBooking() {
   }, []);
 
   const confirmAppointment = useCallback(async () => {
+    const userId = userIdRef.current;
     if (
       !userId ||
       !state.doctor ||
@@ -286,42 +233,38 @@ export function useBooking() {
       return false;
     }
 
-    setLoadingSubmit(true);
     setError(null);
 
     try {
       const scheduledAt = `${state.date}T${state.timeSlot.start}:00`;
-      const result = await bookingService.createAppointment(userId, {
-        doctor_id: state.doctor.profile_id,
-        scheduled_at: scheduledAt,
-        duration_minutes: 30,
-        reason: state.reason,
-        notes: state.notes || undefined,
-        appointment_type: state.appointmentType,
+      const result = await createAppointmentMutation.mutateAsync({
+        userId,
+        data: {
+          doctor_id: state.doctor.profile_id,
+          scheduled_at: scheduledAt,
+          duration_minutes: 30,
+          reason: state.reason,
+          notes: state.notes || undefined,
+          appointment_type: state.appointmentType,
+        },
       });
 
       setCreatedAppointment(result);
       setState((prev) => ({ ...prev, step: "success" }));
       return true;
     } catch (err) {
-      console.error("Error creating appointment:", err);
       setError(
         err instanceof Error
           ? err.message
           : "No se pudo agendar la cita. Intenta de nuevo."
       );
       return false;
-    } finally {
-      setLoadingSubmit(false);
     }
-  }, [userId, state]);
+  }, [state, createAppointmentMutation]);
 
   const resetBooking = useCallback(() => {
     setState(INITIAL_STATE);
     setCreatedAppointment(null);
-    setDoctors([]);
-    setAvailableDates([]);
-    setTimeSlotGroups([]);
     setDoctorFilters({});
     setError(null);
   }, []);
@@ -337,18 +280,18 @@ export function useBooking() {
     totalSteps,
 
     // Data
-    specialties,
-    doctors,
-    availableDates,
-    timeSlotGroups,
+    specialties: specialtiesQuery.data ?? [],
+    doctors: doctorsQuery.data ?? [],
+    availableDates: availableDatesQuery.data ?? [],
+    timeSlotGroups: timeSlotsQuery.data ?? [],
     createdAppointment,
 
     // Loading
-    loadingSpecialties,
-    loadingDoctors,
-    loadingDates,
-    loadingSlots,
-    loadingSubmit,
+    loadingSpecialties: specialtiesQuery.isLoading,
+    loadingDoctors: doctorsQuery.isLoading,
+    loadingDates: availableDatesQuery.isLoading,
+    loadingSlots: timeSlotsQuery.isLoading,
+    loadingSubmit: createAppointmentMutation.isPending,
 
     // Filters
     doctorFilters,

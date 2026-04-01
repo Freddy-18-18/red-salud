@@ -10,7 +10,7 @@ export interface LabOrder {
   order_number: string;
   ordered_at: string;
   status: "ordenada" | "muestra_tomada" | "en_proceso" | "completada" | "cancelada";
-  doctor?: { nombre_completo?: string; avatar_url?: string };
+  doctor?: { full_name?: string; avatar_url?: string };
   laboratory?: { name?: string };
   tests?: LabOrderTest[];
 }
@@ -108,7 +108,7 @@ export const labResultsService = {
       .from("lab_orders")
       .select(`
         *,
-        doctor:profiles!lab_orders_doctor_id_fkey(nombre_completo, avatar_url),
+        doctor:profiles!lab_orders_doctor_id_fkey(full_name, avatar_url),
         tests:lab_order_tests(
           *,
           test_type:lab_test_types(id, name, description)
@@ -129,7 +129,7 @@ export const labResultsService = {
       .from("lab_orders")
       .select(`
         *,
-        doctor:profiles!lab_orders_doctor_id_fkey(nombre_completo, avatar_url),
+        doctor:profiles!lab_orders_doctor_id_fkey(full_name, avatar_url),
         tests:lab_order_tests(
           *,
           test_type:lab_test_types(id, name, description, reference_price)

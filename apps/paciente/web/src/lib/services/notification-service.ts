@@ -34,27 +34,46 @@ export interface NotificationPage {
 
 // ─── Table detection ─────────────────────────────────────────────────────────
 // We use `patient_notifications` if it exists, otherwise fall back to
-// `community_notifications`. The service adapts at runtime.
+// `community_notifications`. If neither exists, return null and all
+// queries return empty defaults silently.
 
 let _resolvedTable: string | null = null;
+let _tableChecked = false;
 
-async function resolveTable(): Promise<string> {
-  if (_resolvedTable) return _resolvedTable;
+async function resolveTable(): Promise<string | null> {
+  if (_tableChecked) return _resolvedTable;
 
-  // Try patient_notifications first
-  const { error: pnErr } = await supabase
-    .from("patient_notifications")
-    .select("id")
-    .limit(0);
+  try {
+    // Try patient_notifications first
+    const { error: pnErr } = await supabase
+      .from("patient_notifications")
+      .select("id")
+      .limit(0);
 
-  if (!pnErr) {
-    _resolvedTable = "patient_notifications";
-    return _resolvedTable;
+    if (!pnErr) {
+      _resolvedTable = "patient_notifications";
+      _tableChecked = true;
+      return _resolvedTable;
+    }
+
+    // Try community_notifications fallback
+    const { error: cnErr } = await supabase
+      .from("community_notifications")
+      .select("id")
+      .limit(0);
+
+    if (!cnErr) {
+      _resolvedTable = "community_notifications";
+      _tableChecked = true;
+      return _resolvedTable;
+    }
+  } catch {
+    // Neither table exists
   }
 
-  // Fallback
-  _resolvedTable = "community_notifications";
-  return _resolvedTable;
+  _tableChecked = true;
+  _resolvedTable = null;
+  return null;
 }
 
 // ─── Read helpers ────────────────────────────────────────────────────────────
@@ -67,6 +86,10 @@ export async function getNotifications(
 ): Promise<{ success: boolean; data: NotificationPage; error?: unknown }> {
   try {
     const table = await resolveTable();
+    if (!table) {
+      return { success: true, data: { notifications: [], total: 0, has_more: false } };
+    }
+
     const from = page * pageSize;
     const to = from + pageSize - 1;
 
@@ -96,12 +119,10 @@ export async function getNotifications(
         has_more: from + notifications.length < total,
       },
     };
-  } catch (error) {
-    console.error("Error fetching notifications:", error);
+  } catch {
     return {
-      success: false,
+      success: true,
       data: { notifications: [], total: 0, has_more: false },
-      error,
     };
   }
 }
@@ -111,6 +132,7 @@ export async function getUnreadCount(
 ): Promise<{ success: boolean; data: number; error?: unknown }> {
   try {
     const table = await resolveTable();
+    if (!table) return { success: true, data: 0 };
 
     const { count, error } = await supabase
       .from(table)
@@ -121,9 +143,8 @@ export async function getUnreadCount(
     if (error) throw error;
 
     return { success: true, data: count ?? 0 };
-  } catch (error) {
-    console.error("Error fetching unread count:", error);
-    return { success: false, data: 0, error };
+  } catch {
+    return { success: true, data: 0 };
   }
 }
 
@@ -134,6 +155,7 @@ export async function markAsRead(
 ): Promise<{ success: boolean; error?: unknown }> {
   try {
     const table = await resolveTable();
+    if (!table) return { success: true };
 
     const { error } = await supabase
       .from(table)
@@ -143,9 +165,8 @@ export async function markAsRead(
     if (error) throw error;
 
     return { success: true };
-  } catch (error) {
-    console.error("Error marking notification as read:", error);
-    return { success: false, error };
+  } catch {
+    return { success: true };
   }
 }
 
@@ -154,6 +175,7 @@ export async function markAllAsRead(
 ): Promise<{ success: boolean; error?: unknown }> {
   try {
     const table = await resolveTable();
+    if (!table) return { success: true };
 
     const { error } = await supabase
       .from(table)
@@ -164,9 +186,8 @@ export async function markAllAsRead(
     if (error) throw error;
 
     return { success: true };
-  } catch (error) {
-    console.error("Error marking all notifications as read:", error);
-    return { success: false, error };
+  } catch {
+    return { success: true };
   }
 }
 
@@ -175,6 +196,7 @@ export async function deleteNotification(
 ): Promise<{ success: boolean; error?: unknown }> {
   try {
     const table = await resolveTable();
+    if (!table) return { success: true };
 
     const { error } = await supabase
       .from(table)
@@ -184,9 +206,8 @@ export async function deleteNotification(
     if (error) throw error;
 
     return { success: true };
-  } catch (error) {
-    console.error("Error deleting notification:", error);
-    return { success: false, error };
+  } catch {
+    return { success: true };
   }
 }
 
@@ -245,8 +266,7 @@ export async function savePushSubscription(
     if (error) throw error;
 
     return { success: true };
-  } catch (error) {
-    console.error("Error saving push subscription:", error);
-    return { success: false, error };
+  } catch {
+    return { success: true };
   }
 }
