@@ -38,6 +38,8 @@ interface NavItem {
 /* ------------------------------------------------------------------ */
 
 const STORAGE_KEY = "paciente-sidebar-mode";
+const W_OPEN = 240;
+const W_COLLAPSED = 64;
 
 const MODE_CYCLE: Record<SidebarMode, SidebarMode> = {
   open: "hover",
@@ -57,9 +59,6 @@ const MODE_TOOLTIP: Record<SidebarMode, string> = {
   closed: "Expandir siempre",
 };
 
-export const SIDEBAR_WIDTH_OPEN = 240; // ~w-60
-export const SIDEBAR_WIDTH_COLLAPSED = 64; // ~w-16
-
 const NAV_ITEMS: NavItem[] = [
   { label: "Inicio", href: "/dashboard", icon: Home },
   { label: "Agendar Cita", href: "/dashboard/agendar", icon: CalendarPlus, highlight: true },
@@ -75,19 +74,20 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Hook: useSidebarMode                                               */
+/*  Hook                                                               */
 /* ------------------------------------------------------------------ */
 
 function useSidebarMode() {
+  // Start with "open" — matches the server render (no localStorage on server)
   const [mode, setMode] = useState<SidebarMode>("open");
-  const [hydrated, setHydrated] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY) as SidebarMode | null;
-    if (stored && (stored === "open" || stored === "hover" || stored === "closed")) {
+    if (stored === "open" || stored === "hover" || stored === "closed") {
       setMode(stored);
     }
-    setHydrated(true);
+    setMounted(true);
   }, []);
 
   const cycleMode = useCallback(() => {
@@ -98,53 +98,38 @@ function useSidebarMode() {
     });
   }, []);
 
-  return { mode, cycleMode, hydrated };
+  return { mode, cycleMode, mounted };
 }
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export interface PatientSidebarProps {
-  onWidthChange?: (width: number) => void;
-}
-
-export function PatientSidebar({ onWidthChange }: PatientSidebarProps) {
+export function PatientSidebar() {
   const pathname = usePathname();
-  const { mode, cycleMode, hydrated } = useSidebarMode();
+  const { mode, cycleMode, mounted } = useSidebarMode();
   const [hovered, setHovered] = useState(false);
 
-  // Derived: is the sidebar visually expanded right now?
-  const expanded = mode === "open" || (mode === "hover" && hovered);
-
-  // Notify parent about the "resting" width (not the hover-expanded width)
-  useEffect(() => {
-    const restingWidth = mode === "open" ? SIDEBAR_WIDTH_OPEN : SIDEBAR_WIDTH_COLLAPSED;
-    onWidthChange?.(restingWidth);
-  }, [mode, onWidthChange]);
+  // Before mount, always render as "open" to match SSR
+  const effectiveMode = mounted ? mode : "open";
+  const expanded = effectiveMode === "open" || (effectiveMode === "hover" && hovered);
+  const width = expanded ? W_OPEN : W_COLLAPSED;
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
   };
 
-  const ToggleIcon = MODE_ICON[mode];
+  const ToggleIcon = MODE_ICON[effectiveMode];
 
   return (
     <aside
-      suppressHydrationWarning
-      onMouseEnter={() => mode === "hover" && setHovered(true)}
-      onMouseLeave={() => mode === "hover" && setHovered(false)}
-      style={{ width: expanded ? SIDEBAR_WIDTH_OPEN : SIDEBAR_WIDTH_COLLAPSED }}
-      className={[
-        "hidden lg:flex flex-col bg-white border-r border-gray-100",
-        "sticky top-16 h-[calc(100vh-4rem)] overflow-hidden",
-        "transition-[width] duration-200 ease-in-out",
-        // In hover mode when expanded, float over content
-        mode === "hover" && hovered ? "absolute z-30 shadow-lg" : "relative",
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      onMouseEnter={() => effectiveMode === "hover" && setHovered(true)}
+      onMouseLeave={() => effectiveMode === "hover" && setHovered(false)}
+      style={{ width }}
+      className={`hidden lg:flex flex-col bg-white border-r border-gray-100 sticky top-16 h-[calc(100vh-4rem)] overflow-hidden transition-[width] duration-200 ease-in-out ${
+        effectiveMode === "hover" && hovered ? "absolute z-30 shadow-lg" : "relative"
+      }`}
     >
       {/* Nav links */}
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto overflow-x-hidden">
@@ -155,49 +140,52 @@ export function PatientSidebar({ onWidthChange }: PatientSidebarProps) {
               key={item.href}
               href={item.href}
               title={!expanded ? item.label : undefined}
-              className={[
-                "flex items-center gap-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
-                expanded ? "px-3 py-2.5" : "px-0 py-2.5 justify-center",
+              className={`flex items-center gap-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                expanded ? "px-3 py-2.5" : "px-0 py-2.5 justify-center"
+              } ${
                 item.highlight && !active
                   ? "bg-emerald-600 text-white hover:bg-emerald-700"
                   : active
                     ? "bg-emerald-50 text-emerald-700"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
-              ]
-                .filter(Boolean)
-                .join(" ")}
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`}
             >
               <item.icon
-                className={[
-                  "h-5 w-5 shrink-0",
+                className={`h-5 w-5 shrink-0 ${
                   item.highlight && !active
                     ? "text-white"
                     : active
                       ? "text-emerald-600"
-                      : "text-gray-400",
-                ].join(" ")}
+                      : "text-gray-400"
+                }`}
               />
-              {expanded && <span className="truncate">{item.label}</span>}
+              {/* Always render the span — use CSS to hide it when collapsed.
+                  This avoids DOM structure differences between server and client. */}
+              <span
+                className={`truncate transition-opacity duration-150 ${
+                  expanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
+                }`}
+              >
+                {item.label}
+              </span>
             </a>
           );
         })}
       </nav>
 
-      {/* Toggle button */}
-      <div className="border-t border-gray-100 p-2 flex justify-center">
-        <button
-          type="button"
-          onClick={cycleMode}
-          title={MODE_TOOLTIP[mode]}
-          className={[
-            "flex items-center justify-center rounded-full",
-            "h-8 w-8 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50",
-            "transition-colors duration-150",
-          ].join(" ")}
-        >
-          <ToggleIcon className="h-4 w-4" />
-        </button>
-      </div>
+      {/* Toggle button — only show after mount to avoid hydration mismatch */}
+      {mounted && (
+        <div className="border-t border-gray-100 p-2 flex justify-center">
+          <button
+            type="button"
+            onClick={cycleMode}
+            title={MODE_TOOLTIP[effectiveMode]}
+            className="flex items-center justify-center rounded-full h-8 w-8 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors duration-150"
+          >
+            <ToggleIcon className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </aside>
   );
 }
