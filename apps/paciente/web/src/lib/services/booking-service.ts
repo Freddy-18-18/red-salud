@@ -87,35 +87,9 @@ export const bookingService = {
    * Get all specialties, optionally only those with active verified doctors
    */
   async getSpecialties(
-    onlyWithDoctors: boolean = false
+    _onlyWithDoctors: boolean = false
   ): Promise<Specialty[]> {
-    if (onlyWithDoctors) {
-      // Get specialties that have at least one verified doctor
-      const { data: doctorSpecialties } = await supabase
-        .from("doctor_details")
-        .select("specialty_id")
-        .eq("verified", true);
-
-      const specialtyIds = [
-        ...new Set(
-          (doctorSpecialties || []).map(
-            (d: { specialty_id: string }) => d.specialty_id
-          )
-        ),
-      ];
-
-      if (specialtyIds.length === 0) return [];
-
-      const { data, error } = await supabase
-        .from("specialties")
-        .select("*")
-        .in("id", specialtyIds)
-        .order("name");
-
-      if (error) throw error;
-      return data || [];
-    }
-
+    // Always fetch all specialties — filter by doctor availability at the doctor step
     const { data, error } = await supabase
       .from("specialties")
       .select("*")
@@ -279,17 +253,17 @@ export const bookingService = {
     // Get existing appointments count per date in range
     const { data: appointments } = await supabase
       .from("appointments")
-      .select("fecha_hora, duracion_minutos, status")
-      .eq("medico_id", doctorId)
-      .gte("fecha_hora", `${startDate}T00:00:00`)
-      .lte("fecha_hora", `${endDate}T23:59:59`)
+      .select("scheduled_at, duration_minutes, status")
+      .eq("doctor_id", doctorId)
+      .gte("scheduled_at", `${startDate}T00:00:00`)
+      .lte("scheduled_at", `${endDate}T23:59:59`)
       .not("status", "in", '("cancelada","rechazada")');
 
     // Count booked slots per date
     const bookedPerDate = new Map<string, number>();
     (appointments || []).forEach(
-      (a: { fecha_hora: string }) => {
-        const date = a.fecha_hora.split("T")[0];
+      (a: { scheduled_at: string }) => {
+        const date = a.scheduled_at.split("T")[0];
         bookedPerDate.set(date, (bookedPerDate.get(date) || 0) + 1);
       }
     );
@@ -349,10 +323,10 @@ export const bookingService = {
 
     const { data: appointments } = await supabase
       .from("appointments")
-      .select("fecha_hora, duracion_minutos, status")
-      .eq("medico_id", doctorId)
-      .gte("fecha_hora", startOfDay)
-      .lte("fecha_hora", endOfDay)
+      .select("scheduled_at, duration_minutes, status")
+      .eq("doctor_id", doctorId)
+      .gte("scheduled_at", startOfDay)
+      .lte("scheduled_at", endOfDay)
       .not("status", "in", '("cancelada","rechazada")');
 
     const slotDuration = 30; // Default 30 min slots
@@ -360,14 +334,14 @@ export const bookingService = {
     // Parse booked intervals
     const bookedIntervals = (appointments || []).map(
       (apt: {
-        fecha_hora: string;
-        duracion_minutos: number;
+        scheduled_at: string;
+        duration_minutes: number;
       }) => {
-        const d = new Date(apt.fecha_hora);
+        const d = new Date(apt.scheduled_at);
         const start = d.getHours() * 60 + d.getMinutes();
         return {
           start,
-          end: start + (apt.duracion_minutos || slotDuration),
+          end: start + (apt.duration_minutes || slotDuration),
         };
       }
     );
@@ -459,12 +433,12 @@ export const bookingService = {
     const { data: appointment, error } = await supabase
       .from("appointments")
       .insert({
-        paciente_id: patientId,
-        medico_id: data.doctor_id,
-        fecha_hora: data.scheduled_at,
-        duracion_minutos: data.duration_minutes,
-        motivo: data.reason,
-        notas: data.notes || null,
+        patient_id: patientId,
+        doctor_id: data.doctor_id,
+        scheduled_at: data.scheduled_at,
+        duration_minutes: data.duration_minutes,
+        reason: data.reason,
+        notes: data.notes || null,
         status: "pendiente",
         tipo_cita: data.appointment_type,
       })
@@ -483,12 +457,12 @@ export const bookingService = {
 
     return {
       id: appointment.id,
-      patient_id: appointment.paciente_id,
-      doctor_id: appointment.medico_id,
-      scheduled_at: appointment.fecha_hora,
-      duration_minutes: appointment.duracion_minutos,
-      reason: appointment.motivo,
-      notes: appointment.notas,
+      patient_id: appointment.patient_id,
+      doctor_id: appointment.doctor_id,
+      scheduled_at: appointment.scheduled_at,
+      duration_minutes: appointment.duration_minutes,
+      reason: appointment.reason,
+      notes: appointment.notes,
       status: appointment.status,
       appointment_type: appointment.tipo_cita,
     };

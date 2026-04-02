@@ -85,8 +85,15 @@ export function useBooking() {
   // --- Queries ---
 
   const specialtiesQuery = useQuery({
-    queryKey: ["booking-specialties"],
-    queryFn: () => bookingService.getSpecialties(true),
+    queryKey: ["booking-specialties-direct"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("specialties")
+        .select("*")
+        .order("name");
+      if (error) throw error;
+      return (data || []) as Specialty[];
+    },
   });
 
   const doctorsQuery = useQuery({

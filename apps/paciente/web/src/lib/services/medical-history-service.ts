@@ -144,20 +144,20 @@ export const medicalHistoryService = {
         let query = supabase
           .from("appointments")
           .select(`
-            id, fecha_hora, motivo, notas, status, duracion_minutos,
+            id, scheduled_at, reason, notes, status, duration_minutes,
             doctor:profiles!appointments_medico_id_fkey(id, full_name)
           `)
-          .eq("paciente_id", patientId)
-          .order("fecha_hora", { ascending: false });
+          .eq("patient_id", patientId)
+          .order("scheduled_at", { ascending: false });
 
         if (filters.dateFrom) {
-          query = query.gte("fecha_hora", `${filters.dateFrom}T00:00:00`);
+          query = query.gte("scheduled_at", `${filters.dateFrom}T00:00:00`);
         }
         if (filters.dateTo) {
-          query = query.lte("fecha_hora", `${filters.dateTo}T23:59:59`);
+          query = query.lte("scheduled_at", `${filters.dateTo}T23:59:59`);
         }
         if (filters.doctorId) {
-          query = query.eq("medico_id", filters.doctorId);
+          query = query.eq("doctor_id", filters.doctorId);
         }
 
         const { data, error } = await query;
@@ -165,24 +165,24 @@ export const medicalHistoryService = {
           for (const apt of data) {
             const row = apt as Record<string, unknown>;
             const doctor = row.doctor as Record<string, unknown> | null;
-            const fechaHora = row.fecha_hora as string;
+            const scheduledAt = row.scheduled_at as string;
             const mappedStatus = mapAppointmentStatus(row.status as string);
             const config = getStatusConfig("appointment", mappedStatus);
 
             allEvents.push({
               id: `apt-${row.id}`,
               type: "appointment",
-              date: fechaHora,
+              date: scheduledAt,
               title: "Consulta medica",
-              summary: (row.motivo as string) || "Consulta con medico",
+              summary: (row.reason as string) || "Consulta con medico",
               doctor_name: doctor?.full_name as string | undefined,
               doctor_id: doctor?.id as string | undefined,
               status: mappedStatus,
               status_label: config.label,
               status_color: config.color,
               metadata: {
-                duration: row.duracion_minutos,
-                notes: row.notas,
+                duration: row.duration_minutes,
+                notes: row.notes,
               },
             });
           }
@@ -255,7 +255,7 @@ export const medicalHistoryService = {
           .from("prescriptions")
           .select(`
             id, diagnosis, prescribed_at, expires_at, status,
-            doctor:profiles!prescriptions_doctor_id_fkey(id, full_name),
+            doctor:profiles(id, full_name),
             medications:prescription_medications(medication_name)
           `)
           .eq("patient_id", patientId)
@@ -442,7 +442,7 @@ export const medicalHistoryService = {
       const { count, error } = await supabase
         .from("appointments")
         .select("*", { count: "exact", head: true })
-        .eq("paciente_id", patientId);
+        .eq("patient_id", patientId);
       if (!error && count !== null) stats.appointments = count;
     } catch {
       // skip

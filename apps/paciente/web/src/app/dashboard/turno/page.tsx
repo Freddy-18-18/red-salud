@@ -73,7 +73,7 @@ export default function TurnoPage() {
           scheduled_at,
           specialty,
           doctor_id,
-          doctor:profiles!appointments_doctor_id_fkey(full_name)
+          doctor:profiles!appointments_medico_id_fkey(full_name)
         `)
         .eq("patient_id", user.id)
         .eq("status", "confirmed")

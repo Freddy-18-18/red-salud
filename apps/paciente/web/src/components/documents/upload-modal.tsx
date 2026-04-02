@@ -170,10 +170,9 @@ export function UploadModal({
 
     const metadata: DocumentMetadata = {
       title: title.trim(),
-      category,
+      document_type: category,
       provider_name: providerName.trim() || null,
       notes: notes.trim() || null,
-      document_date: documentDate,
     };
 
     const result = await onUpload(selectedFile, metadata);

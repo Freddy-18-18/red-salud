@@ -90,20 +90,20 @@ export function usePatientAppointments(patientId: string | undefined) {
           )
         `
         )
-        .eq("paciente_id", patientId)
-        .order("fecha_hora", { ascending: false });
+        .eq("patient_id", patientId)
+        .order("scheduled_at", { ascending: false });
 
       if (fetchError) throw fetchError;
 
       const mapped = (data || []).map((apt: Record<string, unknown>) => {
-        const fechaHora = new Date(apt.fecha_hora as string);
+        const scheduledAt = new Date(apt.scheduled_at as string);
         return {
           id: apt.id,
-          patient_id: apt.paciente_id,
-          doctor_id: apt.medico_id,
-          appointment_date: fechaHora.toISOString().split("T")[0],
-          appointment_time: fechaHora.toTimeString().split(" ")[0],
-          duration: apt.duracion_minutos,
+          patient_id: apt.patient_id,
+          doctor_id: apt.doctor_id,
+          appointment_date: scheduledAt.toISOString().split("T")[0],
+          appointment_time: scheduledAt.toTimeString().split(" ")[0],
+          duration: apt.duration_minutes,
           status:
             apt.status === "pendiente"
               ? "pending"
@@ -113,8 +113,8 @@ export function usePatientAppointments(patientId: string | undefined) {
                   ? "completed"
                   : "cancelled",
           consultation_type: "presencial" as const,
-          reason: apt.motivo,
-          notes: apt.notas,
+          reason: apt.reason,
+          notes: apt.notes,
           created_at: apt.created_at,
           updated_at: apt.updated_at,
           doctor: apt.doctor,
@@ -244,10 +244,10 @@ export function useAvailableTimeSlots(
       // Get existing appointments for this date
       const { data: appointments } = await supabase
         .from("appointments")
-        .select("id, fecha_hora, duracion_minutos, status")
-        .eq("medico_id", doctorId!)
-        .gte("fecha_hora", startOfDay.toISOString())
-        .lte("fecha_hora", endOfDay.toISOString())
+        .select("id, scheduled_at, duration_minutes, status")
+        .eq("doctor_id", doctorId!)
+        .gte("scheduled_at", startOfDay.toISOString())
+        .lte("scheduled_at", endOfDay.toISOString())
         .not("status", "in", '("cancelada","rechazada")');
 
       const slotDuration = 30; // Default duration
@@ -266,12 +266,12 @@ export function useAvailableTimeSlots(
       const appointmentIntervals = (
         appointments || []
       ).map((apt: Record<string, unknown>) => {
-        const startDate = new Date(apt.fecha_hora as string);
+        const startDate = new Date(apt.scheduled_at as string);
         const start =
           startDate.getHours() * 60 + startDate.getMinutes();
         return {
           start,
-          end: start + ((apt.duracion_minutos as number) || slotDuration),
+          end: start + ((apt.duration_minutes as number) || slotDuration),
         };
       });
 
@@ -325,11 +325,11 @@ export function useCreateAppointment() {
       const { data, error: insertError } = await supabase
         .from("appointments")
         .insert({
-          paciente_id: patientId,
-          medico_id: appointmentData.doctor_id,
-          fecha_hora: fechaHora,
-          duracion_minutos: 30,
-          motivo: appointmentData.reason || "",
+          patient_id: patientId,
+          doctor_id: appointmentData.doctor_id,
+          scheduled_at: fechaHora,
+          duration_minutes: 30,
+          reason: appointmentData.reason || "",
           status: "pendiente",
         })
         .select()
@@ -390,7 +390,7 @@ export function useCancelAppointment() {
         .from("appointments")
         .update({
           status: "cancelada",
-          notas: reason
+          notes: reason
             ? `Cancelada: ${reason}`
             : "Cancelada por paciente",
         })

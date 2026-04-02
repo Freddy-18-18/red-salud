@@ -6,7 +6,7 @@ export interface MedicationReminder {
   id: string;
   patient_id: string;
   medication_name: string;
-  dosage?: string;
+  dosis?: string;
   frequency?: string;
   starts_at: string;
   ends_at?: string;
@@ -117,7 +117,7 @@ export async function addMedicationReminder(
       .insert({
         patient_id: patientId,
         medication_name: reminder.medication_name,
-        dosage: reminder.dosage,
+        dosis: reminder.dosage,
         frequency: reminder.frequency,
         starts_at: reminder.starts_at,
         ends_at: reminder.ends_at || null,
@@ -496,10 +496,10 @@ export async function getUpcomingAppointments(patientId: string, limit = 3) {
           id, full_name, email, avatar_url
         )
       `)
-      .eq("paciente_id", patientId)
-      .gte("fecha_hora", now)
+      .eq("patient_id", patientId)
+      .gte("scheduled_at", now)
       .not("status", "in", '("cancelada","rechazada")')
-      .order("fecha_hora", { ascending: true })
+      .order("scheduled_at", { ascending: true })
       .limit(limit);
 
     if (error) throw error;

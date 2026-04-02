@@ -11,10 +11,10 @@ import { useState } from "react";
 
 interface AppointmentRecord {
   id: string;
-  fecha_hora: string;
-  duracion_minutos?: number;
-  motivo?: string;
-  notas?: string;
+  scheduled_at: string;
+  duration_minutes?: number;
+  reason?: string;
+  notes?: string;
   status: string;
   doctor?: {
     id: string;
@@ -133,9 +133,9 @@ export function AppointmentsPreview({
               {appointments.map((apt) => {
                 const doctor = apt.doctor;
                 const doctorName = doctor?.full_name || "Medico";
-                const relativeDate = formatRelativeDate(apt.fecha_hora);
-                const time = formatTime(apt.fecha_hora);
-                const date = formatDate(apt.fecha_hora);
+                const relativeDate = formatRelativeDate(apt.scheduled_at);
+                const time = formatTime(apt.scheduled_at);
+                const date = formatDate(apt.scheduled_at);
 
                 return (
                   <a
@@ -172,9 +172,9 @@ export function AppointmentsPreview({
                           </span>
                         </div>
 
-                        {apt.notas && (
+                        {apt.notes && (
                           <p className="text-xs text-gray-400 mt-1 italic truncate">
-                            &quot;{apt.notas}&quot;
+                            &quot;{apt.notes}&quot;
                           </p>
                         )}
                       </div>

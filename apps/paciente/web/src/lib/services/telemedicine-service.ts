@@ -24,9 +24,9 @@ export interface TelemedicineSession {
   };
   appointment?: {
     id: string;
-    motivo?: string;
-    fecha_hora: string;
-    duracion_minutos?: number;
+    reason?: string;
+    scheduled_at: string;
+    duration_minutes?: number;
   };
   doctor_detail?: {
     id: string;

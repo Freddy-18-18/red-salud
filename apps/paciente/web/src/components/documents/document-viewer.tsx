@@ -37,7 +37,7 @@ export function DocumentViewer({
   onDelete,
 }: DocumentViewerProps) {
   const formattedDate = new Date(
-    doc.document_date + "T00:00:00"
+    doc.created_at
   ).toLocaleDateString("es-VE", {
     weekday: "long",
     day: "numeric",
@@ -158,7 +158,7 @@ export function DocumentViewer({
             <div>
               <p className="text-xs text-gray-500">Categoria</p>
               <p className="text-sm font-medium text-gray-900">
-                {getCategoryLabel(doc.category)}
+                {getCategoryLabel(doc.document_type)}
               </p>
             </div>
           </div>

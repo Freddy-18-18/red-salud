@@ -248,7 +248,7 @@ export const exportService = {
         case "documentos": {
           const { data } = await supabase
             .from("patient_documents")
-            .select("id, title, category, file_url, created_at")
+            .select("id, title, document_type, file_url, created_at")
             .eq("patient_id", patientId)
             .order("created_at", { ascending: false });
           result.documentos = (data ?? []) as Record<string, unknown>[];

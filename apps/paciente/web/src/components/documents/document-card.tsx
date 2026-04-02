@@ -61,10 +61,10 @@ export function DocumentCard({
   onDelete,
 }: DocumentCardProps) {
   const [showMenu, setShowMenu] = useState(false);
-  const Icon = CATEGORY_ICONS[doc.category] || FileText;
-  const colorClass = CATEGORY_COLORS[doc.category] || CATEGORY_COLORS.otro;
+  const Icon = CATEGORY_ICONS[doc.document_type] || FileText;
+  const colorClass = CATEGORY_COLORS[doc.document_type] || CATEGORY_COLORS.otro;
 
-  const formattedDate = new Date(doc.document_date + "T00:00:00").toLocaleDateString(
+  const formattedDate = new Date(doc.created_at).toLocaleDateString(
     "es-VE",
     { day: "2-digit", month: "short", year: "numeric" }
   );
@@ -100,7 +100,7 @@ export function DocumentCard({
             <span
               className={`inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full ${colorClass}`}
             >
-              {getCategoryLabel(doc.category)}
+              {getCategoryLabel(doc.document_type)}
             </span>
           </div>
           <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500">

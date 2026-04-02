@@ -167,7 +167,7 @@ export function useSettings() {
           .from("patient_details")
           .select("*")
           .eq("profile_id", userId!)
-          .single();
+          .maybeSingle();
         if (error) return {} as PatientDetails;
         return (data as unknown as PatientDetails) ?? ({} as PatientDetails);
       } catch {
@@ -185,7 +185,7 @@ export function useSettings() {
           .from("notification_settings")
           .select("*")
           .eq("user_id", userId!)
-          .single();
+          .maybeSingle();
         if (error) return DEFAULT_NOTIFICATIONS;
         return {
           ...DEFAULT_NOTIFICATIONS,
@@ -206,7 +206,7 @@ export function useSettings() {
           .from("privacy_settings")
           .select("*")
           .eq("user_id", userId!)
-          .single();
+          .maybeSingle();
         if (error) return DEFAULT_PRIVACY;
         return {
           ...DEFAULT_PRIVACY,

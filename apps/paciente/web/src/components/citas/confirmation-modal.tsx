@@ -20,7 +20,7 @@ interface AppointmentFormValues {
     duracion_minutos?: number;
     tipo_cita?: string;
     motivo?: string;
-    paciente_id?: string;
+    patient_id?: string;
 }
 
 interface AppointmentConfirmationModalProps {

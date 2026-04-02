@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 import { BookingDetails } from "@/components/booking/booking-details";
 import { BookingSuccess } from "@/components/booking/booking-success";
@@ -11,7 +12,24 @@ import { SpecialtyGrid } from "@/components/booking/specialty-grid";
 import { StepIndicator } from "@/components/booking/step-indicator";
 import { TimeSlotGrid } from "@/components/booking/time-slot-grid";
 import { useBooking } from "@/hooks/use-booking";
+import { supabase } from "@/lib/supabase/client";
+import type { Specialty } from "@/lib/services/booking-service";
 
+// Direct specialties query — bypasses booking service cache issues
+function useDirectSpecialties() {
+  const q = useQuery({
+    queryKey: ["direct-specialties-v2"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("specialties")
+        .select("*")
+        .order("name");
+      if (error) throw error;
+      return (data || []) as Specialty[];
+    },
+  });
+  return { specialties: q.data ?? [], loading: q.isLoading };
+}
 
 function formatDateLabel(dateStr: string): string {
   const date = new Date(dateStr + "T12:00:00");
@@ -26,6 +44,7 @@ function formatDateLabel(dateStr: string): string {
 export default function AgendarCitaPage() {
   const booking = useBooking();
   const { state } = booking;
+  const directSpecialties = useDirectSpecialties();
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
@@ -73,8 +92,8 @@ export default function AgendarCitaPage() {
       {/* Step 1: Specialty */}
       {state.step === "specialty" && (
         <SpecialtyGrid
-          specialties={booking.specialties}
-          loading={booking.loadingSpecialties}
+          specialties={directSpecialties.specialties}
+          loading={directSpecialties.loading}
           selected={state.specialty}
           onSelect={booking.selectSpecialty}
           onContinue={booking.nextStep}

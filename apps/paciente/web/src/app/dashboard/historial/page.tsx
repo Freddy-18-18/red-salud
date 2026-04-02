@@ -125,7 +125,7 @@ export default function HistorialMedicoPage() {
             .from("prescriptions")
             .select(`
               *,
-              doctor:profiles!prescriptions_doctor_id_fkey(full_name, avatar_url),
+              doctor:profiles(full_name, avatar_url),
               medications:prescription_medications(*)
             `)
             .eq("patient_id", userId)

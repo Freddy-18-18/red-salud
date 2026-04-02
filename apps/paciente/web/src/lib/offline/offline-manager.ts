@@ -12,7 +12,7 @@ import { supabase } from "@/lib/supabase/client";
 export interface CachedMedication {
   id: string;
   medication_name: string;
-  dosage?: string;
+  dosis?: string;
   schedule_times: string[];
 }
 
@@ -134,7 +134,7 @@ export async function cachePatientData(patientId: string): Promise<void> {
       const today = new Date().toISOString().split("T")[0];
       const { data: meds, error: medsErr } = await supabase
         .from("medication_reminders")
-        .select("id, medication_name, dosage, schedule_times")
+        .select("id, medication_name, dosis, schedule_times")
         .eq("patient_id", patientId)
         .lte("starts_at", today)
         .or(`ends_at.is.null,ends_at.gte.${today}`);

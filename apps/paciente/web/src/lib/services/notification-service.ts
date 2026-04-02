@@ -76,6 +76,15 @@ async function resolveTable(): Promise<string | null> {
   return null;
 }
 
+/**
+ * Returns the column name that identifies the user in the resolved table.
+ * `patient_notifications` uses `patient_id`, while `community_notifications`
+ * uses `user_id`.
+ */
+function userColumn(): string {
+  return _resolvedTable === "community_notifications" ? "user_id" : "patient_id";
+}
+
 // ─── Read helpers ────────────────────────────────────────────────────────────
 
 export async function getNotifications(
@@ -96,7 +105,7 @@ export async function getNotifications(
     let query = supabase
       .from(table)
       .select("*", { count: "exact" })
-      .eq("patient_id", patientId)
+      .eq(userColumn(), patientId)
       .order("created_at", { ascending: false })
       .range(from, to);
 
@@ -137,7 +146,7 @@ export async function getUnreadCount(
     const { count, error } = await supabase
       .from(table)
       .select("id", { count: "exact", head: true })
-      .eq("patient_id", patientId)
+      .eq(userColumn(), patientId)
       .eq("is_read", false);
 
     if (error) throw error;
@@ -180,7 +189,7 @@ export async function markAllAsRead(
     const { error } = await supabase
       .from(table)
       .update({ is_read: true })
-      .eq("patient_id", patientId)
+      .eq(userColumn(), patientId)
       .eq("is_read", false);
 
     if (error) throw error;
@@ -219,8 +228,13 @@ export function subscribeToNewNotifications(
 ): () => void {
   // We cannot await resolveTable() in a sync function, so we subscribe to both
   // possible channels and let the one that doesn't exist silently fail.
-  const channels = ["patient_notifications", "community_notifications"].map(
-    (table) =>
+  // Each table uses a different column name for the user reference.
+  const tableColumnPairs: [string, string][] = [
+    ["patient_notifications", "patient_id"],
+    ["community_notifications", "user_id"],
+  ];
+  const channels = tableColumnPairs.map(
+    ([table, col]) =>
       supabase
         .channel(`${table}:${patientId}`)
         .on(
@@ -229,7 +243,7 @@ export function subscribeToNewNotifications(
             event: "INSERT",
             schema: "public",
             table,
-            filter: `patient_id=eq.${patientId}`,
+            filter: `${col}=eq.${patientId}`,
           },
           (payload) => {
             callback(payload.new as AppNotification);

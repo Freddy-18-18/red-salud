@@ -15,24 +15,22 @@ export interface PatientDocument {
   id: string;
   patient_id: string;
   title: string;
-  category: DocumentCategory;
+  document_type: DocumentCategory;
   file_url: string;
   file_name: string;
   file_type: string;
   file_size: number;
   provider_name: string | null;
   notes: string | null;
-  document_date: string;
   created_at: string;
   updated_at: string;
 }
 
 export interface DocumentMetadata {
   title: string;
-  category: DocumentCategory;
+  document_type: DocumentCategory;
   provider_name?: string | null;
   notes?: string | null;
-  document_date: string;
 }
 
 export interface VaccinationRecord {
@@ -111,10 +109,10 @@ export const documentsService = {
       .from("patient_documents")
       .select("*")
       .eq("patient_id", patientId)
-      .order("document_date", { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (category) {
-      query = query.eq("category", category);
+      query = query.eq("document_type", category);
     }
 
     const { data, error } = await query;
@@ -174,14 +172,13 @@ export const documentsService = {
       .insert({
         patient_id: patientId,
         title: metadata.title,
-        category: metadata.category,
+        document_type: metadata.document_type,
         file_url: urlData.publicUrl,
         file_name: file.name,
         file_type: file.type,
         file_size: file.size,
         provider_name: metadata.provider_name || null,
         notes: metadata.notes || null,
-        document_date: metadata.document_date,
       })
       .select()
       .single();
@@ -196,7 +193,7 @@ export const documentsService = {
     await supabase.from("user_activity_log").insert({
       user_id: patientId,
       activity_type: "document_uploaded",
-      description: `Documento subido: ${metadata.title} (${getCategoryLabel(metadata.category)})`,
+      description: `Documento subido: ${metadata.title} (${getCategoryLabel(metadata.document_type)})`,
       status: "success",
     });
 
@@ -302,7 +299,7 @@ export const documentsService = {
   ): Promise<CategoryCount[]> {
     const { data, error } = await supabase
       .from("patient_documents")
-      .select("category")
+      .select("document_type")
       .eq("patient_id", patientId);
 
     if (error) {
@@ -312,7 +309,7 @@ export const documentsService = {
 
     const counts: Record<string, number> = {};
     for (const row of data ?? []) {
-      const cat = row.category as string;
+      const cat = row.document_type as string;
       counts[cat] = (counts[cat] || 0) + 1;
     }
 
@@ -333,7 +330,7 @@ export const documentsService = {
       .or(
         `title.ilike.%${query}%,provider_name.ilike.%${query}%,notes.ilike.%${query}%`
       )
-      .order("document_date", { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error searching documents:", error);
@@ -415,14 +412,13 @@ function normalizeDocument(raw: Record<string, unknown>): PatientDocument {
     id: raw.id as string,
     patient_id: raw.patient_id as string,
     title: raw.title as string,
-    category: raw.category as DocumentCategory,
+    document_type: raw.document_type as DocumentCategory,
     file_url: raw.file_url as string,
     file_name: raw.file_name as string,
     file_type: raw.file_type as string,
     file_size: Number(raw.file_size) || 0,
     provider_name: (raw.provider_name as string) ?? null,
     notes: (raw.notes as string) ?? null,
-    document_date: raw.document_date as string,
     created_at: raw.created_at as string,
     updated_at: raw.updated_at as string,
   };

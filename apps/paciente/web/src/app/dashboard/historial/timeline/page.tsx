@@ -42,8 +42,8 @@ export default function HistorialTimelinePage() {
       try {
         const { data, error } = await supabase
           .from("appointments")
-          .select("medico_id, doctor:profiles!appointments_medico_id_fkey(id, full_name)")
-          .eq("paciente_id", userId);
+          .select("doctor_id, doctor:profiles!appointments_medico_id_fkey(id, full_name)")
+          .eq("patient_id", userId);
 
         if (!error && data) {
           const seen = new Set<string>();

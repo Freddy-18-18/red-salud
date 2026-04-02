@@ -7,7 +7,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import { DoctorCard } from "@/components/ui/doctor-card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -17,13 +17,19 @@ import { useMedicalSpecialties, useAvailableDoctors } from "@/hooks/use-appointm
 
 export default function BuscarMedicoPage() {
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get("q") || "";
 
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialtyId, setSelectedSpecialtyId] = useState<string | undefined>();
   const [showFilters, setShowFilters] = useState(false);
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
   const [showDoctorModal, setShowDoctorModal] = useState(false);
+
+  // Sync search query from URL params after mount to avoid hydration mismatch.
+  // Server has no access to searchParams, so initial state must be "" to match SSR.
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) setSearchQuery(q);
+  }, [searchParams]);
 
   const { specialties, loading: specialtiesLoading } = useMedicalSpecialties(true);
   const { doctors, loading: doctorsLoading } = useAvailableDoctors(selectedSpecialtyId);

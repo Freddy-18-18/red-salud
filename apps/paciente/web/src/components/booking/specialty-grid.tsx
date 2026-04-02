@@ -11,7 +11,7 @@ import {
   Activity,
   Loader2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { Specialty } from "@/lib/services/booking-service";
 
@@ -55,6 +55,15 @@ export function SpecialtyGrid({
   onContinue,
 }: SpecialtyGridProps) {
   const [search, setSearch] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure first client render matches server (loading state) to prevent hydration mismatch.
+  // The server always renders the loading spinner because useQuery hasn't resolved yet.
+  // Without this guard, the client may hydrate with data already in the React Query cache,
+  // rendering content instead of the spinner and causing a DOM mismatch.
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { popular, filtered } = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -81,7 +90,7 @@ export function SpecialtyGrid({
     return { popular: [], filtered: all };
   }, [specialties, search]);
 
-  if (loading) {
+  if (loading || !mounted) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-gray-400">
         <Loader2 className="h-8 w-8 animate-spin mb-3" />

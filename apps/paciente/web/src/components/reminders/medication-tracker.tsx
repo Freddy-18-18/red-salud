@@ -162,9 +162,9 @@ export function MedicationTracker({
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {entry.reminder.medication_name}
                       </p>
-                      {entry.reminder.dosage && (
+                      {entry.reminder.dosis && (
                         <p className="text-xs text-gray-500">
-                          {entry.reminder.dosage}
+                          {entry.reminder.dosis}
                         </p>
                       )}
                     </div>

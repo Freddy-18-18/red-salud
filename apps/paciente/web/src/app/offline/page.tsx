@@ -105,8 +105,8 @@ export default function OfflinePage() {
                         <p className="text-sm font-medium text-gray-800">
                           {med.medication_name}
                         </p>
-                        {med.dosage && (
-                          <p className="text-xs text-gray-500">{med.dosage}</p>
+                        {med.dosis && (
+                          <p className="text-xs text-gray-500">{med.dosis}</p>
                         )}
                       </div>
                       <div className="text-xs text-gray-400">
