@@ -15,6 +15,9 @@ import { neurologiaOverride } from './neurologia';
 import { traumatologiaOverride } from './traumatologia';
 import { oftalmologiaOverride } from './oftalmologia';
 import { ginecologiaOverride } from './ginecologia';
+import { infectologiaPediatricaOverride } from './infectologia-pediatrica';
+import { urologiaOverride } from './urologia';
+import { medicinaInternaOverride } from './medicina-interna';
 
 // Re-exports para acceso directo
 export { odontologiaOverride } from './odontologia';
@@ -24,6 +27,9 @@ export { neurologiaOverride } from './neurologia';
 export { traumatologiaOverride } from './traumatologia';
 export { oftalmologiaOverride } from './oftalmologia';
 export { ginecologiaOverride } from './ginecologia';
+export { infectologiaPediatricaOverride } from './infectologia-pediatrica';
+export { urologiaOverride } from './urologia';
+export { medicinaInternaOverride } from './medicina-interna';
 
 // Constantes de dominio pediátrico
 export {
@@ -32,6 +38,27 @@ export {
   VACCINATION_SCHEDULE,
   DEVELOPMENTAL_MILESTONES,
 } from './pediatria';
+
+// Constantes de dominio infectología pediátrica
+export {
+  COMMON_PEDIATRIC_INFECTIONS,
+  ANTIBIOTIC_CATEGORIES,
+  ISOLATION_TYPES,
+} from './infectologia-pediatrica';
+
+// Constantes de dominio urológico
+export {
+  IPSS_QUESTIONS,
+  GLEASON_GRADE_GROUPS,
+  STONE_COMPOSITION_TYPES,
+} from './urologia';
+
+// Constantes de dominio medicina interna
+export {
+  CHRONIC_DISEASE_PANELS,
+  CLINICAL_SCORES,
+  CRITICAL_CARE_PARAMETERS,
+} from './medicina-interna';
 
 /**
  * Mapa de overrides por slug de especialidad.
@@ -64,4 +91,13 @@ export const SPECIALTY_OVERRIDES: ReadonlyMap<string, SpecialtyConfigOverride> =
 
   // Ginecología — prenatal, ecografía, colposcopia, fertilidad, cirugía
   ['ginecologia', ginecologiaOverride],
+
+  // Infectología Pediátrica — antibiogramas, cultivos, esquemas antibióticos, aislamiento
+  ['infectologia-pediatrica', infectologiaPediatricaOverride],
+
+  // Urología — PSA, cistoscopía, biopsia, litiasis, uroflujometría, IPSS
+  ['urologia', urologiaOverride],
+
+  // Medicina Interna + Medicina Crítica — crónicos, hospitalización, UCI, scores clínicos
+  ['medicina-interna', medicinaInternaOverride],
 ]);

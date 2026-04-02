@@ -12,10 +12,16 @@ import {
   HeartPulse,
   Activity,
   Baby,
+  Bug,
+  Pill,
   Stethoscope,
   FileText,
   AlertTriangle,
   Scan,
+  Droplets,
+  Scissors,
+  ClipboardList,
+  Calculator,
 } from 'lucide-react';
 
 // ============================================================================
@@ -93,6 +99,78 @@ function getWidgetsForSpecialty(
         icon: AlertTriangle,
         items: [],
         emptyMessage: 'Sin pacientes críticos',
+      },
+    ];
+  }
+
+  // Urología
+  if (dashboardVariant.includes('urologia')) {
+    return [
+      {
+        title: 'Seguimiento PSA',
+        icon: Droplets,
+        items: [],
+        emptyMessage: 'Sin alertas de PSA pendientes',
+      },
+      {
+        title: 'Cirugías programadas',
+        icon: Scissors,
+        items: [],
+        emptyMessage: 'Sin cirugías programadas',
+      },
+      {
+        title: 'Estudios urodinámicos',
+        icon: Activity,
+        items: [],
+        emptyMessage: 'Sin estudios urodinámicos pendientes',
+      },
+    ];
+  }
+
+  // Medicina Interna + Medicina Crítica
+  if (dashboardVariant.includes('medicina-interna')) {
+    return [
+      {
+        title: 'Pacientes crónicos',
+        icon: ClipboardList,
+        items: [],
+        emptyMessage: 'Sin alertas de crónicos pendientes',
+      },
+      {
+        title: 'Laboratorios pendientes',
+        icon: FlaskConical,
+        items: [],
+        emptyMessage: 'Sin resultados de laboratorio pendientes',
+      },
+      {
+        title: 'Scores de riesgo',
+        icon: Calculator,
+        items: [],
+        emptyMessage: 'Sin scores de riesgo calculados',
+      },
+    ];
+  }
+
+  // Infectología Pediátrica
+  if (dashboardVariant.includes('infectologia-pediatrica')) {
+    return [
+      {
+        title: 'Infecciones activas',
+        icon: Bug,
+        items: [],
+        emptyMessage: 'Sin infecciones activas registradas',
+      },
+      {
+        title: 'Cultivos pendientes',
+        icon: FlaskConical,
+        items: [],
+        emptyMessage: 'Sin cultivos pendientes',
+      },
+      {
+        title: 'Esquemas antibióticos',
+        icon: Pill,
+        items: [],
+        emptyMessage: 'Sin esquemas antibióticos activos',
       },
     ];
   }
