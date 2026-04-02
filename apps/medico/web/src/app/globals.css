@@ -13,10 +13,8 @@
   scrollbar-width: none;
 }
 
-/* Smooth scroll for the whole page */
-html {
-  scroll-behavior: smooth;
-}
+/* No global scroll-behavior: smooth — it conflicts with Next.js route navigation.
+   Smooth scrolling for anchor links is handled via JS (scrollIntoView). */
 
 /* Animation keyframes for fade-in sections */
 @keyframes fade-in-up {

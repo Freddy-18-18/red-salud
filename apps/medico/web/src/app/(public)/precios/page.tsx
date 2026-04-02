@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { pricingTiers } from '@/lib/data/pricing-data';
-import { Check, HelpCircle, ChevronDown } from 'lucide-react';
+import { HelpCircle, ChevronDown } from 'lucide-react';
+import { PricingCards } from '@/components/public/pricing-cards';
 
 export const metadata: Metadata = {
   title: 'Precios — Red Salud',
   description:
-    'Planes flexibles para tu práctica médica. Comenzá gratis y escalá cuando lo necesites.',
+    'Plan gratuito o profesional a $40/mes para tu consultorio médico. 30% de descuento con plan anual.',
 };
 
 const faqs = [
@@ -44,70 +43,18 @@ export default function PreciosPage() {
       <section className="py-16 text-center">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold text-white sm:text-5xl">
-            Planes para cada práctica
+            Un precio simple para tu consultorio
           </h1>
           <p className="mt-4 text-lg text-zinc-400">
-            Comenzá gratis y escalá cuando tu consultorio lo necesite. Sin contratos, sin
+            Comenzá gratis y pasá al plan Profesional cuando estés listo. Sin contratos, sin
             compromisos.
           </p>
         </div>
       </section>
 
-      {/* Pricing cards */}
+      {/* Pricing toggle + cards (client component) */}
       <section className="pb-24">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-3">
-            {pricingTiers.map((tier) => (
-              <div
-                key={tier.name}
-                className={`relative rounded-2xl border p-8 backdrop-blur-sm transition-colors duration-300 ${
-                  tier.highlighted
-                    ? 'border-teal-500/50 bg-teal-500/5 shadow-xl shadow-teal-500/10'
-                    : 'border-white/10 bg-white/5 hover:border-white/20'
-                }`}
-              >
-                {tier.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 px-4 py-1 text-xs font-semibold text-white">
-                      {tier.badge}
-                    </span>
-                  </div>
-                )}
-
-                <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-white">{tier.name}</h3>
-                  <div className="mt-3 flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-white">{tier.price}</span>
-                    {tier.period && (
-                      <span className="text-zinc-500">{tier.period}</span>
-                    )}
-                  </div>
-                  <p className="mt-3 text-sm text-zinc-400">{tier.description}</p>
-                </div>
-
-                <ul className="mb-8 space-y-3">
-                  {tier.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <Check className="h-4 w-4 text-teal-400 mt-0.5 shrink-0" />
-                      <span className="text-sm text-zinc-300">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href="/auth/register"
-                  className={`block rounded-xl py-3 text-center text-sm font-semibold transition-all duration-200 ${
-                    tier.highlighted
-                      ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/20 hover:from-teal-400 hover:to-cyan-400'
-                      : 'border border-white/20 text-zinc-300 hover:bg-white/10 hover:text-white'
-                  }`}
-                >
-                  {tier.ctaText}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PricingCards />
       </section>
 
       {/* FAQ */}

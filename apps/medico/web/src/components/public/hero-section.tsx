@@ -4,7 +4,7 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+    <section className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Background orbs */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute top-1/4 left-1/4 h-[500px] w-[500px] rounded-full bg-teal-500/10 blur-[120px]" />
@@ -21,7 +21,7 @@ export function HeroSection() {
         }}
       />
 
-      <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-24 pb-16 text-center">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
         {/* Badge */}
         <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-teal-500/10 px-4 py-1.5">
           <Sparkles className="h-3.5 w-3.5 text-teal-400" />

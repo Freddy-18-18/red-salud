@@ -8,7 +8,7 @@ const footerColumns = [
       { label: 'Funcionalidades', href: '/#funcionalidades' },
       { label: 'Especialidades', href: '/#especialidades' },
       { label: 'Precios', href: '/precios' },
-      { label: 'Actualizaciones', href: '#' },
+      { label: 'Nosotros', href: '/nosotros' },
     ],
   },
   {
@@ -25,18 +25,16 @@ const footerColumns = [
   {
     title: 'Recursos',
     links: [
-      { label: 'Centro de Ayuda', href: '#' },
-      { label: 'Blog', href: '#' },
-      { label: 'API', href: '#' },
-      { label: 'Estado del Sistema', href: '#' },
+      { label: 'Contacto', href: '/contacto' },
+      { label: 'Seguridad', href: '/seguridad' },
     ],
   },
   {
     title: 'Legal',
     links: [
-      { label: 'Privacidad', href: '#' },
-      { label: 'Términos', href: '#' },
-      { label: 'Seguridad', href: '#' },
+      { label: 'Privacidad', href: '/legal/privacidad' },
+      { label: 'Términos', href: '/legal/terminos' },
+      { label: 'Seguridad', href: '/seguridad' },
     ],
   },
 ];
@@ -83,7 +81,7 @@ export function PublicFooter() {
       {/* Bottom bar */}
       <div className="border-t border-white/5">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-zinc-600">&copy; 2024 Red Salud. Todos los derechos reservados.</p>
+          <p className="text-sm text-zinc-600">&copy; 2024-2025 Red Salud. Todos los derechos reservados.</p>
           <p className="text-sm text-zinc-600">Hecho con amor en Venezuela</p>
         </div>
       </div>

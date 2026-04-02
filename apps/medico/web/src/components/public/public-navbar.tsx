@@ -7,6 +7,7 @@ import Link from 'next/link';
 const navLinks = [
   { label: 'Funcionalidades', href: '/#funcionalidades' },
   { label: 'Especialidades', href: '/#especialidades' },
+  { label: 'Nosotros', href: '/nosotros' },
   { label: 'Precios', href: '/precios' },
 ];
 

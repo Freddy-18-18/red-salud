@@ -235,7 +235,7 @@ export function SpecialtyShowcase() {
             href="/especialidades"
             className="group inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 font-medium transition-colors duration-200"
           >
-            Ver todas las 132+ especialidades
+            Ver todas las 130+ especialidades
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
           </Link>
         </div>

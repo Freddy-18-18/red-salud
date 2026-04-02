@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { z } from 'zod';
-import { Plus, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 
 // ============================================================================
@@ -54,6 +55,7 @@ export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   // ── Email/Password Registration ──────────────────────────────────────
   const handleSubmit = useCallback(
@@ -136,7 +138,7 @@ export function RegisterForm() {
   if (success) {
     return (
       <div className="w-full max-w-md mx-auto text-center">
-        <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-8 space-y-4">
+        <div className="rounded-2xl bg-zinc-900/80 backdrop-blur-xl border border-white/10 p-8 shadow-2xl space-y-4">
           <div className="w-16 h-16 mx-auto rounded-full bg-teal-500/20 flex items-center justify-center">
             <Mail className="w-8 h-8 text-teal-400" />
           </div>
@@ -147,12 +149,12 @@ export function RegisterForm() {
             <br />
             Haz clic en el enlace para activar tu cuenta.
           </p>
-          <a
+          <Link
             href="/auth/login"
             className="inline-block mt-4 text-sm text-teal-400 hover:text-teal-300 font-medium transition-colors"
           >
             Ir a Iniciar Sesion
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -162,21 +164,21 @@ export function RegisterForm() {
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Branding */}
-      <a href="/" className="flex items-center justify-center gap-2 mb-8 group">
+      <Link href="/" className="flex items-center justify-center gap-2 mb-8 group">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25">
           <Plus className="w-5 h-5 text-white" strokeWidth={3} />
         </div>
         <span className="text-xl font-bold text-white group-hover:text-teal-400 transition-colors">
           Red Salud
         </span>
-      </a>
+      </Link>
 
       {/* Card */}
-      <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-8">
+      <div className="rounded-2xl bg-zinc-900/80 backdrop-blur-xl border border-white/10 p-8 shadow-2xl">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-white">Crea tu cuenta</h1>
+          <h1 className="text-2xl font-bold text-white">Crea tu consultorio digital</h1>
           <p className="text-sm text-zinc-400 mt-1">
-            Consultorio medico digital en minutos
+            Comenza gratis, sin tarjeta de credito
           </p>
         </div>
 
@@ -188,128 +190,178 @@ export function RegisterForm() {
           </div>
         )}
 
-        {/* Google OAuth */}
-        <button
-          type="button"
-          onClick={handleGoogleSignUp}
-          disabled={googleLoading || loading}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl
-            bg-white text-gray-900 font-medium text-sm
-            hover:bg-zinc-100 transition-colors
-            disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {googleLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <GoogleIcon className="w-5 h-5" />
-          )}
-          Continuar con Google
-        </button>
-
-        {/* Divider */}
-        <div className="flex items-center gap-4 my-6">
-          <div className="flex-1 h-px bg-white/10" />
-          <span className="text-xs text-zinc-500 uppercase tracking-wider">o</span>
-          <div className="flex-1 h-px bg-white/10" />
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email */}
-          <div>
-            <label htmlFor="register-email" className="block text-sm text-zinc-300 mb-1.5">
-              Correo electronico
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input
-                id="register-email"
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setFieldErrors((prev) => ({ ...prev, email: '' }));
-                }}
-                placeholder="doctor@ejemplo.com"
-                autoComplete="email"
-                className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm text-white
-                  bg-zinc-900 placeholder:text-zinc-500
-                  focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent
-                  ${fieldErrors.email ? 'border-red-500/50' : 'border-zinc-700'}`}
-              />
-            </div>
-            {fieldErrors.email && (
-              <p className="text-xs text-red-400 mt-1">{fieldErrors.email}</p>
-            )}
-          </div>
-
-          {/* Password */}
-          <div>
-            <label htmlFor="register-password" className="block text-sm text-zinc-300 mb-1.5">
-              Contrasena
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input
-                id="register-password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setFieldErrors((prev) => ({ ...prev, password: '' }));
-                }}
-                placeholder="Minimo 6 caracteres"
-                autoComplete="new-password"
-                className={`w-full pl-10 pr-12 py-2.5 rounded-xl border text-sm text-white
-                  bg-zinc-900 placeholder:text-zinc-500
-                  focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent
-                  ${fieldErrors.password ? 'border-red-500/50' : 'border-zinc-700'}`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            {fieldErrors.password && (
-              <p className="text-xs text-red-400 mt-1">{fieldErrors.password}</p>
-            )}
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading || googleLoading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
-              text-sm font-semibold text-white
-              bg-gradient-to-r from-teal-500 to-cyan-500
-              hover:from-teal-400 hover:to-cyan-400
-              transition-all shadow-lg shadow-teal-500/25
-              disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
+        {!showEmailForm ? (
+          <>
+            {/* Google OAuth */}
+            <button
+              type="button"
+              onClick={handleGoogleSignUp}
+              disabled={googleLoading}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl
+                bg-white text-gray-900 font-bold text-sm
+                hover:bg-zinc-100 transition-colors
+                disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {googleLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Creando cuenta...
-              </>
-            ) : (
-              'Crear Cuenta'
-            )}
-          </button>
-        </form>
+              ) : (
+                <GoogleIcon className="w-5 h-5" />
+              )}
+              Continuar con Google
+            </button>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 my-6">
+              <div className="flex-1 h-px bg-white/10" />
+              <span className="text-xs text-zinc-500 uppercase tracking-wider">o</span>
+              <div className="flex-1 h-px bg-white/10" />
+            </div>
+
+            {/* Email option */}
+            <button
+              type="button"
+              onClick={() => setShowEmailForm(true)}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl
+                border border-white/20 text-white font-medium text-sm
+                hover:bg-white/5 transition-colors"
+            >
+              <Mail className="w-5 h-5" />
+              Continuar con Correo
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Back link */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowEmailForm(false);
+                setError(null);
+                setFieldErrors({});
+              }}
+              className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors mb-6"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Volver
+            </button>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Email */}
+              <div>
+                <label htmlFor="register-email" className="block text-sm text-zinc-300 mb-1.5">
+                  Correo electronico
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <input
+                    id="register-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setFieldErrors((prev) => ({ ...prev, email: '' }));
+                    }}
+                    placeholder="doctor@ejemplo.com"
+                    autoComplete="email"
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm text-white
+                      bg-zinc-800/50 placeholder:text-zinc-500
+                      focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent
+                      ${fieldErrors.email ? 'border-red-500/50' : 'border-white/10'}`}
+                  />
+                </div>
+                {fieldErrors.email && (
+                  <p className="text-xs text-red-400 mt-1">{fieldErrors.email}</p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <label htmlFor="register-password" className="block text-sm text-zinc-300 mb-1.5">
+                  Contrasena
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <input
+                    id="register-password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setFieldErrors((prev) => ({ ...prev, password: '' }));
+                    }}
+                    placeholder="Minimo 6 caracteres"
+                    autoComplete="new-password"
+                    className={`w-full pl-10 pr-12 py-2.5 rounded-xl border text-sm text-white
+                      bg-zinc-800/50 placeholder:text-zinc-500
+                      focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent
+                      ${fieldErrors.password ? 'border-red-500/50' : 'border-white/10'}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {fieldErrors.password && (
+                  <p className="text-xs text-red-400 mt-1">{fieldErrors.password}</p>
+                )}
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading || googleLoading}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
+                  text-sm font-semibold text-white
+                  bg-gradient-to-r from-teal-500 to-cyan-500
+                  hover:from-teal-400 hover:to-cyan-400
+                  transition-all shadow-lg shadow-teal-500/25
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Creando cuenta...
+                  </>
+                ) : (
+                  'Crear Cuenta'
+                )}
+              </button>
+            </form>
+          </>
+        )}
       </div>
 
+      {/* Terms / Privacy */}
+      <p className="text-center text-xs text-zinc-500 mt-6 px-4">
+        Al registrarte, aceptas nuestros{' '}
+        <Link
+          href="/legal/terminos"
+          className="text-zinc-400 underline underline-offset-2 hover:text-white transition-colors"
+        >
+          Terminos de Servicio
+        </Link>{' '}
+        y{' '}
+        <Link
+          href="/legal/privacidad"
+          className="text-zinc-400 underline underline-offset-2 hover:text-white transition-colors"
+        >
+          Politica de Privacidad
+        </Link>
+      </p>
+
       {/* Login link */}
-      <p className="text-center text-sm text-zinc-500 mt-6">
+      <p className="text-center text-sm text-zinc-500 mt-4">
         Ya tenes cuenta?{' '}
-        <a
+        <Link
           href="/auth/login"
           className="text-teal-400 hover:text-teal-300 font-semibold transition-colors"
         >
           Inicia sesion
-        </a>
+        </Link>
       </p>
     </div>
   );

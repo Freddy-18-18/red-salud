@@ -9,7 +9,7 @@ export const heroContent = {
   ctaPrimary: 'Comenzar Gratis',
   ctaSecondary: 'Explorar Funcionalidades',
   trustIndicators: [
-    '132+ especialidades',
+    '130+ especialidades',
     'Verificación SACS',
     'Gratis para comenzar',
   ],
@@ -17,14 +17,14 @@ export const heroContent = {
 
 export const statsContent = [
   {
-    value: '132+',
-    label: 'Especialidades Médicas',
+    value: '130+',
+    label: 'Especialidades Soportadas',
     description: 'Desde medicina general hasta subespecialidades quirúrgicas',
   },
   {
-    value: '50+',
-    label: 'Módulos Clínicos',
-    description: 'Consultas, recetas, imagenología, laboratorio y más',
+    value: '8',
+    label: 'Módulos Principales',
+    description: 'Agenda, consultas, recetas, historia clínica, IA, calendario, estadísticas y SACS',
   },
   {
     value: '24/7',
@@ -33,7 +33,7 @@ export const statsContent = [
   },
   {
     value: '100%',
-    label: 'Personalizable',
+    label: 'Adaptable a tu Especialidad',
     description: 'Cada módulo se adapta a los flujos de tu especialidad',
   },
 ] as const;
@@ -70,7 +70,7 @@ export const howItWorksContent = {
 export const ctaContent = {
   headline: 'Llevá tu consultorio al siguiente nivel',
   subtitle:
-    'Unite a la comunidad de médicos que ya están transformando la atención médica en Venezuela.',
+    'Digitalizá tu consultorio y ofrecé una experiencia médica moderna a tus pacientes.',
   ctaText: 'Crear Mi Cuenta Gratis',
   smallText: 'Sin tarjeta de crédito · Configuración en 5 minutos',
 } as const;

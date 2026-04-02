@@ -1,5 +1,36 @@
-import { testimonials } from '@/lib/data/testimonials-data';
-import { Quote, MapPin } from 'lucide-react';
+import {
+  Stethoscope,
+  ShieldCheck,
+  HeartPulse,
+  Users,
+} from 'lucide-react';
+
+const trustPoints = [
+  {
+    icon: Stethoscope,
+    title: 'Diseñado por médicos venezolanos',
+    description:
+      'Cada módulo fue pensado desde la realidad del consultorio venezolano. No es un software genérico traducido — es una herramienta hecha por y para profesionales de la salud en Venezuela.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Integración SACS real',
+    description:
+      'Verificación directa contra el Sistema Autónomo de Certificación Sanitaria. Tu registro profesional validado, tu identidad médica protegida.',
+  },
+  {
+    icon: HeartPulse,
+    title: 'Especialidades, no genéricos',
+    description:
+      'Cada especialidad activa módulos, formularios y KPIs propios. Un cardiólogo no ve lo mismo que un odontólogo — porque no trabajan igual.',
+  },
+  {
+    icon: Users,
+    title: 'Construido con feedback médico',
+    description:
+      'Cada funcionalidad se desarrolla en colaboración con profesionales de la salud que validan los flujos de trabajo antes de implementarlos.',
+  },
+];
 
 export function TestimonialsSection() {
   return (
@@ -8,78 +39,31 @@ export function TestimonialsSection() {
         {/* Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-white sm:text-4xl">
-            Médicos que ya transformaron su práctica
+            Construido con la medicina venezolana en mente
           </h2>
           <p className="mt-4 text-lg text-zinc-400">
-            Profesionales de toda Venezuela confían en Red Salud para su consultorio digital.
+            No es un software extranjero adaptado. Es una plataforma pensada desde cero
+            para cómo trabajan los médicos en Venezuela.
           </p>
         </div>
 
-        {/* Testimonial grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {testimonials.slice(0, 3).map((testimonial) => (
-            <div
-              key={testimonial.doctorName}
-              className="relative rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm hover:border-white/20 transition-colors duration-300"
-            >
-              {/* Quote decoration */}
-              <Quote className="absolute top-4 right-4 h-8 w-8 text-teal-500/10" />
-
-              {/* Quote text */}
-              <p className="relative text-sm leading-relaxed text-zinc-300 mb-6">
-                &ldquo;{testimonial.quote}&rdquo;
-              </p>
-
-              {/* Author */}
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 text-sm font-bold text-white shrink-0">
-                  {testimonial.initials}
+        {/* Trust grid */}
+        <div className="grid gap-6 sm:grid-cols-2">
+          {trustPoints.map((point) => {
+            const Icon = point.icon;
+            return (
+              <div
+                key={point.title}
+                className="relative rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm hover:border-teal-500/20 hover:bg-white/[0.07] transition-all duration-300"
+              >
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 text-teal-400">
+                  <Icon className="h-6 w-6" />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">
-                    {testimonial.doctorName}
-                  </p>
-                  <p className="text-xs text-zinc-500">{testimonial.specialty}</p>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <MapPin className="h-3 w-3 text-zinc-600" />
-                    <span className="text-xs text-zinc-600">{testimonial.city}</span>
-                  </div>
-                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">{point.title}</h3>
+                <p className="text-sm leading-relaxed text-zinc-400">{point.description}</p>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Second row for remaining testimonials (2 cards centered) */}
-        <div className="mt-6 grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
-          {testimonials.slice(3).map((testimonial) => (
-            <div
-              key={testimonial.doctorName}
-              className="relative rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm hover:border-white/20 transition-colors duration-300"
-            >
-              <Quote className="absolute top-4 right-4 h-8 w-8 text-teal-500/10" />
-
-              <p className="relative text-sm leading-relaxed text-zinc-300 mb-6">
-                &ldquo;{testimonial.quote}&rdquo;
-              </p>
-
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 text-sm font-bold text-white shrink-0">
-                  {testimonial.initials}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">
-                    {testimonial.doctorName}
-                  </p>
-                  <p className="text-xs text-zinc-500">{testimonial.specialty}</p>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <MapPin className="h-3 w-3 text-zinc-600" />
-                    <span className="text-xs text-zinc-600">{testimonial.city}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
