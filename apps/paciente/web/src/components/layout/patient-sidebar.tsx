@@ -132,35 +132,39 @@ export function PatientSidebar() {
       }`}
     >
       {/* Nav links */}
-      <nav className="flex-1 p-2 space-y-1 overflow-y-auto overflow-x-hidden">
+      <nav className={`flex-1 overflow-y-auto overflow-x-hidden ${
+        expanded ? "p-2 space-y-1" : "flex flex-col items-center py-2 gap-1"
+      }`}>
         {NAV_ITEMS.map((item) => {
           const active = isActive(item.href);
+          const isHighlight = item.highlight && !active;
+
           return (
             <a
               key={item.href}
               href={item.href}
               title={!expanded ? item.label : undefined}
-              className={`flex items-center gap-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                expanded ? "px-3 py-2.5" : "px-0 py-2.5 justify-center"
+              className={`flex items-center rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                expanded
+                  ? "gap-3 px-3 py-2.5"
+                  : "justify-center h-10 w-10"
               } ${
-                item.highlight && !active
-                  ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                isHighlight
+                  ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
                   : active
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ? `bg-emerald-50 text-emerald-700 ${!expanded ? "ring-1 ring-emerald-200" : ""}`
+                    : `text-gray-600 hover:text-gray-900 ${expanded ? "hover:bg-gray-50" : "hover:bg-gray-100"}`
               }`}
             >
               <item.icon
-                className={`h-5 w-5 shrink-0 ${
-                  item.highlight && !active
+                className={`shrink-0 ${expanded ? "h-5 w-5" : "h-5 w-5"} ${
+                  isHighlight
                     ? "text-white"
                     : active
                       ? "text-emerald-600"
-                      : "text-gray-400"
+                      : "text-gray-500"
                 }`}
               />
-              {/* Always render the span — use CSS to hide it when collapsed.
-                  This avoids DOM structure differences between server and client. */}
               <span
                 className={`truncate transition-opacity duration-150 ${
                   expanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
