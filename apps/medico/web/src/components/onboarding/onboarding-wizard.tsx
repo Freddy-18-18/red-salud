@@ -352,34 +352,68 @@ export function OnboardingWizard() {
     setGlobalError(null);
 
     try {
-      const nombreCompleto = state.sacsVerified
+      const fullName = state.sacsVerified
         ? state.sacsResult?.data?.nombre_completo ?? ''
         : state.manualName;
 
-      const especialidadId = state.sacsVerified
-        ? state.manualSpecialtyId || null // If SACS didn't match a DB specialty, may be null
+      const specialtyId = state.sacsVerified
+        ? state.manualSpecialtyId || null
         : state.manualSpecialtyId || null;
 
       const specialtySlug = state.sacsVerified
         ? state.manualSpecialtyOption?.slug ?? 'general'
         : state.manualSpecialtyOption?.slug ?? 'general';
 
-      const { error: profileError } = await supabase.from('doctor_details').upsert(
+      const cedulaFormatted = `${state.docType}-${state.cedula}`;
+
+      const sacsSpecialty = state.sacsResult?.data?.especialidad_display
+        || state.sacsResult?.data?.postgrados?.[0]?.postgrado
+        || null;
+
+      // 1. Update profiles table (personal data)
+      const { error: profilesError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: fullName,
+          national_id: cedulaFormatted,
+          state: state.location?.state ?? '',
+          city: state.location?.city ?? '',
+          address: state.addressOverride || state.location?.formatted || '',
+          sacs_verificado: state.sacsVerified,
+          sacs_name: state.sacsVerified ? fullName : null,
+          sacs_matricula: state.sacsResult?.data?.matricula_principal || null,
+          sacs_specialty: sacsSpecialty,
+          sacs_verified_at: state.sacsVerified ? new Date().toISOString() : null,
+          national_id_verified: state.sacsVerified,
+        })
+        .eq('id', userId);
+
+      if (profilesError) {
+        console.error('Error updating profiles:', profilesError);
+        setGlobalError('Error al guardar tu perfil. Intenta de nuevo.');
+        setSaving(false);
+        return;
+      }
+
+      // 2. Upsert doctor_details table (professional data)
+      const { error: doctorError } = await supabase.from('doctor_details').upsert(
         {
           profile_id: userId,
-          nombre_completo: nombreCompleto,
-          cedula: `${state.docType}-${state.cedula}`,
-          estado: state.location?.state ?? '',
-          ciudad: state.location?.city ?? '',
-          especialidad_id: especialidadId,
-          nombre_consultorio: state.practiceName,
-          direccion_consultorio: state.addressOverride || state.location?.formatted || '',
+          specialty_id: specialtyId,
+          medical_license: state.sacsResult?.data?.matricula_principal || cedulaFormatted,
+          clinic_address: state.addressOverride || state.location?.formatted || '',
+          consultation_duration: state.consultationDuration,
           sacs_verified: state.sacsVerified,
           verified: state.sacsVerified,
           sacs_data: state.sacsVerified ? state.sacsResult : null,
+          schedule: {
+            workingDays: state.workingDays,
+            timeBlocks: state.timeBlocks,
+          },
           dashboard_config: {
             onboarding_completed: true,
             theme: specialtySlug,
+            practice_name: state.practiceName,
             schedule: {
               workingDays: state.workingDays,
               timeBlocks: state.timeBlocks,
@@ -393,17 +427,18 @@ export function OnboardingWizard() {
         { onConflict: 'profile_id' }
       );
 
-      if (profileError) {
-        console.error('Error saving doctor profile:', profileError);
-        setGlobalError('Error al guardar tu perfil. Intenta de nuevo.');
+      if (doctorError) {
+        console.error('Error saving doctor details:', doctorError);
+        setGlobalError('Error al guardar los datos profesionales. Intenta de nuevo.');
         setSaving(false);
         return;
       }
 
+      // 3. Update auth user metadata
       await supabase.auth.updateUser({
         data: {
-          nombre_completo: nombreCompleto,
-          cedula: `${state.docType}-${state.cedula}`,
+          full_name: fullName,
+          national_id: cedulaFormatted,
         },
       });
 
