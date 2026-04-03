@@ -10,6 +10,7 @@ import { useSpecialtyDashboard } from '@/hooks/dashboard/use-specialty-dashboard
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { TodayAgenda } from '@/components/dashboard/today-agenda';
 import { SpecialtyWidgets } from '@/components/dashboard/specialty-widgets';
+import { ExchangeRateWidget } from '@/components/dashboard/exchange-rate-widget';
 import {
   Users,
   CalendarCheck,
@@ -176,43 +177,48 @@ export default function DashboardPage() {
           {userId && <TodayAgenda doctorId={userId} themeColor={themeColor} />}
         </div>
 
-        {/* Quick Actions (1/3) */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Acciones rápidas</h2>
-          <div className="space-y-2">
-            {QUICK_ACTIONS.map((action) => {
-              const Icon = action.icon;
-              return (
-                <Link
-                  key={action.label}
-                  href={action.href}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group"
-                >
-                  <div
-                    className="h-9 w-9 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: `${action.color}15` }}
+        {/* Quick Actions + Exchange Rates (1/3) */}
+        <div className="space-y-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Acciones rápidas</h2>
+            <div className="space-y-2">
+              {QUICK_ACTIONS.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <Link
+                    key={action.label}
+                    href={action.href}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group"
                   >
-                    <Icon className="h-4.5 w-4.5" style={{ color: action.color }} />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-                    {action.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
+                    <div
+                      className="h-9 w-9 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${action.color}15` }}
+                    >
+                      <Icon className="h-4.5 w-4.5" style={{ color: action.color }} />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                      {action.label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
 
-          {/* Today summary */}
-          <div className="mt-5 pt-4 border-t border-gray-100">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-              Resumen del día
-            </p>
-            <div className="space-y-1.5">
-              <SummaryRow label="Total citas" value={dashboard.todayAppointments.total} />
-              <SummaryRow label="Completadas" value={dashboard.todayAppointments.completed} />
-              <SummaryRow label="Pendientes" value={dashboard.todayAppointments.pending} />
+            {/* Today summary */}
+            <div className="mt-5 pt-4 border-t border-gray-100">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Resumen del día
+              </p>
+              <div className="space-y-1.5">
+                <SummaryRow label="Total citas" value={dashboard.todayAppointments.total} />
+                <SummaryRow label="Completadas" value={dashboard.todayAppointments.completed} />
+                <SummaryRow label="Pendientes" value={dashboard.todayAppointments.pending} />
+              </div>
             </div>
           </div>
+
+          {/* Exchange Rates */}
+          <ExchangeRateWidget />
         </div>
       </div>
 
