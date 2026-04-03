@@ -47,6 +47,30 @@ import { medicinaEmergenciasOverride } from './medicina-emergencias';
 import { medicinaIntensivaOverride } from './medicina-intensiva';
 import { quemadosOverride } from './quemados';
 import { medicinaHiperbaricaOverride } from './medicina-hiperbarica';
+import { acupunturaOverride } from './acupuntura';
+import { andrologiaOverride } from './andrologia';
+import { artroscopiaOverride } from './artroscopia';
+import { cirugiaRefractivaOverride } from './cirugia-refractiva';
+import { dermatopatologiaOverride } from './dermatopatologia';
+import { farmacologiaClinicaOverride } from './farmacologia-clinica';
+import { foniatriaOverride } from './foniatria';
+import { geneticaMedicaOverride } from './genetica-medica';
+import { glaucomaOverride } from './glaucoma';
+import { homeopatiaOverride } from './homeopatia';
+import { logofonoaudiologiaOverride } from './logofonoaudiologia';
+import { medicinaDeporteOverride } from './medicina-deporte';
+import { medicinaFisicaRehabilitacionOverride } from './medicina-fisica-rehabilitacion';
+import { medicinaLegalOverride } from './medicina-legal';
+import { neurofisiologiaClinicaOverride } from './neurofisiologia-clinica';
+import { optometriaOverride } from './optometria';
+import { ortopediaDentomaxilofacialOverride } from './ortopedia-dentomaxilofacial';
+import { podologiaOverride } from './podologia';
+import { psicopedagogiaOverride } from './psicopedagogia';
+import { quiropracticaOverride } from './quiropractica';
+import { retinaVitreoOverride } from './retina-vitreo';
+import { sexologiaClinicaOverride } from './sexologia-clinica';
+import { toxicologiaOverride } from './toxicologia';
+import { transplanteOrganosOverride } from './transplante-organos';
 
 // Re-exports para acceso directo
 export { odontologiaOverride } from './odontologia';
@@ -88,6 +112,30 @@ export { medicinaEmergenciasOverride } from './medicina-emergencias';
 export { medicinaIntensivaOverride } from './medicina-intensiva';
 export { quemadosOverride } from './quemados';
 export { medicinaHiperbaricaOverride } from './medicina-hiperbarica';
+export { acupunturaOverride } from './acupuntura';
+export { andrologiaOverride } from './andrologia';
+export { artroscopiaOverride } from './artroscopia';
+export { cirugiaRefractivaOverride } from './cirugia-refractiva';
+export { dermatopatologiaOverride } from './dermatopatologia';
+export { farmacologiaClinicaOverride } from './farmacologia-clinica';
+export { foniatriaOverride } from './foniatria';
+export { geneticaMedicaOverride } from './genetica-medica';
+export { glaucomaOverride } from './glaucoma';
+export { homeopatiaOverride } from './homeopatia';
+export { logofonoaudiologiaOverride } from './logofonoaudiologia';
+export { medicinaDeporteOverride } from './medicina-deporte';
+export { medicinaFisicaRehabilitacionOverride } from './medicina-fisica-rehabilitacion';
+export { medicinaLegalOverride } from './medicina-legal';
+export { neurofisiologiaClinicaOverride } from './neurofisiologia-clinica';
+export { optometriaOverride } from './optometria';
+export { ortopediaDentomaxilofacialOverride } from './ortopedia-dentomaxilofacial';
+export { podologiaOverride } from './podologia';
+export { psicopedagogiaOverride } from './psicopedagogia';
+export { quiropracticaOverride } from './quiropractica';
+export { retinaVitreoOverride } from './retina-vitreo';
+export { sexologiaClinicaOverride } from './sexologia-clinica';
+export { toxicologiaOverride } from './toxicologia';
+export { transplanteOrganosOverride } from './transplante-organos';
 
 // Constantes de dominio pediátrico
 export {
@@ -225,6 +273,154 @@ export {
   CRITICAL_MICRONUTRIENTS,
 } from './nutriologia';
 
+// Constantes de dominio acupuntura
+export {
+  TCM_MERIDIANS,
+  VAS_PAIN_SCALE,
+} from './acupuntura';
+
+// Constantes de dominio andrología
+export {
+  IIEF_DOMAINS,
+  VARICOCELE_GRADES,
+  WHO_SEMEN_REFERENCE,
+} from './andrologia';
+
+// Constantes de dominio artroscopía
+export {
+  MENISCAL_TEAR_TYPES,
+  ACL_INJURY_GRADES,
+  OUTERBRIDGE_CLASSIFICATION,
+} from './artroscopia';
+
+// Constantes de dominio cirugía refractiva
+export {
+  REFRACTIVE_PROCEDURE_TYPES,
+  REFRACTIVE_CANDIDACY_CRITERIA,
+} from './cirugia-refractiva';
+
+// Constantes de dominio dermatopatología
+export {
+  HISTOLOGICAL_PATTERNS,
+  BRESLOW_CLASSIFICATION,
+} from './dermatopatologia';
+
+// Constantes de dominio farmacología clínica
+export {
+  ADR_SEVERITY_CATEGORIES,
+  TDM_COMMON_DRUGS,
+} from './farmacologia-clinica';
+
+// Constantes de dominio foniatría
+export {
+  GRBAS_SCALE,
+  DYSPHAGIA_SEVERITY_SCALE,
+} from './foniatria';
+
+// Constantes de dominio genética médica
+export {
+  ACMG_VARIANT_CLASSIFICATION,
+  GENETIC_TEST_TYPES,
+} from './genetica-medica';
+
+// Constantes de dominio glaucoma
+export {
+  GLAUCOMA_TYPES,
+  GLAUCOMA_SURGICAL_PROCEDURES,
+} from './glaucoma';
+
+// Constantes de dominio homeopatía
+export {
+  HOMEOPATHIC_POTENCY_SCALES,
+  HERING_LAWS,
+} from './homeopatia';
+
+// Constantes de dominio logofonoaudiología
+export {
+  APHASIA_CLASSIFICATION_BDAE,
+  LANGUAGE_DEVELOPMENT_MILESTONES,
+} from './logofonoaudiologia';
+
+// Constantes de dominio medicina del deporte
+export {
+  CONCUSSION_RETURN_TO_PLAY_STAGES,
+  MUSCLE_INJURY_CLASSIFICATION,
+} from './medicina-deporte';
+
+// Constantes de dominio medicina física y rehabilitación
+export {
+  FIM_CATEGORIES,
+  MODIFIED_ASHWORTH_SCALE,
+} from './medicina-fisica-rehabilitacion';
+
+// Constantes de dominio medicina legal
+export {
+  WOUND_CLASSIFICATION_FORENSIC,
+  MANNER_OF_DEATH,
+} from './medicina-legal';
+
+// Constantes de dominio neurofisiología clínica
+export {
+  EVOKED_POTENTIAL_TYPES,
+  EEG_10_20_POSITIONS,
+} from './neurofisiologia-clinica';
+
+// Constantes de dominio optometría
+export {
+  REFRACTIVE_ERRORS,
+  SNELLEN_VISUAL_ACUITY,
+} from './optometria';
+
+// Constantes de dominio ortopedia dentomaxilofacial
+export {
+  CEPHALOMETRIC_NORMS,
+  ANGLE_CLASSIFICATION,
+} from './ortopedia-dentomaxilofacial';
+
+// Constantes de dominio podología
+export {
+  WAGNER_DIABETIC_FOOT,
+  PODIATRIC_DEFORMITIES,
+} from './podologia';
+
+// Constantes de dominio psicopedagogía
+export {
+  WISC_V_INDICES,
+  IQ_CLASSIFICATION,
+} from './psicopedagogia';
+
+// Constantes de dominio quiropráctica
+export {
+  OSWESTRY_INTERPRETATION,
+  NDI_INTERPRETATION,
+  SPINAL_REGIONS,
+} from './quiropractica';
+
+// Constantes de dominio retina y vítreo
+export {
+  DIABETIC_RETINOPATHY_ETDRS,
+  MACULAR_HOLE_STAGING,
+} from './retina-vitreo';
+
+// Constantes de dominio sexología clínica
+export {
+  FSFI_DOMAINS,
+  SEXUAL_DYSFUNCTION_DSM5,
+} from './sexologia-clinica';
+
+// Constantes de dominio toxicología
+export {
+  COMMON_ANTIDOTES,
+  TOXIDROMES,
+} from './toxicologia';
+
+// Constantes de dominio trasplante de órganos
+export {
+  ORGAN_TRANSPLANT_TYPES,
+  IMMUNOSUPPRESSANT_LEVELS,
+  BANFF_REJECTION_CLASSIFICATION,
+} from './transplante-organos';
+
 /**
  * Mapa de overrides por slug de especialidad.
  *
@@ -352,4 +548,76 @@ export const SPECIALTY_OVERRIDES: ReadonlyMap<string, SpecialtyConfigOverride> =
 
   // Medicina Hiperbárica — protocolo, cicatrización, TcPO2, sesiones, contraindicaciones
   ['medicina-hiperbarica', medicinaHiperbaricaOverride],
+
+  // Acupuntura — meridianos, MTC, VAS, inserción de agujas, cursos de tratamiento
+  ['acupuntura', acupunturaOverride],
+
+  // Andrología — espermiograma, IIEF, varicocele, fertilidad, paneles hormonales
+  ['andrologia', andrologiaOverride],
+
+  // Artroscopía — procedimientos, meniscal, ligamentos, rehabilitación, retorno al deporte
+  ['artroscopia', artroscopiaOverride],
+
+  // Cirugía Refractiva — topografía corneal, LASIK/PRK, wavefront, flap, resultados visuales
+  ['cirugia-refractiva', cirugiaRefractivaOverride],
+
+  // Dermatopatología — especímenes, histología, IHC, márgenes, melanocíticas, concordancia
+  ['dermatopatologia', dermatopatologiaOverride],
+
+  // Farmacología Clínica — interacciones, TDM, RAM, farmacovigilancia, ajuste dosis
+  ['farmacologia-clinica', farmacologiaClinicaOverride],
+
+  // Foniatría — GRBAS, VHI, estroboscopía, FEES, cuerdas vocales, terapia habla
+  ['foniatria', foniatriaOverride],
+
+  // Genética Médica — pedigrí, ACMG, asesoramiento, portadores, prenatal, farmacogenómica
+  ['genetica', geneticaMedicaOverride],
+
+  // Glaucoma — PIO, campo visual, OCT RNFL, medicación, trabeculectomía, MIGS
+  ['glaucoma', glaucomaOverride],
+
+  // Homeopatía — constitucional, remedios, potencia, agravación, repertorización
+  ['homeopatia', homeopatiaOverride],
+
+  // Logofonoaudiología — lenguaje, articulación, fluidez, CAA, alimentación, afasia BDAE
+  ['logofonoaudiologia', logofonoaudiologiaOverride],
+
+  // Medicina del Deporte — lesiones, retorno al juego, VO2max, SCAT5, ecografía MSK
+  ['medicina-deporte', medicinaDeporteOverride],
+
+  // Medicina Física y Rehabilitación — FIM, Ashworth, prótesis, EMG/NCS, discapacidad
+  ['medicina-fisica-rehabilitacion', medicinaFisicaRehabilitacionOverride],
+
+  // Medicina Legal — lesiones, cadena custodia, edad, causa muerte, pericial, SAFE
+  ['medicina-legal-forense', medicinaLegalOverride],
+
+  // Neurofisiología Clínica — EEG, EMG/NCS, evocados, IOM, video-EEG
+  ['neurofisiologia', neurofisiologiaClinicaOverride],
+
+  // Optometría — refracción, lentes de contacto, agudeza, binocular, ojo seco
+  ['optometria', optometriaOverride],
+
+  // Ortopedia Dentomaxilofacial — cefalometría, crecimiento, Angle, expansión palatina
+  ['ortopedia-dentomaxilofacial', ortopediaDentomaxilofacialOverride],
+
+  // Podología — Wagner, procedimientos ungueales, órtesis, marcha, heridas, presión
+  ['podologia', podologiaOverride],
+
+  // Psicopedagogía — WISC, Bender, rendimiento, PEI, intervención, escuela-familia
+  ['psicopedagogia', psicopedagogiaOverride],
+
+  // Quiropráctica — evaluación espinal, subluxación, ajustes, ROM, Oswestry, NDI
+  ['quiropractica', quiropracticaOverride],
+
+  // Retina y Vítreo — OCT, angiografía, anti-VEGF, ETDRS, ROP, vitrectomía, agujero macular
+  ['retina-vitreo', retinaVitreoOverride],
+
+  // Sexología Clínica — IIEF, FSFI, hormonal, pareja, biopsicosocial, identidad de género
+  ['sexologia', sexologiaClinicaOverride],
+
+  // Toxicología — intoxicaciones, antídotos, niveles, descontaminación, envenenamiento
+  ['toxicologia', toxicologiaOverride],
+
+  // Trasplante de Órganos — lista espera, inmunosupresión, Banff, función, profilaxis, supervivencia
+  ['transplante-organos', transplanteOrganosOverride],
 ]);
