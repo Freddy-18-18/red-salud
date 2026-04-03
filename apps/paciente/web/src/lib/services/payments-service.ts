@@ -1,3 +1,7 @@
+import {
+  getOfficialDollar,
+  isRateStale,
+} from "@/lib/services/currency-service";
 import { supabase } from "@/lib/supabase/client";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -534,6 +538,7 @@ export const paymentsService = {
   // ---- BCV Exchange Rate ----
 
   async getExchangeRate(): Promise<{ rate: number; updated_at: string } | null> {
+    // 1. Try DB first (existing logic)
     const { data, error } = await supabase
       .from("exchange_rates")
       .select("rate, updated_at")
@@ -544,16 +549,31 @@ export const paymentsService = {
       .maybeSingle();
 
     if (error) {
-      console.error("Error fetching exchange rate:", error);
-      return null;
+      console.error("Error fetching exchange rate from DB:", error);
     }
 
-    if (!data) return null;
+    const dbRate = data
+      ? { rate: Number(data.rate) || 0, updated_at: data.updated_at as string }
+      : null;
 
-    return {
-      rate: Number(data.rate) || 0,
-      updated_at: data.updated_at as string,
-    };
+    // 2. If DB has a recent rate (< 1 hour old), use it
+    if (dbRate && !isRateStale(dbRate.updated_at)) {
+      return dbRate;
+    }
+
+    // 3. Fallback: fetch from dolarapi.com
+    try {
+      const apiRate = await getOfficialDollar();
+      return {
+        rate: apiRate.rate,
+        updated_at: apiRate.lastUpdated,
+      };
+    } catch (apiError) {
+      console.error("Error fetching exchange rate from DolarAPI:", apiError);
+    }
+
+    // 4. Return stale DB rate as last resort, or null
+    return dbRate;
   },
 };
 

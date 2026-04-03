@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  Bot,
   Home,
   Search,
   CalendarPlus,
@@ -11,6 +12,7 @@ import {
   User,
   FileText,
   Trophy,
+  HeartPulse,
   FolderOpen,
   IdCard,
   PanelLeftClose,
@@ -65,11 +67,13 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Buscar Medico", href: "/dashboard/buscar-medico", icon: Search },
   { label: "Mis Citas", href: "/dashboard/citas", icon: Calendar },
   { label: "Historial", href: "/dashboard/historial", icon: Clock },
+  { label: "Asistente IA", href: "/dashboard/asistente-ia", icon: Bot },
   { label: "Recetas", href: "/dashboard/recetas", icon: FileText },
   { label: "Documentos", href: "/dashboard/documentos", icon: FolderOpen },
   { label: "QR Medico", href: "/dashboard/qr-medico", icon: IdCard },
   { label: "Mensajes", href: "/dashboard/mensajes", icon: MessageSquare },
   { label: "Recompensas", href: "/dashboard/recompensas", icon: Trophy },
+  { label: "Health Score", href: "/dashboard/health-score", icon: HeartPulse },
   { label: "Mi Perfil", href: "/dashboard/perfil", icon: User },
 ];
 

@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { ExchangeRateDashboardCard } from "@/components/currency/exchange-rate-dashboard-card";
+import { InsightsCards } from "@/components/dashboard/insights-cards";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
@@ -150,6 +152,12 @@ export default function PatientDashboard() {
           <p className="text-sm text-emerald-700 mt-0.5">{todayTip}</p>
         </div>
       </div>
+
+      {/* Exchange Rate Card */}
+      <ExchangeRateDashboardCard />
+
+      {/* Health Insights */}
+      {userId && <InsightsCards />}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

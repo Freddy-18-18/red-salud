@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
+import { ExchangeRateCompact } from "@/components/currency/exchange-rate-widget";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { supabase } from "@/lib/supabase/client";
 
@@ -91,6 +92,11 @@ export function PatientNavbar({
 
         {/* Right side */}
         <div className="flex items-center gap-2">
+          {/* Exchange rate compact */}
+          <div className="hidden lg:block">
+            <ExchangeRateCompact />
+          </div>
+
           {/* Messages */}
           <a
             href="/dashboard/mensajes"
