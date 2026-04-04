@@ -16,17 +16,17 @@ export interface AppointmentServiceResponse<T> {
 }
 
 export interface DoctorScheduleData {
-  horario_atencion: Record<string, string>;
+  schedule: Record<string, string>;
 }
 
 export interface AppointmentDatabaseRow {
   id: string;
-  paciente_id: string;
-  medico_id: string;
-  fecha_hora: string;
-  duracion_minutos: number;
-  motivo: string;
-  notas?: string;
+  patient_id: string;
+  doctor_id: string;
+  scheduled_at: string;
+  duration_minutes: number;
+  reason: string;
+  notes?: string;
   status: string;
   created_at: string;
   updated_at: string;
@@ -34,23 +34,20 @@ export interface AppointmentDatabaseRow {
 
 export interface DoctorProfileRow {
   id: string;
-  especialidad_id: string;
-  licencia_medica: string;
-  anos_experiencia: number;
-  biografia?: string;
-  tarifa_consulta?: string;
+  specialty_id: string;
+  license_number: string;
+  years_experience: number;
+  bio?: string;
   consultation_price?: string;
   consultation_duration?: number;
-  horario_atencion?: unknown;
   schedule?: unknown;
-  direccion_consultorio?: string;
+  office_address?: string;
   clinic_address?: string;
-  telefono_consultorio?: string;
+  office_phone?: string;
   professional_phone?: string;
   professional_email?: string;
-  acepta_seguro?: boolean;
   accepts_insurance?: boolean;
-  verified: boolean;
+  is_verified: boolean;
   sacs_verified: boolean;
   is_active: boolean;
   created_at: string;

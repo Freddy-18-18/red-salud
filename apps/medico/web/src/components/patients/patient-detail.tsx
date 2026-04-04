@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { usePatientAppointments } from '@red-salud/core';
 import {
   ArrowLeft,
   Phone,
@@ -28,7 +29,7 @@ interface PatientDetailProps {
 
 interface PatientFull {
   id: string;
-  nombre_completo: string;
+  full_name: string;
   email: string | null;
   telefono: string | null;
   fecha_nacimiento: string | null;
@@ -55,8 +56,8 @@ interface PrescriptionRecord {
 
 interface AppointmentRecord {
   id: string;
-  fecha_hora: string;
-  motivo: string | null;
+  scheduled_at: string;
+  reason: string | null;
   status: string;
 }
 
@@ -85,10 +86,28 @@ export function PatientDetail({
   const [patient, setPatient] = useState<PatientFull | null>(null);
   const [consultations, setConsultations] = useState<ConsultationRecord[]>([]);
   const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>([]);
-  const [appointments, setAppointments] = useState<AppointmentRecord[]>([]);
   const [activeTab, setActiveTab] = useState<TabId>('info');
   const [loading, setLoading] = useState(true);
 
+  // Load appointments via core hook
+  const {
+    appointments: rawPatientAppointments,
+    loading: appointmentsLoading,
+  } = usePatientAppointments(supabase, patientId);
+
+  // Map to local AppointmentRecord shape
+  const appointments = useMemo<AppointmentRecord[]>(
+    () =>
+      rawPatientAppointments.slice(0, 20).map((apt) => ({
+        id: apt.id,
+        scheduled_at: apt.scheduled_at,
+        reason: apt.reason ?? null,
+        status: apt.status,
+      })),
+    [rawPatientAppointments],
+  );
+
+  // Load patient profile, consultations, and prescriptions (no core hooks for these)
   useEffect(() => {
     async function loadPatientData() {
       setLoading(true);
@@ -132,27 +151,13 @@ export function PatientDetail({
         // Table might not exist
       }
 
-      // Load appointments
-      try {
-        const { data: apptData } = await supabase
-          .from('appointments')
-          .select('id, fecha_hora, motivo, status')
-          .eq('paciente_id', patientId)
-          .order('fecha_hora', { ascending: false })
-          .limit(20);
-
-        setAppointments((apptData as unknown as AppointmentRecord[]) ?? []);
-      } catch {
-        // Table might not exist
-      }
-
       setLoading(false);
     }
 
     loadPatientData();
   }, [patientId]);
 
-  if (loading) {
+  if (loading || appointmentsLoading) {
     return (
       <div className="space-y-4 animate-pulse">
         <div className="h-8 w-48 bg-gray-200 rounded" />
@@ -202,13 +207,13 @@ export function PatientDetail({
             style={{ backgroundColor: themeColor }}
           >
             {patient.avatar_url ? (
-              <img src={patient.avatar_url} alt={patient.nombre_completo} className="h-16 w-16 rounded-full object-cover" />
+              <img src={patient.avatar_url} alt={patient.full_name} className="h-16 w-16 rounded-full object-cover" />
             ) : (
-              patient.nombre_completo.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+              patient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
             )}
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-900">{patient.nombre_completo}</h2>
+            <h2 className="text-xl font-bold text-gray-900">{patient.full_name}</h2>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
               {patient.cedula && <span>CI: {patient.cedula}</span>}
               <span>{calculateAge(patient.fecha_nacimiento)}</span>
@@ -265,7 +270,7 @@ export function PatientDetail({
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         {activeTab === 'info' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoField label="Nombre completo" value={patient.nombre_completo} />
+            <InfoField label="Nombre completo" value={patient.full_name} />
             <InfoField label="Cédula" value={patient.cedula} />
             <InfoField label="Fecha de nacimiento" value={patient.fecha_nacimiento ? new Date(patient.fecha_nacimiento).toLocaleDateString('es-VE') : null} />
             <InfoField label="Edad" value={calculateAge(patient.fecha_nacimiento)} />
@@ -304,14 +309,14 @@ export function PatientDetail({
                 <div key={a.id} className="flex items-center gap-4 p-3 border border-gray-100 rounded-lg">
                   <div className="text-center min-w-[60px]">
                     <p className="text-sm font-bold text-gray-900">
-                      {new Date(a.fecha_hora).toLocaleDateString('es-VE', { day: '2-digit', month: 'short' })}
+                      {new Date(a.scheduled_at).toLocaleDateString('es-VE', { day: '2-digit', month: 'short' })}
                     </p>
                     <p className="text-xs text-gray-400">
-                      {new Date(a.fecha_hora).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(a.scheduled_at).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-gray-700">{a.motivo ?? 'Sin motivo especificado'}</p>
+                    <p className="text-sm text-gray-700">{a.reason ?? 'Sin motivo especificado'}</p>
                   </div>
                   <StatusBadge status={a.status} />
                 </div>

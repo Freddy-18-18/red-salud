@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-// TODO: Import from @red-salud/sdk-medico when the package is available
+import { useDoctorAppointments, type AppointmentRow } from "@red-salud/core";
+
 interface Appointment {
   id: string;
   patient_id: string;
@@ -150,7 +151,6 @@ function isMissingRelationError(error: { code?: string; message?: string } | nul
 }
 
 export function useOdontologiaDashboardData(doctorId?: string): OdontologyDashboardData {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [claims, setClaims] = useState<ClaimWithItemsRow[]>([]);
   const [dentalFindings, setDentalFindings] = useState<DentalFindingRow[]>([]);
   const [dentalPerioEntries, setDentalPerioEntries] = useState<DentalPerioEntryRow[]>([]);
@@ -159,12 +159,51 @@ export function useOdontologiaDashboardData(doctorId?: string): OdontologyDashbo
   const [aiFindings, setAiFindings] = useState<DentalAiFindingRow[]>([]);
   const [hasImagingPipeline, setHasImagingPipeline] = useState(false);
   const [refreshedAt, setRefreshedAt] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingExtra, setIsLoadingExtra] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = useCallback(async () => {
+  // Fetch appointments via core hook (last 6 months)
+  const sixMonthsAgoStr = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 6);
+    return d.toISOString().slice(0, 10);
+  }, []);
+
+  const {
+    appointments: rawAppointments,
+    loading: appointmentsLoading,
+    refresh: refreshAppointments,
+  } = useDoctorAppointments(supabase, doctorId ?? null, {
+    dateRange: { start: sixMonthsAgoStr, end: new Date().toISOString().slice(0, 10) },
+  });
+
+  // Normalize core appointments to local Appointment shape
+  const appointments = useMemo<Appointment[]>(
+    () =>
+      rawAppointments.map((row) => {
+        const fecha = new Date(row.scheduled_at);
+        return {
+          id: row.id,
+          patient_id: row.patient_id,
+          doctor_id: row.doctor_id,
+          appointment_date: getDateOnly(fecha),
+          appointment_time: fecha.toISOString().slice(11, 19),
+          duration: row.duration_minutes || 30,
+          status: (row.status || "pending") as Appointment["status"],
+          consultation_type: row.appointment_type || "in_person",
+          price: safeNumber(row.price),
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+        } as Appointment;
+      }),
+    [rawAppointments],
+  );
+
+  const isLoading = appointmentsLoading || isLoadingExtra;
+
+  // Load claims and dental-specific data (not in core)
+  const loadExtraData = useCallback(async () => {
     if (!doctorId) {
-      setAppointments([]);
       setClaims([]);
       setDentalFindings([]);
       setDentalPerioEntries([]);
@@ -172,49 +211,17 @@ export function useOdontologiaDashboardData(doctorId?: string): OdontologyDashbo
       setImagingStudies([]);
       setAiFindings([]);
       setHasImagingPipeline(false);
-      setIsLoading(false);
+      setIsLoadingExtra(false);
       return;
     }
 
-    setIsLoading(true);
+    setIsLoadingExtra(true);
     setError(null);
 
     try {
       const now = new Date();
-      const sixMonthsAgo = new Date(now);
-      sixMonthsAgo.setMonth(now.getMonth() - 6);
 
-      const { data: appointmentsData, error: appointmentsError } = await supabase
-        .from("appointments")
-        .select("id, paciente_id, medico_id, fecha_hora, status, precio")
-        .eq("medico_id", doctorId)
-        .gte("fecha_hora", sixMonthsAgo.toISOString())
-        .order("fecha_hora", { ascending: false });
-
-      if (appointmentsError) {
-        throw appointmentsError;
-      }
-
-      const normalizedAppointments: Appointment[] = (appointmentsData || []).map((row) => {
-        const fecha = new Date(row.fecha_hora);
-        return {
-          id: row.id,
-          patient_id: row.paciente_id,
-          doctor_id: row.medico_id,
-          appointment_date: getDateOnly(fecha),
-          appointment_time: fecha.toISOString().slice(11, 19),
-          duration: 30,
-          status: (row.status || "pending") as Appointment["status"],
-          consultation_type: "presencial",
-          price: safeNumber(row.precio),
-          created_at: fecha.toISOString(),
-          updated_at: fecha.toISOString(),
-        } as Appointment;
-      });
-
-      setAppointments(normalizedAppointments);
-
-      const patientIds = Array.from(new Set(normalizedAppointments.map((item) => item.patient_id).filter(Boolean)));
+      const patientIds = Array.from(new Set(appointments.map((item) => item.patient_id).filter(Boolean)));
 
       if (patientIds.length > 0) {
         const { data: claimsData, error: claimsError } = await supabase
@@ -349,13 +356,13 @@ export function useOdontologiaDashboardData(doctorId?: string): OdontologyDashbo
       const fallbackMessage = "No se pudo cargar el dashboard odontológico";
       setError(err instanceof Error ? err.message || fallbackMessage : fallbackMessage);
     } finally {
-      setIsLoading(false);
+      setIsLoadingExtra(false);
     }
-  }, [doctorId]);
+  }, [doctorId, appointments]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadExtraData();
+  }, [loadExtraData]);
 
   const derived = useMemo(() => {
     const now = new Date();
@@ -535,11 +542,16 @@ export function useOdontologiaDashboardData(doctorId?: string): OdontologyDashbo
     };
   }, [appointments, claims, dentalFindings, dentalPerioEntries, dentalPlanItems, imagingStudies, aiFindings, hasImagingPipeline]);
 
+  const refresh = useCallback(async () => {
+    await refreshAppointments();
+    await loadExtraData();
+  }, [refreshAppointments, loadExtraData]);
+
   return {
     ...derived,
     refreshedAt,
     isLoading,
     error,
-    refresh: loadData,
+    refresh,
   };
 }

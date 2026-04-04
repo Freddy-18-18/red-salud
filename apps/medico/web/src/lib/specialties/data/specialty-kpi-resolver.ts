@@ -217,9 +217,9 @@ const UNIVERSAL_KPI_MAP: Record<string, KpiMapping> = {
     group: "appointments",
     extract: (d) => asNum(d.week_count),
   },
-  "telemedicina": {
+  "telemedicine": {
     group: "appointments",
-    extract: (d) => asNum(d.telemedicina_count),
+    extract: (d) => asNum(d.telemedicine_count),
   },
 
   // ============================================================================
@@ -500,10 +500,10 @@ async function queryAppointments(
     return {
       today_count: data.today_count ?? 0,
       week_count: data.week_count ?? 0,
-      telemedicina_count: data.telemedicina_count ?? 0,
+      telemedicine_count: data.telemedicine_count ?? 0,
     };
   } catch {
-    return { today_count: 0, week_count: 0, telemedicina_count: 0 };
+    return { today_count: 0, week_count: 0, telemedicine_count: 0 };
   }
 }
 
@@ -519,30 +519,30 @@ async function queryAppointmentsFallback(
       supabase
         .from("appointments")
         .select("id", { count: "exact", head: true })
-        .eq("medico_id", ctx.doctorId)
-        .gte("fecha_hora", `${today}T00:00:00`)
-        .lte("fecha_hora", `${today}T23:59:59`),
+        .eq("doctor_id", ctx.doctorId)
+        .gte("scheduled_at", `${today}T00:00:00`)
+        .lte("scheduled_at", `${today}T23:59:59`),
       supabase
         .from("appointments")
         .select("id", { count: "exact", head: true })
-        .eq("medico_id", ctx.doctorId)
-        .gte("fecha_hora", `${weekStart}T00:00:00`),
+        .eq("doctor_id", ctx.doctorId)
+        .gte("scheduled_at", `${weekStart}T00:00:00`),
       supabase
         .from("appointments")
         .select("id", { count: "exact", head: true })
-        .eq("medico_id", ctx.doctorId)
-        .eq("tipo", "telemedicina")
-        .gte("fecha_hora", ctx.dateRange.start.toISOString())
-        .lte("fecha_hora", ctx.dateRange.end.toISOString()),
+        .eq("doctor_id", ctx.doctorId)
+        .eq("appointment_type", "telemedicine")
+        .gte("scheduled_at", ctx.dateRange.start.toISOString())
+        .lte("scheduled_at", ctx.dateRange.end.toISOString()),
     ]);
 
     return {
       today_count: todayRes.count ?? 0,
       week_count: weekRes.count ?? 0,
-      telemedicina_count: teleRes.count ?? 0,
+      telemedicine_count: teleRes.count ?? 0,
     };
   } catch {
-    return { today_count: 0, week_count: 0, telemedicina_count: 0 };
+    return { today_count: 0, week_count: 0, telemedicine_count: 0 };
   }
 }
 

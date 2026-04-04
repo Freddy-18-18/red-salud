@@ -162,27 +162,27 @@ export function useTraumatologiaDashboardData(
         // 4. Patients this month
         supabase
           .from("appointments")
-          .select("paciente_id", { count: "exact", head: true })
-          .eq("medico_id", doctorId)
-          .gte("fecha_hora", monthStart)
-          .neq("status", "cancelada"),
+          .select("patient_id", { count: "exact", head: true })
+          .eq("doctor_id", doctorId)
+          .gte("scheduled_at", monthStart)
+          .neq("status", "cancelled"),
 
         // 5. Patients last month
         supabase
           .from("appointments")
-          .select("paciente_id", { count: "exact", head: true })
-          .eq("medico_id", doctorId)
-          .gte("fecha_hora", lastMonthStart)
-          .lt("fecha_hora", monthStart)
-          .neq("status", "cancelada"),
+          .select("patient_id", { count: "exact", head: true })
+          .eq("doctor_id", doctorId)
+          .gte("scheduled_at", lastMonthStart)
+          .lt("scheduled_at", monthStart)
+          .neq("status", "cancelled"),
 
         // 6. Follow-ups today
         supabase
           .from("appointments")
           .select("id", { count: "exact", head: true })
-          .eq("medico_id", doctorId)
-          .eq("tipo", "seguimiento")
-          .gte("fecha_hora", `${todayStr}T00:00:00`),
+          .eq("doctor_id", doctorId)
+          .eq("appointment_type", "follow_up")
+          .gte("scheduled_at", `${todayStr}T00:00:00`),
       ]);
 
       if (!mountedRef.current) return;

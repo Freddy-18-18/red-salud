@@ -7,3 +7,4 @@ export * from './useIMCCalculation';
 export * from './useMedicalForm';
 export * from './use-medication-search';
 export * from './use-translation';
+export * from './use-appointments';

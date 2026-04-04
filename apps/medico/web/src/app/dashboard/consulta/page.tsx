@@ -31,7 +31,7 @@ import {
 
 interface PatientOption {
   id: string;
-  nombre_completo: string;
+  full_name: string;
   cedula: string | null;
 }
 
@@ -92,10 +92,10 @@ export default function ConsultaPage() {
       setUserId(user.id);
 
       const { data: details } = await supabase
-        .from('doctor_details')
+        .from('doctor_profiles')
         .select(`
           especialidad:specialties(name, slug),
-          profile:profiles!doctor_details_profile_id_fkey(sacs_especialidad)
+          profile:profiles!doctor_profiles_profile_id_fkey(sacs_especialidad)
         `)
         .eq('profile_id', user.id)
         .maybeSingle();
@@ -125,8 +125,8 @@ export default function ConsultaPage() {
 
     const { data } = await supabase
       .from('profiles')
-      .select('id, nombre_completo, cedula')
-      .or(`nombre_completo.ilike.%${query}%,cedula.ilike.%${query}%`)
+      .select('id, full_name, cedula')
+      .or(`full_name.ilike.%${query}%,cedula.ilike.%${query}%`)
       .eq('role', 'paciente')
       .limit(10);
 
@@ -233,10 +233,10 @@ export default function ConsultaPage() {
                 className="h-9 w-9 rounded-full flex items-center justify-center text-white text-sm font-bold"
                 style={{ backgroundColor: themeColor }}
               >
-                {selectedPatient.nombre_completo.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                {selectedPatient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">{selectedPatient.nombre_completo}</p>
+                <p className="text-sm font-medium text-gray-900">{selectedPatient.full_name}</p>
                 {selectedPatient.cedula && (
                   <p className="text-xs text-gray-400">CI: {selectedPatient.cedula}</p>
                 )}
@@ -277,7 +277,7 @@ export default function ConsultaPage() {
                   >
                     <User className="h-4 w-4 text-gray-400" />
                     <div>
-                      <p className="text-sm text-gray-800">{p.nombre_completo}</p>
+                      <p className="text-sm text-gray-800">{p.full_name}</p>
                       {p.cedula && <p className="text-xs text-gray-400">CI: {p.cedula}</p>}
                     </div>
                   </button>

@@ -54,11 +54,11 @@ export default function DashboardPage() {
       setUserId(user.id);
 
       const { data: details } = await supabase
-        .from('doctor_details')
+        .from('doctor_profiles')
         .select(`
           especialidad:specialties(name, slug),
-          profile:profiles!doctor_details_profile_id_fkey(
-            nombre_completo,
+          profile:profiles!doctor_profiles_profile_id_fkey(
+            full_name,
             sacs_especialidad
           )
         `)
@@ -71,7 +71,7 @@ export default function DashboardPage() {
       const profileData = Array.isArray(details?.profile)
         ? details.profile[0]
         : details?.profile;
-      const name = profileData?.nombre_completo ?? user.email ?? '';
+      const name = profileData?.full_name ?? user.email ?? '';
       setDoctorName(name);
 
       const config = getSpecialtyExperienceConfig({

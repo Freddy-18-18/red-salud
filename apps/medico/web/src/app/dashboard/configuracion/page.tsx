@@ -21,6 +21,7 @@ import {
   Mail,
   MapPin,
 } from 'lucide-react';
+import { ScheduleManager } from '@/components/settings/schedule-manager';
 
 // ============================================================================
 // TYPES
@@ -180,8 +181,8 @@ export default function ConfiguracionPage() {
           <div className="flex items-center gap-4 pb-5 border-b border-gray-100">
             <div className="relative">
               <div className="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-2xl font-bold">
-                {profile?.nombre_completo
-                  ? profile.nombre_completo.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+                {profile?.full_name
+                  ? profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
                   : 'DR'
                 }
               </div>
@@ -190,7 +191,7 @@ export default function ConfiguracionPage() {
               </button>
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">{profile?.nombre_completo ?? 'Doctor'}</h2>
+              <h2 className="text-lg font-bold text-gray-900">{profile?.full_name ?? 'Doctor'}</h2>
               <p className="text-sm text-gray-500">{profile?.specialty?.name ?? 'Medicina General'}</p>
               <div className="flex items-center gap-2 mt-1">
                 {profile?.sacs_verificado && (
@@ -315,10 +316,18 @@ export default function ConfiguracionPage() {
         </div>
       )}
 
-      {activeTab === 'schedule' && (
+      {activeTab === 'schedule' && userId && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Configuración de Horarios</h2>
-          <ScheduleConfig profile={profile} />
+          <ScheduleManager
+            doctorId={userId}
+            consultationDuration={Number(formData.consultation_duration) || 30}
+            onDurationChange={(duration) => {
+              setFormData((prev) => ({ ...prev, consultation_duration: String(duration) }));
+              if (userId) {
+                updateProfile({ consultation_duration: duration } as Record<string, unknown>);
+              }
+            }}
+          />
         </div>
       )}
 
@@ -453,61 +462,3 @@ function NotificationToggle({
   );
 }
 
-function ScheduleConfig({ profile }: { profile: Record<string, unknown> | null }) {
-  const DAYS = [
-    { key: 'monday', label: 'Lunes' },
-    { key: 'tuesday', label: 'Martes' },
-    { key: 'wednesday', label: 'Miércoles' },
-    { key: 'thursday', label: 'Jueves' },
-    { key: 'friday', label: 'Viernes' },
-    { key: 'saturday', label: 'Sábado' },
-    { key: 'sunday', label: 'Domingo' },
-  ];
-
-  const schedule = (profile as Record<string, unknown>)?.schedule as Record<string, { enabled: boolean; slots?: Array<{ start: string; end: string }> }> | undefined;
-
-  return (
-    <div className="space-y-3">
-      {DAYS.map(({ key, label }) => {
-        const dayConfig = schedule?.[key];
-        const enabled = dayConfig?.enabled ?? (key !== 'sunday' && key !== 'saturday');
-        const slots = dayConfig?.slots ?? [{ start: '08:00', end: '12:00' }, { start: '14:00', end: '18:00' }];
-
-        return (
-          <div key={key} className="flex items-center gap-4 py-3 border-b border-gray-100 last:border-b-0">
-            <div className="w-24">
-              <p className={`text-sm font-medium ${enabled ? 'text-gray-800' : 'text-gray-400'}`}>
-                {label}
-              </p>
-            </div>
-            <div className={`flex-1 flex items-center gap-2 ${!enabled ? 'opacity-50' : ''}`}>
-              {enabled ? (
-                slots.map((slot, i) => (
-                  <span key={i} className="text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">
-                    {slot.start} - {slot.end}
-                  </span>
-                ))
-              ) : (
-                <span className="text-sm text-gray-400">No disponible</span>
-              )}
-            </div>
-            <button
-              className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                enabled ? 'bg-blue-600' : 'bg-gray-200'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${
-                  enabled ? 'translate-x-4' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-        );
-      })}
-      <p className="text-xs text-gray-400 mt-2">
-        Para modificar los horarios, edita tu disponibilidad desde la Agenda.
-      </p>
-    </div>
-  );
-}

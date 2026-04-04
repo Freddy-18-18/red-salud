@@ -6,12 +6,16 @@ use axum::{
 use serde_json::json;
 
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
 pub enum AppError {
     #[error("Not found: {0}")]
     NotFound(String),
 
     #[error("Bad request: {0}")]
     BadRequest(String),
+
+    #[error("Conflict: {0}")]
+    Conflict(String),
 
     #[error("Unauthorized")]
     Unauthorized,
@@ -26,17 +30,45 @@ pub enum AppError {
     Database(#[from] sqlx::Error),
 }
 
+impl AppError {
+    fn error_code(&self) -> &'static str {
+        match self {
+            Self::NotFound(_) => "NOT_FOUND",
+            Self::BadRequest(_) => "BAD_REQUEST",
+            Self::Conflict(_) => "APPOINTMENT_CONFLICT",
+            Self::Unauthorized => "UNAUTHORIZED",
+            Self::Forbidden => "FORBIDDEN",
+            Self::Internal(_) => "INTERNAL_ERROR",
+            Self::Database(_) => "DATABASE_ERROR",
+        }
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, code, message) = match &self {
-            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, "NOT_FOUND", msg.clone()),
-            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, "BAD_REQUEST", msg.clone()),
-            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", "Unauthorized".into()),
-            AppError::Forbidden => (StatusCode::FORBIDDEN, "FORBIDDEN", "Forbidden".into()),
-            AppError::Internal(e) => (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", e.to_string()),
-            AppError::Database(e) => (StatusCode::INTERNAL_SERVER_ERROR, "DATABASE_ERROR", e.to_string()),
+        let status = match &self {
+            AppError::NotFound(_) => StatusCode::NOT_FOUND,
+            AppError::BadRequest(_) => StatusCode::BAD_REQUEST,
+            AppError::Conflict(_) => StatusCode::CONFLICT,
+            AppError::Unauthorized => StatusCode::UNAUTHORIZED,
+            AppError::Forbidden => StatusCode::FORBIDDEN,
+            AppError::Internal(e) => {
+                tracing::error!(error = %e, "Internal server error");
+                StatusCode::INTERNAL_SERVER_ERROR
+            }
+            AppError::Database(e) => {
+                tracing::error!(error = %e, "Database error");
+                StatusCode::INTERNAL_SERVER_ERROR
+            }
         };
 
-        (status, Json(json!({ "code": code, "message": message }))).into_response()
+        let body = json!({
+            "error": {
+                "code": self.error_code(),
+                "message": self.to_string(),
+            }
+        });
+
+        (status, Json(body)).into_response()
     }
 }

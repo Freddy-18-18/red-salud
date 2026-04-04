@@ -1,22 +1,22 @@
 import { z } from 'zod';
 
-export const appointmentStatusSchema = z.enum(['pendiente', 'confirmada', 'completada', 'cancelada', 'ausente']);
+export const appointmentStatusSchema = z.enum(['pending', 'confirmed', 'completed', 'cancelled', 'absent']);
 
 export const appointmentSchema = z.object({
     id: z.string().uuid(),
-    paciente_id: z.string().uuid(),
-    medico_id: z.string().uuid(),
-    fecha_hora: z.string().datetime(),
-    duracion_minutos: z.number().min(5),
-    tipo_cita: z.string().optional(),
-    status: appointmentStatusSchema.default('pendiente'),
-    motivo: z.string().optional().nullable(),
-    notas_internas: z.string().optional().nullable(),
+    patient_id: z.string().uuid(),
+    doctor_id: z.string().uuid(),
+    scheduled_at: z.string().datetime(),
+    duration_minutes: z.number().min(5),
+    appointment_type: z.string().optional(),
+    status: appointmentStatusSchema.default('pending'),
+    reason: z.string().optional().nullable(),
+    internal_notes: z.string().optional().nullable(),
     color: z.string().optional().nullable(),
     price: z.number().optional().nullable(),
     meeting_url: z.string().url().optional().nullable(),
-    metodo_pago: z.string().optional().nullable(),
-    enviar_recordatorio: z.boolean().default(true),
+    payment_method: z.string().optional().nullable(),
+    send_reminder: z.boolean().default(true),
     location_id: z.string().uuid().optional().nullable(),
     offline_patient_id: z.string().uuid().optional().nullable(),
     created_at: z.string().datetime().optional(),
@@ -26,20 +26,20 @@ export const appointmentSchema = z.object({
 export type AppointmentT = z.infer<typeof appointmentSchema>;
 
 export const appointmentFormSchema = z.object({
-    paciente_id: z.string().min(1, "Selecciona un paciente"),
-    fecha: z.string().min(1, "Selecciona una fecha"),
-    hora: z.string().min(1, "Selecciona una hora"),
-    duracion_minutos: z.coerce.number().min(5, "Mínimo 5 minutos"),
-    tipo_cita: z.enum(["presencial", "telemedicina", "urgencia", "seguimiento", "primera_vez"]),
-    motivo: z.string().min(1, "El motivo es requerido"),
-    notas_internas: z.string().optional(),
-    precio: z.string().optional(),
-    metodo_pago: z.string().default("efectivo"),
-    enviar_recordatorio: z.boolean().default(true),
+    patient_id: z.string().min(1, "Select a patient"),
+    date: z.string().min(1, "Select a date"),
+    time: z.string().min(1, "Select a time"),
+    duration_minutes: z.coerce.number().min(5, "Minimum 5 minutes"),
+    appointment_type: z.enum(["in_person", "telemedicine", "emergency", "follow_up", "first_visit"]),
+    reason: z.string().min(1, "Reason is required"),
+    internal_notes: z.string().optional(),
+    price: z.string().optional(),
+    payment_method: z.string().default("cash"),
+    send_reminder: z.boolean().default(true),
     new_patient_data: z
         .object({
-            nombre_completo: z.string(),
-            cedula: z.string(),
+            full_name: z.string(),
+            id_number: z.string(),
             email: z.string().optional().nullable(),
         })
         .optional(),

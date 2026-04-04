@@ -200,12 +200,12 @@ export function OnboardingWizard() {
 
       // Check if profile already has onboarding completed
       const { data: profile } = await supabase
-        .from('doctor_details')
-        .select('especialidad_id, dashboard_config')
+        .from('doctor_profiles')
+        .select('specialty_id, dashboard_config')
         .eq('profile_id', user.id)
         .maybeSingle();
 
-      if (profile?.especialidad_id) {
+      if (profile?.specialty_id) {
         const config = profile.dashboard_config as Record<string, unknown> | null;
         if (config?.onboarding_completed === true) {
           window.location.href = '/dashboard';
@@ -395,8 +395,8 @@ export function OnboardingWizard() {
         return;
       }
 
-      // 2. Upsert doctor_details table (professional data)
-      const { error: doctorError } = await supabase.from('doctor_details').upsert(
+      // 2. Upsert doctor_profiles table (professional data)
+      const { error: doctorError } = await supabase.from('doctor_profiles').upsert(
         {
           profile_id: userId,
           specialty_id: specialtyId,

@@ -2,72 +2,72 @@ import { z } from "zod";
 import { isBefore, startOfDay } from "date-fns";
 
 /**
- * Schema base de validación para citas médicas
- * Validaciones centralizadas y reutilizables
+ * Base validation schema for medical appointments
+ * Centralized and reusable validations
  */
 const baseAppointmentSchema = z.object({
-    paciente_id: z.string().min(1, "Debes seleccionar un paciente"),
+    patient_id: z.string().min(1, "You must select a patient"),
 
-    consultorio_id: z.string().optional().or(z.literal("")),
+    office_id: z.string().optional().or(z.literal("")),
 
-    fecha: z.string().refine((date) => {
+    date: z.string().refine((date) => {
         const today = startOfDay(new Date());
         const selectedDate = startOfDay(new Date(date));
         return !isBefore(selectedDate, today);
-    }, "La fecha no puede ser en el pasado"),
+    }, "Date cannot be in the past"),
 
-    hora: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:mm)"),
+    time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
 
-    duracion_minutos: z
+    duration_minutes: z
         .number()
-        .min(5, "La duración mínima es 5 minutos")
-        .max(480, "La duración máxima es 8 horas"),
+        .min(5, "Minimum duration is 5 minutes")
+        .max(480, "Maximum duration is 8 hours"),
 
-    tipo_cita: z.enum(["presencial", "telemedicina", "urgencia", "seguimiento", "primera_vez"], {
-        message: "Tipo de cita inválido",
+    appointment_type: z.enum(["in_person", "telemedicine", "emergency", "follow_up", "first_visit"], {
+        message: "Invalid appointment type",
     }),
 
-    motivo: z
+    reason: z
         .string()
-        .min(3, "El motivo debe tener al menos 3 caracteres")
+        .min(3, "Reason must be at least 3 characters")
         .optional()
         .or(z.literal("")),
 
-    notas_internas: z.string().optional().or(z.literal("")),
+    internal_notes: z.string().optional().or(z.literal("")),
 
-    precio: z
+    price: z
         .string()
         .refine(
             (val) => !val || !isNaN(parseFloat(val)),
-            "El precio debe ser un número válido"
+            "Price must be a valid number"
         )
         .optional()
         .or(z.literal("")),
 
-    metodo_pago: z.enum(["efectivo", "transferencia", "tarjeta", "seguro", "pago_movil", "pendiente"], {
-        message: "Método de pago inválido",
+    payment_method: z.enum(["cash", "transfer", "card", "insurance", "mobile_payment", "pending"], {
+        message: "Invalid payment method",
     }),
 
-    enviar_recordatorio: z.boolean().default(true),
+    send_reminder: z.boolean().default(true),
 
-    // Campos avanzados
-    diagnostico_preliminar: z.string().default(""),
-    antecedentes_relevantes: z.string().optional().or(z.literal("")).default(""),
-    medicamentos_actuales: z.string().optional().or(z.literal("")).default(""),
-    alergias: z.string().optional().or(z.literal("")).default(""),
-    notas_clinicas: z.string().optional().or(z.literal("")).default(""),
+    // Advanced fields
+    preliminary_diagnosis: z.string().default(""),
+    relevant_history: z.string().optional().or(z.literal("")).default(""),
+    current_medications: z.string().optional().or(z.literal("")).default(""),
+    allergies: z.string().optional().or(z.literal("")).default(""),
+    clinical_notes: z.string().optional().or(z.literal("")).default(""),
 });
 
 /**
- * Schema completo con validación de fecha/hora combinada
- * El hook se encarga de la validación de conflictos
+ * Full schema with combined date/time validation
+ * The hook handles conflict validation
  */
 export const appointmentSchema = baseAppointmentSchema.refine((data) => {
     const now = new Date();
     const todayStr = now.toISOString().split("T")[0];
 
-    if (data.fecha === todayStr) {
-        const [hoursStr = "0", minutesStr = "0"] = data.hora.split(":");
+    if (data.date === todayStr) {
+        const [hoursStr = "0", minutesStr = "0"] = data.time.split(":");
         const hours = Number(hoursStr);
         const minutes = Number(minutesStr);
         const selectedTime = new Date(now);
@@ -82,25 +82,25 @@ export const appointmentSchema = baseAppointmentSchema.refine((data) => {
     }
     return true;
 }, {
-    message: "La hora seleccionada ya pasó",
-    path: ["hora"],
+    message: "The selected time has already passed",
+    path: ["time"],
 });
 
-// Schema solo para modo simple (sin campos avanzados)
+// Schema for simple mode only (without advanced fields)
 export const appointmentSchemaSimple = baseAppointmentSchema
     .omit({
-        diagnostico_preliminar: true,
-        antecedentes_relevantes: true,
-        medicamentos_actuales: true,
-        alergias: true,
-        notas_clinicas: true,
+        preliminary_diagnosis: true,
+        relevant_history: true,
+        current_medications: true,
+        allergies: true,
+        clinical_notes: true,
     })
     .refine((data) => {
         const now = new Date();
         const todayStr = now.toISOString().split("T")[0];
 
-        if (data.fecha === todayStr) {
-            const [hoursStr = "0", minutesStr = "0"] = data.hora.split(":");
+        if (data.date === todayStr) {
+            const [hoursStr = "0", minutesStr = "0"] = data.time.split(":");
             const hours = Number(hoursStr);
             const minutes = Number(minutesStr);
             const selectedTime = new Date(now);
@@ -115,8 +115,8 @@ export const appointmentSchemaSimple = baseAppointmentSchema
         }
         return true;
     }, {
-        message: "La hora seleccionada ya pasó",
-        path: ["hora"],
+        message: "The selected time has already passed",
+        path: ["time"],
     });
 
 export type AppointmentFormValues = z.input<typeof baseAppointmentSchema>;

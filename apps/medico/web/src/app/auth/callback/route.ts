@@ -22,12 +22,12 @@ export async function GET(request: NextRequest) {
       if (user) {
         // Check if doctor profile is complete
         const { data: doctorProfile } = await supabase
-          .from('doctor_details')
-          .select('profile_id, especialidad_id')
+          .from('doctor_profiles')
+          .select('profile_id, specialty_id')
           .eq('profile_id', user.id)
           .maybeSingle();
 
-        if (!doctorProfile || !doctorProfile.especialidad_id) {
+        if (!doctorProfile || !doctorProfile.specialty_id) {
           return NextResponse.redirect(`${origin}/onboarding/complete-profile`);
         }
 

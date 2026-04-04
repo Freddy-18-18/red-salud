@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useDoctorAppointments } from '@red-salud/core';
 import {
   Clock,
   User,
@@ -18,13 +19,13 @@ import {
 
 interface Appointment {
   id: string;
-  fecha_hora: string;
-  duracion_minutos: number;
-  motivo: string | null;
+  scheduled_at: string;
+  duration_minutes: number;
+  reason: string | null;
   status: string;
-  tipo: string | null;
+  appointment_type: string | null;
   paciente: {
-    nombre_completo: string;
+    full_name: string;
     avatar_url: string | null;
   } | null;
 }
@@ -78,73 +79,58 @@ function AgendaSkeleton() {
 // ============================================================================
 
 export function TodayAgenda({ doctorId, themeColor = '#3B82F6' }: TodayAgendaProps) {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
+  // Fetch today's appointments via core hook
+  const {
+    appointments: rawAppointments,
+    loading,
+    error,
+    refresh,
+  } = useDoctorAppointments(supabase, doctorId, {
+    dateRange: { start: today, end: today },
+  });
+
+  // Map core rows to local Appointment shape
+  const appointments = useMemo<Appointment[]>(
+    () =>
+      rawAppointments.map((apt) => ({
+        id: apt.id,
+        scheduled_at: apt.scheduled_at,
+        duration_minutes: apt.duration_minutes,
+        reason: apt.reason ?? null,
+        status: apt.status,
+        appointment_type: apt.appointment_type ?? null,
+        paciente: apt.patient
+          ? {
+              full_name: apt.patient.full_name ?? 'Sin nombre',
+              avatar_url: apt.patient.avatar_url ?? null,
+            }
+          : null,
+      })),
+    [rawAppointments],
+  );
+
+  // Real-time subscription — refreshes on any change
   useEffect(() => {
     if (!doctorId) return;
 
-    async function fetchToday() {
-      setLoading(true);
-      try {
-        const today = new Date().toISOString().slice(0, 10);
-        const { data, error: queryError } = await supabase
-          .from('appointments')
-          .select(`
-            id,
-            fecha_hora,
-            duracion_minutos,
-            motivo,
-            status,
-            tipo,
-            paciente:profiles!appointments_paciente_id_fkey(
-              nombre_completo,
-              avatar_url
-            )
-          `)
-          .eq('medico_id', doctorId)
-          .gte('fecha_hora', `${today}T00:00:00`)
-          .lte('fecha_hora', `${today}T23:59:59`)
-          .order('fecha_hora', { ascending: true });
-
-        if (queryError) {
-          // Graceful degradation if table doesn't exist yet
-          if (queryError.code === '42P01' || queryError.message?.includes('does not exist')) {
-            setAppointments([]);
-            return;
-          }
-          throw queryError;
-        }
-
-        setAppointments((data as unknown as Appointment[]) ?? []);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error cargando agenda');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchToday();
-
-    // Real-time subscription
     const channel = supabase
       .channel(`today-agenda-${doctorId}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'appointments',
-        filter: `medico_id=eq.${doctorId}`,
+        filter: `doctor_id=eq.${doctorId}`,
       }, () => {
-        fetchToday();
+        refresh();
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [doctorId]);
+  }, [doctorId, refresh]);
 
   if (loading) return <AgendaSkeleton />;
 
@@ -172,7 +158,7 @@ export function TodayAgenda({ doctorId, themeColor = '#3B82F6' }: TodayAgendaPro
   return (
     <div className="space-y-2">
       {appointments.map((apt) => {
-        const aptTime = new Date(apt.fecha_hora);
+        const aptTime = new Date(apt.scheduled_at);
         const isPast = aptTime < now && apt.status !== 'in_progress';
         const isCurrent = apt.status === 'in_progress';
         const statusCfg = getStatusConfig(apt.status);
@@ -199,7 +185,7 @@ export function TodayAgenda({ doctorId, themeColor = '#3B82F6' }: TodayAgendaPro
               >
                 {aptTime.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}
               </p>
-              <p className="text-xs text-gray-400">{apt.duracion_minutos || 30} min</p>
+              <p className="text-xs text-gray-400">{apt.duration_minutes || 30} min</p>
             </div>
 
             {/* Divider */}
@@ -212,14 +198,14 @@ export function TodayAgenda({ doctorId, themeColor = '#3B82F6' }: TodayAgendaPro
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className={`text-sm font-medium truncate ${isPast ? 'text-gray-400' : 'text-gray-900'}`}>
-                  {apt.paciente?.nombre_completo ?? 'Paciente no asignado'}
+                  {apt.paciente?.full_name ?? 'Paciente no asignado'}
                 </p>
-                {apt.tipo === 'telemedicina' && (
+                {apt.appointment_type === 'telemedicine' && (
                   <Video className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
                 )}
               </div>
-              {apt.motivo && (
-                <p className="text-xs text-gray-400 mt-0.5 truncate">{apt.motivo}</p>
+              {apt.reason && (
+                <p className="text-xs text-gray-400 mt-0.5 truncate">{apt.reason}</p>
               )}
             </div>
 

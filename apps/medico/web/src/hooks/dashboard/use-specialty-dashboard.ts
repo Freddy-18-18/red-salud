@@ -95,11 +95,11 @@ export function useSpecialtyDashboard(
 
       const { data, error: queryError } = await supabase
         .from("appointments")
-        .select("id, fecha_hora, status")
-        .eq("medico_id", doctorId)
-        .gte("fecha_hora", `${today}T00:00:00`)
-        .lte("fecha_hora", `${today}T23:59:59`)
-        .order("fecha_hora", { ascending: true });
+        .select("id, scheduled_at, status")
+        .eq("doctor_id", doctorId)
+        .gte("scheduled_at", `${today}T00:00:00`)
+        .lte("scheduled_at", `${today}T23:59:59`)
+        .order("scheduled_at", { ascending: true });
 
       if (!mountedRef.current) return;
 
@@ -121,20 +121,18 @@ export function useSpecialtyDashboard(
       const now = new Date();
 
       const completed = rows.filter(
-        (r) => r.status === "completed" || r.status === "completada"
+        (r) => r.status === "completed"
       ).length;
 
       const pending = rows.filter(
         (r) =>
           r.status !== "completed" &&
-          r.status !== "completada" &&
-          r.status !== "cancelled" &&
-          r.status !== "cancelada"
+          r.status !== "cancelled"
       );
 
       // Next upcoming appointment
       const nextAppointment = pending.find(
-        (r) => new Date(r.fecha_hora) > now
+        (r) => new Date(r.scheduled_at) > now
       );
 
       setTodayData({
@@ -142,7 +140,7 @@ export function useSpecialtyDashboard(
         completed,
         pending: pending.length,
         nextAppointmentTime: nextAppointment
-          ? new Date(nextAppointment.fecha_hora).toLocaleTimeString("es-VE", {
+          ? new Date(nextAppointment.scheduled_at).toLocaleTimeString("es-VE", {
               hour: "2-digit",
               minute: "2-digit",
             })
@@ -191,7 +189,7 @@ export function useSpecialtyDashboard(
           event: "*",
           schema: "public",
           table: "appointments",
-          filter: `medico_id=eq.${doctorId}`,
+          filter: `doctor_id=eq.${doctorId}`,
         },
         () => {
           // Re-fetch when any appointment changes

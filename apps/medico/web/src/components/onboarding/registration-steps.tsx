@@ -320,17 +320,17 @@ export function RegistrationSteps() {
         return;
       }
 
-      // 2. Create doctor_details profile
+      // 2. Create doctor_profiles profile
       const { error: profileError } = await supabase
-        .from('doctor_details')
+        .from('doctor_profiles')
         .upsert(
           {
             profile_id: userId,
-            especialidad_id: formData.specialtyId,
-            licencia_medica: formData.licenseNumber,
-            anos_experiencia: formData.yearsExperience,
-            idiomas: formData.languages,
-            subespecialidades: formData.subSpecialties,
+            specialty_id: formData.specialtyId,
+            medical_license: formData.licenseNumber,
+            years_experience: formData.yearsExperience,
+            languages: formData.languages,
+            subspecialties: formData.subSpecialties,
             sacs_verified: formData.sacsVerified,
             sacs_data: formData.sacsData,
             dashboard_config: {

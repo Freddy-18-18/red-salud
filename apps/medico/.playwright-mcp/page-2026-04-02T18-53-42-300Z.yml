@@ -1,0 +1,289 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e5]:
+        - link "Red Salud" [active] [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img [ref=e8]
+          - generic [ref=e10]: Red Salud
+        - generic [ref=e11]:
+          - link "Funcionalidades" [ref=e12] [cursor=pointer]:
+            - /url: /#funcionalidades
+          - link "Especialidades" [ref=e13] [cursor=pointer]:
+            - /url: /#especialidades
+          - link "Precios" [ref=e14] [cursor=pointer]:
+            - /url: /precios
+        - generic [ref=e15]:
+          - link "Iniciar Sesión" [ref=e16] [cursor=pointer]:
+            - /url: /auth/login
+          - link "Comenzar Gratis" [ref=e17] [cursor=pointer]:
+            - /url: /auth/register
+    - main [ref=e18]:
+      - generic [ref=e226]:
+        - generic [ref=e227]:
+          - img [ref=e228]
+          - generic [ref=e230]: Plataforma adaptativa por especialidad
+        - heading "Tu Práctica Médica. Reimaginada." [level=1] [ref=e231]
+        - paragraph [ref=e232]: La primera plataforma clínica que se adapta a tu especialidad. Agenda, consultas, recetas, historia clínica e inteligencia artificial — todo en un solo lugar, diseñado para cómo vos trabajás.
+        - generic [ref=e233]:
+          - link "Comenzar Gratis" [ref=e234] [cursor=pointer]:
+            - /url: /auth/register
+            - text: Comenzar Gratis
+            - img [ref=e235]
+          - link "Explorar Funcionalidades" [ref=e237] [cursor=pointer]:
+            - /url: /#funcionalidades
+        - generic [ref=e238]:
+          - generic [ref=e239]: 130+ especialidades
+          - generic [ref=e240]: Verificación SACS
+          - generic [ref=e242]: Gratis para comenzar
+      - generic [ref=e246]:
+        - generic [ref=e247]:
+          - generic [ref=e248]: 130+
+          - paragraph [ref=e249]: Especialidades Soportadas
+        - generic [ref=e250]:
+          - generic [ref=e251]: "8"
+          - paragraph [ref=e252]: Módulos Principales
+        - generic [ref=e253]:
+          - generic [ref=e254]: 24/7
+          - paragraph [ref=e255]: Disponibilidad
+        - generic [ref=e256]:
+          - generic [ref=e257]: 100%
+          - paragraph [ref=e258]: Adaptable a tu Especialidad
+      - generic [ref=e260]:
+        - generic [ref=e261]:
+          - heading "Todo lo que necesitás para tu consultorio" [level=2] [ref=e262]
+          - paragraph [ref=e263]: Herramientas clínicas diseñadas por médicos, para médicos. Cada módulo se integra perfectamente con el resto.
+        - generic [ref=e264]:
+          - generic [ref=e265]:
+            - img [ref=e267]
+            - heading "Agenda Inteligente" [level=3] [ref=e271]
+            - paragraph [ref=e272]: Gestión de citas con bloques de tiempo configurables por tipo de consulta. Sincronización con Google Calendar y notificaciones automáticas a pacientes.
+          - generic [ref=e273]:
+            - img [ref=e275]
+            - heading "Consulta Digital" [level=3] [ref=e279]
+            - paragraph [ref=e280]: Notas clínicas con formato SOAP adaptado a tu especialidad. Examen físico estructurado, diagnósticos ICD-11 y planes de tratamiento integrados.
+          - generic [ref=e281]:
+            - img [ref=e283]
+            - heading "Recetas Electrónicas" [level=3] [ref=e286]
+            - paragraph [ref=e287]: Prescripciones con firma digital, plantillas por especialidad y verificación de interacciones medicamentosas. Imprimí o compartí digitalmente.
+          - generic [ref=e288]:
+            - img [ref=e290]
+            - heading "Historia Clínica" [level=3] [ref=e293]
+            - paragraph [ref=e294]: Expediente médico digital completo con timeline cronológico, documentos adjuntos, y acceso seguro desde cualquier dispositivo.
+          - generic [ref=e295]:
+            - img [ref=e297]
+            - heading "IA Diagnóstica" [level=3] [ref=e309]
+            - paragraph [ref=e310]: Sugerencias inteligentes de códigos ICD-11 potenciadas por Gemini AI. Asistencia en diagnóstico diferencial basada en síntomas y signos clínicos.
+          - generic [ref=e311]:
+            - img [ref=e313]
+            - heading "Integración Google Calendar" [level=3] [ref=e315]
+            - paragraph [ref=e316]: Sincronización bidireccional con Google Calendar. Tus citas médicas y agenda personal en un solo lugar, siempre actualizadas.
+          - generic [ref=e317]:
+            - img [ref=e319]
+            - heading "Estadísticas por Especialidad" [level=3] [ref=e321]
+            - paragraph [ref=e322]: KPIs y métricas específicas para tu área. Desde ECGs realizados en cardiología hasta espirometrías en neumología — datos que importan.
+          - generic [ref=e323]:
+            - img [ref=e325]
+            - heading "Verificación SACS" [level=3] [ref=e328]
+            - paragraph [ref=e329]: Validación automática contra el Sistema Autónomo de Certificación Sanitaria de Venezuela. Tu registro profesional, siempre verificado.
+      - generic [ref=e331]:
+        - generic [ref=e332]:
+          - heading "Se adapta a TU especialidad" [level=2] [ref=e333]
+          - paragraph [ref=e334]: No es un sistema genérico. Cada especialidad activa sus propios módulos, formularios, KPIs y flujos de trabajo. Así trabaja un médico de verdad.
+        - generic [ref=e335]:
+          - button "Medicina General" [ref=e336]:
+            - img [ref=e337]
+            - text: Medicina General
+          - button "Medicina Interna" [ref=e341]:
+            - img [ref=e342]
+            - text: Medicina Interna
+          - button "Cardiología" [ref=e344]:
+            - img [ref=e345]
+            - text: Cardiología
+          - button "Neurología" [ref=e347]:
+            - img [ref=e348]
+            - text: Neurología
+          - button "Traumatología y Ortopedia" [ref=e358]:
+            - img [ref=e359]
+            - text: Traumatología y Ortopedia
+          - button "Pediatría" [ref=e361]:
+            - img [ref=e362]
+            - text: Pediatría
+          - button "Ginecología y Obstetricia" [ref=e365]:
+            - img [ref=e366]
+            - text: Ginecología y Obstetricia
+          - button "Oftalmología" [ref=e369]:
+            - img [ref=e370]
+            - text: Oftalmología
+          - button "Dermatología" [ref=e373]:
+            - img [ref=e374]
+            - text: Dermatología
+          - button "Psiquiatría" [ref=e383]:
+            - img [ref=e384]
+            - text: Psiquiatría
+          - button "Urología" [ref=e394]:
+            - img [ref=e395]
+            - text: Urología
+          - button "Odontología" [ref=e397]:
+            - img [ref=e398]
+            - text: Odontología
+        - generic [ref=e403]:
+          - generic [ref=e404]:
+            - generic [ref=e405]:
+              - img [ref=e407]
+              - generic [ref=e411]:
+                - heading "Medicina General" [level=3] [ref=e412]
+                - text: Clínicas Generales
+            - paragraph [ref=e413]: Atención integral de primer contacto. Consultas generales, controles periódicos y derivaciones especializadas con flujos optimizados.
+            - generic [ref=e414]:
+              - generic [ref=e415]:
+                - img [ref=e416]
+                - generic [ref=e419]: KPIs que seguís
+              - generic [ref=e420]:
+                - generic [ref=e421]: Pacientes atendidos/día
+                - generic [ref=e422]: Tiempo promedio por consulta
+                - generic [ref=e423]: Satisfacción del paciente
+          - generic [ref=e424]:
+            - generic [ref=e425]:
+              - img [ref=e426]
+              - generic [ref=e430]: Módulos incluidos
+            - generic [ref=e431]:
+              - generic [ref=e432]:
+                - img [ref=e433]
+                - generic [ref=e435]: Consulta SOAP
+              - generic [ref=e436]:
+                - img [ref=e437]
+                - generic [ref=e439]: Recetas Digitales
+              - generic [ref=e440]:
+                - img [ref=e441]
+                - generic [ref=e443]: Historia Clínica
+              - generic [ref=e444]:
+                - img [ref=e445]
+                - generic [ref=e447]: Telemedicina
+        - link "Ver todas las 130+ especialidades" [ref=e449] [cursor=pointer]:
+          - /url: /especialidades
+          - text: Ver todas las 130+ especialidades
+          - img [ref=e450]
+      - generic [ref=e453]:
+        - generic [ref=e454]:
+          - heading "Comenzá en minutos" [level=2] [ref=e455]
+          - paragraph [ref=e456]: Tres pasos para transformar tu práctica médica. Sin configuraciones complicadas, sin curva de aprendizaje.
+        - generic [ref=e459]:
+          - generic [ref=e460]:
+            - generic [ref=e461]:
+              - img [ref=e463]
+              - generic [ref=e466]: "1"
+            - heading "Registrá tu perfil" [level=3] [ref=e467]
+            - paragraph [ref=e468]: Creá tu cuenta profesional y verificá tu registro en el SACS. Tu identidad médica, protegida y verificada.
+          - generic [ref=e469]:
+            - generic [ref=e470]:
+              - img [ref=e472]
+              - generic [ref=e475]: "2"
+            - heading "Configurá tu especialidad" [level=3] [ref=e476]
+            - paragraph [ref=e477]: Seleccioná tu especialidad y el sistema activa automáticamente los módulos, formularios y KPIs relevantes para vos.
+          - generic [ref=e478]:
+            - generic [ref=e479]:
+              - img [ref=e481]
+              - generic [ref=e486]: "3"
+            - heading "Transformá tu práctica" [level=3] [ref=e487]
+            - paragraph [ref=e488]: Agenda inteligente, consultas digitales, recetas electrónicas y estadísticas — todo integrado y listo para usar.
+      - generic [ref=e490]:
+        - generic [ref=e491]:
+          - heading "Construido con la medicina venezolana en mente" [level=2] [ref=e492]
+          - paragraph [ref=e493]: No es un software extranjero adaptado. Es una plataforma pensada desde cero para cómo trabajan los médicos en Venezuela.
+        - generic [ref=e494]:
+          - generic [ref=e495]:
+            - img [ref=e497]
+            - heading "Diseñado por médicos venezolanos" [level=3] [ref=e501]
+            - paragraph [ref=e502]: Cada módulo fue pensado desde la realidad del consultorio venezolano. No es un software genérico traducido — es una herramienta hecha por y para profesionales de la salud en Venezuela.
+          - generic [ref=e503]:
+            - img [ref=e505]
+            - heading "Integración SACS real" [level=3] [ref=e508]
+            - paragraph [ref=e509]: Verificación directa contra el Sistema Autónomo de Certificación Sanitaria. Tu registro profesional validado, tu identidad médica protegida.
+          - generic [ref=e510]:
+            - img [ref=e512]
+            - heading "Especialidades, no genéricos" [level=3] [ref=e515]
+            - paragraph [ref=e516]: Cada especialidad activa módulos, formularios y KPIs propios. Un cardiólogo no ve lo mismo que un odontólogo — porque no trabajan igual.
+          - generic [ref=e517]:
+            - img [ref=e519]
+            - heading "Construido con feedback médico" [level=3] [ref=e524]
+            - paragraph [ref=e525]: Cada funcionalidad se desarrolla en colaboración con profesionales de la salud que validan los flujos de trabajo antes de implementarlos.
+      - generic [ref=e527]:
+        - heading "Llevá tu consultorio al siguiente nivel" [level=2] [ref=e528]
+        - paragraph [ref=e529]: Digitalizá tu consultorio y ofrecé una experiencia médica moderna a tus pacientes.
+        - link "Crear Mi Cuenta Gratis" [ref=e531] [cursor=pointer]:
+          - /url: /auth/register
+          - text: Crear Mi Cuenta Gratis
+          - img [ref=e532]
+        - paragraph [ref=e534]: Sin tarjeta de crédito · Configuración en 5 minutos
+    - contentinfo [ref=e169]:
+      - generic [ref=e171]:
+        - generic [ref=e172]:
+          - link "Red Salud" [ref=e173] [cursor=pointer]:
+            - /url: /
+            - img [ref=e175]
+            - generic [ref=e177]: Red Salud
+          - paragraph [ref=e178]: La plataforma clínica que se adapta a tu especialidad médica.
+        - generic [ref=e179]:
+          - heading "Producto" [level=3] [ref=e180]
+          - list [ref=e181]:
+            - listitem [ref=e182]:
+              - link "Funcionalidades" [ref=e183] [cursor=pointer]:
+                - /url: /#funcionalidades
+            - listitem [ref=e184]:
+              - link "Especialidades" [ref=e185] [cursor=pointer]:
+                - /url: /#especialidades
+            - listitem [ref=e186]:
+              - link "Precios" [ref=e187] [cursor=pointer]:
+                - /url: /precios
+            - listitem [ref=e188]:
+              - link "Actualizaciones — Próximamente" [ref=e189] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e190]:
+          - heading "Especialidades" [level=3] [ref=e191]
+          - list [ref=e192]:
+            - listitem [ref=e193]:
+              - link "Medicina General" [ref=e194] [cursor=pointer]:
+                - /url: /especialidades
+            - listitem [ref=e195]:
+              - link "Cardiología" [ref=e196] [cursor=pointer]:
+                - /url: /especialidades
+            - listitem [ref=e197]:
+              - link "Pediatría" [ref=e198] [cursor=pointer]:
+                - /url: /especialidades
+            - listitem [ref=e199]:
+              - link "Odontología" [ref=e200] [cursor=pointer]:
+                - /url: /especialidades
+            - listitem [ref=e201]:
+              - link "Ginecología" [ref=e202] [cursor=pointer]:
+                - /url: /especialidades
+            - listitem [ref=e203]:
+              - link "Ver todas" [ref=e204] [cursor=pointer]:
+                - /url: /especialidades
+        - generic [ref=e205]:
+          - heading "Recursos" [level=3] [ref=e206]
+          - list [ref=e207]:
+            - listitem [ref=e208]:
+              - link "Centro de Ayuda — Próximamente" [ref=e209] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e210]:
+              - link "Blog — Próximamente" [ref=e211] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e212]:
+          - heading "Legal" [level=3] [ref=e213]
+          - list [ref=e214]:
+            - listitem [ref=e215]:
+              - link "Privacidad" [ref=e216] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e217]:
+              - link "Términos" [ref=e218] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e219]:
+              - link "Seguridad" [ref=e220] [cursor=pointer]:
+                - /url: "#"
+      - generic [ref=e222]:
+        - paragraph [ref=e223]: © 2024-2025 Red Salud. Todos los derechos reservados.
+        - paragraph [ref=e224]: Hecho con amor en Venezuela
+  - button "Open Next.js Dev Tools" [ref=e540] [cursor=pointer]:
+    - img [ref=e541]
+  - alert [ref=e544]: Red Salud — Consultorio Médico Digital

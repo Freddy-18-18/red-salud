@@ -4,7 +4,7 @@
 export interface DoctorProfile {
   id: string;
   user_id?: string;
-  nombre_completo?: string;
+  full_name?: string;
   specialty_id?: string;
   specialty?: { id?: string; name?: string; slug?: string; icon?: string };
   license_number?: string;

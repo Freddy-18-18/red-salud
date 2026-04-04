@@ -310,37 +310,37 @@ export const laboratoryResultSchema = z.object({
 
 // Appointment validation schema
 export const appointmentSchemaVal = z.object({
-    paciente_id: z
+    patient_id: z
         .string()
-        .uuid("ID de paciente inválido"),
+        .uuid("Invalid patient ID"),
 
     doctor_id: z
         .string()
-        .uuid("ID de doctor inválido"),
+        .uuid("Invalid doctor ID"),
 
-    fecha: z
+    date: z
         .string()
         .or(z.date()),
 
-    hora: z
+    time: z
         .string()
-        .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:MM)"),
+        .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)"),
 
-    tipo: z
-        .enum(["presencial", "telemedicina"]),
+    type: z
+        .enum(["in_person", "telemedicine"]),
 
-    motivo: z
+    reason: z
         .string()
-        .min(5, "El motivo debe tener al menos 5 caracteres")
-        .max(500, "El motivo es demasiado largo"),
+        .min(5, "Reason must be at least 5 characters")
+        .max(500, "Reason is too long"),
 
-    estado: z
-        .enum(["programada", "confirmada", "en_curso", "completada", "cancelada", "no_asistio"])
-        .default("programada"),
+    status: z
+        .enum(["scheduled", "confirmed", "in_progress", "completed", "cancelled", "no_show"])
+        .default("scheduled"),
 
-    notas: z
+    notes: z
         .string()
-        .max(1000, "Las notas son demasiado largas")
+        .max(1000, "Notes are too long")
         .optional(),
 });
 

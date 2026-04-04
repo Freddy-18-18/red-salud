@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useDoctorAppointments } from '@red-salud/core';
 import { PatientList, type PatientSummary } from '@/components/patients/patient-list';
 import { PatientDetail } from '@/components/patients/patient-detail';
 import { Users, Plus } from 'lucide-react';
@@ -12,10 +13,7 @@ import { Users, Plus } from 'lucide-react';
 
 export default function PacientesPage() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [patients, setPatients] = useState<PatientSummary[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   // Load user
   useEffect(() => {
@@ -24,100 +22,58 @@ export default function PacientesPage() {
     });
   }, []);
 
-  // Fetch patients
-  const fetchPatients = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
-    setError(null);
+  // Fetch all appointments for this doctor via core hook
+  const {
+    appointments: rawAppointments,
+    loading,
+    error,
+  } = useDoctorAppointments(supabase, userId);
 
-    try {
-      // Get all unique patients from appointments
-      const { data: appointmentData, error: aptError } = await supabase
-        .from('appointments')
-        .select(`
-          paciente_id,
-          fecha_hora,
-          status,
-          paciente:profiles!appointments_paciente_id_fkey(
-            id,
-            nombre_completo,
-            cedula,
-            telefono,
-            fecha_nacimiento,
-            avatar_url
-          )
-        `)
-        .eq('medico_id', userId)
-        .order('fecha_hora', { ascending: false });
+  // Derive unique patients from appointments
+  const patients = useMemo<PatientSummary[]>(() => {
+    const patientMap = new Map<string, PatientSummary>();
+    const now = new Date().toISOString();
 
-      if (aptError) {
-        if (aptError.code === '42P01' || aptError.message?.includes('does not exist')) {
-          setPatients([]);
-          setLoading(false);
-          return;
-        }
-        throw aptError;
-      }
+    for (const apt of rawAppointments) {
+      if (!apt.patient_id || !apt.patient) continue;
 
-      // Aggregate patient data
-      const patientMap = new Map<string, PatientSummary>();
+      const profile = apt.patient;
+      const existing = patientMap.get(apt.patient_id);
 
-      for (const apt of appointmentData ?? []) {
-        if (!apt.paciente_id || !apt.paciente) continue;
-
-        const profile = apt.paciente as unknown as {
-          id: string;
-          nombre_completo: string;
-          cedula: string | null;
-          telefono: string | null;
-          fecha_nacimiento: string | null;
-          avatar_url: string | null;
-        };
-
-        const existing = patientMap.get(apt.paciente_id);
-
-        if (existing) {
-          existing.total_consultas++;
-          // Update last visit
-          if (!existing.ultima_visita || apt.fecha_hora > existing.ultima_visita) {
-            if (apt.status === 'completed') {
-              existing.ultima_visita = apt.fecha_hora;
-            }
+      if (existing) {
+        existing.total_consultas++;
+        // Update last visit
+        if (!existing.ultima_visita || apt.scheduled_at > existing.ultima_visita) {
+          if (apt.status === 'completed') {
+            existing.ultima_visita = apt.scheduled_at;
           }
-          // Update next appointment
-          const now = new Date().toISOString();
-          if (apt.fecha_hora > now && apt.status !== 'cancelled') {
-            if (!existing.proxima_cita || apt.fecha_hora < existing.proxima_cita) {
-              existing.proxima_cita = apt.fecha_hora;
-            }
-          }
-        } else {
-          const now = new Date().toISOString();
-          patientMap.set(apt.paciente_id, {
-            id: profile.id,
-            nombre_completo: profile.nombre_completo,
-            cedula: profile.cedula,
-            telefono: profile.telefono,
-            fecha_nacimiento: profile.fecha_nacimiento,
-            avatar_url: profile.avatar_url,
-            ultima_visita: apt.status === 'completed' ? apt.fecha_hora : null,
-            proxima_cita: apt.fecha_hora > now && apt.status !== 'cancelled' ? apt.fecha_hora : null,
-            total_consultas: 1,
-          });
         }
+        // Update next appointment
+        if (apt.scheduled_at > now && apt.status !== 'cancelled') {
+          if (!existing.proxima_cita || apt.scheduled_at < existing.proxima_cita) {
+            existing.proxima_cita = apt.scheduled_at;
+          }
+        }
+      } else {
+        patientMap.set(apt.patient_id, {
+          id: profile.id,
+          nombre_completo: profile.full_name ?? 'Sin nombre',
+          cedula: profile.cedula ?? null,
+          telefono: profile.telefono ?? null,
+          fecha_nacimiento: profile.fecha_nacimiento ?? null,
+          avatar_url: profile.avatar_url ?? null,
+          ultima_visita: apt.status === 'completed' ? apt.scheduled_at : null,
+          proxima_cita:
+            apt.scheduled_at > now && apt.status !== 'cancelled'
+              ? apt.scheduled_at
+              : null,
+          total_consultas: 1,
+        });
       }
-
-      setPatients(Array.from(patientMap.values()));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar pacientes');
-    } finally {
-      setLoading(false);
     }
-  }, [userId]);
 
-  useEffect(() => {
-    fetchPatients();
-  }, [fetchPatients]);
+    return Array.from(patientMap.values());
+  }, [rawAppointments]);
 
   // Render detail view
   if (selectedPatientId) {

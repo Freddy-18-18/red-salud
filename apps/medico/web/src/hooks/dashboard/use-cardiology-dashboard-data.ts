@@ -144,50 +144,50 @@ export function useCardiologyDashboardData(
         // 1. Upcoming cardiology procedures (next 7 days)
         supabase
           .from("appointments")
-          .select("id, tipo, fecha_hora, status, notas")
-          .eq("medico_id", doctorId)
-          .in("tipo", [...CARDIOLOGY_PROCEDURE_TYPES])
-          .gte("fecha_hora", now.toISOString())
-          .lte("fecha_hora", weekFromNow)
-          .neq("status", "cancelada")
-          .order("fecha_hora", { ascending: true })
+          .select("id, appointment_type, scheduled_at, status, internal_notes")
+          .eq("doctor_id", doctorId)
+          .in("appointment_type", [...CARDIOLOGY_PROCEDURE_TYPES])
+          .gte("scheduled_at", now.toISOString())
+          .lte("scheduled_at", weekFromNow)
+          .neq("status", "cancelled")
+          .order("scheduled_at", { ascending: true })
           .limit(10),
 
         // 2. ECG queue (pending ECGs today)
         supabase
           .from("appointments")
-          .select("id, fecha_hora, status, notas")
-          .eq("medico_id", doctorId)
-          .eq("tipo", "ecg")
-          .gte("fecha_hora", `${todayStr}T00:00:00`)
-          .lte("fecha_hora", `${todayStr}T23:59:59`)
-          .in("status", ["pendiente", "pending", "en_espera"])
-          .order("fecha_hora", { ascending: true }),
+          .select("id, scheduled_at, status, internal_notes")
+          .eq("doctor_id", doctorId)
+          .eq("appointment_type", "ecg")
+          .gte("scheduled_at", `${todayStr}T00:00:00`)
+          .lte("scheduled_at", `${todayStr}T23:59:59`)
+          .in("status", ["pending", "pending", "waiting"])
+          .order("scheduled_at", { ascending: true }),
 
         // 3. Unique patients this month
         supabase
           .from("appointments")
-          .select("paciente_id", { count: "exact", head: true })
-          .eq("medico_id", doctorId)
-          .gte("fecha_hora", monthStart)
-          .neq("status", "cancelada"),
+          .select("patient_id", { count: "exact", head: true })
+          .eq("doctor_id", doctorId)
+          .gte("scheduled_at", monthStart)
+          .neq("status", "cancelled"),
 
         // 4. Unique patients last month (for trend)
         supabase
           .from("appointments")
-          .select("paciente_id", { count: "exact", head: true })
-          .eq("medico_id", doctorId)
-          .gte("fecha_hora", lastMonthStart)
-          .lt("fecha_hora", monthStart)
-          .neq("status", "cancelada"),
+          .select("patient_id", { count: "exact", head: true })
+          .eq("doctor_id", doctorId)
+          .gte("scheduled_at", lastMonthStart)
+          .lt("scheduled_at", monthStart)
+          .neq("status", "cancelled"),
 
         // 5. Follow-up patients
         supabase
           .from("appointments")
           .select("id", { count: "exact", head: true })
-          .eq("medico_id", doctorId)
-          .eq("tipo", "seguimiento")
-          .gte("fecha_hora", `${todayStr}T00:00:00`),
+          .eq("doctor_id", doctorId)
+          .eq("appointment_type", "follow_up")
+          .gte("scheduled_at", `${todayStr}T00:00:00`),
       ]);
 
       if (!mountedRef.current) return;
@@ -198,10 +198,10 @@ export function useCardiologyDashboardData(
           proceduresResult.data.map((p) => ({
             id: p.id,
             procedureName:
-              PROCEDURE_LABELS[p.tipo] || formatProcedureName(p.tipo),
+              PROCEDURE_LABELS[p.appointment_type] || formatProcedureName(p.appointment_type),
             patientName: "Paciente",
-            scheduledDate: formatScheduledDate(p.fecha_hora),
-            type: getAppointmentCategory(p.tipo),
+            scheduledDate: formatScheduledDate(p.scheduled_at),
+            type: getAppointmentCategory(p.appointment_type),
             urgency: p.status === "urgente" ? "high" : "low",
           }))
         );
@@ -214,7 +214,7 @@ export function useCardiologyDashboardData(
             id: e.id,
             patientName: "Paciente",
             urgency: getEcgUrgency(e.status),
-            timeInQueue: getTimeInQueue(e.fecha_hora),
+            timeInQueue: getTimeInQueue(e.scheduled_at),
           }))
         );
       }
@@ -242,7 +242,7 @@ export function useCardiologyDashboardData(
       if (ecgResult.data) {
         ecgResult.data
           .filter((e) => {
-            const appointmentTime = new Date(e.fecha_hora);
+            const appointmentTime = new Date(e.scheduled_at);
             // Overdue by more than 30 minutes
             return now.getTime() - appointmentTime.getTime() > 30 * 60_000;
           })
@@ -252,7 +252,7 @@ export function useCardiologyDashboardData(
               patientName: "Paciente",
               condition: "ECG pendiente — tiempo de espera excedido",
               priority: "high",
-              timeSince: getTimeInQueue(e.fecha_hora),
+              timeSince: getTimeInQueue(e.scheduled_at),
             });
           });
       }
@@ -306,7 +306,7 @@ export function useCardiologyDashboardData(
           event: "*",
           schema: "public",
           table: "appointments",
-          filter: `medico_id=eq.${doctorId}`,
+          filter: `doctor_id=eq.${doctorId}`,
         },
         () => fetchCardiologyData()
       )
@@ -373,7 +373,7 @@ function getAppointmentCategory(
   tipo: string
 ): "diagnostic" | "interventional" | "follow_up" {
   if (tipo === "cateterismo") return "interventional";
-  if (tipo === "consulta_post_procedimiento" || tipo === "seguimiento")
+  if (tipo === "consulta_post_procedimiento" || tipo === "follow_up")
     return "follow_up";
   return "diagnostic";
 }

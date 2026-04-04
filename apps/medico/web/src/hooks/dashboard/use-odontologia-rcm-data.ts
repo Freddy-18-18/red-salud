@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { useDoctorAppointments } from "@red-salud/core";
 
 interface AppointmentPatientRow {
-  paciente_id: string;
+  patient_id: string;
 }
 
 interface ClaimRow {
@@ -86,42 +87,45 @@ export function useOdontologiaRcmData(doctorId?: string): OdontologiaRcmData {
   const [workQueue, setWorkQueue] = useState<WorkQueueRow[]>([]);
   const [lifecycleRecent, setLifecycleRecent] = useState<LifecycleEventRow[]>([]);
   const [hasPhase3Integration, setHasPhase3Integration] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingExtra, setIsLoadingExtra] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = useCallback(async () => {
+  // Fetch appointments via core hook (last 6 months)
+  const sixMonthsAgoStr = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 6);
+    return d.toISOString().slice(0, 10);
+  }, []);
+
+  const {
+    appointments: rawAppointments,
+    loading: appointmentsLoading,
+    refresh: refreshAppointments,
+  } = useDoctorAppointments(supabase, doctorId ?? null, {
+    dateRange: { start: sixMonthsAgoStr, end: new Date().toISOString().slice(0, 10) },
+  });
+
+  const isLoading = appointmentsLoading || isLoadingExtra;
+
+  const loadExtraData = useCallback(async () => {
     if (!doctorId) {
       setClaims([]);
       setEligibilityChecks([]);
       setWorkQueue([]);
       setLifecycleRecent([]);
       setHasPhase3Integration(false);
-      setIsLoading(false);
+      setIsLoadingExtra(false);
       return;
     }
 
-    setIsLoading(true);
+    setIsLoadingExtra(true);
     setError(null);
 
     try {
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-      const { data: appointmentsData, error: appointmentsError } = await supabase
-        .from("appointments")
-        .select("paciente_id")
-        .eq("medico_id", doctorId)
-        .gte("fecha_hora", sixMonthsAgo.toISOString())
-        .limit(1000);
-
-      if (appointmentsError) {
-        throw appointmentsError;
-      }
-
       const patientIds = Array.from(
         new Set(
-          ((appointmentsData || []) as AppointmentPatientRow[])
-            .map((row) => row.paciente_id)
+          rawAppointments
+            .map((row) => row.patient_id)
             .filter(Boolean)
         )
       );
@@ -208,13 +212,13 @@ export function useOdontologiaRcmData(doctorId?: string): OdontologiaRcmData {
       const fallbackMessage = "No se pudo cargar datos de RCM odontológico";
       setError(err instanceof Error ? err.message || fallbackMessage : fallbackMessage);
     } finally {
-      setIsLoading(false);
+      setIsLoadingExtra(false);
     }
-  }, [doctorId]);
+  }, [doctorId, rawAppointments]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadExtraData();
+  }, [loadExtraData]);
 
   const derived = useMemo(() => {
     const now = new Date();
@@ -285,12 +289,17 @@ export function useOdontologiaRcmData(doctorId?: string): OdontologiaRcmData {
     };
   }, [claims, eligibilityChecks, lifecycleRecent, workQueue]);
 
+  const refresh = useCallback(async () => {
+    await refreshAppointments();
+    await loadExtraData();
+  }, [refreshAppointments, loadExtraData]);
+
   return {
     ...derived,
     lifecycleRecent,
     hasPhase3Integration,
     isLoading,
     error,
-    refresh: loadData,
+    refresh,
   };
 }

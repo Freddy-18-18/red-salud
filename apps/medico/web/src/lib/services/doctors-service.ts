@@ -6,9 +6,7 @@ import type {
   MedicalSpecialty,
   DoctorReview,
   DoctorReviewFormData,
-  DoctorAvailabilityException,
   DoctorSearchFilters,
-  DoctorSearchResult,
 } from '@/types/doctor';
 
 // ============================================
@@ -57,13 +55,13 @@ export async function getSpecialtyById(id: string) {
 export async function getDoctorProfile(userId: string) {
   try {
     const { data, error } = await supabase
-      .from('doctor_details')
+      .from('doctor_profiles')
       .select(`
         *,
-        especialidad:specialties(id, name, slug, icon, description),
-        profile:profiles!doctor_details_profile_id_fkey(
+        specialty:specialties(id, name, slug, icon, description),
+        profile:profiles!doctor_profiles_profile_id_fkey(
           id,
-          nombre_completo,
+          full_name,
           email,
           avatar_url,
           telefono,
@@ -91,25 +89,25 @@ export async function getDoctorProfile(userId: string) {
 
     const doctorProfile: DoctorProfile = {
       id: data.profile_id,
-      specialty_id: data.especialidad_id || null,
-      specialty: data.especialidad ? {
-        id: data.especialidad.id,
-        name: data.especialidad.name,
-        slug: data.especialidad.slug ?? null,
-        icon: data.especialidad.icon,
-        description: data.especialidad.description,
+      specialty_id: data.specialty_id || null,
+      specialty: data.specialty ? {
+        id: data.specialty.id,
+        name: data.specialty.name,
+        slug: data.specialty.slug ?? null,
+        icon: data.specialty.icon,
+        description: data.specialty.description,
       } : null,
-      license_number: data.licencia_medica || null,
+      license_number: data.medical_license || null,
       license_country: 'VE',
-      years_experience: data.anos_experiencia || 0,
+      years_experience: data.years_experience || 0,
       professional_phone: data.profile?.telefono || null,
       professional_email: data.profile?.email || null,
       clinic_address: null,
       consultation_duration: 30,
-      consultation_price: data.tarifa_consulta ? Number(data.tarifa_consulta) : null,
-      accepts_insurance: data.acepta_seguros ?? false,
-      bio: data.biografia || null,
-      languages: Array.isArray(data.idiomas) && data.idiomas.length > 0 ? data.idiomas : ['es'],
+      consultation_price: data.consultation_fee ? Number(data.consultation_fee) : null,
+      accepts_insurance: data.accepts_insurance ?? false,
+      bio: data.biography || null,
+      languages: Array.isArray(data.languages) && data.languages.length > 0 ? data.languages : ['es'],
       is_verified: data.verified || false,
       is_active: true,
       sacs_verified: data.sacs_verified ?? data.profile?.sacs_verificado ?? false,
@@ -118,10 +116,10 @@ export async function getDoctorProfile(userId: string) {
       total_reviews: 0,
       professional_type: data.professional_type || 'doctor',
       dashboard_config: data.dashboard_config || {},
-      schedule: data.horario_atencion || undefined,
+      schedule: data.schedule || undefined,
       created_at: data.created_at,
       updated_at: data.updated_at,
-      nombre_completo: data.profile?.nombre_completo || undefined,
+      full_name: data.profile?.full_name || undefined,
       email: data.profile?.email || undefined,
       telefono: data.profile?.telefono || undefined,
       cedula: data.profile?.cedula || undefined,
@@ -130,7 +128,7 @@ export async function getDoctorProfile(userId: string) {
       sacs_nombre: data.profile?.sacs_nombre || undefined,
       sacs_matricula: data.profile?.sacs_matricula || undefined,
       sacs_especialidad: data.profile?.sacs_especialidad || undefined,
-      subespecialidades: Array.isArray(data.subespecialidades) ? data.subespecialidades : [],
+      subspecialties: Array.isArray(data.subspecialties) ? data.subspecialties : [],
       universidad: undefined,
     } as unknown as DoctorProfile;
 
@@ -146,7 +144,7 @@ export async function createDoctorProfile(
   profileData: DoctorProfileFormData
 ) {
   const { data, error } = await supabase
-    .from('doctor_details')
+    .from('doctor_profiles')
     .insert({
       profile_id: userId,
       ...profileData,
@@ -167,7 +165,7 @@ export async function updateDoctorProfile(
   updates: Partial<DoctorProfileFormData>
 ) {
   const { data, error } = await supabase
-    .from('doctor_details')
+    .from('doctor_profiles')
     .update(updates)
     .eq('profile_id', userId)
     .select()
@@ -187,28 +185,28 @@ export async function updateDoctorProfile(
 
 export async function searchDoctors(filters: DoctorSearchFilters = {}) {
   let query = supabase
-    .from('doctor_details')
+    .from('doctor_profiles')
     .select(`
       *,
-      especialidad:specialties(*),
+      specialty:specialties(*),
       profile:profiles(*)
     `)
     .eq('verified', true);
 
   if (filters.specialty_id) {
-    query = query.eq('especialidad_id', filters.specialty_id);
+    query = query.eq('specialty_id', filters.specialty_id);
   }
 
   if (filters.accepts_insurance !== undefined) {
-    query = query.eq('acepta_seguros', filters.accepts_insurance);
+    query = query.eq('accepts_insurance', filters.accepts_insurance);
   }
 
   if (filters.max_price) {
-    query = query.lte('tarifa_consulta', filters.max_price);
+    query = query.lte('consultation_fee', filters.max_price);
   }
 
   if (filters.languages && filters.languages.length > 0) {
-    query = query.contains('idiomas', filters.languages);
+    query = query.contains('languages', filters.languages);
   }
 
   const { data, error } = await query.order('created_at', { ascending: false });
@@ -220,13 +218,13 @@ export async function searchDoctors(filters: DoctorSearchFilters = {}) {
 
   const results = (data || []).map(d => ({
     ...d,
-    specialty: d.especialidad ? {
-      id: d.especialidad.id,
-      name: d.especialidad.name,
-      icon: d.especialidad.icon,
-      description: d.especialidad.description,
+    specialty: d.specialty ? {
+      id: d.specialty.id,
+      name: d.specialty.name,
+      icon: d.specialty.icon,
+      description: d.specialty.description,
     } : null,
-    nombre_completo: d.profile?.nombre_completo,
+    full_name: d.profile?.full_name,
     email: d.profile?.email,
     telefono: d.profile?.telefono,
     avatar_url: d.profile?.avatar_url,
@@ -237,11 +235,11 @@ export async function searchDoctors(filters: DoctorSearchFilters = {}) {
 
 export async function getFeaturedDoctors(limit: number = 10) {
   const { data, error } = await supabase
-    .from('doctor_details')
+    .from('doctor_profiles')
     .select(`
       *,
-      especialidad:specialties(*),
-      profile:profiles!doctor_details_profile_id_fkey(*)
+      specialty:specialties(*),
+      profile:profiles!doctor_profiles_profile_id_fkey(*)
     `)
     .eq('verified', true)
     .eq('sacs_verified', true)
@@ -255,19 +253,19 @@ export async function getFeaturedDoctors(limit: number = 10) {
 
   const results = (data || []).map(d => ({
     profile_id: d.profile_id,
-    specialty_id: d.especialidad_id,
-    specialty: d.especialidad ? {
-      id: d.especialidad.id,
-      name: d.especialidad.name,
-      icon: d.especialidad.icon,
-      description: d.especialidad.description,
+    specialty_id: d.specialty_id,
+    specialty: d.specialty ? {
+      id: d.specialty.id,
+      name: d.specialty.name,
+      icon: d.specialty.icon,
+      description: d.specialty.description,
     } : null,
-    license_number: d.licencia_medica,
-    years_experience: d.anos_experiencia,
-    consultation_price: d.tarifa_consulta ? Number(d.tarifa_consulta) : null,
-    bio: d.biografia,
+    license_number: d.medical_license,
+    years_experience: d.years_experience,
+    consultation_price: d.consultation_fee ? Number(d.consultation_fee) : null,
+    bio: d.biography,
     is_verified: d.verified,
-    nombre_completo: d.profile?.nombre_completo,
+    full_name: d.profile?.full_name,
     email: d.profile?.email,
     avatar_url: d.profile?.avatar_url,
     telefono: d.profile?.telefono,
@@ -342,68 +340,10 @@ export async function updateReview(
 // ============================================
 // DISPONIBILIDAD
 // ============================================
-
-export async function getAvailabilityExceptions(
-  doctorId: string,
-  startDate: string,
-  endDate: string
-) {
-  const { data, error } = await supabase
-    .from('doctor_availability_exceptions')
-    .select('*')
-    .eq('doctor_id', doctorId)
-    .gte('date', startDate)
-    .lte('date', endDate)
-    .order('date');
-
-  if (error) {
-    console.error('Error fetching availability exceptions:', error);
-    return { success: false, error: error.message };
-  }
-
-  return { success: true, data: data as DoctorAvailabilityException[] };
-}
-
-export async function createAvailabilityException(
-  doctorId: string,
-  date: string,
-  isAvailable: boolean,
-  reason?: string,
-  customSlots?: { start: string; end: string }[]
-) {
-  const { data, error } = await supabase
-    .from('doctor_availability_exceptions')
-    .insert({
-      doctor_id: doctorId,
-      date,
-      is_available: isAvailable,
-      reason,
-      custom_slots: customSlots || [],
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating availability exception:', error);
-    return { success: false, error: error.message };
-  }
-
-  return { success: true, data: data as DoctorAvailabilityException };
-}
-
-export async function deleteAvailabilityException(exceptionId: string) {
-  const { error } = await supabase
-    .from('doctor_availability_exceptions')
-    .delete()
-    .eq('id', exceptionId);
-
-  if (error) {
-    console.error('Error deleting availability exception:', error);
-    return { success: false, error: error.message };
-  }
-
-  return { success: true };
-}
+// NOTE: Availability exceptions CRUD has been migrated to core hooks:
+// - useAvailabilityExceptions from @red-salud/core
+// - useDoctorSchedule (composite) via hooks/use-doctor-schedule.ts
+// The functions below have been removed as they were unused.
 
 // ============================================
 // ESTADÍSTICAS DEL MÉDICO
@@ -422,8 +362,8 @@ export async function getDoctorStats(doctorId: string) {
     try {
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('appointments')
-        .select('status, fecha_hora, paciente_id')
-        .eq('medico_id', doctorId);
+        .select('status, scheduled_at, patient_id')
+        .eq('doctor_id', doctorId);
 
       if (!appointmentsError && appointmentsData) {
         totalAppointments = appointmentsData.length;
@@ -433,11 +373,11 @@ export async function getDoctorStats(doctorId: string) {
         // Citas de hoy
         const today = new Date().toISOString().split('T')[0];
         todayAppointments = appointmentsData.filter(
-          (a) => a.fecha_hora.startsWith(today) && a.status === 'scheduled'
+          (a) => a.scheduled_at.startsWith(today) && a.status === 'scheduled'
         ).length;
 
         // Contar pacientes únicos
-        uniquePatients = new Set(appointmentsData.map(p => p.paciente_id)).size;
+        uniquePatients = new Set(appointmentsData.map(p => p.patient_id)).size;
       }
     } catch {
       console.log('Appointments table not available yet');
@@ -480,94 +420,6 @@ export async function getDoctorStats(doctorId: string) {
 // ============================================
 // HORARIOS Y SLOTS DISPONIBLES
 // ============================================
-
-export async function getAvailableSlots(
-  doctorId: string,
-  date: string
-) {
-  // Obtener perfil del médico con su horario
-  const { data: profile, error: profileError } = await getDoctorProfile(doctorId);
-
-  if (profileError || !profile) {
-    return { success: false, error: 'Doctor not found' };
-  }
-
-  if (!profile.schedule) {
-    return { success: true, data: [] };
-  }
-
-  // Obtener excepciones para esa fecha
-  const { data: exceptions } = await supabase
-    .from('doctor_availability_exceptions')
-    .select('*')
-    .eq('doctor_id', doctorId)
-    .eq('date', date)
-    .single();
-
-  // Si hay excepción y no está disponible
-  if (exceptions && !exceptions.is_available) {
-    return { success: true, data: [] };
-  }
-
-  // Obtener citas ya agendadas para ese día
-  const { data: appointments } = await supabase
-    .from('appointments')
-    .select('fecha_hora')
-    .eq('medico_id', doctorId)
-    .gte('fecha_hora', `${date}T00:00:00`)
-    .lte('fecha_hora', `${date}T23:59:59`)
-    .in('status', ['scheduled', 'confirmed']);
-
-  const bookedSlots = appointments?.map((a) => {
-    const d = new Date(a.fecha_hora);
-    return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
-  }) || [];
-
-  // Generar slots disponibles basados en el horario
-  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
-  const dayIndex = new Date(date).getDay();
-  const dayKey = isNaN(dayIndex) ? null : dayNames[dayIndex];
-
-  // Ensure schedule exists and access property safely
-  const scheduleConfig = profile.schedule as unknown as Record<string, { enabled: boolean; slots?: Array<{ start: string; end: string }> }>;
-  const daySchedule = dayKey ? scheduleConfig?.[dayKey] : null;
-
-  if (!daySchedule?.enabled) {
-    return { success: true, data: [] };
-  }
-
-  const availableSlots: string[] = [];
-  const duration = profile.consultation_duration ?? 30;
-
-  // Usar custom_slots si hay excepción con disponibilidad especial
-  const slotsToUse = exceptions?.custom_slots || daySchedule.slots;
-
-  slotsToUse.forEach((slot: { start: string; end: string }) => {
-    const startParts = slot.start.split(':').map(Number);
-    const endParts = slot.end.split(':').map(Number);
-
-    if (startParts.length < 2 || endParts.length < 2) return;
-
-    const [startHour, startMinute] = startParts;
-    const [endHour, endMinute] = endParts;
-
-    if (startHour === undefined || startMinute === undefined || endHour === undefined || endMinute === undefined) return;
-
-    let currentTime = startHour * 60 + startMinute;
-    const endTime = endHour * 60 + endMinute;
-
-    while (currentTime + duration <= endTime) {
-      const hours = Math.floor(currentTime / 60);
-      const minutes = currentTime % 60;
-      const timeSlot = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-
-      if (!bookedSlots.includes(timeSlot)) {
-        availableSlots.push(timeSlot);
-      }
-
-      currentTime += duration;
-    }
-  });
-
-  return { success: true, data: availableSlots };
-}
+// NOTE: Available slots logic has been migrated to core hook:
+// - useAvailableTimeSlots from @red-salud/core
+// The getAvailableSlots function has been removed as it was unused.

@@ -1,0 +1,129 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e5]:
+      - link "Red Salud" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8]
+        - generic [ref=e10]: Red Salud
+      - generic [ref=e11]:
+        - link "Funcionalidades" [ref=e12] [cursor=pointer]:
+          - /url: /#funcionalidades
+        - link "Especialidades" [ref=e13] [cursor=pointer]:
+          - /url: /#especialidades
+        - link "Nosotros" [ref=e14] [cursor=pointer]:
+          - /url: /nosotros
+        - link "Precios" [ref=e15] [cursor=pointer]:
+          - /url: /precios
+      - generic [ref=e16]:
+        - link "Iniciar Sesión" [ref=e17] [cursor=pointer]:
+          - /url: /auth/login
+        - link "Comenzar Gratis" [ref=e18] [cursor=pointer]:
+          - /url: /auth/register
+  - main [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - img [ref=e24]
+          - generic [ref=e26]: Contacto
+        - heading "Hablemos" [level=1] [ref=e27]
+        - paragraph [ref=e28]: ¿Tenés preguntas sobre Red Salud? ¿Querés una demo personalizada? ¿Necesitás ayuda con tu cuenta? Estamos acá para ayudarte.
+      - generic [ref=e31]:
+        - generic [ref=e33]:
+          - heading "Envianos un mensaje" [level=2] [ref=e34]
+          - generic [ref=e35]:
+            - generic [ref=e36]:
+              - generic [ref=e37]: Nombre completo
+              - textbox "Nombre completo" [ref=e38]:
+                - /placeholder: Dr. Juan Pérez
+            - generic [ref=e39]:
+              - generic [ref=e40]: Correo electrónico
+              - textbox "Correo electrónico" [ref=e41]:
+                - /placeholder: doctor@ejemplo.com
+            - generic [ref=e42]:
+              - generic [ref=e43]: Mensaje
+              - textbox "Mensaje" [ref=e44]:
+                - /placeholder: Contanos cómo podemos ayudarte...
+            - button "Enviar mensaje" [ref=e45]:
+              - img [ref=e46]
+              - text: Enviar mensaje
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - img [ref=e52]
+            - heading "Correo de soporte" [level=3] [ref=e55]
+            - link "soporte@redsalud.com" [ref=e56] [cursor=pointer]:
+              - /url: mailto:soporte@redsalud.com
+          - generic [ref=e57]:
+            - img [ref=e59]
+            - heading "Tiempo de respuesta" [level=3] [ref=e62]
+            - paragraph [ref=e63]: Respondemos en menos de 24 horas.
+          - generic [ref=e64]:
+            - heading "Redes sociales" [level=3] [ref=e65]
+            - paragraph [ref=e66]: Próximamente.
+  - contentinfo [ref=e67]:
+    - generic [ref=e69]:
+      - generic [ref=e70]:
+        - link "Red Salud" [ref=e71] [cursor=pointer]:
+          - /url: /
+          - img [ref=e73]
+          - generic [ref=e75]: Red Salud
+        - paragraph [ref=e76]: La plataforma clínica que se adapta a tu especialidad médica.
+      - generic [ref=e77]:
+        - heading "Producto" [level=3] [ref=e78]
+        - list [ref=e79]:
+          - listitem [ref=e80]:
+            - link "Funcionalidades" [ref=e81] [cursor=pointer]:
+              - /url: /#funcionalidades
+          - listitem [ref=e82]:
+            - link "Especialidades" [ref=e83] [cursor=pointer]:
+              - /url: /#especialidades
+          - listitem [ref=e84]:
+            - link "Precios" [ref=e85] [cursor=pointer]:
+              - /url: /precios
+          - listitem [ref=e86]:
+            - link "Nosotros" [ref=e87] [cursor=pointer]:
+              - /url: /nosotros
+      - generic [ref=e88]:
+        - heading "Especialidades" [level=3] [ref=e89]
+        - list [ref=e90]:
+          - listitem [ref=e91]:
+            - link "Medicina General" [ref=e92] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e93]:
+            - link "Cardiología" [ref=e94] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e95]:
+            - link "Pediatría" [ref=e96] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e97]:
+            - link "Odontología" [ref=e98] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e99]:
+            - link "Ginecología" [ref=e100] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e101]:
+            - link "Ver todas" [ref=e102] [cursor=pointer]:
+              - /url: /especialidades
+      - generic [ref=e103]:
+        - heading "Recursos" [level=3] [ref=e104]
+        - list [ref=e105]:
+          - listitem [ref=e106]:
+            - link "Contacto" [ref=e107] [cursor=pointer]:
+              - /url: /contacto
+          - listitem [ref=e108]:
+            - link "Seguridad" [ref=e109] [cursor=pointer]:
+              - /url: /seguridad
+      - generic [ref=e110]:
+        - heading "Legal" [level=3] [ref=e111]
+        - list [ref=e112]:
+          - listitem [ref=e113]:
+            - link "Privacidad" [ref=e114] [cursor=pointer]:
+              - /url: /legal/privacidad
+          - listitem [ref=e115]:
+            - link "Términos" [ref=e116] [cursor=pointer]:
+              - /url: /legal/terminos
+          - listitem [ref=e117]:
+            - link "Seguridad" [ref=e118] [cursor=pointer]:
+              - /url: /seguridad
+    - generic [ref=e120]:
+      - paragraph [ref=e121]: © 2024-2025 Red Salud. Todos los derechos reservados.
+      - paragraph [ref=e122]: Hecho con amor en Venezuela

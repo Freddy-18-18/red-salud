@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useDoctorAppointments } from '@red-salud/core';
 import { useDoctorProfile } from '@/hooks/use-doctor-profile';
 import {
   getSpecialtyExperienceConfig,
@@ -58,10 +59,10 @@ export default function EstadisticasPage() {
       setUserId(user.id);
 
       const { data: details } = await supabase
-        .from('doctor_details')
+        .from('doctor_profiles')
         .select(`
           especialidad:specialties(name, slug),
-          profile:profiles!doctor_details_profile_id_fkey(sacs_especialidad)
+          profile:profiles!doctor_profiles_profile_id_fkey(sacs_especialidad)
         `)
         .eq('profile_id', user.id)
         .maybeSingle();
@@ -96,50 +97,54 @@ export default function EstadisticasPage() {
     enabled: !!userId,
   });
 
-  // Fetch monthly appointment stats
+  // Get last 6 months of appointments via core hook
+  const sixMonthsAgoStr = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 6);
+    return d.toISOString().slice(0, 10);
+  }, []);
+
+  const {
+    appointments: rawAppointments,
+    loading: appointmentsLoading,
+  } = useDoctorAppointments(supabase, userId, {
+    dateRange: { start: sixMonthsAgoStr, end: new Date().toISOString().slice(0, 10) },
+  });
+
+  // Derive monthly stats from appointments
+  useEffect(() => {
+    if (appointmentsLoading) return;
+
+    const monthMap = new Map<string, MonthlyStats>();
+
+    for (const apt of rawAppointments) {
+      const month = apt.scheduled_at.slice(0, 7); // YYYY-MM
+      const existing = monthMap.get(month) ?? {
+        month,
+        total: 0,
+        completed: 0,
+        cancelled: 0,
+        no_show: 0,
+      };
+      existing.total++;
+      if (apt.status === 'completed') existing.completed++;
+      if (apt.status === 'cancelled') existing.cancelled++;
+      if (apt.status === 'no_show') existing.no_show++;
+      monthMap.set(month, existing);
+    }
+
+    setMonthlyStats(
+      Array.from(monthMap.values()).sort((a, b) => a.month.localeCompare(b.month)),
+    );
+  }, [rawAppointments, appointmentsLoading]);
+
+  // Fetch top diagnoses (no core hook for medical_records — keep direct query)
   useEffect(() => {
     if (!userId) return;
 
-    async function fetchStats() {
+    async function fetchDiagnoses() {
       setLoading(true);
-
       try {
-        // Get last 6 months of appointments
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-        const { data: appointments } = await supabase
-          .from('appointments')
-          .select('fecha_hora, status')
-          .eq('medico_id', userId)
-          .gte('fecha_hora', sixMonthsAgo.toISOString());
-
-        if (appointments) {
-          // Group by month
-          const monthMap = new Map<string, MonthlyStats>();
-
-          for (const apt of appointments) {
-            const month = apt.fecha_hora.slice(0, 7); // YYYY-MM
-            const existing = monthMap.get(month) ?? {
-              month,
-              total: 0,
-              completed: 0,
-              cancelled: 0,
-              no_show: 0,
-            };
-            existing.total++;
-            if (apt.status === 'completed') existing.completed++;
-            if (apt.status === 'cancelled') existing.cancelled++;
-            if (apt.status === 'no_show') existing.no_show++;
-            monthMap.set(month, existing);
-          }
-
-          setMonthlyStats(
-            Array.from(monthMap.values()).sort((a, b) => a.month.localeCompare(b.month)),
-          );
-        }
-
-        // Get top diagnoses
         const { data: records } = await supabase
           .from('medical_records')
           .select('diagnosis')
@@ -170,7 +175,7 @@ export default function EstadisticasPage() {
       }
     }
 
-    fetchStats();
+    fetchDiagnoses();
   }, [userId]);
 
   const themeColor = specialtyConfig?.theme?.primaryColor ?? '#3B82F6';

@@ -74,7 +74,7 @@ export function RecipePreview({
                     // First, get basic profile
                     const { data: profile, error: profileError } = await supabase
                         .from("profiles")
-                        .select("id, nombre_completo, email, sacs_matricula, cedula, especialidad, sacs_especialidad") // Added especialidad fields
+                        .select("id, full_name, email, sacs_matricula, cedula, especialidad, sacs_especialidad") // Added especialidad fields
                         .eq("id", user.id)
                         .single();
 
@@ -82,24 +82,24 @@ export function RecipePreview({
                         console.error("Error fetching profile:", profileError);
                     }
 
-                    // Then, get doctor_details separately
+                    // Then, get doctor_profiles separately
                     const { data: doctorData, error: doctorError } = await supabase
-                        .from("doctor_details")
-                        .select("licencia_medica, especialidad_id")
+                        .from("doctor_profiles")
+                        .select("medical_license, specialty_id")
                         .eq("profile_id", user.id)
                         .maybeSingle();
 
                     if (doctorError) {
-                        console.error("Error fetching doctor_details:", doctorError);
+                        console.error("Error fetching doctor_profiles:", doctorError);
                     }
 
-                    // If we have especialidad_id, fetch specialty name from specialties table
+                    // If we have specialty_id, fetch specialty name from specialties table
                     let specialtyName = "";
-                    if (doctorData?.especialidad_id) {
+                    if (doctorData?.specialty_id) {
                         const { data: specialty } = await supabase
                             .from("specialties")
                             .select("name")
-                            .eq("id", doctorData.especialidad_id)
+                            .eq("id", doctorData.specialty_id)
                             .maybeSingle();
                         specialtyName = specialty?.name || "";
                     }
@@ -134,11 +134,11 @@ export function RecipePreview({
                         const displayedSpecialty = (profile as unknown as { sacs_especialidad?: string }).sacs_especialidad || profile.especialidad || specialtyName;
 
                         // Priority: User requested 'cedula' (CI) explicitly. 
-                        // Fallbacks: doctor_details.licencia_medica -> profiles.sacs_matricula
-                        const displayedId = profile.cedula || doctorData?.licencia_medica || profile.sacs_matricula || "";
+                        // Fallbacks: doctor_profiles.medical_license -> profiles.sacs_matricula
+                        const displayedId = profile.cedula || doctorData?.medical_license || profile.sacs_matricula || "";
 
                         setDoctorProfile({
-                            nombre: profile.nombre_completo || "Nombre no disponible",
+                            nombre: profile.full_name || "Nombre no disponible",
                             titulo: "Dr.",
                             especialidad: displayedSpecialty,
                             cedulaProfesional: displayedId,

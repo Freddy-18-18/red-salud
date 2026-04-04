@@ -31,7 +31,7 @@ interface Prescription {
   expires_at: string | null;
   status: string;
   paciente?: {
-    nombre_completo: string;
+    full_name: string;
   } | null;
 }
 
@@ -86,7 +86,7 @@ export default function RecetasPage() {
 
   // Patient search for the form
   const [patientQuery, setPatientQuery] = useState('');
-  const [patientResults, setPatientResults] = useState<Array<{ id: string; nombre_completo: string; cedula: string | null }>>([]);
+  const [patientResults, setPatientResults] = useState<Array<{ id: string; full_name: string; cedula: string | null }>>([]);
   const [patientSearchOpen, setPatientSearchOpen] = useState(false);
 
   // Init
@@ -112,7 +112,7 @@ export default function RecetasPage() {
           prescribed_at,
           expires_at,
           status,
-          paciente:profiles!prescriptions_patient_id_fkey(nombre_completo)
+          paciente:profiles!prescriptions_patient_id_fkey(full_name)
         `)
         .eq('doctor_id', userId)
         .order('prescribed_at', { ascending: false })
@@ -141,8 +141,8 @@ export default function RecetasPage() {
     const timeout = setTimeout(async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('id, nombre_completo, cedula')
-        .or(`nombre_completo.ilike.%${patientQuery}%,cedula.ilike.%${patientQuery}%`)
+        .select('id, full_name, cedula')
+        .or(`full_name.ilike.%${patientQuery}%,cedula.ilike.%${patientQuery}%`)
         .eq('role', 'paciente')
         .limit(8);
       setPatientResults(data ?? []);
@@ -280,14 +280,14 @@ export default function RecetasPage() {
                       <button
                         key={p.id}
                         onClick={() => {
-                          setForm((prev) => ({ ...prev, patient_id: p.id, patient_name: p.nombre_completo }));
+                          setForm((prev) => ({ ...prev, patient_id: p.id, patient_name: p.full_name }));
                           setPatientSearchOpen(false);
                           setPatientQuery('');
                         }}
                         className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-left text-sm"
                       >
                         <User className="h-3.5 w-3.5 text-gray-400" />
-                        {p.nombre_completo}
+                        {p.full_name}
                         {p.cedula && <span className="text-xs text-gray-400 ml-auto">{p.cedula}</span>}
                       </button>
                     ))}
@@ -444,7 +444,7 @@ export default function RecetasPage() {
                   <Pill className="h-5 w-5 text-gray-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {rx.paciente?.nombre_completo ?? 'Paciente'}
+                      {rx.paciente?.full_name ?? 'Paciente'}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5 truncate">
                       {rx.diagnosis ?? 'Sin diagnóstico'}

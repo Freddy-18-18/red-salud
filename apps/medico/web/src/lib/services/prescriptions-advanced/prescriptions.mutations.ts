@@ -540,7 +540,7 @@ export async function createPrescriptionExtended(
     const { data: result, error } = await supabase
       .from('farmacia_recetas')
       .insert({
-        medico_id: medicoId,
+        doctor_id: medicoId,
         paciente_id: pacienteId,
         template_id: data.template_id || null,
         signature_id: data.signature_id || null,

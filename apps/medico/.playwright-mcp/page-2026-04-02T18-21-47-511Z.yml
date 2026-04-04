@@ -1,0 +1,235 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e5]:
+        - link "Red Salud" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img [ref=e8]
+          - generic [ref=e10]: Red Salud
+        - generic [ref=e11]:
+          - link "Funcionalidades" [ref=e12] [cursor=pointer]:
+            - /url: /#funcionalidades
+          - link "Especialidades" [ref=e13] [cursor=pointer]:
+            - /url: /#especialidades
+          - link "Precios" [active] [ref=e14] [cursor=pointer]:
+            - /url: /precios
+        - generic [ref=e15]:
+          - link "Iniciar Sesión" [ref=e16] [cursor=pointer]:
+            - /url: /auth/login
+          - link "Comenzar Gratis" [ref=e17] [cursor=pointer]:
+            - /url: /auth/register
+    - main [ref=e18]:
+      - generic [ref=e444]:
+        - generic [ref=e446]:
+          - heading "Planes para cada práctica" [level=1] [ref=e447]
+          - paragraph [ref=e448]: Comenzá gratis y escalá cuando tu consultorio lo necesite. Sin contratos, sin compromisos.
+        - generic [ref=e451]:
+          - generic [ref=e452]:
+            - generic [ref=e453]:
+              - heading "Básico" [level=3] [ref=e454]
+              - generic [ref=e456]: Gratis
+              - paragraph [ref=e457]: Para médicos que quieren empezar a digitalizar su consultorio.
+            - list [ref=e458]:
+              - listitem [ref=e459]:
+                - img [ref=e460]
+                - generic [ref=e462]: 1 médico
+              - listitem [ref=e463]:
+                - img [ref=e464]
+                - generic [ref=e466]: Agenda básica (hasta 20 citas/semana)
+              - listitem [ref=e467]:
+                - img [ref=e468]
+                - generic [ref=e470]: Consultas con notas SOAP
+              - listitem [ref=e471]:
+                - img [ref=e472]
+                - generic [ref=e474]: Recetas electrónicas (hasta 50/mes)
+              - listitem [ref=e475]:
+                - img [ref=e476]
+                - generic [ref=e478]: Historia clínica básica
+              - listitem [ref=e479]:
+                - img [ref=e480]
+                - generic [ref=e482]: Verificación SACS
+              - listitem [ref=e483]:
+                - img [ref=e484]
+                - generic [ref=e486]: Soporte por correo
+            - link "Comenzar Gratis" [ref=e487] [cursor=pointer]:
+              - /url: /auth/register
+          - generic [ref=e488]:
+            - generic [ref=e490]: Más popular
+            - generic [ref=e491]:
+              - heading "Profesional" [level=3] [ref=e492]
+              - generic [ref=e493]:
+                - generic [ref=e494]: $29
+                - generic [ref=e495]: /mes
+              - paragraph [ref=e496]: Todo lo que necesitás para una práctica médica moderna y eficiente.
+            - list [ref=e497]:
+              - listitem [ref=e498]:
+                - img [ref=e499]
+                - generic [ref=e501]: Todo lo del plan Básico
+              - listitem [ref=e502]:
+                - img [ref=e503]
+                - generic [ref=e505]: Citas ilimitadas
+              - listitem [ref=e506]:
+                - img [ref=e507]
+                - generic [ref=e509]: Recetas ilimitadas con firma digital
+              - listitem [ref=e510]:
+                - img [ref=e511]
+                - generic [ref=e513]: IA Diagnóstica (ICD-11 + Gemini)
+              - listitem [ref=e514]:
+                - img [ref=e515]
+                - generic [ref=e517]: Integración Google Calendar
+              - listitem [ref=e518]:
+                - img [ref=e519]
+                - generic [ref=e521]: Telemedicina (videoconsultas)
+              - listitem [ref=e522]:
+                - img [ref=e523]
+                - generic [ref=e525]: Estadísticas y KPIs por especialidad
+              - listitem [ref=e526]:
+                - img [ref=e527]
+                - generic [ref=e529]: Módulos especializados completos
+              - listitem [ref=e530]:
+                - img [ref=e531]
+                - generic [ref=e533]: Soporte prioritario
+            - link "Elegir Profesional" [ref=e534] [cursor=pointer]:
+              - /url: /auth/register
+          - generic [ref=e535]:
+            - generic [ref=e536]:
+              - heading "Clínica" [level=3] [ref=e537]
+              - generic [ref=e538]:
+                - generic [ref=e539]: $79
+                - generic [ref=e540]: /mes
+              - paragraph [ref=e541]: Para clínicas y consultorios con múltiples profesionales.
+            - list [ref=e542]:
+              - listitem [ref=e543]:
+                - img [ref=e544]
+                - generic [ref=e546]: Todo lo del plan Profesional
+              - listitem [ref=e547]:
+                - img [ref=e548]
+                - generic [ref=e550]: Hasta 10 médicos
+              - listitem [ref=e551]:
+                - img [ref=e552]
+                - generic [ref=e554]: Panel administrativo
+              - listitem [ref=e555]:
+                - img [ref=e556]
+                - generic [ref=e558]: Gestión multi-sede
+              - listitem [ref=e559]:
+                - img [ref=e560]
+                - generic [ref=e562]: Reportes consolidados
+              - listitem [ref=e563]:
+                - img [ref=e564]
+                - generic [ref=e566]: Acceso API
+              - listitem [ref=e567]:
+                - img [ref=e568]
+                - generic [ref=e570]: Roles y permisos personalizados
+              - listitem [ref=e571]:
+                - img [ref=e572]
+                - generic [ref=e574]: Facturación centralizada
+              - listitem [ref=e575]:
+                - img [ref=e576]
+                - generic [ref=e578]: Soporte dedicado 24/7
+              - listitem [ref=e579]:
+                - img [ref=e580]
+                - generic [ref=e582]: Onboarding personalizado
+            - link "Contactar Ventas" [ref=e583] [cursor=pointer]:
+              - /url: /auth/register
+        - generic [ref=e585]:
+          - generic [ref=e587]:
+            - img [ref=e588]
+            - heading "Preguntas frecuentes" [level=2] [ref=e591]
+          - generic [ref=e592]:
+            - group [ref=e593]:
+              - generic "¿Puedo cambiar de plan en cualquier momento?" [ref=e594] [cursor=pointer]:
+                - text: ¿Puedo cambiar de plan en cualquier momento?
+                - img [ref=e595]
+            - group [ref=e597]:
+              - generic "¿Mis datos están seguros?" [ref=e598] [cursor=pointer]:
+                - text: ¿Mis datos están seguros?
+                - img [ref=e599]
+            - group [ref=e601]:
+              - generic "¿Necesito instalar algo?" [ref=e602] [cursor=pointer]:
+                - text: ¿Necesito instalar algo?
+                - img [ref=e603]
+            - group [ref=e605]:
+              - generic "¿Qué pasa con mis datos si cancelo?" [ref=e606] [cursor=pointer]:
+                - text: ¿Qué pasa con mis datos si cancelo?
+                - img [ref=e607]
+            - group [ref=e609]:
+              - generic "¿Ofrecen descuentos para residentes o médicos rurales?" [ref=e610] [cursor=pointer]:
+                - text: ¿Ofrecen descuentos para residentes o médicos rurales?
+                - img [ref=e611]
+    - contentinfo [ref=e374]:
+      - generic [ref=e376]:
+        - generic [ref=e377]:
+          - link "Red Salud" [ref=e378] [cursor=pointer]:
+            - /url: /
+            - img [ref=e380]
+            - generic [ref=e382]: Red Salud
+          - paragraph [ref=e383]: La plataforma clínica que se adapta a tu especialidad médica.
+        - generic [ref=e384]:
+          - heading "Producto" [level=3] [ref=e385]
+          - list [ref=e386]:
+            - listitem [ref=e387]:
+              - link "Funcionalidades" [ref=e388] [cursor=pointer]:
+                - /url: /#funcionalidades
+            - listitem [ref=e389]:
+              - link "Especialidades" [ref=e390] [cursor=pointer]:
+                - /url: /#especialidades
+            - listitem [ref=e391]:
+              - link "Precios" [ref=e392] [cursor=pointer]:
+                - /url: /precios
+            - listitem [ref=e393]:
+              - link "Actualizaciones" [ref=e394] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e395]:
+          - heading "Especialidades" [level=3] [ref=e396]
+          - list [ref=e397]:
+            - listitem [ref=e398]:
+              - link "Medicina General" [ref=e399] [cursor=pointer]:
+                - /url: /especialidades
+            - listitem [ref=e400]:
+              - link "Cardiología" [ref=e401] [cursor=pointer]:
+                - /url: /especialidades
+            - listitem [ref=e402]:
+              - link "Pediatría" [ref=e403] [cursor=pointer]:
+                - /url: /especialidades
+            - listitem [ref=e404]:
+              - link "Odontología" [ref=e405] [cursor=pointer]:
+                - /url: /especialidades
+            - listitem [ref=e406]:
+              - link "Ginecología" [ref=e407] [cursor=pointer]:
+                - /url: /especialidades
+            - listitem [ref=e408]:
+              - link "Ver todas" [ref=e409] [cursor=pointer]:
+                - /url: /especialidades
+        - generic [ref=e410]:
+          - heading "Recursos" [level=3] [ref=e411]
+          - list [ref=e412]:
+            - listitem [ref=e413]:
+              - link "Centro de Ayuda" [ref=e414] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e415]:
+              - link "Blog" [ref=e416] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e417]:
+              - link "API" [ref=e418] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e419]:
+              - link "Estado del Sistema" [ref=e420] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e421]:
+          - heading "Legal" [level=3] [ref=e422]
+          - list [ref=e423]:
+            - listitem [ref=e424]:
+              - link "Privacidad" [ref=e425] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e426]:
+              - link "Términos" [ref=e427] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e428]:
+              - link "Seguridad" [ref=e429] [cursor=pointer]:
+                - /url: "#"
+      - generic [ref=e431]:
+        - paragraph [ref=e432]: © 2024 Red Salud. Todos los derechos reservados.
+        - paragraph [ref=e433]: Hecho con amor en Venezuela
+  - button "Open Next.js Dev Tools" [ref=e439] [cursor=pointer]:
+    - img [ref=e440]
+  - alert [ref=e443]: Precios — Red Salud

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useDoctorAppointments } from '@red-salud/core';
 import type { SpecialtyConfig } from '@/lib/specialties';
 import {
   FlaskConical,
@@ -278,56 +279,44 @@ export function SpecialtyWidgets({
   themeColor = '#3B82F6',
 }: SpecialtyWidgetsProps) {
   const [widgets, setWidgets] = useState<WidgetPanel[]>([]);
-  const [loading, setLoading] = useState(true);
 
+  // Compute date range for the last 7 days
+  const weekRange = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+    return { start: weekAgo, end: today };
+  }, []);
+
+  // Fetch recent appointments via core hook
+  const {
+    appointments: recentAppointments,
+    loading,
+  } = useDoctorAppointments(supabase, doctorId, { dateRange: weekRange });
+
+  // Derive widget data from appointments
   useEffect(() => {
-    // Get the base widget panels for this specialty
     const panels = getWidgetsForSpecialty(
       specialtyConfig.category,
       specialtyConfig.dashboardVariant,
     );
 
-    // Attempt to load real data for each panel
-    async function loadWidgetData() {
-      setLoading(true);
+    if (recentAppointments.length > 0) {
+      const completed = recentAppointments.filter(a => a.status === 'completed').length;
+      const pending = recentAppointments.filter(a =>
+        a.status !== 'completed' && a.status !== 'cancelled'
+      ).length;
 
-      // For now, load appointment-derived data as proxy
-      try {
-        const today = new Date().toISOString().slice(0, 10);
-        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-
-        const { data: recentAppointments } = await supabase
-          .from('appointments')
-          .select('id, status, motivo, tipo')
-          .eq('medico_id', doctorId)
-          .gte('fecha_hora', `${weekAgo}T00:00:00`)
-          .lte('fecha_hora', `${today}T23:59:59`);
-
-        if (recentAppointments && recentAppointments.length > 0) {
-          const completed = recentAppointments.filter(a => a.status === 'completed').length;
-          const pending = recentAppointments.filter(a =>
-            a.status !== 'completed' && a.status !== 'cancelled'
-          ).length;
-
-          // Populate the first panel with some real data
-          if (panels[0]) {
-            panels[0].items = [
-              { label: 'Completadas esta semana', value: completed },
-              { label: 'Pendientes', value: pending },
-              { label: 'Total', value: recentAppointments.length },
-            ];
-          }
-        }
-      } catch {
-        // Graceful degradation - show empty widgets
+      if (panels[0]) {
+        panels[0].items = [
+          { label: 'Completadas esta semana', value: completed },
+          { label: 'Pendientes', value: pending },
+          { label: 'Total', value: recentAppointments.length },
+        ];
       }
-
-      setWidgets(panels);
-      setLoading(false);
     }
 
-    loadWidgetData();
-  }, [doctorId, specialtyConfig.category, specialtyConfig.dashboardVariant]);
+    setWidgets(panels);
+  }, [recentAppointments, specialtyConfig.category, specialtyConfig.dashboardVariant]);
 
   if (loading) {
     return (

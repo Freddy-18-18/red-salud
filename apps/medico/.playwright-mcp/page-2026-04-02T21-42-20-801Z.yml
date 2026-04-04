@@ -1,0 +1,140 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e5]:
+      - link "Red Salud" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8]
+        - generic [ref=e10]: Red Salud
+      - generic [ref=e11]:
+        - link "Funcionalidades" [ref=e12] [cursor=pointer]:
+          - /url: /#funcionalidades
+        - link "Especialidades" [ref=e13] [cursor=pointer]:
+          - /url: /#especialidades
+        - link "Nosotros" [ref=e14] [cursor=pointer]:
+          - /url: /nosotros
+        - link "Precios" [ref=e15] [cursor=pointer]:
+          - /url: /precios
+      - generic [ref=e16]:
+        - link "Iniciar Sesión" [ref=e17] [cursor=pointer]:
+          - /url: /auth/login
+        - link "Comenzar Gratis" [ref=e18] [cursor=pointer]:
+          - /url: /auth/register
+  - main [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - img [ref=e24]
+          - generic [ref=e27]: Seguridad
+        - heading "Tu información médica está protegida" [level=1] [ref=e28]
+        - paragraph [ref=e29]: La seguridad de los datos médicos no es opcional — es la base de todo lo que construimos. Cada capa de Red Salud fue diseñada con la protección de datos como prioridad.
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - img [ref=e35]
+          - heading "Encriptación de datos en tránsito y en reposo" [level=3] [ref=e38]
+          - paragraph [ref=e39]: Toda la comunicación entre tu navegador y nuestros servidores está protegida con TLS 1.3. Los datos almacenados están encriptados con AES-256.
+        - generic [ref=e40]:
+          - img [ref=e42]
+          - heading "Row Level Security (RLS) en todas las tablas" [level=3] [ref=e47]
+          - paragraph [ref=e48]: Cada registro en la base de datos tiene políticas de acceso granulares. Solo vos podés acceder a los datos de tus pacientes — ni siquiera otros médicos en la plataforma.
+        - generic [ref=e49]:
+          - img [ref=e51]
+          - heading "Autenticación segura con Supabase Auth" [level=3] [ref=e54]
+          - paragraph [ref=e55]: Sistema de autenticación probado por miles de empresas. Contraseñas hasheadas con bcrypt, tokens JWT con expiración corta, y soporte para autenticación de dos factores.
+        - generic [ref=e56]:
+          - img [ref=e58]
+          - heading "Sin acceso a datos entre consultorios" [level=3] [ref=e63]
+          - paragraph [ref=e64]: Aislamiento completo entre dominios. Los datos de tu consultorio son invisibles para otros consultorios, farmacias o laboratorios dentro de la plataforma.
+        - generic [ref=e65]:
+          - img [ref=e67]
+          - heading "Backups automáticos" [level=3] [ref=e71]
+          - paragraph [ref=e72]: Respaldos automáticos diarios de toda la información. En caso de cualquier incidente, tus datos están protegidos y pueden ser restaurados rápidamente.
+        - generic [ref=e73]:
+          - img [ref=e75]
+          - heading "Infraestructura en la nube con alta disponibilidad" [level=3] [ref=e86]
+          - paragraph [ref=e87]: Servidores distribuidos con redundancia geográfica. Monitoreo 24/7 y escalado automático para garantizar que la plataforma esté siempre disponible.
+      - generic [ref=e91]:
+        - img [ref=e93]
+        - generic [ref=e96]:
+          - heading "Compromiso con las mejores prácticas" [level=2] [ref=e97]
+          - paragraph [ref=e98]: Red Salud fue diseñado siguiendo las mejores prácticas de protección de datos de salud. Implementamos controles técnicos y organizacionales para asegurar la confidencialidad, integridad y disponibilidad de la información médica.
+          - list [ref=e99]:
+            - listitem [ref=e100]:
+              - img [ref=e101]
+              - text: Principio de mínimo privilegio en todos los accesos
+            - listitem [ref=e104]:
+              - img [ref=e105]
+              - text: Auditoría de acceso a datos sensibles
+            - listitem [ref=e108]:
+              - img [ref=e109]
+              - text: Actualización continua de dependencias y parches de seguridad
+            - listitem [ref=e112]:
+              - img [ref=e113]
+              - text: Pruebas de seguridad periódicas
+  - contentinfo [ref=e116]:
+    - generic [ref=e118]:
+      - generic [ref=e119]:
+        - link "Red Salud" [ref=e120] [cursor=pointer]:
+          - /url: /
+          - img [ref=e122]
+          - generic [ref=e124]: Red Salud
+        - paragraph [ref=e125]: La plataforma clínica que se adapta a tu especialidad médica.
+      - generic [ref=e126]:
+        - heading "Producto" [level=3] [ref=e127]
+        - list [ref=e128]:
+          - listitem [ref=e129]:
+            - link "Funcionalidades" [ref=e130] [cursor=pointer]:
+              - /url: /#funcionalidades
+          - listitem [ref=e131]:
+            - link "Especialidades" [ref=e132] [cursor=pointer]:
+              - /url: /#especialidades
+          - listitem [ref=e133]:
+            - link "Precios" [ref=e134] [cursor=pointer]:
+              - /url: /precios
+          - listitem [ref=e135]:
+            - link "Nosotros" [ref=e136] [cursor=pointer]:
+              - /url: /nosotros
+      - generic [ref=e137]:
+        - heading "Especialidades" [level=3] [ref=e138]
+        - list [ref=e139]:
+          - listitem [ref=e140]:
+            - link "Medicina General" [ref=e141] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e142]:
+            - link "Cardiología" [ref=e143] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e144]:
+            - link "Pediatría" [ref=e145] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e146]:
+            - link "Odontología" [ref=e147] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e148]:
+            - link "Ginecología" [ref=e149] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e150]:
+            - link "Ver todas" [ref=e151] [cursor=pointer]:
+              - /url: /especialidades
+      - generic [ref=e152]:
+        - heading "Recursos" [level=3] [ref=e153]
+        - list [ref=e154]:
+          - listitem [ref=e155]:
+            - link "Contacto" [ref=e156] [cursor=pointer]:
+              - /url: /contacto
+          - listitem [ref=e157]:
+            - link "Seguridad" [ref=e158] [cursor=pointer]:
+              - /url: /seguridad
+      - generic [ref=e159]:
+        - heading "Legal" [level=3] [ref=e160]
+        - list [ref=e161]:
+          - listitem [ref=e162]:
+            - link "Privacidad" [ref=e163] [cursor=pointer]:
+              - /url: /legal/privacidad
+          - listitem [ref=e164]:
+            - link "Términos" [ref=e165] [cursor=pointer]:
+              - /url: /legal/terminos
+          - listitem [ref=e166]:
+            - link "Seguridad" [ref=e167] [cursor=pointer]:
+              - /url: /seguridad
+    - generic [ref=e169]:
+      - paragraph [ref=e170]: © 2024-2025 Red Salud. Todos los derechos reservados.
+      - paragraph [ref=e171]: Hecho con amor en Venezuela

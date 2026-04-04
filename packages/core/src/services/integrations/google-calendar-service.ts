@@ -1,36 +1,20 @@
 /**
- * Google Calendar Integration Service
- * Handles bidirectional sync between appointments and Google Calendar
+ * Google Calendar Integration — Core Types & Helpers
+ *
+ * This module provides shared types, event mapping logic, and Google Calendar
+ * REST API helpers that any app (medico, secretaria, clinica) can use.
+ *
+ * It does NOT import googleapis — all API calls use fetch against the REST v3 API.
+ * Each consuming app is responsible for:
+ *   1. Managing OAuth tokens (via its own Supabase client)
+ *   2. Passing a valid access token to these helpers
  */
 
-import { google, calendar_v3 } from 'googleapis';
-// TODO: Replace with injected Supabase server client from the consuming app
-// import { createClient } from '@/lib/supabase/server';
-// TODO: Import CalendarAppointment type from @red-salud/types when available
-type CalendarAppointment = {
-  id: string;
-  paciente_nombre: string;
-  fecha_hora: string;
-  fecha_hora_fin: string;
-  motivo?: string;
-  tipo_cita?: 'presencial' | 'telemedicina' | 'urgencia' | 'seguimiento' | 'primera_vez';
-  notas_internas?: string;
-  status: string;
-  location_id?: string;
-};
-declare function createClient(): Promise<any>;
-
-// OAuth2 Configuration
-const GOOGLE_CALENDAR_SCOPES = [
-  'https://www.googleapis.com/auth/calendar',
-  'https://www.googleapis.com/auth/calendar.events',
-];
-
-const REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL + '/api/calendar/google/callback';
-
+// ---------------------------------------------------------------------------
 // Types
-export interface GoogleCalendarToken {
-  id: string;
+// ---------------------------------------------------------------------------
+
+export interface GoogleCalendarTokenData {
   user_id: string;
   access_token: string;
   refresh_token: string;
@@ -42,12 +26,9 @@ export interface GoogleCalendarToken {
   sync_direction: 'to_google' | 'from_google' | 'bidirectional';
   last_sync_at: string | null;
   last_sync_token: string | null;
-  watch_channel_id: string | null;
-  watch_resource_id: string | null;
-  watch_expiration: string | null;
 }
 
-export interface EventMapping {
+export interface GoogleCalendarEventMapping {
   id: string;
   appointment_id: string;
   google_event_id: string;
@@ -59,7 +40,7 @@ export interface EventMapping {
   google_updated_at: string;
 }
 
-export interface ImportedEvent {
+export interface GoogleCalendarImportedEvent {
   id: string;
   user_id: string;
   google_event_id: string;
@@ -74,6 +55,41 @@ export interface ImportedEvent {
   google_updated_at: string;
 }
 
+export interface GoogleCalendarEvent {
+  id?: string;
+  summary?: string;
+  description?: string;
+  start?: { dateTime?: string; date?: string; timeZone?: string };
+  end?: { dateTime?: string; date?: string; timeZone?: string };
+  location?: string;
+  colorId?: string;
+  status?: string;
+  updated?: string;
+  reminders?: {
+    useDefault: boolean;
+    overrides?: Array<{ method: string; minutes: number }>;
+  };
+}
+
+export interface CalendarAppointment {
+  id: string;
+  patient_name: string;
+  scheduled_at: string;
+  scheduled_end?: string;
+  duration_minutes?: number;
+  reason?: string;
+  appointment_type?:
+    | 'in_person'
+    | 'telemedicine'
+    | 'emergency'
+    | 'follow_up'
+    | 'first_visit';
+  internal_notes?: string;
+  status: string;
+  location_id?: string;
+  location_address?: string;
+}
+
 export interface SyncResult {
   success: boolean;
   synced: number;
@@ -84,450 +100,333 @@ export interface SyncResult {
   }>;
 }
 
-/**
- * Get OAuth2 client configured with credentials
- */
-export function getOAuth2Client() {
-  const clientId = process.env.GOOGLE_CALENDAR_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
 
-  if (!clientId || !clientSecret) {
-    throw new Error('Google Calendar OAuth credentials not configured. Set GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET');
-  }
+export const GOOGLE_CALENDAR_SCOPES = [
+  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/calendar.events',
+] as const;
 
-  return new google.auth.OAuth2(clientId, clientSecret, REDIRECT_URI);
-}
+export const GOOGLE_API_BASE = 'https://www.googleapis.com/calendar/v3';
+export const GOOGLE_OAUTH_BASE = 'https://accounts.google.com/o/oauth2/v2/auth';
+export const GOOGLE_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
+export const GOOGLE_REVOKE_ENDPOINT = 'https://oauth2.googleapis.com/revoke';
 
-/**
- * Generate authorization URL for OAuth flow
- */
-export function getAuthorizationUrl(userId: string): string {
-  const oauth2Client = getOAuth2Client();
+// ---------------------------------------------------------------------------
+// Event Mapping
+// ---------------------------------------------------------------------------
 
-  return oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: GOOGLE_CALENDAR_SCOPES,
-    state: userId, // Pass user ID to callback
-    prompt: 'consent', // Force consent to get refresh token
-  });
-}
+const TYPE_LABELS: Record<string, string> = {
+  in_person: 'Presencial',
+  telemedicine: 'Telemedicina',
+  emergency: 'Emergencia',
+  follow_up: 'Control',
+  first_visit: 'Primera consulta',
+};
 
 /**
- * Exchange authorization code for tokens
+ * Google Calendar color IDs mapped to appointment statuses.
+ * See https://developers.google.com/calendar/api/v3/reference/colors
  */
-export async function exchangeCodeForTokens(code: string, userId: string): Promise<GoogleCalendarToken> {
-  const supabase = await createClient();
-  const oauth2Client = getOAuth2Client();
-
-  // Exchange code for tokens
-  const { tokens } = await oauth2Client.getToken(code);
-
-  if (!tokens.access_token || !tokens.refresh_token) {
-    throw new Error('Failed to obtain access or refresh token');
-  }
-
-  // Set credentials to get user info
-  oauth2Client.setCredentials(tokens);
-  const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-
-  // Get primary calendar info
-  const calendarInfo = await calendar.calendarList.get({
-    calendarId: 'primary',
-  });
-
-  const calendarId = calendarInfo.data.id!;
-  const timezone = calendarInfo.data.timeZone || 'America/Caracas';
-
-  // Store tokens in database
-  const tokenData = {
-    user_id: userId,
-    access_token: tokens.access_token,
-    refresh_token: tokens.refresh_token,
-    token_expiry: new Date(tokens.expiry_date!).toISOString(),
-    scope: tokens.scope!,
-    calendar_id: calendarId,
-    calendar_timezone: timezone,
-    sync_enabled: true,
-    sync_direction: 'bidirectional' as const,
-  };
-
-  const { data, error } = await supabase
-    .from('google_calendar_tokens')
-    .upsert(tokenData, { onConflict: 'user_id' })
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(`Failed to store tokens: ${error.message}`);
-  }
-
-  return data as GoogleCalendarToken;
-}
+const STATUS_COLOR_MAP: Record<string, string> = {
+  pending: '5',
+  confirmed: '10',
+  waiting: '4',
+  in_consultation: '9',
+  completed: '2',
+  cancelled: '8',
+  no_show: '11',
+  rejected: '8',
+};
 
 /**
- * Get OAuth client with valid tokens for a user
+ * Convert a Red Salud appointment into a Google Calendar event payload.
  */
-export async function getAuthenticatedClient(userId: string): Promise<calendar_v3.Calendar> {
-  const supabase = await createClient();
+export function appointmentToGoogleEvent(
+  appointment: CalendarAppointment,
+): GoogleCalendarEvent {
+  const typeLabel = appointment.appointment_type
+    ? TYPE_LABELS[appointment.appointment_type] ?? appointment.appointment_type
+    : '';
 
-  // Get stored tokens
-  const { data: tokenData, error } = await supabase
-    .from('google_calendar_tokens')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
+  const summaryParts = [
+    appointment.status === 'confirmed' ? '\u2713' : '\u23F3',
+    typeLabel,
+    '-',
+    appointment.patient_name,
+  ].filter(Boolean);
 
-  if (error || !tokenData) {
-    throw new Error('Google Calendar not connected. Please authorize first.');
+  const descriptionParts = [
+    appointment.reason && `Motivo: ${appointment.reason}`,
+    appointment.appointment_type &&
+      `Tipo: ${TYPE_LABELS[appointment.appointment_type] ?? appointment.appointment_type}`,
+    appointment.internal_notes && `Notas: ${appointment.internal_notes}`,
+    '\n---\nGestionado por Red Salud',
+  ].filter(Boolean);
+
+  const startDt = new Date(appointment.scheduled_at);
+  let endDt: Date;
+
+  if (appointment.scheduled_end) {
+    endDt = new Date(appointment.scheduled_end);
+  } else {
+    const durationMs = (appointment.duration_minutes ?? 30) * 60 * 1000;
+    endDt = new Date(startDt.getTime() + durationMs);
   }
-
-  const oauth2Client = getOAuth2Client();
-  oauth2Client.setCredentials({
-    access_token: tokenData.access_token,
-    refresh_token: tokenData.refresh_token,
-    expiry_date: new Date(tokenData.token_expiry).getTime(),
-    scope: tokenData.scope,
-  });
-
-  // Check if token is expired and refresh if needed
-  const isExpired = new Date(tokenData.token_expiry) <= new Date(Date.now() + 5 * 60 * 1000);
-
-  if (isExpired) {
-    const { credentials } = await oauth2Client.refreshAccessToken();
-    
-    // Update stored tokens
-    await supabase
-      .from('google_calendar_tokens')
-      .update({
-        access_token: credentials.access_token!,
-        token_expiry: new Date(credentials.expiry_date!).toISOString(),
-      })
-      .eq('user_id', userId);
-
-    oauth2Client.setCredentials(credentials);
-  }
-
-  return google.calendar({ version: 'v3', auth: oauth2Client });
-}
-
-/**
- * Convert appointment to Google Calendar event
- */
-function appointmentToGoogleEvent(appointment: CalendarAppointment): calendar_v3.Schema$Event {
-  const typeLabels = {
-    presencial: 'Presencial',
-    telemedicina: 'Telemedicina',
-    urgencia: 'Urgencia',
-    seguimiento: 'Seguimiento',
-    primera_vez: 'Primera Vez',
-  };
 
   return {
-    summary: `${appointment.status === 'confirmada' ? '✓' : '⏳'} ${appointment.paciente_nombre}`,
-    description: [
-      appointment.motivo,
-      appointment.tipo_cita && `Tipo: ${typeLabels[appointment.tipo_cita]}`,
-      appointment.notas_internas && `Notas: ${appointment.notas_internas}`,
-      `\n---\nGestionado por Red Salud`,
-    ].filter(Boolean).join('\n'),
+    summary: summaryParts.join(' '),
+    description: descriptionParts.join('\n'),
     start: {
-      dateTime: new Date(appointment.fecha_hora).toISOString(),
+      dateTime: startDt.toISOString(),
       timeZone: 'America/Caracas',
     },
     end: {
-      dateTime: new Date(appointment.fecha_hora_fin).toISOString(),
+      dateTime: endDt.toISOString(),
       timeZone: 'America/Caracas',
     },
-    location: appointment.location_id || undefined,
-    colorId: getColorIdForStatus(appointment.status),
+    location:
+      appointment.location_address ?? appointment.location_id ?? undefined,
+    colorId: STATUS_COLOR_MAP[appointment.status] ?? '1',
     reminders: {
       useDefault: false,
       overrides: [
-        { method: 'email', minutes: 24 * 60 }, // 1 day before
-        { method: 'popup', minutes: 30 }, // 30 min before
+        { method: 'email', minutes: 24 * 60 },
+        { method: 'popup', minutes: 30 },
       ],
     },
   };
 }
 
 /**
- * Get Google Calendar color ID based on appointment status
+ * Get the Google Calendar color ID for a given appointment status.
  */
-function getColorIdForStatus(status: string): string {
-  const colorMap: Record<string, string> = {
-    'pendiente': '5',      // Yellow
-    'confirmada': '10',    // Green
-    'en_espera': '4',      // Pink
-    'en_consulta': '9',    // Blue
-    'completada': '2',     // Sage
-    'cancelada': '8',      // Gray
-    'no_asistio': '11',    // Red
-    'rechazada': '8',      // Gray
-  };
-  return colorMap[status] || '1'; // Default lavender
+export function getColorIdForStatus(status: string): string {
+  return STATUS_COLOR_MAP[status] ?? '1';
+}
+
+// ---------------------------------------------------------------------------
+// REST API Helpers (fetch-based, no googleapis dependency)
+// ---------------------------------------------------------------------------
+
+/**
+ * Make an authenticated request to the Google Calendar REST API.
+ *
+ * @param accessToken - Valid OAuth2 access token
+ * @param path - API path (e.g. `/calendars/primary/events`)
+ * @param options - Standard fetch options (method, body, etc.)
+ */
+export async function gcalFetch<T = unknown>(
+  accessToken: string,
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const url = `${GOOGLE_API_BASE}${path}`;
+
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string> | undefined),
+    },
+  });
+
+  if (res.status === 204) return undefined as T;
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Google Calendar API error (${res.status}): ${body}`);
+  }
+
+  return res.json() as Promise<T>;
 }
 
 /**
- * Sync appointment TO Google Calendar (create or update)
+ * List events from a Google Calendar within a date range.
  */
-export async function syncAppointmentToGoogle(
-  userId: string,
-  appointment: CalendarAppointment
-): Promise<{ success: boolean; eventId?: string; error?: string }> {
-  try {
-    const supabase = await createClient();
-    const calendar = await getAuthenticatedClient(userId);
+export async function listCalendarEvents(
+  accessToken: string,
+  calendarId: string,
+  timeMin: string,
+  timeMax: string,
+): Promise<GoogleCalendarEvent[]> {
+  const params = new URLSearchParams({
+    timeMin,
+    timeMax,
+    singleEvents: 'true',
+    orderBy: 'startTime',
+    maxResults: '250',
+  });
 
-    // Get token info for calendar ID
-    const { data: tokenData } = await supabase
-      .from('google_calendar_tokens')
-      .select('calendar_id')
-      .eq('user_id', userId)
-      .single();
+  const data = await gcalFetch<{ items?: GoogleCalendarEvent[] }>(
+    accessToken,
+    `/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
+  );
 
-    if (!tokenData) {
-      throw new Error('Calendar not configured');
-    }
-
-    const calendarId = tokenData.calendar_id;
-
-    // Check if mapping exists (update) or create new event
-    const { data: mapping } = await supabase
-      .from('google_calendar_event_mappings')
-      .select('google_event_id')
-      .eq('appointment_id', appointment.id)
-      .single();
-
-    const eventData = appointmentToGoogleEvent(appointment);
-    let googleEventId: string;
-
-    if (mapping?.google_event_id) {
-      // Update existing event
-      const response = await calendar.events.update({
-        calendarId,
-        eventId: mapping.google_event_id,
-        requestBody: eventData,
-      });
-      googleEventId = response.data.id!;
-    } else {
-      // Create new event
-      const response = await calendar.events.insert({
-        calendarId,
-        requestBody: eventData,
-      });
-      googleEventId = response.data.id!;
-
-      // Create mapping
-      await supabase.from('google_calendar_event_mappings').insert({
-        appointment_id: appointment.id,
-        google_event_id: googleEventId,
-        google_calendar_id: calendarId,
-        local_updated_at: new Date().toISOString(),
-        google_updated_at: new Date().toISOString(),
-        sync_status: 'synced',
-      });
-    }
-
-    // Update mapping sync status
-    await supabase
-      .from('google_calendar_event_mappings')
-      .update({
-        last_synced_at: new Date().toISOString(),
-        google_updated_at: new Date().toISOString(),
-        sync_status: 'synced',
-        sync_error: null,
-      })
-      .eq('appointment_id', appointment.id);
-
-    return { success: true, eventId: googleEventId };
-  } catch (error) {
-    console.error('Error syncing to Google Calendar:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
+  return data.items ?? [];
 }
 
 /**
- * Delete appointment from Google Calendar
+ * Create an event in Google Calendar.
  */
-export async function deleteAppointmentFromGoogle(
-  userId: string,
-  appointmentId: string
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    const supabase = await createClient();
-    const calendar = await getAuthenticatedClient(userId);
-
-    // Get mapping
-    const { data: mapping } = await supabase
-      .from('google_calendar_event_mappings')
-      .select('google_event_id, google_calendar_id')
-      .eq('appointment_id', appointmentId)
-      .single();
-
-    if (!mapping) {
-      return { success: true }; // Not synced, nothing to delete
-    }
-
-    // Delete from Google Calendar
-    await calendar.events.delete({
-      calendarId: mapping.google_calendar_id,
-      eventId: mapping.google_event_id,
-    });
-
-    // Delete mapping
-    await supabase
-      .from('google_calendar_event_mappings')
-      .delete()
-      .eq('appointment_id', appointmentId);
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting from Google Calendar:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
+export async function createCalendarEvent(
+  accessToken: string,
+  calendarId: string,
+  event: GoogleCalendarEvent,
+): Promise<GoogleCalendarEvent> {
+  return gcalFetch<GoogleCalendarEvent>(
+    accessToken,
+    `/calendars/${encodeURIComponent(calendarId)}/events`,
+    {
+      method: 'POST',
+      body: JSON.stringify(event),
+    },
+  );
 }
 
 /**
- * Import events FROM Google Calendar (external events as blocked time)
+ * Update an existing event in Google Calendar.
  */
-export async function importEventsFromGoogle(
-  userId: string,
-  startDate: Date,
-  endDate: Date
-): Promise<{ success: boolean; imported: number; error?: string }> {
-  try {
-    const supabase = await createClient();
-    const calendar = await getAuthenticatedClient(userId);
-
-    const { data: tokenData } = await supabase
-      .from('google_calendar_tokens')
-      .select('calendar_id')
-      .eq('user_id', userId)
-      .single();
-
-    if (!tokenData) {
-      throw new Error('Calendar not configured');
-    }
-
-    // Get events from Google Calendar
-    const response = await calendar.events.list({
-      calendarId: tokenData.calendar_id,
-      timeMin: startDate.toISOString(),
-      timeMax: endDate.toISOString(),
-      singleEvents: true,
-      orderBy: 'startTime',
-    });
-
-    const events = response.data.items || [];
-    let imported = 0;
-
-    // Get existing mappings to filter out our own events
-    const { data: mappings } = await supabase
-      .from('google_calendar_event_mappings')
-      .select('google_event_id');
-
-    const ourEventIds = new Set(mappings?.map(m => m.google_event_id) || []);
-
-    for (const event of events) {
-      // Skip our own synced events
-      if (ourEventIds.has(event.id!)) continue;
-
-      // Skip cancelled events
-      if (event.status === 'cancelled') continue;
-
-      // Store as imported event (blocked time)
-      const startTime = event.start?.dateTime || event.start?.date;
-      const endTime = event.end?.dateTime || event.end?.date;
-
-      if (!startTime || !endTime) continue;
-
-      await supabase.from('google_calendar_imported_events').upsert({
-        user_id: userId,
-        google_event_id: event.id!,
-        google_calendar_id: tokenData.calendar_id,
-        title: event.summary || '(Sin título)',
-        description: event.description || null,
-        start_time: startTime,
-        end_time: endTime,
-        all_day: !event.start?.dateTime, // If no dateTime, it's all-day
-        location: event.location || null,
-        google_updated_at: event.updated!,
-        last_synced_at: new Date().toISOString(),
-      }, {
-        onConflict: 'user_id,google_calendar_id,google_event_id',
-      });
-
-      imported++;
-    }
-
-    // Update last sync time
-    await supabase
-      .from('google_calendar_tokens')
-      .update({ last_sync_at: new Date().toISOString() })
-      .eq('user_id', userId);
-
-    return { success: true, imported };
-  } catch (error) {
-    console.error('Error importing from Google Calendar:', error);
-    return {
-      success: false,
-      imported: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
+export async function updateCalendarEvent(
+  accessToken: string,
+  calendarId: string,
+  eventId: string,
+  event: GoogleCalendarEvent,
+): Promise<GoogleCalendarEvent> {
+  return gcalFetch<GoogleCalendarEvent>(
+    accessToken,
+    `/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(event),
+    },
+  );
 }
 
 /**
- * Get connection status for a user
+ * Delete an event from Google Calendar.
  */
-export async function getConnectionStatus(userId: string): Promise<{
-  connected: boolean;
-  calendar_id?: string;
-  calendar_timezone?: string;
-  sync_enabled?: boolean;
-  last_sync_at?: string;
-}> {
-  const supabase = await createClient();
+export async function deleteCalendarEvent(
+  accessToken: string,
+  calendarId: string,
+  eventId: string,
+): Promise<void> {
+  await gcalFetch<void>(
+    accessToken,
+    `/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+    { method: 'DELETE' },
+  );
+}
 
-  const { data, error } = await supabase
-    .from('google_calendar_tokens')
-    .select('calendar_id, calendar_timezone, sync_enabled, last_sync_at')
-    .eq('user_id', userId)
-    .single();
-
-  if (error || !data) {
-    return { connected: false };
-  }
+/**
+ * Get primary calendar info (id + timezone).
+ */
+export async function getPrimaryCalendarInfo(
+  accessToken: string,
+): Promise<{ id: string; timeZone: string }> {
+  const data = await gcalFetch<{ id?: string; timeZone?: string }>(
+    accessToken,
+    '/calendars/primary',
+  );
 
   return {
-    connected: true,
-    ...data,
+    id: data.id ?? 'primary',
+    timeZone: data.timeZone ?? 'America/Caracas',
   };
 }
 
 /**
- * Disconnect Google Calendar (revoke tokens)
+ * Exchange an OAuth2 authorization code for tokens.
  */
-export async function disconnectGoogleCalendar(userId: string): Promise<{ success: boolean }> {
-  try {
-    const supabase = await createClient();
+export async function exchangeAuthorizationCode(params: {
+  code: string;
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+}): Promise<{
+  access_token: string;
+  refresh_token?: string;
+  expires_in: number;
+  scope: string;
+  token_type: string;
+}> {
+  const body = new URLSearchParams({
+    code: params.code,
+    client_id: params.clientId,
+    client_secret: params.clientSecret,
+    redirect_uri: params.redirectUri,
+    grant_type: 'authorization_code',
+  });
 
-    // Delete all data
-    await Promise.all([
-      supabase.from('google_calendar_tokens').delete().eq('user_id', userId),
-      supabase.from('google_calendar_event_mappings').delete().eq('appointment_id', userId), // This needs fix in schema
-      supabase.from('google_calendar_imported_events').delete().eq('user_id', userId),
-    ]);
+  const res = await fetch(GOOGLE_TOKEN_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
 
-    return { success: true };
-  } catch (error) {
-    console.error('Error disconnecting Google Calendar:', error);
-    return { success: false };
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Error exchanging OAuth code: ${err}`);
   }
+
+  return res.json();
+}
+
+/**
+ * Refresh an expired access token using a refresh token.
+ */
+export async function refreshAccessToken(params: {
+  refreshToken: string;
+  clientId: string;
+  clientSecret: string;
+}): Promise<{
+  access_token: string;
+  expires_in: number;
+  scope: string;
+  token_type: string;
+}> {
+  const body = new URLSearchParams({
+    refresh_token: params.refreshToken,
+    client_id: params.clientId,
+    client_secret: params.clientSecret,
+    grant_type: 'refresh_token',
+  });
+
+  const res = await fetch(GOOGLE_TOKEN_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Error refreshing Google token: ${err}`);
+  }
+
+  return res.json();
+}
+
+/**
+ * Build a Google OAuth2 authorization URL.
+ */
+export function buildAuthorizationUrl(params: {
+  clientId: string;
+  redirectUri: string;
+  state: string;
+  scopes?: readonly string[];
+}): string {
+  const urlParams = new URLSearchParams({
+    client_id: params.clientId,
+    redirect_uri: params.redirectUri,
+    response_type: 'code',
+    scope: (params.scopes ?? GOOGLE_CALENDAR_SCOPES).join(' '),
+    access_type: 'offline',
+    prompt: 'consent',
+    state: params.state,
+  });
+
+  return `${GOOGLE_OAUTH_BASE}?${urlParams.toString()}`;
 }

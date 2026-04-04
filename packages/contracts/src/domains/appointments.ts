@@ -1,32 +1,32 @@
 // Appointments domain types
 
-export type AppointmentStatus = 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'ausente';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'absent';
 
 export interface Appointment {
     id: string;
-    paciente_id: string;
-    medico_id: string;
+    patient_id: string;
+    doctor_id: string;
     office_id?: string;
-    fecha_hora: string;
-    duracion_minutos: number;
+    scheduled_at: string;
+    duration_minutes: number;
     status: AppointmentStatus;
-    tipo_cita: string;
-    motivo?: string;
-    notas_internas?: string;
+    appointment_type: string;
+    reason?: string;
+    internal_notes?: string;
     meeting_url?: string;
     price?: number;
-    metodo_pago?: string;
+    payment_method?: string;
     created_at?: string;
     updated_at?: string;
     patient?: {
         id: string;
-        nombre_completo: string;
+        full_name: string;
         email: string;
         avatar_url?: string;
     };
-    medico?: {
+    doctor?: {
         id: string;
-        nombre_completo: string;
+        full_name: string;
     };
 }
 
@@ -34,23 +34,18 @@ export interface DoctorProfile {
     id: string;
     profile_id?: string;
     specialty_id: string | null;
-    especialidad_id?: string; // Legacy alias used in some places
     license_number: string | null;
-    licencia_medica?: string; // Legacy alias
     license_country: string;
     years_experience: number;
-    anos_experiencia?: number; // Legacy alias
     professional_phone: string | null;
     professional_email: string | null;
     clinic_address: string | null;
     consultation_duration: number;
     consultation_price: number | null;
-    tarifa_consulta?: number; // Legacy alias
     accepts_insurance: boolean;
     bio: string | null;
     languages: string[];
     is_verified: boolean;
-    verified?: boolean; // Legacy alias
     is_active: boolean;
     sacs_verified: boolean;
     sacs_data: Record<string, unknown> | null;
@@ -59,22 +54,22 @@ export interface DoctorProfile {
     professional_type: 'doctor' | 'tecnico' | 'asistente' | 'otro';
     dashboard_config: Record<string, unknown>;
     schedule?: Record<string, unknown>;
-    subespecialidades?: string[];
-    universidad?: string;
+    sub_specialties?: string[];
+    university?: string;
     created_at: string;
     updated_at: string;
     profile?: {
         id: string;
-        nombre_completo?: string;
+        full_name?: string;
         email?: string;
         avatar_url?: string;
-        telefono?: string;
-        cedula?: string;
-        cedula_verificada?: boolean;
-        sacs_verificado?: boolean;
-        sacs_nombre?: string;
-        sacs_matricula?: string;
-        sacs_especialidad?: string;
+        phone?: string;
+        id_number?: string;
+        id_verified?: boolean;
+        sacs_verified?: boolean;
+        sacs_name?: string;
+        sacs_license?: string;
+        sacs_specialty?: string;
     };
     specialty?: {
         id: string;
@@ -125,8 +120,8 @@ export interface DoctorSearchFilters {
 
 export interface AppointmentConflict {
     id: string;
-    fecha_hora: string;
-    duracion_minutos: number;
-    motivo?: string;
+    scheduled_at: string;
+    duration_minutes: number;
+    reason?: string;
     patient_name: string;
 }

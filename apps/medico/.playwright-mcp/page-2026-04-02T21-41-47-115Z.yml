@@ -1,0 +1,131 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e5]:
+      - link "Red Salud" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8]
+        - generic [ref=e10]: Red Salud
+      - generic [ref=e11]:
+        - link "Funcionalidades" [ref=e12] [cursor=pointer]:
+          - /url: /#funcionalidades
+        - link "Especialidades" [ref=e13] [cursor=pointer]:
+          - /url: /#especialidades
+        - link "Nosotros" [ref=e14] [cursor=pointer]:
+          - /url: /nosotros
+        - link "Precios" [ref=e15] [cursor=pointer]:
+          - /url: /precios
+      - generic [ref=e16]:
+        - link "Iniciar Sesión" [ref=e17] [cursor=pointer]:
+          - /url: /auth/login
+        - link "Comenzar Gratis" [ref=e18] [cursor=pointer]:
+          - /url: /auth/register
+  - main [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - img [ref=e24]
+          - generic [ref=e26]: Nuestra historia
+        - heading "Transformando la salud digital en Venezuela" [level=1] [ref=e27]
+        - paragraph [ref=e28]: Estamos construyendo la primera plataforma clínica que se adapta a cada especialidad médica. Porque cada médico trabaja diferente, y su herramienta digital debería entenderlo.
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - img [ref=e34]
+          - heading "Nuestra misión" [level=2] [ref=e38]
+          - paragraph [ref=e39]: Estamos construyendo la primera plataforma clínica que se adapta a cada especialidad médica. Un cardiólogo no trabaja igual que un odontólogo — y su software no debería ser genérico. Red Salud entiende tu especialidad y te da las herramientas exactas que necesitás.
+        - generic [ref=e40]:
+          - img [ref=e42]
+          - heading "¿Por qué Venezuela?" [level=2] [ref=e45]
+          - paragraph [ref=e46]: "El sistema de salud venezolano merece herramientas digitales modernas. Nuestros médicos tienen el talento y la dedicación — lo que faltaba era una plataforma pensada para nuestra realidad: accesible, confiable, y diseñada desde Venezuela para Venezuela."
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - heading "Nuestros valores" [level=2] [ref=e50]
+          - paragraph [ref=e51]: Los principios que guían cada decisión que tomamos.
+        - generic [ref=e52]:
+          - generic [ref=e53]:
+            - img [ref=e55]
+            - heading "Innovación" [level=3] [ref=e57]
+            - paragraph [ref=e58]: Llevamos tecnología de punta al consultorio médico venezolano, con inteligencia artificial y herramientas diseñadas para cada especialidad.
+          - generic [ref=e59]:
+            - img [ref=e61]
+            - heading "Seguridad" [level=3] [ref=e64]
+            - paragraph [ref=e65]: La información médica es sagrada. Cada dato está protegido con encriptación, aislamiento de datos y las mejores prácticas de la industria.
+          - generic [ref=e66]:
+            - img [ref=e68]
+            - heading "Accesibilidad" [level=3] [ref=e74]
+            - paragraph [ref=e75]: Una plataforma que funciona en cualquier dispositivo con conexión a internet. Sin instalaciones, sin hardware costoso.
+          - generic [ref=e76]:
+            - img [ref=e78]
+            - heading "Colaboración" [level=3] [ref=e83]
+            - paragraph [ref=e84]: Conectamos médicos, pacientes, laboratorios, farmacias y especialistas en un ecosistema de salud integrado.
+      - generic [ref=e87]:
+        - img [ref=e88]
+        - heading "Nuestro equipo" [level=2] [ref=e93]
+        - paragraph [ref=e94]: Un equipo de desarrolladores y profesionales de la salud comprometidos con la medicina venezolana. Combinamos experiencia en tecnología con conocimiento profundo del sector salud para crear herramientas que realmente hacen la diferencia en el día a día del médico.
+  - contentinfo [ref=e95]:
+    - generic [ref=e97]:
+      - generic [ref=e98]:
+        - link "Red Salud" [ref=e99] [cursor=pointer]:
+          - /url: /
+          - img [ref=e101]
+          - generic [ref=e103]: Red Salud
+        - paragraph [ref=e104]: La plataforma clínica que se adapta a tu especialidad médica.
+      - generic [ref=e105]:
+        - heading "Producto" [level=3] [ref=e106]
+        - list [ref=e107]:
+          - listitem [ref=e108]:
+            - link "Funcionalidades" [ref=e109] [cursor=pointer]:
+              - /url: /#funcionalidades
+          - listitem [ref=e110]:
+            - link "Especialidades" [ref=e111] [cursor=pointer]:
+              - /url: /#especialidades
+          - listitem [ref=e112]:
+            - link "Precios" [ref=e113] [cursor=pointer]:
+              - /url: /precios
+          - listitem [ref=e114]:
+            - link "Nosotros" [ref=e115] [cursor=pointer]:
+              - /url: /nosotros
+      - generic [ref=e116]:
+        - heading "Especialidades" [level=3] [ref=e117]
+        - list [ref=e118]:
+          - listitem [ref=e119]:
+            - link "Medicina General" [ref=e120] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e121]:
+            - link "Cardiología" [ref=e122] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e123]:
+            - link "Pediatría" [ref=e124] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e125]:
+            - link "Odontología" [ref=e126] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e127]:
+            - link "Ginecología" [ref=e128] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e129]:
+            - link "Ver todas" [ref=e130] [cursor=pointer]:
+              - /url: /especialidades
+      - generic [ref=e131]:
+        - heading "Recursos" [level=3] [ref=e132]
+        - list [ref=e133]:
+          - listitem [ref=e134]:
+            - link "Contacto" [ref=e135] [cursor=pointer]:
+              - /url: /contacto
+          - listitem [ref=e136]:
+            - link "Seguridad" [ref=e137] [cursor=pointer]:
+              - /url: /seguridad
+      - generic [ref=e138]:
+        - heading "Legal" [level=3] [ref=e139]
+        - list [ref=e140]:
+          - listitem [ref=e141]:
+            - link "Privacidad" [ref=e142] [cursor=pointer]:
+              - /url: /legal/privacidad
+          - listitem [ref=e143]:
+            - link "Términos" [ref=e144] [cursor=pointer]:
+              - /url: /legal/terminos
+          - listitem [ref=e145]:
+            - link "Seguridad" [ref=e146] [cursor=pointer]:
+              - /url: /seguridad
+    - generic [ref=e148]:
+      - paragraph [ref=e149]: © 2024-2025 Red Salud. Todos los derechos reservados.
+      - paragraph [ref=e150]: Hecho con amor en Venezuela

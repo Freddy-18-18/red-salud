@@ -34,7 +34,7 @@ export async function getDoctorTemplates(
     let query = supabase
       .from('prescription_templates')
       .select('*')
-      .or(`medico_id.eq.${medicoId},tipo.eq.sistema`)
+      .or(`doctor_id.eq.${medicoId},tipo.eq.sistema`)
       .eq('activo', true);
 
     // Aplicar filtros
@@ -123,7 +123,7 @@ export async function getCustomTemplates(
     const { data, error } = await supabase
       .from('prescription_templates')
       .select('*')
-      .eq('medico_id', medicoId)
+      .eq('doctor_id', medicoId)
       .eq('tipo', 'personalizado')
       .eq('activo', true)
       .order('usos_count', { ascending: false });
@@ -151,7 +151,7 @@ export async function getDoctorActiveSignature(
     const { data, error } = await supabase
       .from('doctor_signatures')
       .select('*')
-      .eq('medico_id', medicoId)
+      .eq('doctor_id', medicoId)
       .eq('activa', true)
       .order('fecha_creacion', { ascending: false })
       .limit(1)
@@ -176,7 +176,7 @@ export async function getDoctorSignatures(
     const { data, error } = await supabase
       .from('doctor_signatures')
       .select('*')
-      .eq('medico_id', medicoId)
+      .eq('doctor_id', medicoId)
       .order('fecha_creacion', { ascending: false });
 
     if (error) throw error;
@@ -203,7 +203,7 @@ export async function getDoctorScans(
     let query = supabase
       .from('prescription_scans')
       .select('*')
-      .eq('medico_id', medicoId);
+      .eq('doctor_id', medicoId);
 
     // Aplicar filtros
     if (filters?.procesada !== undefined) {
@@ -267,7 +267,7 @@ export async function getPrescriptionsExtended(
         prescription_templates(id, nombre, tipo, layout_config, custom_styles),
         doctor_signatures(id, firma_url, firma_type)
       `)
-      .eq('medico_id', medicoId)
+      .eq('doctor_id', medicoId)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -334,7 +334,7 @@ export async function getPatientPrescriptionsExtended(
       .from('farmacia_recetas')
       .select('*')
       .eq('paciente_id', pacienteId)
-      .eq('medico_id', medicoId)
+      .eq('doctor_id', medicoId)
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -363,7 +363,7 @@ export async function getDoctorPrintHistory(
     let query = supabase
       .from('prescription_prints')
       .select('*')
-      .eq('medico_id', medicoId);
+      .eq('doctor_id', medicoId);
 
     // Aplicar filtros
     if (filters?.template_id) {
@@ -411,7 +411,7 @@ export async function getPrintStatistics(
     let query = supabase
       .from('prescription_prints')
       .select('*')
-      .eq('medico_id', medicoId);
+      .eq('doctor_id', medicoId);
 
     if (fechaDesde) {
       query = query.gte('fecha_impresion', fechaDesde.toISOString());

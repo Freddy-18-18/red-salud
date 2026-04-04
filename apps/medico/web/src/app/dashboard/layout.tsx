@@ -18,13 +18,13 @@ export default async function DashboardLayout({
 
   // Fetch doctor profile for the sidebar
   const { data: doctorDetails } = await supabase
-    .from('doctor_details')
+    .from('doctor_profiles')
     .select(`
       profile_id,
-      especialidad_id,
-      especialidad:specialties(id, name, slug, icon),
-      profile:profiles!doctor_details_profile_id_fkey(
-        nombre_completo,
+      specialty_id,
+      specialty:specialties(id, name, slug, icon),
+      profile:profiles!doctor_profiles_profile_id_fkey(
+        full_name,
         avatar_url,
         sacs_especialidad
       )
@@ -32,15 +32,15 @@ export default async function DashboardLayout({
     .eq('profile_id', user.id)
     .maybeSingle();
 
-  const especialidad = Array.isArray(doctorDetails?.especialidad)
-    ? doctorDetails.especialidad[0]
-    : doctorDetails?.especialidad;
+  const specialty = Array.isArray(doctorDetails?.specialty)
+    ? doctorDetails.specialty[0]
+    : doctorDetails?.specialty;
   const profileData = Array.isArray(doctorDetails?.profile)
     ? doctorDetails.profile[0]
     : doctorDetails?.profile;
-  const doctorName = profileData?.nombre_completo ?? user.email ?? 'Doctor';
-  const specialtyName = especialidad?.name ?? 'Medicina General';
-  const specialtySlug = especialidad?.slug ?? null;
+  const doctorName = profileData?.full_name ?? user.email ?? 'Doctor';
+  const specialtyName = specialty?.name ?? 'Medicina General';
+  const specialtySlug = specialty?.slug ?? null;
   const avatarUrl = profileData?.avatar_url ?? null;
   const sacsEspecialidad = profileData?.sacs_especialidad ?? null;
 

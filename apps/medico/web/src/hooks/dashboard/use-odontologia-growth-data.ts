@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { useDoctorAppointments, type AppointmentRow as CoreAppointmentRow } from "@red-salud/core";
 
 interface AppointmentRow {
   id: string;
-  paciente_id: string;
-  fecha_hora: string;
+  patient_id: string;
+  scheduled_at: string;
   status: string;
 }
 
@@ -89,46 +90,59 @@ function isMissingRelationError(error: { code?: string; message?: string } | nul
 }
 
 export function useOdontologiaGrowthData(doctorId?: string): OdontologiaGrowthData {
-  const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
   const [claims, setClaims] = useState<ClaimRow[]>([]);
   const [segments, setSegments] = useState<SegmentRow[]>([]);
   const [campaigns, setCampaigns] = useState<CampaignRow[]>([]);
   const [campaignEvents, setCampaignEvents] = useState<CampaignEventRow[]>([]);
   const [hasPhase3Integration, setHasPhase3Integration] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingExtra, setIsLoadingExtra] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = useCallback(async () => {
+  // Fetch appointments via core hook (last 1 year)
+  const oneYearAgoStr = useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 1);
+    return d.toISOString().slice(0, 10);
+  }, []);
+
+  const {
+    appointments: rawAppointments,
+    loading: appointmentsLoading,
+    refresh: refreshAppointments,
+  } = useDoctorAppointments(supabase, doctorId ?? null, {
+    dateRange: { start: oneYearAgoStr, end: new Date().toISOString().slice(0, 10) },
+  });
+
+  // Map core appointments to local AppointmentRow
+  const appointments = useMemo<AppointmentRow[]>(
+    () =>
+      rawAppointments.map((row) => ({
+        id: row.id,
+        patient_id: row.patient_id,
+        scheduled_at: row.scheduled_at,
+        status: row.status,
+      })),
+    [rawAppointments],
+  );
+
+  const isLoading = appointmentsLoading || isLoadingExtra;
+
+  const loadExtraData = useCallback(async () => {
     if (!doctorId) {
-      setAppointments([]);
       setClaims([]);
       setSegments([]);
       setCampaigns([]);
       setCampaignEvents([]);
       setHasPhase3Integration(false);
-      setIsLoading(false);
+      setIsLoadingExtra(false);
       return;
     }
 
-    setIsLoading(true);
+    setIsLoadingExtra(true);
     setError(null);
 
     try {
-      const oneYearAgo = new Date();
-      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-
-      const { data: appointmentsData, error: appointmentsError } = await supabase
-        .from("appointments")
-        .select("id, paciente_id, fecha_hora, status")
-        .eq("medico_id", doctorId)
-        .gte("fecha_hora", oneYearAgo.toISOString())
-        .order("fecha_hora", { ascending: false })
-        .limit(5000);
-
-      if (appointmentsError) throw appointmentsError;
-      setAppointments((appointmentsData || []) as AppointmentRow[]);
-
-      const patientIds = Array.from(new Set(((appointmentsData || []) as AppointmentRow[]).map((a) => a.paciente_id).filter(Boolean)));
+      const patientIds = Array.from(new Set(appointments.map((a) => a.patient_id).filter(Boolean)));
 
       if (patientIds.length > 0) {
         const { data: claimsData, error: claimsError } = await supabase
@@ -205,13 +219,13 @@ export function useOdontologiaGrowthData(doctorId?: string): OdontologiaGrowthDa
       const fallbackMessage = "No se pudo cargar datos de Growth odontológico";
       setError(err instanceof Error ? err.message || fallbackMessage : fallbackMessage);
     } finally {
-      setIsLoading(false);
+      setIsLoadingExtra(false);
     }
-  }, [doctorId]);
+  }, [doctorId, appointments]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadExtraData();
+  }, [loadExtraData]);
 
   const derived = useMemo(() => {
     const now = Date.now();
@@ -219,10 +233,10 @@ export function useOdontologiaGrowthData(doctorId?: string): OdontologiaGrowthDa
     const timelineByPatient = new Map<string, Date[]>();
 
     for (const appointment of appointments) {
-      const date = new Date(appointment.fecha_hora);
-      const list = timelineByPatient.get(appointment.paciente_id) || [];
+      const date = new Date(appointment.scheduled_at);
+      const list = timelineByPatient.get(appointment.patient_id) || [];
       list.push(date);
-      timelineByPatient.set(appointment.paciente_id, list);
+      timelineByPatient.set(appointment.patient_id, list);
     }
 
     let recallBacklog = 0;
@@ -321,11 +335,16 @@ export function useOdontologiaGrowthData(doctorId?: string): OdontologiaGrowthDa
     };
   }, [appointments, campaignEvents, campaigns, segments]);
 
+  const refresh = useCallback(async () => {
+    await refreshAppointments();
+    await loadExtraData();
+  }, [refreshAppointments, loadExtraData]);
+
   return {
     ...derived,
     hasPhase3Integration,
     isLoading,
     error,
-    refresh: loadData,
+    refresh,
   };
 }

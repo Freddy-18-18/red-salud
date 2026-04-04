@@ -5,27 +5,27 @@ import type {
 } from "./appointments.types";
 import { getDoctorProfile } from "./appointments.queries";
 
-// Crear una cita
+// Create an appointment
 export async function createAppointment(
   patientId: string,
   appointmentData: CreateAppointmentData
 ) {
   try {
-    // Obtener precio del doctor
+    // Get doctor's price
     const { data: doctor } = await getDoctorProfile(appointmentData.doctor_id);
 
-    // Combinar fecha y hora para la tabla existente
-    const fechaHora = `${appointmentData.appointment_date}T${appointmentData.appointment_time}`;
+    // Combine date and time for the existing table
+    const scheduledAt = `${appointmentData.appointment_date}T${appointmentData.appointment_time}`;
 
     const { data, error } = await supabase
       .from("appointments")
       .insert({
-        paciente_id: patientId,
-        medico_id: appointmentData.doctor_id,
-        fecha_hora: fechaHora,
-        duracion_minutos: doctor?.consultation_duration || 30,
-        motivo: appointmentData.reason || '',
-        status: "pendiente",
+        patient_id: patientId,
+        doctor_id: appointmentData.doctor_id,
+        scheduled_at: scheduledAt,
+        duration_minutes: doctor?.consultation_duration || 30,
+        reason: appointmentData.reason || '',
+        status: "pending",
       })
       .select()
       .single();
@@ -36,22 +36,22 @@ export async function createAppointment(
     await supabase.from("user_activity_log").insert({
       user_id: patientId,
       activity_type: "appointment_created",
-      description: `Cita creada con doctor para ${appointmentData.appointment_date}`,
+      description: `Appointment created with doctor for ${appointmentData.appointment_date}`,
       status: "success",
     });
 
-    // Transformar respuesta al formato esperado
+    // Transform response to expected format
     const appointment: Appointment = {
       id: data.id,
-      patient_id: data.paciente_id,
-      doctor_id: data.medico_id,
+      patient_id: data.patient_id,
+      doctor_id: data.doctor_id,
       appointment_date: appointmentData.appointment_date,
       appointment_time: appointmentData.appointment_time,
-      duration: data.duracion_minutos,
-      status: data.status === 'pendiente' ? 'pending' : data.status === 'confirmada' ? 'confirmed' : data.status === 'completada' ? 'completed' : 'cancelled',
+      duration: data.duration_minutes,
+      status: data.status === 'pending' ? 'pending' : data.status === 'confirmed' ? 'confirmed' : data.status === 'completed' ? 'completed' : 'cancelled',
       consultation_type: appointmentData.consultation_type,
-      reason: data.motivo,
-      price: doctor?.tarifa_consulta,
+      reason: data.reason,
+      price: doctor?.consultation_price,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };
@@ -63,7 +63,7 @@ export async function createAppointment(
   }
 }
 
-// Cancelar una cita
+// Cancel an appointment
 export async function cancelAppointment(
   appointmentId: string,
   userId: string,
@@ -73,8 +73,8 @@ export async function cancelAppointment(
     const { data, error } = await supabase
       .from("appointments")
       .update({
-        status: "cancelada",
-        notas: reason ? `Cancelada: ${reason}` : 'Cancelada',
+        status: "cancelled",
+        notes: reason ? `Cancelled: ${reason}` : 'Cancelled',
       })
       .eq("id", appointmentId)
       .select()
@@ -86,22 +86,22 @@ export async function cancelAppointment(
     await supabase.from("user_activity_log").insert({
       user_id: userId,
       activity_type: "appointment_cancelled",
-      description: `Cita cancelada: ${appointmentId}`,
+      description: `Appointment cancelled: ${appointmentId}`,
       status: "success",
     });
 
-    const fechaHora = new Date(data.fecha_hora);
+    const scheduledAt = new Date(data.scheduled_at);
     const appointment: Appointment = {
       id: data.id,
-      patient_id: data.paciente_id,
-      doctor_id: data.medico_id,
-      appointment_date: fechaHora.toISOString().split('T')[0] ?? '',
-      appointment_time: fechaHora.toTimeString().split(' ')[0] ?? '',
-      duration: data.duracion_minutos,
+      patient_id: data.patient_id,
+      doctor_id: data.doctor_id,
+      appointment_date: scheduledAt.toISOString().split('T')[0] ?? '',
+      appointment_time: scheduledAt.toTimeString().split(' ')[0] ?? '',
+      duration: data.duration_minutes,
       status: 'cancelled',
       consultation_type: 'video',
-      reason: data.motivo,
-      notes: data.notas,
+      reason: data.reason,
+      notes: data.notes,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };
@@ -113,34 +113,34 @@ export async function cancelAppointment(
   }
 }
 
-// Confirmar una cita (doctor)
+// Confirm an appointment (doctor)
 export async function confirmAppointment(appointmentId: string) {
   try {
     const { data, error } = await supabase
       .from("appointments")
-      .update({ status: "confirmada" })
+      .update({ status: "confirmed" })
       .eq("id", appointmentId)
       .select()
       .single();
 
     if (error) throw error;
-    
-    const fechaHora = new Date(data.fecha_hora);
+
+    const scheduledAt = new Date(data.scheduled_at);
     const appointment: Appointment = {
       id: data.id,
-      patient_id: data.paciente_id,
-      doctor_id: data.medico_id,
-      appointment_date: fechaHora.toISOString().split('T')[0] ?? '',
-      appointment_time: fechaHora.toTimeString().split(' ')[0] ?? '',
-      duration: data.duracion_minutos,
+      patient_id: data.patient_id,
+      doctor_id: data.doctor_id,
+      appointment_date: scheduledAt.toISOString().split('T')[0] ?? '',
+      appointment_time: scheduledAt.toTimeString().split(' ')[0] ?? '',
+      duration: data.duration_minutes,
       status: 'confirmed',
       consultation_type: 'video',
-      reason: data.motivo,
-      notes: data.notas,
+      reason: data.reason,
+      notes: data.notes,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };
-    
+
     return { success: true, data: appointment };
   } catch (error) {
     console.error("Error confirming appointment:", error);
@@ -148,34 +148,34 @@ export async function confirmAppointment(appointmentId: string) {
   }
 }
 
-// Completar una cita (doctor)
+// Complete an appointment (doctor)
 export async function completeAppointment(appointmentId: string) {
   try {
     const { data, error } = await supabase
       .from("appointments")
-      .update({ status: "completada" })
+      .update({ status: "completed" })
       .eq("id", appointmentId)
       .select()
       .single();
 
     if (error) throw error;
-    
-    const fechaHora = new Date(data.fecha_hora);
+
+    const scheduledAt = new Date(data.scheduled_at);
     const appointment: Appointment = {
       id: data.id,
-      patient_id: data.paciente_id,
-      doctor_id: data.medico_id,
-      appointment_date: fechaHora.toISOString().split('T')[0] ?? '',
-      appointment_time: fechaHora.toTimeString().split(' ')[0] ?? '',
-      duration: data.duracion_minutos,
+      patient_id: data.patient_id,
+      doctor_id: data.doctor_id,
+      appointment_date: scheduledAt.toISOString().split('T')[0] ?? '',
+      appointment_time: scheduledAt.toTimeString().split(' ')[0] ?? '',
+      duration: data.duration_minutes,
       status: 'completed',
       consultation_type: 'video',
-      reason: data.motivo,
-      notes: data.notas,
+      reason: data.reason,
+      notes: data.notes,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };
-    
+
     return { success: true, data: appointment };
   } catch (error) {
     console.error("Error completing appointment:", error);

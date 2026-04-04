@@ -131,10 +131,10 @@ export async function saveSACSVerification(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabase
-      .from('doctor_details')
+      .from('doctor_profiles')
       .upsert({
         profile_id: userId,
-        licencia_medica: verificationData.mpps || verificationData.cedula,
+        medical_license: verificationData.mpps || verificationData.cedula,
         // Si valida por SACS, se aprueba inmediatamente.
         verified: verificationData.verified,
         sacs_verified: verificationData.verified,
@@ -184,16 +184,16 @@ export async function verifyAndCreateDoctorProfile(
 
   // Crear o actualizar el perfil del médico
   const { data, error } = await supabase
-    .from('doctor_details')
+    .from('doctor_profiles')
     .upsert({
       profile_id: userId,
-      especialidad_id: specialtyId,
-      licencia_medica: sacsData.mpps || sacsData.cedula,
+      specialty_id: specialtyId,
+      medical_license: sacsData.mpps || sacsData.cedula,
       // Si valida por SACS, se aprueba inmediatamente.
       verified: sacsData.verified,
       // professional_phone: additionalData?.professional_phone, // Not in DB
       // professional_email: additionalData?.professional_email, // Not in DB
-      biografia: additionalData?.bio,
+      biography: additionalData?.bio,
       sacs_verified: sacsData.verified,
       sacs_data: {
         cedula: sacsData.cedula,

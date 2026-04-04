@@ -3,6 +3,11 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import {
+  useDoctorAppointments,
+  useUpdateAppointmentStatus,
+  type AppointmentRow,
+} from '@red-salud/core';
+import {
   ChevronLeft,
   ChevronRight,
   Calendar,
@@ -21,15 +26,15 @@ import {
 
 interface Appointment {
   id: string;
-  fecha_hora: string;
-  duracion_minutos: number;
-  motivo: string | null;
+  scheduled_at: string;
+  duration_minutes: number;
+  reason: string | null;
   status: string;
-  tipo: string | null;
-  notas: string | null;
+  appointment_type: string | null;
+  internal_notes: string | null;
   paciente: {
     id: string;
-    nombre_completo: string;
+    full_name: string;
     avatar_url: string | null;
     telefono: string | null;
   } | null;
@@ -52,11 +57,11 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }>
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  consulta: '#3B82F6',
-  control: '#10B981',
-  telemedicina: '#8B5CF6',
-  urgencia: '#EF4444',
-  procedimiento: '#F59E0B',
+  in_person: '#3B82F6',
+  follow_up: '#10B981',
+  telemedicine: '#8B5CF6',
+  emergency: '#EF4444',
+  first_visit: '#F59E0B',
 };
 
 // ============================================================================
@@ -91,8 +96,6 @@ export default function AgendaPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('week');
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
   // Load user
@@ -117,49 +120,37 @@ export default function AgendaPage() {
     };
   }, [currentDate, viewMode]);
 
-  // Fetch appointments
-  const fetchAppointments = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
+  // Fetch appointments via core hook
+  const {
+    appointments: rawAppointments,
+    loading,
+    refresh: fetchAppointments,
+  } = useDoctorAppointments(supabase, userId, { dateRange });
 
-    try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          id,
-          fecha_hora,
-          duracion_minutos,
-          motivo,
-          status,
-          tipo,
-          notas,
-          paciente:profiles!appointments_paciente_id_fkey(
-            id,
-            nombre_completo,
-            avatar_url,
-            telefono
-          )
-        `)
-        .eq('medico_id', userId)
-        .gte('fecha_hora', `${dateRange.start}T00:00:00`)
-        .lte('fecha_hora', `${dateRange.end}T23:59:59`)
-        .order('fecha_hora', { ascending: true });
+  // Map core AppointmentRow to local Appointment shape (paciente alias)
+  const appointments = useMemo<Appointment[]>(
+    () =>
+      rawAppointments.map((apt) => ({
+        id: apt.id,
+        scheduled_at: apt.scheduled_at,
+        duration_minutes: apt.duration_minutes,
+        reason: apt.reason ?? null,
+        status: apt.status,
+        appointment_type: apt.appointment_type ?? null,
+        internal_notes: apt.internal_notes ?? null,
+        paciente: apt.patient
+          ? {
+              id: apt.patient.id,
+              full_name: apt.patient.full_name ?? 'Sin nombre',
+              avatar_url: apt.patient.avatar_url ?? null,
+              telefono: apt.patient.telefono ?? null,
+            }
+          : null,
+      })),
+    [rawAppointments],
+  );
 
-      if (!error) {
-        setAppointments((data as unknown as Appointment[]) ?? []);
-      }
-    } catch {
-      // Graceful degradation
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, dateRange]);
-
-  useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
-
-  // Real-time subscription
+  // Real-time subscription — core hook provides initial data, subscription refreshes
   useEffect(() => {
     if (!userId) return;
     const channel = supabase
@@ -168,7 +159,7 @@ export default function AgendaPage() {
         event: '*',
         schema: 'public',
         table: 'appointments',
-        filter: `medico_id=eq.${userId}`,
+        filter: `doctor_id=eq.${userId}`,
       }, () => fetchAppointments())
       .subscribe();
 
@@ -190,15 +181,14 @@ export default function AgendaPage() {
 
   const goToToday = useCallback(() => setCurrentDate(new Date()), []);
 
-  // Update appointment status
+  // Update appointment status via core hook
+  const { updateStatus: coreUpdateStatus } = useUpdateAppointmentStatus(supabase);
+
   const updateStatus = useCallback(async (id: string, newStatus: string) => {
-    await supabase
-      .from('appointments')
-      .update({ status: newStatus })
-      .eq('id', id);
+    await coreUpdateStatus(id, newStatus);
     fetchAppointments();
     setSelectedAppointment(null);
-  }, [fetchAppointments]);
+  }, [coreUpdateStatus, fetchAppointments]);
 
   const weekDays = getWeekDays(currentDate);
   const today = new Date();
@@ -207,7 +197,7 @@ export default function AgendaPage() {
   const appointmentsByDate = useMemo(() => {
     const map: Record<string, Appointment[]> = {};
     for (const apt of appointments) {
-      const key = apt.fecha_hora.slice(0, 10);
+      const key = apt.scheduled_at.slice(0, 10);
       if (!map[key]) map[key] = [];
       map[key].push(apt);
     }
@@ -375,8 +365,8 @@ function WeekView({
               ) : (
                 <div className="space-y-1.5">
                   {dayAppts.map((apt) => {
-                    const time = new Date(apt.fecha_hora);
-                    const color = TYPE_COLORS[apt.tipo ?? 'consulta'] ?? '#6B7280';
+                    const time = new Date(apt.scheduled_at);
+                    const color = TYPE_COLORS[apt.appointment_type ?? 'in_person'] ?? '#6B7280';
                     const status = STATUS_CONFIG[apt.status];
 
                     return (
@@ -390,7 +380,7 @@ function WeekView({
                           {time.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                         <p className="text-xs text-gray-700 truncate mt-0.5">
-                          {apt.paciente?.nombre_completo ?? 'Sin paciente'}
+                          {apt.paciente?.full_name ?? 'Sin paciente'}
                         </p>
                         {status && (
                           <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-1 ${status.bg} ${status.text}`}>
@@ -441,7 +431,7 @@ function DayView({
   // Map appointments by hour
   const aptByHour: Record<number, Appointment[]> = {};
   for (const apt of appointments) {
-    const hour = new Date(apt.fecha_hora).getHours();
+    const hour = new Date(apt.scheduled_at).getHours();
     if (!aptByHour[hour]) aptByHour[hour] = [];
     aptByHour[hour].push(apt);
   }
@@ -476,8 +466,8 @@ function DayView({
               ) : (
                 <div className="space-y-1">
                   {hourAppts.map((apt) => {
-                    const time = new Date(apt.fecha_hora);
-                    const color = TYPE_COLORS[apt.tipo ?? 'consulta'] ?? '#6B7280';
+                    const time = new Date(apt.scheduled_at);
+                    const color = TYPE_COLORS[apt.appointment_type ?? 'in_person'] ?? '#6B7280';
 
                     return (
                       <button
@@ -490,16 +480,16 @@ function DayView({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-medium text-gray-900 truncate">
-                              {apt.paciente?.nombre_completo ?? 'Sin paciente'}
+                              {apt.paciente?.full_name ?? 'Sin paciente'}
                             </p>
-                            {apt.tipo === 'telemedicina' && (
+                            {apt.appointment_type === 'telemedicine' && (
                               <Video className="h-3.5 w-3.5 text-purple-500 flex-shrink-0" />
                             )}
                           </div>
                           <p className="text-xs text-gray-500 mt-0.5">
                             {time.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}
-                            {' — '}{apt.duracion_minutos || 30} min
-                            {apt.motivo && ` • ${apt.motivo}`}
+                            {' — '}{apt.duration_minutes || 30} min
+                            {apt.reason && ` • ${apt.reason}`}
                           </p>
                         </div>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_CONFIG[apt.status]?.bg ?? 'bg-gray-100'} ${STATUS_CONFIG[apt.status]?.text ?? 'text-gray-600'}`}>
@@ -531,7 +521,7 @@ function AppointmentModal({
   onClose: () => void;
   onUpdateStatus: (id: string, status: string) => void;
 }) {
-  const time = new Date(appointment.fecha_hora);
+  const time = new Date(appointment.scheduled_at);
   const status = STATUS_CONFIG[appointment.status];
 
   return (
@@ -550,7 +540,7 @@ function AppointmentModal({
             <User className="h-5 w-5 text-gray-400" />
             <div>
               <p className="text-sm font-semibold text-gray-900">
-                {appointment.paciente?.nombre_completo ?? 'Sin paciente'}
+                {appointment.paciente?.full_name ?? 'Sin paciente'}
               </p>
               {appointment.paciente?.telefono && (
                 <p className="text-xs text-gray-400">{appointment.paciente.telefono}</p>
@@ -566,15 +556,15 @@ function AppointmentModal({
               </p>
               <p className="text-xs text-gray-500">
                 {time.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}
-                {' — '}{appointment.duracion_minutos || 30} min
+                {' — '}{appointment.duration_minutes || 30} min
               </p>
             </div>
           </div>
 
-          {appointment.motivo && (
+          {appointment.reason && (
             <div className="flex items-start gap-3">
               <Calendar className="h-5 w-5 text-gray-400 mt-0.5" />
-              <p className="text-sm text-gray-700">{appointment.motivo}</p>
+              <p className="text-sm text-gray-700">{appointment.reason}</p>
             </div>
           )}
 
@@ -583,8 +573,8 @@ function AppointmentModal({
               <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${status.bg} ${status.text}`}>
                 {status.label}
               </span>
-              {appointment.tipo && (
-                <span className="text-xs text-gray-500 capitalize">{appointment.tipo}</span>
+              {appointment.appointment_type && (
+                <span className="text-xs text-gray-500 capitalize">{appointment.appointment_type}</span>
               )}
             </div>
           )}

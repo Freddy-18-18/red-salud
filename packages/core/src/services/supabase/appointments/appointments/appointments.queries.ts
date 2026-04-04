@@ -12,42 +12,42 @@ declare const tauriApiService: any;
 interface AvailabilityRow {
   id: string;
   doctor_id: string;
-  dia_semana: number;
-  hora_inicio: string | number;
-  hora_fin: string | number;
-  activo: boolean;
+  day_of_week: number;
+  start_time: string | number;
+  end_time: string | number;
+  is_active: boolean;
   created_at: string;
 }
 
 interface AppointmentIntervalRow {
   id: string;
-  fecha_hora: string;
-  duracion_minutos?: number;
+  scheduled_at: string;
+  duration_minutes?: number;
 }
 
 interface TimeBlockRow {
-  fecha_inicio: string;
-  fecha_fin: string;
+  start_date: string;
+  end_date: string;
 }
 
 interface DoctorAppointmentRow {
   id: string;
-  paciente_id: string;
-  medico_id: string;
-  fecha_hora: string;
-  duracion_minutos: number;
+  patient_id: string;
+  doctor_id: string;
+  scheduled_at: string;
+  duration_minutes: number;
   status: string;
-  motivo?: string;
-  notas?: string;
+  reason?: string;
+  notes?: string;
   created_at: string;
   updated_at: string;
   patient?: {
     id: string;
-    nombre_completo?: string;
+    full_name?: string;
     email?: string;
     avatar_url?: string;
-    fecha_nacimiento?: string;
-    genero?: string;
+    date_of_birth?: string;
+    gender?: string;
   } | null;
 }
 
@@ -102,7 +102,7 @@ async function fetchPublicData<T>(
   return payload.data;
 }
 
-// Obtener todas las especialidades (con opción de filtrar solo las que tienen médicos)
+// Get all specialties (with option to filter only those with doctors)
 export async function getMedicalSpecialties(onlyWithDoctors: boolean = false) {
   try {
     const data = await fetchPublicData<MedicalSpecialty[]>("/api/public/doctor-specialties", {
@@ -115,7 +115,7 @@ export async function getMedicalSpecialties(onlyWithDoctors: boolean = false) {
   }
 }
 
-// Obtener doctores disponibles (con filtros opcionales)
+// Get available doctors (with optional filters)
 export async function getAvailableDoctors(specialtyId?: string) {
   try {
     const doctors = await fetchPublicData<DoctorProfile[]>("/api/public/doctors", {
@@ -129,15 +129,15 @@ export async function getAvailableDoctors(specialtyId?: string) {
   }
 }
 
-// Obtener perfil de un doctor específico
+// Get a specific doctor's profile
 export async function getDoctorProfile(doctorId: string) {
   try {
     const { data, error } = await supabase
-      .from("doctor_details")
+      .from("doctor_profiles")
       .select(`
         *,
         specialty:specialties(id, name, description, icon),
-        profile:profiles!inner(id, nombre_completo, email, avatar_url)
+        profile:profiles!inner(id, full_name, email, avatar_url)
       `)
       .eq("id", doctorId)
       .single();
@@ -146,18 +146,18 @@ export async function getDoctorProfile(doctorId: string) {
 
     const doctor = {
       id: data.id,
-      specialty_id: data.especialidad_id,
-      license_number: data.licencia_medica,
-      anos_experiencia: data.anos_experiencia,
-      biografia: data.biografia,
-      tarifa_consulta: data.tarifa_consulta ? parseFloat(data.tarifa_consulta) : undefined,
+      specialty_id: data.specialty_id,
+      license_number: data.license_number,
+      years_experience: data.years_experience,
+      bio: data.bio,
+      consultation_price: data.consultation_price ? parseFloat(data.consultation_price) : undefined,
       consultation_duration: 30,
-      verified: data.verified,
+      is_verified: data.is_verified,
       created_at: data.created_at,
       updated_at: data.updated_at,
       profile: {
         id: data.profile?.id,
-        nombre_completo: data.profile?.nombre_completo,
+        full_name: data.profile?.full_name,
         email: data.profile?.email,
         avatar_url: data.profile?.avatar_url,
       },
@@ -171,15 +171,15 @@ export async function getDoctorProfile(doctorId: string) {
   }
 }
 
-// Obtener horarios de un doctor
+// Get doctor schedules
 export async function getDoctorSchedules(doctorId: string) {
   try {
     const { data, error } = await supabase
       .from("doctor_availability")
-      .select("id, dia_semana, hora_inicio, hora_fin, activo, doctor_id, created_at")
+      .select("id, day_of_week, start_time, end_time, is_active, doctor_id, created_at")
       .eq("doctor_id", doctorId)
-      .eq("activo", true)
-      .order("dia_semana", { ascending: true });
+      .eq("is_active", true)
+      .order("day_of_week", { ascending: true });
 
     if (error) throw error;
 
@@ -187,16 +187,16 @@ export async function getDoctorSchedules(doctorId: string) {
     const schedules: DoctorSchedule[] = availabilityRows.map((slot) => ({
       id: slot.id,
       doctor_id: slot.doctor_id,
-      day_of_week: slot.dia_semana,
+      day_of_week: slot.day_of_week,
       start_time:
-        typeof slot.hora_inicio === "string"
-          ? slot.hora_inicio
-          : `${slot.hora_inicio}:00`,
+        typeof slot.start_time === "string"
+          ? slot.start_time
+          : `${slot.start_time}:00`,
       end_time:
-        typeof slot.hora_fin === "string"
-          ? slot.hora_fin
-          : `${slot.hora_fin}:00`,
-      is_active: slot.activo,
+        typeof slot.end_time === "string"
+          ? slot.end_time
+          : `${slot.end_time}:00`,
+      is_active: slot.is_active,
       created_at: slot.created_at,
     }));
 
@@ -207,7 +207,7 @@ export async function getDoctorSchedules(doctorId: string) {
   }
 }
 
-// Obtener slots disponibles para un doctor en una fecha específica
+// Get available time slots for a doctor on a specific date
 export async function getAvailableTimeSlots(
   doctorId: string,
   date: string
@@ -220,10 +220,10 @@ export async function getAvailableTimeSlots(
     const [availabilityResult, profileResult] = await Promise.all([
       supabase
         .from("doctor_availability")
-        .select("hora_inicio, hora_fin")
+        .select("start_time, end_time")
         .eq("doctor_id", doctorId)
-        .eq("dia_semana", dayOfWeek)
-        .eq("activo", true),
+        .eq("day_of_week", dayOfWeek)
+        .eq("is_active", true),
       // Default duration as it's not in DB yet
       Promise.resolve({ data: { consultation_duration: 30 }, error: null }),
     ]);
@@ -240,20 +240,20 @@ export async function getAvailableTimeSlots(
 
     const { data: appointments, error: appointmentsError } = await supabase
       .from("appointments")
-      .select("id, fecha_hora, duracion_minutos, status")
-      .eq("medico_id", doctorId)
-      .gte("fecha_hora", startOfDay.toISOString())
-      .lte("fecha_hora", endOfDay.toISOString())
-      .not("status", "in", '("cancelada","rechazada")');
+      .select("id, scheduled_at, duration_minutes, status")
+      .eq("doctor_id", doctorId)
+      .gte("scheduled_at", startOfDay.toISOString())
+      .lte("scheduled_at", endOfDay.toISOString())
+      .not("status", "in", '("cancelled","rejected")');
 
     if (appointmentsError) throw appointmentsError;
 
     const { data: timeBlocks, error: blocksError } = await supabase
       .from("doctor_time_blocks")
-      .select("fecha_inicio, fecha_fin")
+      .select("start_date, end_date")
       .eq("doctor_id", doctorId)
-      .lte("fecha_inicio", endOfDay.toISOString())
-      .gte("fecha_fin", startOfDay.toISOString());
+      .lte("start_date", endOfDay.toISOString())
+      .gte("end_date", startOfDay.toISOString());
 
     if (blocksError) throw blocksError;
 
@@ -274,9 +274,9 @@ export async function getAvailableTimeSlots(
 
     const appointmentRows = (appointments || []) as AppointmentIntervalRow[];
     const appointmentIntervals = appointmentRows.map((apt) => {
-      const startDate = new Date(apt.fecha_hora);
+      const startDate = new Date(apt.scheduled_at);
       const start = startDate.getHours() * 60 + startDate.getMinutes();
-      const duration = apt.duracion_minutos || slotDuration;
+      const duration = apt.duration_minutes || slotDuration;
       return {
         id: apt.id,
         start,
@@ -286,8 +286,8 @@ export async function getAvailableTimeSlots(
 
     const blockRows = (timeBlocks || []) as TimeBlockRow[];
     const blockIntervals = blockRows.map((block) => {
-      const startDate = new Date(block.fecha_inicio);
-      const endDate = new Date(block.fecha_fin);
+      const startDate = new Date(block.start_date);
+      const endDate = new Date(block.end_date);
       return {
         start: Math.max(0, startDate.getHours() * 60 + startDate.getMinutes()),
         end: Math.min(24 * 60, endDate.getHours() * 60 + endDate.getMinutes()),
@@ -313,8 +313,8 @@ export async function getAvailableTimeSlots(
     const timeSlots: TimeSlot[] = [];
 
     availability.forEach((slot) => {
-      const startMinutes = toMinutes(slot.hora_inicio);
-      const endMinutes = toMinutes(slot.hora_fin);
+      const startMinutes = toMinutes(slot.start_time);
+      const endMinutes = toMinutes(slot.end_time);
 
       let cursor = startMinutes;
       while (cursor + slotDuration <= endMinutes) {
@@ -338,7 +338,7 @@ export async function getAvailableTimeSlots(
   }
 }
 
-// Obtener citas de un paciente
+// Get patient appointments
 export async function getPatientAppointments(patientId: string) {
   try {
     const data = await fetchPublicData<Appointment[]>(
@@ -354,12 +354,12 @@ export async function getPatientAppointments(patientId: string) {
   }
 }
 
-// Obtener citas de un doctor
+// Get doctor appointments
 export async function getDoctorAppointments(doctorId: string, accessToken?: string) {
   try {
     if (tauriApiService.isDesktop() && accessToken) {
       const data = await tauriApiService.supabaseGet<DoctorAppointmentRow[]>(
-        `/rest/v1/appointments?select=*,patient:profiles!appointments_paciente_id_fkey(id,nombre_completo,email,avatar_url)&medico_id=eq.${doctorId}&order=fecha_hora.desc`,
+        `/rest/v1/appointments?select=*,patient:profiles!appointments_patient_id_fkey(id,full_name,email,avatar_url)&doctor_id=eq.${doctorId}&order=scheduled_at.desc`,
         accessToken,
         `appointments_doctor_${doctorId}`
       );
@@ -371,15 +371,15 @@ export async function getDoctorAppointments(doctorId: string, accessToken?: stri
       .from("appointments")
       .select(`
         *,
-        patient:profiles!appointments_paciente_id_fkey(
+        patient:profiles!appointments_patient_id_fkey(
           id,
-          nombre_completo,
+          full_name,
           email,
           avatar_url
         )
       `)
-      .eq("medico_id", doctorId)
-      .order("fecha_hora", { ascending: false });
+      .eq("doctor_id", doctorId)
+      .order("scheduled_at", { ascending: false });
 
     if (error) throw error;
 
@@ -394,37 +394,37 @@ export async function getDoctorAppointments(doctorId: string, accessToken?: stri
 }
 
 function transformAppointmentRow(apt: DoctorAppointmentRow): Appointment {
-  const fechaHora = new Date(apt.fecha_hora);
+  const scheduledAt = new Date(apt.scheduled_at);
 
-  // IMPORTANTE: Usar métodos locales para evitar problemas de timezone
-  // .toISOString() devuelve UTC y puede causar desfase de días
-  const year = fechaHora.getFullYear();
-  const month = String(fechaHora.getMonth() + 1).padStart(2, '0');
-  const day = String(fechaHora.getDate()).padStart(2, '0');
+  // IMPORTANT: Use local methods to avoid timezone issues
+  // .toISOString() returns UTC and can cause day offset
+  const year = scheduledAt.getFullYear();
+  const month = String(scheduledAt.getMonth() + 1).padStart(2, '0');
+  const day = String(scheduledAt.getDate()).padStart(2, '0');
   const appointmentDate = `${year}-${month}-${day}`;
 
-  const hours = String(fechaHora.getHours()).padStart(2, '0');
-  const minutes = String(fechaHora.getMinutes()).padStart(2, '0');
-  const seconds = String(fechaHora.getSeconds()).padStart(2, '0');
+  const hours = String(scheduledAt.getHours()).padStart(2, '0');
+  const minutes = String(scheduledAt.getMinutes()).padStart(2, '0');
+  const seconds = String(scheduledAt.getSeconds()).padStart(2, '0');
   const appointmentTime = `${hours}:${minutes}:${seconds}`;
 
   return {
     id: apt.id,
-    patient_id: apt.paciente_id,
-    doctor_id: apt.medico_id,
+    patient_id: apt.patient_id,
+    doctor_id: apt.doctor_id,
     appointment_date: appointmentDate,
     appointment_time: appointmentTime,
-    duration: apt.duracion_minutos,
-    status: apt.status === 'pendiente' ? 'pending' : apt.status === 'confirmada' ? 'confirmed' : apt.status === 'completada' ? 'completed' : 'cancelled',
+    duration: apt.duration_minutes,
+    status: apt.status === 'pending' ? 'pending' : apt.status === 'confirmed' ? 'confirmed' : apt.status === 'completed' ? 'completed' : 'cancelled',
     consultation_type: 'video' as const,
-    reason: apt.motivo,
-    notes: apt.notas,
+    reason: apt.reason,
+    notes: apt.notes,
     created_at: apt.created_at,
     updated_at: apt.updated_at,
     patient: apt.patient
       ? {
         id: apt.patient.id,
-        nombre_completo: apt.patient.nombre_completo || "Paciente",
+        full_name: apt.patient.full_name || "Patient",
         email: apt.patient.email || "",
         avatar_url: apt.patient.avatar_url,
       }

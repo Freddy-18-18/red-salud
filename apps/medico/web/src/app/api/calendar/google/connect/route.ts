@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getAuthorizationUrl } from '@/lib/services/google-calendar-service';
+import {
+  getAuthorizationUrl,
+  isGoogleCalendarConfigured,
+} from '@/lib/services/google-calendar-service';
 
 /**
  * GET /api/calendar/google/connect
@@ -8,28 +11,33 @@ import { getAuthorizationUrl } from '@/lib/services/google-calendar-service';
  */
 export async function GET() {
   try {
-    const supabase = await createClient();
-
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!isGoogleCalendarConfigured()) {
       return NextResponse.json(
-        { error: 'No autenticado' },
-        { status: 401 }
+        { error: 'Google Calendar no está configurado en el servidor.' },
+        { status: 503 },
       );
     }
 
-    // Generate authorization URL
-    const authUrl = getAuthorizationUrl(user.id);
+    const supabase = await createClient();
 
-    // Redirect to Google OAuth consent screen
+    // Get current user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+    }
+
+    // Generate authorization URL and redirect
+    const authUrl = getAuthorizationUrl(user.id);
     return NextResponse.redirect(authUrl);
   } catch (error) {
     console.error('Error initiating Google Calendar OAuth:', error);
     return NextResponse.json(
       { error: 'Error al iniciar conexión con Google Calendar' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
