@@ -51,6 +51,48 @@ const MODULE_REGISTRY: Record<string, ComponentType<ModuleComponentProps>> = {
   'pediatrics-growth-curves': lazy(() => import('./pediatrics/growth-curves-module')),
   'pediatrics-vaccination': lazy(() => import('./pediatrics/vaccination-module')),
   'pediatrics-vaccinations': lazy(() => import('./pediatrics/vaccination-module')),
+
+  // ── Dermatology specialty ──────────────────────────────────
+  'dermatology-body-map': lazy(() => import('./dermatology/dermatology-module')),
+
+  // ── Psychiatry specialty ───────────────────────────────────
+  'psychiatry-scales': lazy(() => import('./psychiatry/psychiatry-module')),
+
+  // ── Gynecology specialty ───────────────────────────────────
+  'gynecology-prenatal': lazy(() => import('./gynecology/gynecology-module')),
+
+  // ── Telemedicine ───────────────────────────────────────────
+  'telemedicine-video': lazy(() => import('./telemedicine/telemedicine-module')),
+
+  // ── Surgery specialty ────────────────────────────────────────
+  'surgical-checklist': lazy(() => import('./surgery/surgery-module')),
+
+  // ── Wound care ───────────────────────────────────────────────
+  'wound-care': lazy(() => import('./wound-care/wound-care-module')),
+
+  // ── Rehabilitation specialty ─────────────────────────────────
+  'rehabilitation-progress': lazy(() => import('./rehabilitation/rehabilitation-module')),
+
+  // ── Neurology specialty ──────────────────────────────────────
+  'neurology-scales': lazy(() => import('./neurology/neurology-module')),
+
+  // ── Allergy specialty ──────────────────────────────────────
+  'allergy-testing': lazy(() => import('./allergy/allergy-module')),
+
+  // ── Audiometry specialty ───────────────────────────────────
+  'audiometry-test': lazy(() => import('./audiometry/audiometry-module')),
+
+  // ── Spirometry / Pulmonology ───────────────────────────────
+  'spirometry-test': lazy(() => import('./spirometry/spirometry-module')),
+
+  // ── Nutrition assessment ───────────────────────────────────
+  'nutrition-assessment': lazy(() => import('./nutrition/nutrition-module')),
+
+  // ── Pain assessment ────────────────────────────────────────
+  'pain-assessment': lazy(() => import('./pain/pain-module')),
+
+  // ── Oncology staging ───────────────────────────────────────
+  'oncology-staging': lazy(() => import('./oncology/oncology-module')),
 };
 
 /**
