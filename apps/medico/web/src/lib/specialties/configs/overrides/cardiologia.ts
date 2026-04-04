@@ -29,13 +29,14 @@ export const cardiologiaOverride: SpecialtyConfigOverride = {
         kpiKeys: ['consultations_per_day', 'avg_consultation_duration'],
       },
       {
-        key: 'cardio-ecg',
+        key: 'cardiology-ecg',
         label: 'Electrocardiograma',
         icon: 'Activity',
-        route: '/dashboard/medico/cardiologia/ecg',
+        route: '/dashboard/modulos/cardiology-ecg',
         group: 'clinical',
         order: 2,
         enabledByDefault: true,
+        componentPath: '@/components/modules/cardiology/ecg-module',
       },
       {
         key: 'cardio-echo',

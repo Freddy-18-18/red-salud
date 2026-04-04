@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { SpecialtyConfig } from '@/lib/specialties';
 import { getSpecialtyMenuGroups } from '@/lib/specialties';
+import { isModuleRegistered } from '@/components/modules/module-registry';
 import {
   LayoutDashboard,
   Calendar,
@@ -19,6 +20,7 @@ import {
   X,
   LogOut,
   ShieldCheck,
+  Puzzle,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -59,6 +61,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   BarChart3,
   Settings,
   ShieldCheck,
+  Puzzle,
 };
 
 function getIcon(iconName: string): LucideIcon {
@@ -105,6 +108,25 @@ export function DashboardSidebar({
 
   // Build specialty nav groups from config
   const specialtyGroups = getSpecialtyMenuGroups(specialtyConfig);
+
+  // Build module nav items from specialty config
+  const moduleNavItems: NavItem[] = (() => {
+    const items: NavItem[] = [];
+    for (const group of Object.values(specialtyConfig.modules)) {
+      if (!group) continue;
+      for (const mod of group) {
+        if (mod.enabledByDefault !== false && isModuleRegistered(mod.key)) {
+          items.push({
+            key: mod.key,
+            label: mod.label,
+            icon: getIcon(mod.icon),
+            href: `/dashboard/modulos/${mod.key}`,
+          });
+        }
+      }
+    }
+    return items;
+  })();
 
   const themeColor = specialtyConfig.theme?.primaryColor ?? '#3B82F6';
 
@@ -216,6 +238,26 @@ export function DashboardSidebar({
 
         {/* Specialty-specific navigation */}
         {specialtyGroups.length > 0 && specialtyGroups.map((group, i) => renderNavGroup(group, i))}
+
+        {/* Modules section */}
+        {moduleNavItems.length > 0 && (
+          <div className="mt-4">
+            {!collapsed && (
+              <p className="px-3 mb-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Módulos
+              </p>
+            )}
+            <nav className="space-y-0.5">
+              {moduleNavItems.map(renderNavItem)}
+              {renderNavItem({
+                key: 'modulos-all',
+                label: 'Ver todos',
+                icon: Puzzle,
+                href: '/dashboard/modulos',
+              })}
+            </nav>
+          </div>
+        )}
 
         {/* Configuration section */}
         <div className="mt-4">

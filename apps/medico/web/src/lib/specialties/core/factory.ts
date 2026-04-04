@@ -36,7 +36,24 @@ const COMPONENT_CACHE = new Map<string, ComponentType>();
 //   'module:rcm-dental'        -> '@/app/dashboard/odontologia/rcm/page'
 //
 const COMPONENT_MAP: Record<string, () => Promise<any>> = {
-  // Components will be registered here as they are migrated
+  // ── Cross-specialty modules ──────────────────────────────────
+  'module:diagnostic-imaging': () => import('@/components/modules/diagnostic-imaging/diagnostic-imaging-module'),
+  'module:lab-imaging': () => import('@/components/modules/diagnostic-imaging/diagnostic-imaging-module'),
+  'module:lab-orders': () => import('@/components/modules/lab-orders/lab-orders-module'),
+  'module:clinical-templates': () => import('@/components/modules/clinical-templates/clinical-templates-module'),
+  'module:treatment-plans': () => import('@/components/modules/treatment-plans/treatment-plans-module'),
+
+  // ── Dental specialty ────────────────────────────────────────
+  'module:dental-periodontogram': () => import('@/components/modules/dental/periodontogram-module'),
+  'module:dental-odontogram': () => import('@/components/modules/dental/odontogram-module'),
+  'module:dental-imaging': () => import('@/components/modules/diagnostic-imaging/diagnostic-imaging-module'),
+
+  // ── Cardiology specialty ────────────────────────────────────
+  'module:cardiology-ecg': () => import('@/components/modules/cardiology/ecg-module'),
+
+  // ── Pediatrics specialty ────────────────────────────────────
+  'module:pediatrics-growth': () => import('@/components/modules/pediatrics/growth-curves-module'),
+  'module:pediatrics-vaccination': () => import('@/components/modules/pediatrics/vaccination-module'),
 };
 
 /**

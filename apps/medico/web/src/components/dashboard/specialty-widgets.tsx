@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 import { useDoctorAppointments } from '@red-salud/core';
 import type { SpecialtyConfig } from '@/lib/specialties';
+import { ModuleRenderer } from '@/components/modules/module-renderer';
+import { isModuleRegistered } from '@/components/modules/module-registry';
 import {
   FlaskConical,
   Share2,
@@ -23,6 +26,7 @@ import {
   Scissors,
   ClipboardList,
   Calculator,
+  ArrowRight,
 } from 'lucide-react';
 
 // ============================================================================
@@ -270,6 +274,127 @@ function WidgetCard({
 }
 
 // ============================================================================
+// SPECIALTY MODULE SUMMARY WIDGETS
+// ============================================================================
+
+interface ModuleSummaryWidget {
+  moduleKey: string;
+  title: string;
+  icon: typeof Activity;
+  summary: string;
+  detail?: string;
+  linkLabel: string;
+}
+
+function getModuleSummaries(
+  category: string,
+  dashboardVariant: string,
+): ModuleSummaryWidget[] {
+  // Dental / Odontologia — mini odontogram summary
+  if (category === 'dental' || dashboardVariant.includes('odontologia')) {
+    return [
+      {
+        moduleKey: 'dental-odontogram',
+        title: 'Resumen Odontograma',
+        icon: Scan,
+        summary: 'Sin odontograma activo',
+        detail: 'Seleccione un paciente para ver su odontograma',
+        linkLabel: 'Abrir odontograma',
+      },
+      {
+        moduleKey: 'dental-periodontogram',
+        title: 'Periodontograma',
+        icon: Activity,
+        summary: 'Sin evaluación periodontal reciente',
+        detail: 'Registre el estado periodontal del paciente',
+        linkLabel: 'Abrir periodontograma',
+      },
+    ];
+  }
+
+  // Cardiology — last ECG date/result
+  if (category === 'medical' && dashboardVariant.includes('cardiologia')) {
+    return [
+      {
+        moduleKey: 'cardiology-ecg',
+        title: 'Último ECG',
+        icon: HeartPulse,
+        summary: 'Sin ECG registrado',
+        detail: 'Registre o revise electrocardiogramas',
+        linkLabel: 'Abrir ECG',
+      },
+    ];
+  }
+
+  // Pediatrics — latest growth percentile + vaccination status
+  if (category === 'pediatric' || dashboardVariant.includes('pediatria')) {
+    return [
+      {
+        moduleKey: 'pediatrics-growth',
+        title: 'Percentil de Crecimiento',
+        icon: TrendingUp,
+        summary: 'Sin datos de crecimiento',
+        detail: 'Registre peso y talla para calcular percentiles',
+        linkLabel: 'Ver curvas',
+      },
+      {
+        moduleKey: 'pediatrics-vaccination',
+        title: 'Estado de Vacunación',
+        icon: Syringe,
+        summary: 'Sin esquema cargado',
+        detail: 'Verifique el esquema de vacunación del paciente',
+        linkLabel: 'Ver vacunas',
+      },
+    ];
+  }
+
+  return [];
+}
+
+function ModuleSummaryCard({
+  widget,
+  themeColor,
+}: {
+  widget: ModuleSummaryWidget;
+  themeColor: string;
+}) {
+  const Icon = widget.icon;
+  const registered = isModuleRegistered(widget.moduleKey);
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="h-8 w-8 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: `${themeColor}15` }}
+          >
+            <Icon className="h-4 w-4" style={{ color: themeColor }} />
+          </div>
+          <h3 className="text-sm font-semibold text-gray-700">{widget.title}</h3>
+        </div>
+      </div>
+
+      <p className="text-sm text-gray-600">{widget.summary}</p>
+      {widget.detail && (
+        <p className="text-xs text-gray-400 mt-1">{widget.detail}</p>
+      )}
+
+      {registered && (
+        <Link
+          href={`/dashboard/modulos/${widget.moduleKey}`}
+          className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium transition-colors hover:opacity-80"
+          style={{ color: themeColor }}
+        >
+          {widget.linkLabel}
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
@@ -292,6 +417,26 @@ export function SpecialtyWidgets({
     appointments: recentAppointments,
     loading,
   } = useDoctorAppointments(supabase, doctorId, { dateRange: weekRange });
+
+  // Collect enabled module keys from the specialty config
+  const enabledModuleKeys = useMemo(() => {
+    const keys: string[] = [];
+    for (const group of Object.values(specialtyConfig.modules)) {
+      if (!group) continue;
+      for (const mod of group) {
+        if (mod.enabledByDefault !== false && isModuleRegistered(mod.key)) {
+          keys.push(mod.key);
+        }
+      }
+    }
+    return keys;
+  }, [specialtyConfig.modules]);
+
+  // Get specialty-specific module summary widgets
+  const moduleSummaries = useMemo(
+    () => getModuleSummaries(specialtyConfig.category, specialtyConfig.dashboardVariant),
+    [specialtyConfig.category, specialtyConfig.dashboardVariant],
+  );
 
   // Derive widget data from appointments
   useEffect(() => {
@@ -339,10 +484,41 @@ export function SpecialtyWidgets({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {widgets.map((panel, idx) => (
-        <WidgetCard key={idx} panel={panel} themeColor={themeColor} />
-      ))}
+    <div className="space-y-6">
+      {/* ── Static specialty widgets ──────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {widgets.map((panel, idx) => (
+          <WidgetCard key={idx} panel={panel} themeColor={themeColor} />
+        ))}
+      </div>
+
+      {/* ── Specialty module summary widgets (quick-view) ──────────── */}
+      {moduleSummaries.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {moduleSummaries.map((ms) => (
+            <ModuleSummaryCard
+              key={ms.moduleKey}
+              widget={ms}
+              themeColor={themeColor}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── Dynamic module panels (from registry) ─────────────────── */}
+      {enabledModuleKeys.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {enabledModuleKeys.map((moduleKey) => (
+            <ModuleRenderer
+              key={moduleKey}
+              moduleKey={moduleKey}
+              doctorId={doctorId}
+              specialtySlug={specialtyConfig.slug}
+              themeColor={themeColor}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
