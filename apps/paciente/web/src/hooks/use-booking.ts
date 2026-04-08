@@ -6,8 +6,6 @@ import {
   type Specialty,
   type DoctorProfile,
   type DoctorFilters,
-  type AvailableDate,
-  type TimeSlotGroup,
   type AppointmentResult,
 } from "@/lib/services/booking-service";
 import { supabase } from "@/lib/supabase/client";
@@ -87,11 +85,9 @@ export function useBooking() {
   const specialtiesQuery = useQuery({
     queryKey: ["booking-specialties-direct"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("specialties")
-        .select("*")
-        .order("name");
-      if (error) throw error;
+      const res = await fetch("/api/specialties");
+      if (!res.ok) throw new Error("Failed to fetch specialties");
+      const { data } = await res.json();
       return (data || []) as Specialty[];
     },
   });

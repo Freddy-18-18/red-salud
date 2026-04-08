@@ -1,6 +1,7 @@
 import { ApiClient } from './client';
 import { AppointmentsApi } from './domains/appointments';
 import { BillingApi } from './domains/billing';
+import { DoctorsApi } from './domains/doctors';
 import { LaboratoryApi } from './domains/laboratory';
 import { MedicalRecordsApi } from './domains/medical-records';
 import { MessagingApi } from './domains/messaging';
@@ -14,6 +15,7 @@ export function createApiClient(config: ApiClientConfig) {
     client,
     pharmacy: new PharmacyApi(client),
     appointments: new AppointmentsApi(client),
+    doctors: new DoctorsApi(client),
     laboratory: new LaboratoryApi(client),
     medicalRecords: new MedicalRecordsApi(client),
     messaging: new MessagingApi(client),

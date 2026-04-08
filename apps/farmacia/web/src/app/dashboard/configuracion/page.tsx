@@ -34,12 +34,17 @@ import {
   getPharmacySettings,
   updatePharmacySettings,
   getPharmacyDetails,
+  updatePharmacyDetails,
 } from "@/lib/services/settings-service";
 import {
   getLatestExchangeRateClient,
+  getAllRatesClient,
   formatBs,
   formatRelativeTime,
+  CURRENCY_PAIR_LABELS,
+  CURRENCY_PAIRS,
   type ExchangeRate,
+  type CurrencyPair,
 } from "@/lib/services/exchange-rate-client";
 
 // ============================================================================
@@ -204,6 +209,7 @@ export default function ConfiguracionPage() {
   const [details, setDetails] = useState<PharmacyDetails | null>(null);
   const [settings, setSettings] = useState<PharmacySettings | null>(null);
   const [exchangeRate, setExchangeRate] = useState<ExchangeRate | null>(null);
+  const [allRates, setAllRates] = useState<ExchangeRate[]>([]);
   const [refreshingRate, setRefreshingRate] = useState(false);
   const [toast, setToast] = useState<ToastState>({
     show: false,
@@ -283,29 +289,31 @@ export default function ConfiguracionPage() {
         }
         setPharmacyId(pid);
 
-        const [det, sett, rate] = await Promise.all([
+        const [det, sett, rate, rates] = await Promise.all([
           getPharmacyDetails(pid),
           getPharmacySettings(pid),
           getLatestExchangeRateClient(),
+          getAllRatesClient(),
         ]);
 
         setDetails(det);
         setSettings(sett);
         setExchangeRate(rate);
+        setAllRates(rates);
 
-        // Hydrate detail form
+        // Hydrate detail form — map DB column names to form fields
         if (det) {
           setDetailsForm({
-            name: det.name || "",
-            license_number: det.license_number || "",
+            name: det.business_name || "",
+            license_number: det.pharmacy_license || "",
             pharmacy_type: det.pharmacy_type || "",
             rif: det.rif || "",
-            phone: det.phone || "",
-            email: det.email || "",
-            address: det.address || "",
-            city: det.city || "",
-            state: det.state || "",
-            operating_hours: det.operating_hours || {},
+            phone: "",
+            email: "",
+            address: det.direccion || "",
+            city: det.ciudad || "",
+            state: det.estado || "",
+            operating_hours: det.office_hours || {},
           });
         }
 
@@ -371,17 +379,30 @@ export default function ConfiguracionPage() {
 
   // -- Section save handlers --
   const handleSaveDetails = useCallback(async () => {
-    // Details save would go to pharmacy_details table
-    // For now, show success since the settings-service focuses on pharmacy_settings
+    if (!pharmacyId) return;
     setSavingDetails(true);
     try {
-      // The pharmacy details update would require a separate service function.
-      // For fields that overlap with settings, we can save those.
-      showToast("success", "Datos de la farmacia guardados");
+      const ok = await updatePharmacyDetails(pharmacyId, {
+        business_name: detailsForm.name.trim(),
+        pharmacy_license: detailsForm.license_number.trim() || undefined,
+        pharmacy_type: detailsForm.pharmacy_type || undefined,
+        rif: detailsForm.rif.trim() || undefined,
+        direccion: detailsForm.address.trim() || undefined,
+        ciudad: detailsForm.city.trim() || undefined,
+        estado: detailsForm.state.trim() || undefined,
+        office_hours: detailsForm.operating_hours,
+      });
+      if (ok) {
+        showToast("success", "Datos de la farmacia guardados");
+      } else {
+        showToast("error", "Error al guardar los datos de la farmacia");
+      }
+    } catch {
+      showToast("error", "Error al guardar los datos de la farmacia");
     } finally {
       setSavingDetails(false);
     }
-  }, [showToast]);
+  }, [pharmacyId, detailsForm, showToast]);
 
   const handleSaveFiscal = useCallback(async () => {
     await saveSettings(
@@ -431,11 +452,21 @@ export default function ConfiguracionPage() {
   const handleRefreshRate = useCallback(async () => {
     setRefreshingRate(true);
     try {
-      const rate = await getLatestExchangeRateClient();
+      // POST triggers fetching fresh rates from external APIs
+      await fetch("/api/bcv", { method: "POST" });
+      // Then reload all rates from the database
+      const [rate, rates] = await Promise.all([
+        getLatestExchangeRateClient(),
+        getAllRatesClient(),
+      ]);
       setExchangeRate(rate);
-      showToast("success", "Tasa de cambio actualizada");
+      setAllRates(rates);
+      showToast(
+        "success",
+        `Tasas actualizadas (${rates.length} cotizaciones)`,
+      );
     } catch {
-      showToast("error", "Error al actualizar la tasa");
+      showToast("error", "Error al actualizar las tasas");
     } finally {
       setRefreshingRate(false);
     }
@@ -974,11 +1005,65 @@ export default function ConfiguracionPage() {
               description="Obtener la tasa oficial del Banco Central de Venezuela cada dia"
             />
 
-            {/* Current rate display */}
-            {exchangeRate && (
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border">
-                <div>
-                  <p className="text-sm font-medium">Tasa actual</p>
+            {/* All rates display */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Cotizaciones actuales</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefreshRate}
+                  disabled={refreshingRate}
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 mr-2 ${refreshingRate ? "animate-spin" : ""}`}
+                  />
+                  {refreshingRate ? "Actualizando..." : "Actualizar ahora"}
+                </Button>
+              </div>
+
+              {allRates.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {allRates.map((rate) => {
+                    const label =
+                      CURRENCY_PAIR_LABELS[rate.currencyPair as CurrencyPair] ??
+                      rate.currencyPair;
+                    const isParalelo = rate.currencyPair.includes("paralelo");
+                    return (
+                      <div
+                        key={rate.currencyPair}
+                        className={`p-3 rounded-lg border ${
+                          isParalelo
+                            ? "bg-amber-50/50 border-amber-200"
+                            : "bg-emerald-50/50 border-emerald-200"
+                        }`}
+                      >
+                        <p className="text-xs font-medium text-muted-foreground mb-1">
+                          {label}
+                        </p>
+                        <p
+                          className={`text-xl font-bold ${
+                            isParalelo ? "text-amber-700" : "text-emerald-700"
+                          }`}
+                        >
+                          {formatBs(rate.rate)}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          Fuente: {rate.source} |{" "}
+                          {rate.source !== "fallback"
+                            ? formatRelativeTime(rate.validDate)
+                            : "Sin datos"}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : exchangeRate ? (
+                /* Fallback: show just the primary rate if allRates is empty */
+                <div className="p-4 rounded-lg bg-muted/50 border">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">
+                    Dolar BCV Oficial
+                  </p>
                   <p className="text-2xl font-bold text-emerald-600">
                     {formatBs(exchangeRate.rate)}
                   </p>
@@ -990,19 +1075,8 @@ export default function ConfiguracionPage() {
                     | {formatRelativeTime(exchangeRate.validDate)}
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRefreshRate}
-                  disabled={refreshingRate}
-                >
-                  <RefreshCw
-                    className={`h-4 w-4 mr-2 ${refreshingRate ? "animate-spin" : ""}`}
-                  />
-                  Actualizar ahora
-                </Button>
-              </div>
-            )}
+              ) : null}
+            </div>
           </div>
         </SectionCard>
 

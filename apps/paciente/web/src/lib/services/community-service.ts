@@ -660,12 +660,9 @@ export async function checkArticleLiked(userId: string, articleId: string) {
 
 export async function getSpecialties() {
   try {
-    const { data, error } = await supabase
-      .from("specialties")
-      .select("id, name")
-      .order("name");
-
-    if (error) throw error;
+    const res = await fetch("/api/specialties");
+    if (!res.ok) throw new Error("Failed to fetch specialties");
+    const { data } = await res.json();
 
     return { success: true, data: data || [] };
   } catch (error) {

@@ -40,26 +40,27 @@ export default function HistorialTimelinePage() {
     if (!userId) return;
     const fetchDoctors = async () => {
       try {
-        const { data, error } = await supabase
-          .from("appointments")
-          .select("doctor_id, doctor:profiles!appointments_medico_id_fkey(id, full_name)")
-          .eq("patient_id", userId);
+        const res = await fetch(`/api/appointments?page_size=50`);
+        if (!res.ok) return;
+        const json = await res.json();
+        const appointments = json.data ?? [];
 
-        if (!error && data) {
-          const seen = new Set<string>();
-          const unique: Array<{ id: string; name: string }> = [];
-          for (const row of data) {
-            const doctor = row.doctor as unknown as Record<string, unknown> | null;
-            const id = doctor?.id as string;
-            const name = doctor?.full_name as string;
-            if (id && name && !seen.has(id)) {
-              seen.add(id);
-              unique.push({ id, name });
-            }
+        const seen = new Set<string>();
+        const unique: Array<{ id: string; name: string }> = [];
+        for (const apt of appointments) {
+          const doctor = apt.doctor as Record<string, unknown> | null;
+          const doctorProfile = (doctor as Record<string, unknown>)?.profile as Record<string, unknown> | null;
+          const id = (doctor as Record<string, unknown>)?.id as string;
+          const name = doctorProfile
+            ? [doctorProfile.first_name, doctorProfile.last_name].filter(Boolean).join(" ")
+            : null;
+          if (id && name && !seen.has(id)) {
+            seen.add(id);
+            unique.push({ id, name: name as string });
           }
-          unique.sort((a, b) => a.name.localeCompare(b.name));
-          setDoctors(unique);
         }
+        unique.sort((a, b) => a.name.localeCompare(b.name));
+        setDoctors(unique);
       } catch {
         // Non-critical — filter will just not show doctors
       }

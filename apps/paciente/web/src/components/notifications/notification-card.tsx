@@ -1,95 +1,29 @@
 "use client";
 
 import {
-  Pill,
-  CalendarCheck,
-  FlaskConical,
-  MessageCircle,
-  Trophy,
-  Shield,
-  Siren,
-  Users,
-  Info,
   Trash2,
   ExternalLink,
+  Check,
 } from "lucide-react";
 
-import type { AppNotification, NotificationType } from "@/lib/services/notification-service";
+import { getNotificationConfig } from "./notification-type-config";
+import type { AppNotification } from "@/lib/services/notification-service";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
 
 interface NotificationCardProps {
   notification: AppNotification;
   onMarkAsRead: (id: string) => void;
   onDelete: (id: string) => void;
+  /** Whether this card is selected for bulk actions. */
+  selected?: boolean;
+  /** Callback when selection checkbox toggled. */
+  onToggleSelect?: (id: string) => void;
+  /** Show selection checkbox. */
+  showSelect?: boolean;
 }
 
-const TYPE_CONFIG: Record<
-  NotificationType,
-  { icon: typeof Pill; color: string; bgColor: string; darkBgColor: string; darkColor: string }
-> = {
-  appointment: {
-    icon: CalendarCheck,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
-    darkColor: "dark:text-blue-400",
-    darkBgColor: "dark:bg-blue-950/40",
-  },
-  message: {
-    icon: MessageCircle,
-    color: "text-green-600",
-    bgColor: "bg-green-50",
-    darkColor: "dark:text-green-400",
-    darkBgColor: "dark:bg-green-950/40",
-  },
-  lab_result: {
-    icon: FlaskConical,
-    color: "text-purple-600",
-    bgColor: "bg-purple-50",
-    darkColor: "dark:text-purple-400",
-    darkBgColor: "dark:bg-purple-950/40",
-  },
-  medication: {
-    icon: Pill,
-    color: "text-orange-600",
-    bgColor: "bg-orange-50",
-    darkColor: "dark:text-orange-400",
-    darkBgColor: "dark:bg-orange-950/40",
-  },
-  reward: {
-    icon: Trophy,
-    color: "text-amber-600",
-    bgColor: "bg-amber-50",
-    darkColor: "dark:text-amber-400",
-    darkBgColor: "dark:bg-amber-950/40",
-  },
-  insurance: {
-    icon: Shield,
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-50",
-    darkColor: "dark:text-indigo-400",
-    darkBgColor: "dark:bg-indigo-950/40",
-  },
-  emergency: {
-    icon: Siren,
-    color: "text-red-600",
-    bgColor: "bg-red-50",
-    darkColor: "dark:text-red-400",
-    darkBgColor: "dark:bg-red-950/40",
-  },
-  community: {
-    icon: Users,
-    color: "text-teal-600",
-    bgColor: "bg-teal-50",
-    darkColor: "dark:text-teal-400",
-    darkBgColor: "dark:bg-teal-950/40",
-  },
-  system: {
-    icon: Info,
-    color: "text-gray-600",
-    bgColor: "bg-gray-100",
-    darkColor: "dark:text-gray-400",
-    darkBgColor: "dark:bg-gray-800",
-  },
-};
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatTime(dateStr: string): string {
   const date = new Date(dateStr);
@@ -111,13 +45,21 @@ function formatTime(dateStr: string): string {
   });
 }
 
+// ─── Component ───────────────────────────────────────────────────────────────
+
 export function NotificationCard({
   notification,
   onMarkAsRead,
   onDelete,
+  selected = false,
+  onToggleSelect,
+  showSelect = false,
 }: NotificationCardProps) {
-  const config = TYPE_CONFIG[notification.type] || TYPE_CONFIG.system;
+  const config = getNotificationConfig(notification.type);
   const Icon = config.icon;
+
+  const actionLabel = notification.action_label || config.actionLabel;
+  const actionUrl = notification.action_url;
 
   const handleClick = () => {
     if (!notification.is_read) {
@@ -127,77 +69,118 @@ export function NotificationCard({
 
   return (
     <div
-      className={`relative group flex gap-3 p-3.5 rounded-xl transition-all duration-200 cursor-pointer ${
+      className={`relative group flex gap-3 p-3.5 rounded-xl transition-all duration-200 ${
         notification.is_read
-          ? "bg-white dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-800/60"
-          : "bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 hover:bg-emerald-50/80 dark:hover:bg-emerald-950/30"
+          ? "bg-white hover:bg-gray-50"
+          : "bg-emerald-50/50 border border-emerald-100 hover:bg-emerald-50/80"
       }`}
-      onClick={handleClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") handleClick();
-      }}
     >
       {/* Unread indicator bar */}
       {!notification.is_read && (
         <div className="absolute left-0 top-3 bottom-3 w-0.5 bg-emerald-500 rounded-full" />
       )}
 
+      {/* Selection checkbox */}
+      {showSelect && (
+        <div className="flex items-center flex-shrink-0">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={() => onToggleSelect?.(notification.id)}
+            className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+            aria-label={`Seleccionar: ${notification.title}`}
+          />
+        </div>
+      )}
+
       {/* Icon */}
       <div
-        className={`flex-shrink-0 w-10 h-10 rounded-full ${config.bgColor} ${config.darkBgColor} flex items-center justify-center`}
+        className={`flex-shrink-0 w-10 h-10 rounded-full ${config.bgColor} flex items-center justify-center cursor-pointer`}
+        onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") handleClick();
+        }}
       >
-        <Icon className={`h-5 w-5 ${config.color} ${config.darkColor}`} />
+        <Icon className={`h-5 w-5 ${config.color}`} />
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p
-            className={`text-sm leading-snug ${
-              notification.is_read
-                ? "text-gray-700 dark:text-gray-300"
-                : "text-gray-900 dark:text-white font-medium"
-            }`}
+          <div
+            className="flex-1 min-w-0 cursor-pointer"
+            onClick={handleClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") handleClick();
+            }}
           >
-            {notification.title}
-          </p>
+            <p
+              className={`text-sm leading-snug ${
+                notification.is_read
+                  ? "text-gray-700"
+                  : "text-gray-900 font-medium"
+              }`}
+            >
+              {notification.title}
+            </p>
+          </div>
           <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
             {!notification.is_read && (
               <div className="w-2 h-2 rounded-full bg-emerald-500" />
             )}
-            <span className="text-[11px] text-gray-400 dark:text-gray-500">
+            <span className="text-[11px] text-gray-400">
               {formatTime(notification.created_at)}
             </span>
           </div>
         </div>
 
         {notification.body && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+          <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
             {notification.body}
           </p>
         )}
 
         {/* Actions row */}
         <div className="flex items-center gap-2 mt-2">
-          {notification.action_url && (
+          {/* Primary action button — type-specific */}
+          {actionUrl && (
             <a
-              href={notification.action_url}
+              href={actionUrl}
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
             >
               <ExternalLink className="h-3 w-3" />
-              {notification.action_label || "Ver detalle"}
+              {actionLabel}
             </a>
           )}
 
+          {/* Mark as read (only if unread and no action URL) */}
+          {!notification.is_read && !actionUrl && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMarkAsRead(notification.id);
+              }}
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+            >
+              <Check className="h-3 w-3" />
+              Marcar como leida
+            </button>
+          )}
+
+          {/* Delete — shows on hover */}
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onDelete(notification.id);
             }}
-            className="ml-auto p-1 text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 hover:text-red-400 dark:hover:text-red-400 transition-all"
+            className="ml-auto p-1 text-gray-300 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"
             aria-label="Eliminar notificacion"
           >
             <Trash2 className="h-3.5 w-3.5" />

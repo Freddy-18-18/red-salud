@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/utils/fetch";
 
 // --- Types ---
 
@@ -197,74 +198,51 @@ export const secondOpinionService = {
     specialtyId: string,
     excludeDoctorId: string
   ): Promise<ReviewerDoctor[]> {
-    const { data, error } = await supabase
-      .from("doctor_details")
-      .select(
-        `
-        *,
-        profile:profiles!inner(id, full_name, avatar_url, city, state)
-      `
-      )
-      .eq("specialty_id", specialtyId)
-      .eq("verified", true)
-      .neq("profile_id", excludeDoctorId);
-
-    if (error) throw error;
-    if (!data || data.length === 0) return [];
-
-    // Get ratings for these doctors
-    const doctorProfileIds = data.map(
-      (d: { profile_id: string }) => d.profile_id
+    const doctors = await fetchJson<Record<string, unknown>[]>(
+      `/api/doctors/search?specialty_id=${specialtyId}&page_size=50`
     );
-    const { data: reviews } = await supabase
-      .from("doctor_reviews")
-      .select("doctor_id, rating")
-      .in("doctor_id", doctorProfileIds);
 
-    // Calculate avg ratings per doctor
-    const ratingMap = new Map<
-      string,
-      { sum: number; count: number }
-    >();
-    (reviews || []).forEach(
-      (r: { doctor_id: string; rating: number }) => {
-        const existing = ratingMap.get(r.doctor_id) || {
-          sum: 0,
-          count: 0,
+    if (!doctors || doctors.length === 0) return [];
+
+    return doctors
+      .filter((d) => {
+        const profile = d.profile as Record<string, unknown> | null;
+        return profile?.id !== excludeDoctorId;
+      })
+      .map((d) => {
+        const profile = d.profile as {
+          id: string;
+          first_name: string;
+          last_name: string;
+          avatar_url: string | null;
+        } | null;
+
+        const specialty = d.specialty as {
+          id: string;
+          name: string;
+        } | null;
+
+        return {
+          id: d.id as string,
+          profile_id: (d.user_id as string) ?? "",
+          specialty_id: specialty?.id ?? specialtyId,
+          consultation_fee: d.consultation_fee
+            ? parseFloat(d.consultation_fee as string)
+            : null,
+          years_experience: (d.years_experience as number) || null,
+          biografia: (d.biography as string) || null,
+          verified: true,
+          profile: {
+            id: profile?.id ?? "",
+            full_name: [profile?.first_name, profile?.last_name].filter(Boolean).join(" "),
+            avatar_url: profile?.avatar_url ?? null,
+            city: (d.city as string) ?? null,
+            state: null,
+          },
+          avg_rating: (d.avg_rating as number) ?? null,
+          review_count: (d.review_count as number) ?? 0,
         };
-        existing.sum += r.rating;
-        existing.count += 1;
-        ratingMap.set(r.doctor_id, existing);
-      }
-    );
-
-    return data.map((d: Record<string, unknown>) => {
-      const profileData = d.profile as {
-        id: string;
-        full_name: string;
-        avatar_url: string | null;
-        city: string | null;
-        state: string | null;
-      };
-      const ratingInfo = ratingMap.get(profileData.id);
-
-      return {
-        id: d.id as string,
-        profile_id: d.profile_id as string,
-        specialty_id: d.specialty_id as string,
-        consultation_fee: d.consultation_fee
-          ? parseFloat(d.consultation_fee as string)
-          : null,
-        years_experience: (d.years_experience as number) || null,
-        biografia: (d.biografia as string) || null,
-        verified: true,
-        profile: profileData,
-        avg_rating: ratingInfo
-          ? Math.round((ratingInfo.sum / ratingInfo.count) * 10) / 10
-          : null,
-        review_count: ratingInfo?.count || 0,
-      };
-    });
+      });
   },
 
   /**

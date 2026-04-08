@@ -145,20 +145,27 @@ export default function MensajesPage() {
   };
 
   const handleLoadDoctors = async () => {
-    const { data } = await supabase
-      .from("doctor_details")
-      .select(`
-        id,
-        specialty:specialties(name),
-        profile:profiles!inner(full_name, avatar_url)
-      `)
-      .eq("verified", true);
+    try {
+      const res = await fetch(`/api/doctors/search?page_size=50`);
+      if (!res.ok) return [];
+      const json = await res.json();
+      const doctors = json.data ?? [];
 
-    return (data || []).map((d: Record<string, unknown>) => ({
-      id: d.id as string,
-      profile: d.profile as { full_name?: string; avatar_url?: string },
-      specialty: d.specialty as { name: string },
-    }));
+      return doctors.map((d: Record<string, unknown>) => {
+        const profile = d.profile as Record<string, unknown> | null;
+        const specialty = d.specialty as Record<string, unknown> | null;
+        return {
+          id: d.id as string,
+          profile: {
+            full_name: [profile?.first_name, profile?.last_name].filter(Boolean).join(" "),
+            avatar_url: profile?.avatar_url ?? null,
+          },
+          specialty: { name: (specialty?.name as string) ?? "" },
+        };
+      });
+    } catch {
+      return [];
+    }
   };
 
   const otherUserName = selectedConversation

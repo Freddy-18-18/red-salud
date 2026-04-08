@@ -1,0 +1,150 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Red-Salud" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e7]
+          - generic [ref=e9]: Red-Salud
+        - generic [ref=e11]:
+          - img [ref=e12]
+          - textbox "Buscar medico, especialidad..." [ref=e15]
+        - generic [ref=e16]:
+          - link "Mensajes" [ref=e17] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e18]
+          - link "Notificaciones" [ref=e20] [cursor=pointer]:
+            - /url: /dashboard/notificaciones
+            - img [ref=e21]
+          - button "CT Carlos Test Paciente" [ref=e110]:
+            - generic [ref=e27]: CT
+            - generic [ref=e28]: Carlos Test Paciente
+            - img [ref=e29]
+    - generic [ref=e31]:
+      - complementary [ref=e32]:
+        - navigation [ref=e33]:
+          - link "Inicio" [ref=e34] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e35]
+            - text: Inicio
+          - link "Agendar Cita" [ref=e38] [cursor=pointer]:
+            - /url: /dashboard/agendar
+            - img [ref=e39]
+            - text: Agendar Cita
+          - link "Buscar Medico" [ref=e41] [cursor=pointer]:
+            - /url: /dashboard/buscar-medico
+            - img [ref=e42]
+            - text: Buscar Medico
+          - link "Mis Citas" [ref=e45] [cursor=pointer]:
+            - /url: /dashboard/citas
+            - img [ref=e46]
+            - text: Mis Citas
+          - link "Historial" [ref=e48] [cursor=pointer]:
+            - /url: /dashboard/historial
+            - img [ref=e49]
+            - text: Historial
+          - link "Recetas" [ref=e52] [cursor=pointer]:
+            - /url: /dashboard/recetas
+            - img [ref=e53]
+            - text: Recetas
+          - link "Documentos" [ref=e56] [cursor=pointer]:
+            - /url: /dashboard/documentos
+            - img [ref=e57]
+            - text: Documentos
+          - link "QR Medico" [ref=e59] [cursor=pointer]:
+            - /url: /dashboard/qr-medico
+            - img [ref=e60]
+            - text: QR Medico
+          - link "Mensajes" [ref=e64] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e65]
+            - text: Mensajes
+          - link "Recompensas" [ref=e67] [cursor=pointer]:
+            - /url: /dashboard/recompensas
+            - img [ref=e68]
+            - text: Recompensas
+          - link "Mi Perfil" [ref=e74] [cursor=pointer]:
+            - /url: /dashboard/perfil
+            - img [ref=e75]
+            - text: Mi Perfil
+      - main [ref=e78]:
+        - generic [ref=e80]:
+          - generic [ref=e111]:
+            - heading "Hola, Carlos" [level=1] [ref=e112]
+            - paragraph [ref=e113]: Bienvenido a tu portal de salud
+          - generic [ref=e114]:
+            - img [ref=e115]
+            - generic [ref=e117]:
+              - paragraph [ref=e118]: Consejo de salud del dia
+              - paragraph [ref=e119]: Dormir entre 7 y 9 horas cada noche es fundamental para tu bienestar.
+          - generic [ref=e83]:
+            - link "0 Proximas citas" [ref=e120] [cursor=pointer]:
+              - /url: /dashboard/citas
+              - generic [ref=e121]:
+                - img [ref=e123]
+                - generic [ref=e125]:
+                  - paragraph [ref=e126]: "0"
+                  - paragraph [ref=e127]: Proximas citas
+            - link "0 Consultas realizadas" [ref=e128] [cursor=pointer]:
+              - /url: /dashboard/historial
+              - generic [ref=e129]:
+                - img [ref=e131]
+                - generic [ref=e135]:
+                  - paragraph [ref=e136]: "0"
+                  - paragraph [ref=e137]: Consultas realizadas
+            - link "0 Recetas activas" [ref=e138] [cursor=pointer]:
+              - /url: /dashboard/recetas
+              - generic [ref=e139]:
+                - img [ref=e141]
+                - generic [ref=e144]:
+                  - paragraph [ref=e145]: "0"
+                  - paragraph [ref=e146]: Recetas activas
+            - link "0 Mensajes" [ref=e147] [cursor=pointer]:
+              - /url: /dashboard/mensajes
+              - generic [ref=e148]:
+                - img [ref=e150]
+                - generic [ref=e152]:
+                  - paragraph [ref=e153]: "0"
+                  - paragraph [ref=e154]: Mensajes
+          - generic [ref=e155]:
+            - heading "Acciones rapidas" [level=2] [ref=e156]
+            - generic [ref=e157]:
+              - link "Buscar Medico Encuentra al especialista ideal" [ref=e158] [cursor=pointer]:
+                - /url: /dashboard/buscar-medico
+                - img [ref=e160]
+                - heading "Buscar Medico" [level=3] [ref=e163]
+                - paragraph [ref=e164]: Encuentra al especialista ideal
+              - link "Mis Citas Consulta tus proximas citas" [ref=e165] [cursor=pointer]:
+                - /url: /dashboard/citas
+                - img [ref=e167]
+                - heading "Mis Citas" [level=3] [ref=e169]
+                - paragraph [ref=e170]: Consulta tus proximas citas
+              - link "Mensajes Escribe a tu doctor" [ref=e171] [cursor=pointer]:
+                - /url: /dashboard/mensajes
+                - img [ref=e173]
+                - heading "Mensajes" [level=3] [ref=e175]
+                - paragraph [ref=e176]: Escribe a tu doctor
+              - link "Recetas Consulta tus recetas activas" [ref=e177] [cursor=pointer]:
+                - /url: /dashboard/recetas
+                - img [ref=e179]
+                - heading "Recetas" [level=3] [ref=e182]
+                - paragraph [ref=e183]: Consulta tus recetas activas
+          - generic [ref=e184]:
+            - generic [ref=e185]:
+              - heading "Proximas citas" [level=2] [ref=e186]
+              - link "Ver todas" [ref=e187] [cursor=pointer]:
+                - /url: /dashboard/citas
+                - text: Ver todas
+                - img [ref=e188]
+            - generic [ref=e190]:
+              - img [ref=e192]
+              - heading "No tienes citas proximas" [level=3] [ref=e195]
+              - paragraph [ref=e196]: Busca un medico y agenda tu primera cita
+              - link "Buscar Medico" [ref=e197] [cursor=pointer]:
+                - /url: /dashboard/buscar-medico
+    - 'button "Emergencia: mantener presionado para activar" [ref=e96]':
+      - img [ref=e98]
+      - generic: Mantener para emergencia
+  - button "Open Next.js Dev Tools" [ref=e105] [cursor=pointer]:
+    - img [ref=e106]
+  - alert [ref=e109]

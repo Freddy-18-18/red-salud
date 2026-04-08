@@ -1,26 +1,77 @@
-import { publicSupabase } from "@/lib/supabase/public";
 import type {
   SearchFilters,
   SearchResults,
   PublicDoctor,
   MapDoctorPoint,
 } from "@/lib/types/public";
+import { fetchJson } from "@/lib/utils/fetch";
+
+// ---------------------------------------------------------------------------
+// Shared API response types
+// ---------------------------------------------------------------------------
+
+interface ApiDoctor {
+  id: string;
+  user_id: string;
+  is_active: boolean;
+  consultation_fee: number | null;
+  accepts_insurance: boolean;
+  city: string | null;
+  address: string | null;
+  years_experience: number | null;
+  biography: string | null;
+  profile: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    avatar_url: string | null;
+    phone: string | null;
+  } | null;
+  specialty: {
+    id: string;
+    name: string;
+    icon: string | null;
+  } | null;
+  avg_rating: number | null;
+  review_count: number;
+}
+
+interface ApiSpecialty {
+  id: string;
+  name: string;
+  icon: string | null;
+  description: string | null;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function computeRating(
-  reviews: { doctor_id: string; rating: number }[],
-  doctorId: string,
-): { avg: number | null; count: number } {
-  const matching = reviews.filter((r) => r.doctor_id === doctorId);
-  if (matching.length === 0) return { avg: null, count: 0 };
+function mapApiDoctorToPublic(d: ApiDoctor): PublicDoctor {
+  const fullName = d.profile
+    ? `${d.profile.first_name} ${d.profile.last_name}`.trim()
+    : "";
 
-  const sum = matching.reduce((acc, r) => acc + r.rating, 0);
   return {
-    avg: Math.round((sum / matching.length) * 10) / 10,
-    count: matching.length,
+    id: d.user_id || d.id,
+    slug: "", // slug not returned by API
+    consultationFee: d.consultation_fee,
+    acceptsInsurance: d.accepts_insurance || false,
+    yearsExperience: d.years_experience,
+    biography: d.biography,
+    verified: true,
+    profile: {
+      name: fullName,
+      avatarUrl: d.profile?.avatar_url ?? null,
+      city: d.city,
+      state: null,
+      gender: null,
+    },
+    specialty: d.specialty
+      ? { id: d.specialty.id, name: d.specialty.name, slug: "" }
+      : { id: "", name: "", slug: "" },
+    avgRating: d.avg_rating,
+    reviewCount: d.review_count,
   };
 }
 
@@ -30,28 +81,6 @@ function computeRating(
 
 const MAX_LIMIT = 50;
 const DEFAULT_LIMIT = 12;
-
-const DOCTOR_PUBLIC_SELECT = `
-  id,
-  profile_id,
-  slug,
-  specialty_id,
-  consultation_fee,
-  accepts_insurance,
-  years_experience,
-  biografia,
-  verified,
-  profile:profiles!inner(full_name, avatar_url, city, state),
-  specialty:specialties!inner(id, name, slug)
-`;
-
-const DOCTOR_MAP_SELECT = `
-  id,
-  profile_id,
-  slug,
-  profile:profiles!inner(full_name, avatar_url, city, state),
-  specialty:specialties!inner(name)
-`;
 
 // ---------------------------------------------------------------------------
 // 1. searchDoctors
@@ -63,132 +92,49 @@ export async function searchDoctors(
   try {
     const page = Math.max(1, filters.page ?? 1);
     const limit = Math.min(MAX_LIMIT, Math.max(1, filters.limit ?? DEFAULT_LIMIT));
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
+
+    // Build query params for the BFF API route
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("page_size", String(limit));
 
     // Resolve specialty slug to id if provided
-    let specialtyId: string | null = null;
     if (filters.specialtySlug) {
-      const { data: spec } = await publicSupabase
-        .from("specialties")
-        .select("id")
-        .eq("slug", filters.specialtySlug)
-        .maybeSingle();
-
-      specialtyId = spec?.id ?? null;
-      // If slug was provided but not found, return empty results
-      if (!specialtyId) {
+      const specialties = await fetchJson<ApiSpecialty[]>("/api/specialties");
+      const match = (specialties || []).find(
+        (s) =>
+          s.name.toLowerCase().replace(/\s+/g, "-") ===
+          filters.specialtySlug!.toLowerCase() || s.id === filters.specialtySlug,
+      );
+      if (!match) {
         return { doctors: [], total: 0, page, totalPages: 0 };
       }
+      params.set("specialty_id", match.id);
     }
 
-    // ----- Build the query -----
-    // We always filter verified = true (mandatory for public access)
-    let query = publicSupabase
-      .from("doctor_details")
-      .select(DOCTOR_PUBLIC_SELECT, { count: "exact" })
-      .eq("verified", true);
+    if (filters.city) params.set("city", filters.city);
+    if (filters.acceptsInsurance === true) params.set("accepts_insurance", "true");
 
-    // Specialty filter
-    if (specialtyId) {
-      query = query.eq("specialty_id", specialtyId);
+    // Map sortBy to API sort_by parameter
+    if (filters.sortBy === "price_asc" || filters.sortBy === "price_desc") {
+      params.set("sort_by", "price");
+    } else if (filters.sortBy === "rating") {
+      params.set("sort_by", "rating");
     }
 
-    // Insurance filter
-    if (filters.acceptsInsurance === true) {
-      query = query.eq("accepts_insurance", true);
-    }
+    const qs = params.toString();
+    const res = await fetch(`/api/doctors/search?${qs}`);
+    if (!res.ok) throw new Error("Request failed");
 
-    // Max price filter
-    if (filters.maxPrice != null) {
-      query = query.lte("consultation_fee", filters.maxPrice);
-    }
+    const json = await res.json();
+    const apiDoctors: ApiDoctor[] = json.data ?? [];
+    const totalCount: number = json.pagination?.total ?? 0;
 
-    // Sorting at DB level (where possible)
-    switch (filters.sortBy) {
-      case "price_asc":
-        query = query.order("consultation_fee", {
-          ascending: true,
-          nullsFirst: false,
-        });
-        break;
-      case "price_desc":
-        query = query.order("consultation_fee", {
-          ascending: false,
-          nullsFirst: false,
-        });
-        break;
-      default:
-        // rating and relevance sorted in-memory after rating computation
-        break;
-    }
+    let doctors: PublicDoctor[] = apiDoctors.map(mapApiDoctorToPublic);
 
-    // Pagination
-    query = query.range(from, to);
+    // Apply client-side filters not handled by the API
 
-    const { data, error, count: totalCount } = await query;
-
-    if (error) throw error;
-    if (!data || data.length === 0) {
-      return { doctors: [], total: totalCount ?? 0, page, totalPages: 0 };
-    }
-
-    // ----- Fetch ratings -----
-    const profileIds = data.map(
-      (d: { profile_id: string }) => d.profile_id,
-    );
-    const { data: reviews } = await publicSupabase
-      .from("doctor_reviews")
-      .select("doctor_id, rating")
-      .in("doctor_id", profileIds);
-
-    // ----- Map to PublicDoctor + apply in-memory filters -----
-    let doctors: PublicDoctor[] = data.map(
-      (d: Record<string, unknown>) => {
-        const profile = d.profile as {
-          full_name: string;
-          avatar_url: string | null;
-          city: string | null;
-          state: string | null;
-        };
-        const specialty = d.specialty as {
-          id: string;
-          name: string;
-          slug: string;
-        } | null;
-
-        const { avg, count: reviewCount } = computeRating(
-          (reviews || []) as { doctor_id: string; rating: number }[],
-          d.profile_id as string,
-        );
-
-        return {
-          id: d.profile_id as string,
-          slug: (d.slug as string) || "",
-          consultationFee: d.consultation_fee
-            ? parseFloat(d.consultation_fee as string)
-            : null,
-          acceptsInsurance: (d.accepts_insurance as boolean) || false,
-          yearsExperience: (d.years_experience as number) || null,
-          biography: (d.biografia as string) || null,
-          verified: true,
-          profile: {
-            name: profile.full_name,
-            avatarUrl: profile.avatar_url,
-            city: profile.city,
-            state: profile.state,
-            gender: null,
-          },
-          specialty: specialty
-            ? { id: specialty.id, name: specialty.name, slug: specialty.slug }
-            : { id: "", name: "", slug: "" },
-          avgRating: avg,
-          reviewCount,
-        };
-      },
-    );
-
-    // Text search (ilike is not efficient across joins, filter in-memory)
+    // Text search
     if (filters.q) {
       const q = filters.q.toLowerCase();
       doctors = doctors.filter(
@@ -200,19 +146,11 @@ export async function searchDoctors(
       );
     }
 
-    // State filter
+    // State filter (API only supports city)
     if (filters.state) {
       const state = filters.state.toLowerCase();
       doctors = doctors.filter(
         (d) => d.profile.state?.toLowerCase() === state,
-      );
-    }
-
-    // City filter
-    if (filters.city) {
-      const city = filters.city.toLowerCase();
-      doctors = doctors.filter(
-        (d) => d.profile.city?.toLowerCase().includes(city),
       );
     }
 
@@ -223,6 +161,14 @@ export async function searchDoctors(
       );
     }
 
+    // Max price filter
+    if (filters.maxPrice != null) {
+      doctors = doctors.filter(
+        (d) =>
+          d.consultationFee == null || d.consultationFee <= filters.maxPrice!,
+      );
+    }
+
     // Min rating filter
     if (filters.minRating != null) {
       doctors = doctors.filter(
@@ -230,11 +176,12 @@ export async function searchDoctors(
       );
     }
 
-    // In-memory sorting for rating/relevance (needs computed avgRating)
-    if (filters.sortBy === "rating") {
-      doctors.sort((a, b) => (b.avgRating ?? 0) - (a.avgRating ?? 0));
+    // In-memory sorting for price_desc (API only does asc) and relevance
+    if (filters.sortBy === "price_desc") {
+      doctors.sort(
+        (a, b) => (b.consultationFee ?? 0) - (a.consultationFee ?? 0),
+      );
     } else if (!filters.sortBy || filters.sortBy === "relevance") {
-      // Relevance = weighted score: rating * log(reviewCount + 1)
       doctors.sort(
         (a, b) =>
           (b.avgRating ?? 0) * Math.log((b.reviewCount || 1) + 1) -
@@ -242,7 +189,7 @@ export async function searchDoctors(
       );
     }
 
-    const total = totalCount ?? doctors.length;
+    const total = totalCount;
     const totalPages = Math.ceil(total / limit);
 
     return { doctors, total, page, totalPages };
@@ -260,95 +207,62 @@ export async function getDoctorsForMap(
   filters?: Partial<SearchFilters>,
 ): Promise<MapDoctorPoint[]> {
   try {
+    // Build query params for the BFF API route
+    const params = new URLSearchParams();
+    params.set("page_size", "50"); // max page for map points
+
     // Resolve specialty slug to id if provided
-    let specialtyId: string | null = null;
     if (filters?.specialtySlug) {
-      const { data: spec } = await publicSupabase
-        .from("specialties")
-        .select("id")
-        .eq("slug", filters.specialtySlug)
-        .maybeSingle();
-
-      specialtyId = spec?.id ?? null;
+      const specialties = await fetchJson<ApiSpecialty[]>("/api/specialties");
+      const match = (specialties || []).find(
+        (s) =>
+          s.name.toLowerCase().replace(/\s+/g, "-") ===
+          filters.specialtySlug!.toLowerCase() || s.id === filters.specialtySlug,
+      );
+      if (match) {
+        params.set("specialty_id", match.id);
+      }
     }
 
-    let query = publicSupabase
-      .from("doctor_details")
-      .select(DOCTOR_MAP_SELECT)
-      .eq("verified", true)
-      .limit(500);
+    if (filters?.acceptsInsurance === true) params.set("accepts_insurance", "true");
+    if (filters?.city) params.set("city", filters.city);
 
-    if (specialtyId) {
-      query = query.eq("specialty_id", specialtyId);
-    }
-
-    if (filters?.acceptsInsurance === true) {
-      query = query.eq("accepts_insurance", true);
-    }
-
-    if (filters?.maxPrice != null) {
-      query = query.lte("consultation_fee", filters.maxPrice);
-    }
-
-    const { data, error } = await query;
-
-    if (error) throw error;
-    if (!data || data.length === 0) return [];
-
-    // Fetch ratings for all doctors
-    const profileIds = data.map(
-      (d: { profile_id: string }) => d.profile_id,
+    const qs = params.toString();
+    const doctors = await fetchJson<ApiDoctor[]>(
+      `/api/doctors/search?${qs}`,
     );
-    const { data: reviews } = await publicSupabase
-      .from("doctor_reviews")
-      .select("doctor_id, rating")
-      .in("doctor_id", profileIds);
+    if (!doctors || doctors.length === 0) return [];
 
-    let points: MapDoctorPoint[] = data
-      .map((d: Record<string, unknown>) => {
-        const profile = d.profile as {
-          full_name: string;
-          avatar_url: string | null;
-          city: string | null;
-          state: string | null;
-        };
-        const specialty = d.specialty as { name: string } | null;
+    let points: MapDoctorPoint[] = doctors
+      .map((d) => {
+        const fullName = d.profile
+          ? `${d.profile.first_name} ${d.profile.last_name}`.trim()
+          : "";
+        const city = d.city;
 
         // Skip doctors without location
-        if (!profile.city || !profile.state) return null;
-
-        const { avg } = computeRating(
-          (reviews || []) as { doctor_id: string; rating: number }[],
-          d.profile_id as string,
-        );
+        if (!city) return null;
 
         return {
-          id: d.profile_id as string,
-          slug: (d.slug as string) || "",
-          name: profile.full_name,
-          specialty: specialty?.name || "",
-          lat: 0, // Coordinates resolved by map component from city/state lookup
+          id: d.user_id || d.id,
+          slug: "",
+          name: fullName,
+          specialty: d.specialty?.name || "",
+          lat: 0, // Coordinates resolved by map component from city lookup
           lng: 0,
-          rating: avg,
-          avatarUrl: profile.avatar_url,
-          city: profile.city,
-          state: profile.state,
+          rating: d.avg_rating,
+          avatarUrl: d.profile?.avatar_url ?? null,
+          city,
+          state: "", // API doesn't return state separately
         };
       })
       .filter((p): p is MapDoctorPoint => p !== null);
 
-    // Apply in-memory filters
+    // Apply client-side filters
     if (filters?.state) {
       const state = filters.state.toLowerCase();
       points = points.filter(
         (p) => p.state.toLowerCase() === state,
-      );
-    }
-
-    if (filters?.city) {
-      const city = filters.city.toLowerCase();
-      points = points.filter(
-        (p) => p.city.toLowerCase().includes(city),
       );
     }
 
@@ -358,9 +272,9 @@ export async function getDoctorsForMap(
       );
     }
 
-    if (filters?.gender) {
-      // Gender not available in map select (minimal columns),
-      // would require additional query. Skip for performance.
+    if (filters?.maxPrice != null) {
+      // Price not available in map points — would require additional query.
+      // Skip for performance.
     }
 
     return points;

@@ -1,0 +1,344 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - navigation [ref=e4]:
+      - link "Red-Salud" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img [ref=e7]
+        - generic [ref=e9]: Red-Salud
+      - list [ref=e10]:
+        - listitem [ref=e11]:
+          - link "Especialidades" [ref=e12] [cursor=pointer]:
+            - /url: /especialidades
+        - listitem [ref=e13]:
+          - link "Buscar Doctores" [ref=e14] [cursor=pointer]:
+            - /url: /buscar
+        - listitem [ref=e15]:
+          - link "Nosotros" [ref=e16] [cursor=pointer]:
+            - /url: /nosotros
+        - listitem [ref=e17]:
+          - link "Soporte" [ref=e18] [cursor=pointer]:
+            - /url: /soporte
+      - generic [ref=e19]:
+        - link "Iniciar Sesion" [ref=e21] [cursor=pointer]:
+          - /url: /auth/login
+        - link "Registrarse" [ref=e22] [cursor=pointer]:
+          - /url: /auth/register
+  - main [ref=e23]:
+    - generic [ref=e24]:
+      - generic:
+        - img
+      - generic [ref=e25]:
+        - heading "Encuentra al medico ideal en Venezuela" [level=1] [ref=e26]
+        - paragraph [ref=e27]: Busca especialistas verificados, agenda tu cita en minutos y gestiona tu salud en un solo lugar.
+        - generic [ref=e30]:
+          - img
+          - textbox "Buscar por especialidad, doctor o condicion..." [ref=e31]
+          - button "Buscar" [ref=e32]
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - img [ref=e36]
+            - generic [ref=e39]: Doctores Verificados
+          - generic [ref=e40]:
+            - img [ref=e41]
+            - generic [ref=e44]: Citas en Minutos
+          - generic [ref=e45]:
+            - img [ref=e46]
+            - generic [ref=e48]: 100% Gratuito
+    - generic [ref=e50]:
+      - generic:
+        - img
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - generic [ref=e54]: 0+
+          - generic [ref=e55]: Doctores verificados
+        - generic [ref=e56]:
+          - generic [ref=e57]: "0"
+          - generic [ref=e58]: Especialidades
+        - generic [ref=e59]:
+          - generic [ref=e60]: 0+
+          - generic [ref=e61]: Pacientes atendidos
+        - generic [ref=e62]:
+          - generic [ref=e63]: 0/5
+          - generic [ref=e64]: Satisfaccion promedio
+    - generic [ref=e66]:
+      - generic [ref=e68]:
+        - heading "Especialidades destacadas" [level=2] [ref=e69]
+        - paragraph [ref=e70]: Encuentra al especialista que necesitas
+      - generic [ref=e72]:
+        - link "Oftalmología 0 doctores" [ref=e74] [cursor=pointer]:
+          - /url: /especialidades/oftalmologia
+          - img [ref=e76]
+          - generic [ref=e80]: Oftalmología
+          - generic [ref=e81]: 0 doctores
+        - link "Retina y Vítreo 0 doctores" [ref=e83] [cursor=pointer]:
+          - /url: /especialidades/retina-vitreo
+          - img [ref=e85]
+          - generic [ref=e89]: Retina y Vítreo
+          - generic [ref=e90]: 0 doctores
+        - link "Glaucoma 0 doctores" [ref=e92] [cursor=pointer]:
+          - /url: /especialidades/glaucoma
+          - img [ref=e94]
+          - generic [ref=e98]: Glaucoma
+          - generic [ref=e99]: 0 doctores
+        - link "Oftalmología Pediátrica 0 doctores" [ref=e101] [cursor=pointer]:
+          - /url: /especialidades/oftalmologia-pediatrica
+          - img [ref=e103]
+          - generic [ref=e107]: Oftalmología Pediátrica
+          - generic [ref=e108]: 0 doctores
+        - link "Oftalmología 0 doctores" [ref=e110] [cursor=pointer]:
+          - /url: /especialidades/oftalmologia
+          - img [ref=e112]
+          - generic [ref=e116]: Oftalmología
+          - generic [ref=e117]: 0 doctores
+        - link "Retina y Vítreo 0 doctores" [ref=e119] [cursor=pointer]:
+          - /url: /especialidades/retina-vitreo
+          - img [ref=e121]
+          - generic [ref=e125]: Retina y Vítreo
+          - generic [ref=e126]: 0 doctores
+        - link "Glaucoma 0 doctores" [ref=e128] [cursor=pointer]:
+          - /url: /especialidades/glaucoma
+          - img [ref=e130]
+          - generic [ref=e134]: Glaucoma
+          - generic [ref=e135]: 0 doctores
+        - link "Oftalmología Pediátrica 0 doctores" [ref=e137] [cursor=pointer]:
+          - /url: /especialidades/oftalmologia-pediatrica
+          - img [ref=e139]
+          - generic [ref=e143]: Oftalmología Pediátrica
+          - generic [ref=e144]: 0 doctores
+        - link "Oftalmología 0 doctores" [ref=e146] [cursor=pointer]:
+          - /url: /especialidades/oftalmologia
+          - img [ref=e148]
+          - generic [ref=e152]: Oftalmología
+          - generic [ref=e153]: 0 doctores
+        - link "Retina y Vítreo 0 doctores" [ref=e155] [cursor=pointer]:
+          - /url: /especialidades/retina-vitreo
+          - img [ref=e157]
+          - generic [ref=e161]: Retina y Vítreo
+          - generic [ref=e162]: 0 doctores
+        - link "Glaucoma 0 doctores" [ref=e164] [cursor=pointer]:
+          - /url: /especialidades/glaucoma
+          - img [ref=e166]
+          - generic [ref=e170]: Glaucoma
+          - generic [ref=e171]: 0 doctores
+        - link "Oftalmología Pediátrica 0 doctores" [ref=e173] [cursor=pointer]:
+          - /url: /especialidades/oftalmologia-pediatrica
+          - img [ref=e175]
+          - generic [ref=e179]: Oftalmología Pediátrica
+          - generic [ref=e180]: 0 doctores
+        - link "Oftalmología 0 doctores" [ref=e182] [cursor=pointer]:
+          - /url: /especialidades/oftalmologia
+          - img [ref=e184]
+          - generic [ref=e188]: Oftalmología
+          - generic [ref=e189]: 0 doctores
+        - link "Retina y Vítreo 0 doctores" [ref=e191] [cursor=pointer]:
+          - /url: /especialidades/retina-vitreo
+          - img [ref=e193]
+          - generic [ref=e197]: Retina y Vítreo
+          - generic [ref=e198]: 0 doctores
+        - link "Glaucoma 0 doctores" [ref=e200] [cursor=pointer]:
+          - /url: /especialidades/glaucoma
+          - img [ref=e202]
+          - generic [ref=e206]: Glaucoma
+          - generic [ref=e207]: 0 doctores
+        - link "Oftalmología Pediátrica 0 doctores" [ref=e209] [cursor=pointer]:
+          - /url: /especialidades/oftalmologia-pediatrica
+          - img [ref=e211]
+          - generic [ref=e215]: Oftalmología Pediátrica
+          - generic [ref=e216]: 0 doctores
+      - generic [ref=e218]:
+        - link "Cirugía Refractiva 0 doctores" [ref=e220] [cursor=pointer]:
+          - /url: /especialidades/cirugia-refractiva
+          - img [ref=e222]
+          - generic [ref=e226]: Cirugía Refractiva
+          - generic [ref=e227]: 0 doctores
+        - link "Optometría 0 doctores" [ref=e229] [cursor=pointer]:
+          - /url: /especialidades/optometria
+          - img [ref=e231]
+          - generic [ref=e235]: Optometría
+          - generic [ref=e236]: 0 doctores
+        - link "Otorrinolaringología 0 doctores" [ref=e238] [cursor=pointer]:
+          - /url: /especialidades/otorrinolaringologia
+          - img [ref=e240]
+          - generic [ref=e244]: Otorrinolaringología
+          - generic [ref=e245]: 0 doctores
+        - link "Audiología 0 doctores" [ref=e247] [cursor=pointer]:
+          - /url: /especialidades/audiologia
+          - img [ref=e249]
+          - generic [ref=e253]: Audiología
+          - generic [ref=e254]: 0 doctores
+        - link "Cirugía Refractiva 0 doctores" [ref=e256] [cursor=pointer]:
+          - /url: /especialidades/cirugia-refractiva
+          - img [ref=e258]
+          - generic [ref=e262]: Cirugía Refractiva
+          - generic [ref=e263]: 0 doctores
+        - link "Optometría 0 doctores" [ref=e265] [cursor=pointer]:
+          - /url: /especialidades/optometria
+          - img [ref=e267]
+          - generic [ref=e271]: Optometría
+          - generic [ref=e272]: 0 doctores
+        - link "Otorrinolaringología 0 doctores" [ref=e274] [cursor=pointer]:
+          - /url: /especialidades/otorrinolaringologia
+          - img [ref=e276]
+          - generic [ref=e280]: Otorrinolaringología
+          - generic [ref=e281]: 0 doctores
+        - link "Audiología 0 doctores" [ref=e283] [cursor=pointer]:
+          - /url: /especialidades/audiologia
+          - img [ref=e285]
+          - generic [ref=e289]: Audiología
+          - generic [ref=e290]: 0 doctores
+        - link "Cirugía Refractiva 0 doctores" [ref=e292] [cursor=pointer]:
+          - /url: /especialidades/cirugia-refractiva
+          - img [ref=e294]
+          - generic [ref=e298]: Cirugía Refractiva
+          - generic [ref=e299]: 0 doctores
+        - link "Optometría 0 doctores" [ref=e301] [cursor=pointer]:
+          - /url: /especialidades/optometria
+          - img [ref=e303]
+          - generic [ref=e307]: Optometría
+          - generic [ref=e308]: 0 doctores
+        - link "Otorrinolaringología 0 doctores" [ref=e310] [cursor=pointer]:
+          - /url: /especialidades/otorrinolaringologia
+          - img [ref=e312]
+          - generic [ref=e316]: Otorrinolaringología
+          - generic [ref=e317]: 0 doctores
+        - link "Audiología 0 doctores" [ref=e319] [cursor=pointer]:
+          - /url: /especialidades/audiologia
+          - img [ref=e321]
+          - generic [ref=e325]: Audiología
+          - generic [ref=e326]: 0 doctores
+        - link "Cirugía Refractiva 0 doctores" [ref=e328] [cursor=pointer]:
+          - /url: /especialidades/cirugia-refractiva
+          - img [ref=e330]
+          - generic [ref=e334]: Cirugía Refractiva
+          - generic [ref=e335]: 0 doctores
+        - link "Optometría 0 doctores" [ref=e337] [cursor=pointer]:
+          - /url: /especialidades/optometria
+          - img [ref=e339]
+          - generic [ref=e343]: Optometría
+          - generic [ref=e344]: 0 doctores
+        - link "Otorrinolaringología 0 doctores" [ref=e346] [cursor=pointer]:
+          - /url: /especialidades/otorrinolaringologia
+          - img [ref=e348]
+          - generic [ref=e352]: Otorrinolaringología
+          - generic [ref=e353]: 0 doctores
+        - link "Audiología 0 doctores" [ref=e355] [cursor=pointer]:
+          - /url: /especialidades/audiologia
+          - img [ref=e357]
+          - generic [ref=e361]: Audiología
+          - generic [ref=e362]: 0 doctores
+      - link "Ver todas las especialidades" [ref=e365] [cursor=pointer]:
+        - /url: /especialidades
+        - text: Ver todas las especialidades
+        - img [ref=e366]
+    - generic [ref=e370]:
+      - generic [ref=e371]:
+        - heading "Como funciona" [level=2] [ref=e372]
+        - paragraph [ref=e373]: En tres simples pasos puedes agendar tu cita con el mejor especialista
+      - generic [ref=e374]:
+        - generic [ref=e375]:
+          - img [ref=e377]
+          - generic [ref=e380]: "1"
+          - heading "Busca tu especialista" [level=3] [ref=e381]
+          - paragraph [ref=e382]: Explora doctores por especialidad, ubicacion, precios y disponibilidad. Consulta valoraciones de otros pacientes.
+        - generic [ref=e383]:
+          - img [ref=e385]
+          - generic [ref=e388]: "2"
+          - heading "Agenda tu cita" [level=3] [ref=e389]
+          - paragraph [ref=e390]: Selecciona el horario que mejor te convenga. Recibe confirmacion inmediata y recordatorios automaticos.
+        - generic [ref=e391]:
+          - img [ref=e393]
+          - generic [ref=e396]: "3"
+          - heading "Consulta al instante" [level=3] [ref=e397]
+          - paragraph [ref=e398]: Accede a tu historial medico, recetas, resultados de laboratorio y comunicacion directa con tu doctor.
+    - generic [ref=e401]:
+      - generic [ref=e402]:
+        - heading "Doctores en toda Venezuela" [level=2] [ref=e403]
+        - paragraph [ref=e404]: Explora por estado para encontrar especialistas cerca de ti
+      - generic [ref=e405]:
+        - img "Mapa interactivo de Venezuela mostrando doctores por estado" [ref=e408]:
+          - 'button "Zulia: 0 doctores" [ref=e409] [cursor=pointer]'
+          - 'button "Falcón: 0 doctores" [ref=e410] [cursor=pointer]'
+          - 'button "Lara: 0 doctores" [ref=e411] [cursor=pointer]'
+          - 'button "Yaracuy: 0 doctores" [ref=e412] [cursor=pointer]'
+          - 'button "Trujillo: 0 doctores" [ref=e413] [cursor=pointer]'
+          - 'button "Mérida: 0 doctores" [ref=e414] [cursor=pointer]'
+          - 'button "Táchira: 0 doctores" [ref=e415] [cursor=pointer]'
+          - 'button "Carabobo: 0 doctores" [ref=e416] [cursor=pointer]'
+          - 'button "Aragua: 0 doctores" [ref=e417] [cursor=pointer]'
+          - 'button "Vargas: 0 doctores" [ref=e418] [cursor=pointer]'
+          - 'button "Distrito Capital: 0 doctores" [ref=e419] [cursor=pointer]'
+          - 'button "Miranda: 0 doctores" [ref=e420] [cursor=pointer]'
+          - 'button "Cojedes: 0 doctores" [ref=e421] [cursor=pointer]'
+          - 'button "Portuguesa: 0 doctores" [ref=e422] [cursor=pointer]'
+          - 'button "Barinas: 0 doctores" [ref=e423] [cursor=pointer]'
+          - 'button "Apure: 0 doctores" [ref=e424] [cursor=pointer]'
+          - 'button "Guárico: 0 doctores" [ref=e425] [cursor=pointer]'
+          - 'button "Anzoátegui: 0 doctores" [ref=e426] [cursor=pointer]'
+          - 'button "Sucre: 0 doctores" [ref=e427] [cursor=pointer]'
+          - 'button "Nueva Esparta: 0 doctores" [ref=e428] [cursor=pointer]'
+          - 'button "Monagas: 0 doctores" [ref=e429] [cursor=pointer]'
+          - 'button "Delta Amacuro: 0 doctores" [ref=e430] [cursor=pointer]'
+          - 'button "Bolívar: 0 doctores" [ref=e431] [cursor=pointer]'
+          - 'button "Amazonas: 0 doctores" [ref=e432] [cursor=pointer]'
+        - generic [ref=e434]:
+          - img [ref=e436]
+          - paragraph [ref=e439]: Selecciona un estado para ver detalles
+          - paragraph [ref=e440]: Haz clic en cualquier estado del mapa para explorar doctores en esa zona
+    - generic [ref=e443]:
+      - img [ref=e445]
+      - heading "Comienza a cuidar tu salud hoy" [level=2] [ref=e450]
+      - paragraph [ref=e451]: Crea tu cuenta gratuita y accede a los mejores doctores de Venezuela. Sin costos ocultos, sin compromisos.
+      - generic [ref=e452]:
+        - link "Crear cuenta gratis" [ref=e453] [cursor=pointer]:
+          - /url: /auth/register
+        - link "Explorar doctores" [ref=e454] [cursor=pointer]:
+          - /url: /buscar
+  - contentinfo [ref=e455]:
+    - generic [ref=e457]:
+      - generic [ref=e458]:
+        - heading "Plataforma" [level=3] [ref=e459]
+        - list [ref=e460]:
+          - listitem [ref=e461]:
+            - link "Especialidades" [ref=e462] [cursor=pointer]:
+              - /url: /especialidades
+          - listitem [ref=e463]:
+            - link "Buscar Doctores" [ref=e464] [cursor=pointer]:
+              - /url: /buscar
+          - listitem [ref=e465]:
+            - link "Mapa de Medicos" [ref=e466] [cursor=pointer]:
+              - /url: /buscar?vista=mapa
+          - listitem [ref=e467]:
+            - link "Preguntas Frecuentes" [ref=e468] [cursor=pointer]:
+              - /url: /soporte#faq
+      - generic [ref=e469]:
+        - heading "Legal" [level=3] [ref=e470]
+        - list [ref=e471]:
+          - listitem [ref=e472]:
+            - link "Privacidad y Seguridad" [ref=e473] [cursor=pointer]:
+              - /url: /seguridad
+          - listitem [ref=e474]:
+            - link "Terminos de Uso" [ref=e475] [cursor=pointer]:
+              - /url: /seguridad#terminos
+      - generic [ref=e476]:
+        - heading "Soporte" [level=3] [ref=e477]
+        - list [ref=e478]:
+          - listitem [ref=e479]:
+            - link "Centro de Ayuda" [ref=e480] [cursor=pointer]:
+              - /url: /soporte
+          - listitem [ref=e481]:
+            - link "Contacto" [ref=e482] [cursor=pointer]:
+              - /url: /soporte#contacto
+          - listitem [ref=e483]:
+            - link "soporte@red-salud.org" [ref=e484] [cursor=pointer]:
+              - /url: mailto:soporte@red-salud.org
+    - generic [ref=e486]:
+      - paragraph [ref=e487]: © 2026 Red-Salud. Todos los derechos reservados.
+      - generic [ref=e488]:
+        - generic [ref=e489]: Venezuela
+        - generic [ref=e490]:
+          - link "Instagram" [ref=e491] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e492]
+          - link "X (Twitter)" [ref=e494] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e495]

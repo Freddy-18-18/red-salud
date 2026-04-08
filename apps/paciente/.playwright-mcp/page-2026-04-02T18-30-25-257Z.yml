@@ -1,0 +1,224 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e230]:
+    - banner [ref=e231]:
+      - generic [ref=e232]:
+        - link "Red-Salud" [ref=e233] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e235]
+          - generic [ref=e237]: Red-Salud
+        - generic [ref=e239]:
+          - img [ref=e240]
+          - textbox "Buscar medico, especialidad..." [ref=e243]
+        - generic [ref=e244]:
+          - link "Mensajes" [ref=e245] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e246]
+          - link "Notificaciones" [ref=e248] [cursor=pointer]:
+            - /url: /dashboard/notificaciones
+            - img [ref=e249]
+          - button "P Paciente" [ref=e253]:
+            - generic [ref=e255]: P
+            - generic [ref=e256]: Paciente
+            - img [ref=e257]
+    - generic [ref=e259]:
+      - complementary [ref=e260]:
+        - navigation [ref=e261]:
+          - link "Inicio" [ref=e262] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e263]
+            - text: Inicio
+          - link "Agendar Cita" [ref=e266] [cursor=pointer]:
+            - /url: /dashboard/agendar
+            - img [ref=e267]
+            - text: Agendar Cita
+          - link "Buscar Medico" [ref=e269] [cursor=pointer]:
+            - /url: /dashboard/buscar-medico
+            - img [ref=e270]
+            - text: Buscar Medico
+          - link "Mis Citas" [ref=e273] [cursor=pointer]:
+            - /url: /dashboard/citas
+            - img [ref=e274]
+            - text: Mis Citas
+          - link "Historial" [ref=e276] [cursor=pointer]:
+            - /url: /dashboard/historial
+            - img [ref=e277]
+            - text: Historial
+          - link "Recetas" [ref=e280] [cursor=pointer]:
+            - /url: /dashboard/recetas
+            - img [ref=e281]
+            - text: Recetas
+          - link "Documentos" [ref=e284] [cursor=pointer]:
+            - /url: /dashboard/documentos
+            - img [ref=e285]
+            - text: Documentos
+          - link "QR Medico" [ref=e287] [cursor=pointer]:
+            - /url: /dashboard/qr-medico
+            - img [ref=e288]
+            - text: QR Medico
+          - link "Mensajes" [ref=e292] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e293]
+            - text: Mensajes
+          - link "Recompensas" [ref=e295] [cursor=pointer]:
+            - /url: /dashboard/recompensas
+            - img [ref=e296]
+            - text: Recompensas
+          - link "Mi Perfil" [ref=e302] [cursor=pointer]:
+            - /url: /dashboard/perfil
+            - img [ref=e303]
+            - text: Mi Perfil
+      - main [ref=e306]:
+        - generic [ref=e308]:
+          - generic [ref=e309]:
+            - heading "Hola, Paciente" [level=1] [ref=e310]
+            - paragraph [ref=e311]: Bienvenido a tu portal de salud
+          - generic [ref=e312]:
+            - img [ref=e313]
+            - generic [ref=e315]:
+              - paragraph [ref=e316]: Consejo de salud del dia
+              - paragraph [ref=e317]: Dormir entre 7 y 9 horas cada noche es fundamental para tu bienestar.
+          - generic [ref=e318]:
+            - link "0 Proximas citas" [ref=e319] [cursor=pointer]:
+              - /url: /dashboard/citas
+              - generic [ref=e320]:
+                - img [ref=e322]
+                - generic [ref=e324]:
+                  - paragraph [ref=e325]: "0"
+                  - paragraph [ref=e326]: Proximas citas
+            - link "0 Consultas realizadas" [ref=e327] [cursor=pointer]:
+              - /url: /dashboard/historial
+              - generic [ref=e328]:
+                - img [ref=e330]
+                - generic [ref=e334]:
+                  - paragraph [ref=e335]: "0"
+                  - paragraph [ref=e336]: Consultas realizadas
+            - link "0 Recetas activas" [ref=e337] [cursor=pointer]:
+              - /url: /dashboard/recetas
+              - generic [ref=e338]:
+                - img [ref=e340]
+                - generic [ref=e343]:
+                  - paragraph [ref=e344]: "0"
+                  - paragraph [ref=e345]: Recetas activas
+            - link "0 Mensajes" [ref=e346] [cursor=pointer]:
+              - /url: /dashboard/mensajes
+              - generic [ref=e347]:
+                - img [ref=e349]
+                - generic [ref=e351]:
+                  - paragraph [ref=e352]: "0"
+                  - paragraph [ref=e353]: Mensajes
+          - generic [ref=e354]:
+            - heading "Acciones rapidas" [level=2] [ref=e355]
+            - generic [ref=e356]:
+              - link "Buscar Medico Encuentra al especialista ideal" [ref=e357] [cursor=pointer]:
+                - /url: /dashboard/buscar-medico
+                - img [ref=e359]
+                - heading "Buscar Medico" [level=3] [ref=e362]
+                - paragraph [ref=e363]: Encuentra al especialista ideal
+              - link "Mis Citas Consulta tus proximas citas" [ref=e364] [cursor=pointer]:
+                - /url: /dashboard/citas
+                - img [ref=e366]
+                - heading "Mis Citas" [level=3] [ref=e368]
+                - paragraph [ref=e369]: Consulta tus proximas citas
+              - link "Mensajes Escribe a tu doctor" [ref=e370] [cursor=pointer]:
+                - /url: /dashboard/mensajes
+                - img [ref=e372]
+                - heading "Mensajes" [level=3] [ref=e374]
+                - paragraph [ref=e375]: Escribe a tu doctor
+              - link "Recetas Consulta tus recetas activas" [ref=e376] [cursor=pointer]:
+                - /url: /dashboard/recetas
+                - img [ref=e378]
+                - heading "Recetas" [level=3] [ref=e381]
+                - paragraph [ref=e382]: Consulta tus recetas activas
+          - generic [ref=e383]:
+            - generic [ref=e384]:
+              - heading "Proximas citas" [level=2] [ref=e385]
+              - link "Ver todas" [ref=e386] [cursor=pointer]:
+                - /url: /dashboard/citas
+                - text: Ver todas
+                - img [ref=e387]
+            - generic [ref=e389]:
+              - img [ref=e391]
+              - heading "No tienes citas proximas" [level=3] [ref=e394]
+              - paragraph [ref=e395]: Busca un medico y agenda tu primera cita
+              - link "Buscar Medico" [ref=e396] [cursor=pointer]:
+                - /url: /dashboard/buscar-medico
+    - 'button "Emergencia: mantener presionado para activar" [ref=e397]':
+      - img [ref=e399]
+      - generic: Mantener para emergencia
+    - generic [ref=e403]:
+      - img [ref=e405]
+      - generic [ref=e408]:
+        - paragraph [ref=e409]: Instala Red-Salud
+        - paragraph [ref=e410]: Agrega la app a tu pantalla de inicio para acceso rapido, incluso sin conexion.
+        - generic [ref=e411]:
+          - button "Instalar" [ref=e412]
+          - button "Ahora no" [ref=e413]
+      - button "Cerrar" [ref=e414]:
+        - img [ref=e415]
+    - generic [ref=e419]:
+      - generic [ref=e420]:
+        - generic [ref=e421]:
+          - generic [ref=e422]:
+            - img [ref=e465]
+            - generic [ref=e427]:
+              - heading "Completa tu perfil" [level=2] [ref=e428]
+              - paragraph [ref=e429]: Paso 2 de 3 — Ubicacion
+          - button "Omitir" [ref=e430]:
+            - img [ref=e431]
+        - generic [ref=e434]:
+          - generic [ref=e436]:
+            - img [ref=e468]
+            - generic [ref=e438]: Datos
+          - generic [ref=e441]:
+            - generic [ref=e442]: "2"
+            - generic [ref=e443]: Ubicacion
+          - generic [ref=e446]:
+            - generic [ref=e447]: "3"
+            - generic [ref=e448]: Foto
+      - generic [ref=e470]:
+        - generic [ref=e471]:
+          - generic [ref=e472]: Estado (opcional)
+          - generic [ref=e473]:
+            - combobox "Estado (opcional)" [ref=e474]:
+              - option "Selecciona un estado" [selected]
+              - option "Amazonas"
+              - option "Anzoategui"
+              - option "Apure"
+              - option "Aragua"
+              - option "Barinas"
+              - option "Bolivar"
+              - option "Carabobo"
+              - option "Cojedes"
+              - option "Delta Amacuro"
+              - option "Distrito Capital"
+              - option "Falcon"
+              - option "Guarico"
+              - option "La Guaira"
+              - option "Lara"
+              - option "Merida"
+              - option "Miranda"
+              - option "Monagas"
+              - option "Nueva Esparta"
+              - option "Portuguesa"
+              - option "Sucre"
+              - option "Tachira"
+              - option "Trujillo"
+              - option "Yaracuy"
+              - option "Zulia"
+            - img
+        - generic [ref=e475]:
+          - generic [ref=e476]: Ciudad (opcional)
+          - generic [ref=e477]:
+            - combobox "Ciudad (opcional)" [disabled] [ref=e478]:
+              - option "Primero selecciona un estado" [selected]
+            - img
+        - generic [ref=e479]:
+          - generic [ref=e480]: Telefono (opcional)
+          - textbox "Telefono (opcional)" [ref=e481]:
+            - /placeholder: +58 412 123 4567
+      - generic [ref=e462]:
+        - button "Omitir" [ref=e463]
+        - button "Siguiente" [ref=e464]
+  - button "Open Next.js Dev Tools" [ref=e69] [cursor=pointer]:
+    - img [ref=e70]
+  - alert [ref=e73]

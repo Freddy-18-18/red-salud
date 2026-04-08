@@ -1,70 +1,108 @@
+'use client';
+
+import { useState } from 'react';
 import { Check, Sparkles, ArrowRight, Building2, Zap } from 'lucide-react';
 
-const tiers = [
-  {
-    name: 'Gratis',
-    description: 'Para farmacias que quieren dar el primer paso hacia la digitalizacion.',
-    price: '$0',
+type BillingCycle = 'monthly' | 'annual';
+
+const ANNUAL_DISCOUNT = 0.30;
+const PRO_MONTHLY_PRICE = 130;
+const PRO_ANNUAL_TOTAL = Math.round(PRO_MONTHLY_PRICE * 12 * (1 - ANNUAL_DISCOUNT));
+const PRO_ANNUAL_EQUIVALENT = Math.round(PRO_ANNUAL_TOTAL / 12);
+
+const freeTier = {
+  name: 'Gratis',
+  description: 'Para farmacias que quieren dar el primer paso hacia la digitalizacion.',
+  badge: null,
+  cta: 'Empezar gratis',
+  ctaHref: '/auth/register',
+  highlight: false,
+  features: [
+    '1 sucursal',
+    'Hasta 100 productos',
+    'POS basico (solo efectivo)',
+    'Tasa BCV automatica',
+    'Maximo 50 transacciones/mes',
+    '1 usuario',
+    'Reportes basicos (ventas del dia)',
+    'Soporte por email (48h respuesta)',
+  ],
+};
+
+const proTier = {
+  name: 'Profesional',
+  description: 'Para farmacias que quieren el paquete completo y crecer sin limites.',
+  badge: 'Mas popular',
+  cta: 'Empezar prueba gratis',
+  ctaHref: '/auth/register?plan=pro',
+  highlight: true,
+  features: [
+    'Productos ilimitados',
+    'Usuarios ilimitados',
+    'Transacciones ilimitadas',
+    'Todos los metodos de pago (efectivo, tarjeta, Zelle, Pago Movil, transferencia)',
+    'Recetas digitales',
+    'Reportes avanzados con KPIs y exportacion',
+    'Programa de fidelizacion',
+    'Entregas a domicilio',
+    'Gestion de proveedores y pedidos automaticos',
+    'Gestion de personal con roles',
+    'Integracion con seguros',
+    'Control de vencimientos avanzado (FEFO)',
+    'Hasta 3 sucursales',
+    'Soporte prioritario 24/7 (WhatsApp + chat)',
+    'Actualizaciones incluidas',
+  ],
+};
+
+const enterpriseTier = {
+  name: 'Enterprise',
+  description: 'Para cadenas y farmacias con necesidades especificas de integracion.',
+  badge: null,
+  cta: 'Contactar ventas',
+  ctaHref: '#contacto',
+  highlight: false,
+  features: [
+    'Sucursales ilimitadas',
+    'API para integraciones',
+    'Dashboard corporativo',
+    'Transferencias entre sedes',
+    'Reportes consolidados multi-sucursal',
+    'Soporte dedicado con account manager',
+    'Onboarding personalizado',
+    'SLA garantizado 99.9%',
+    'Facturacion personalizada',
+  ],
+};
+
+function getProPrice(billing: BillingCycle) {
+  if (billing === 'annual') {
+    return {
+      display: `$${PRO_ANNUAL_EQUIVALENT}`,
+      period: '/mes',
+      detail: `$${PRO_ANNUAL_TOTAL.toLocaleString('es-VE')}/ano facturado anualmente`,
+    };
+  }
+  return {
+    display: `$${PRO_MONTHLY_PRICE}`,
     period: '/mes',
-    badge: null,
-    cta: 'Empezar gratis',
-    ctaHref: '/auth/register',
-    highlight: false,
-    features: [
-      '1 sucursal',
-      'Hasta 500 productos',
-      'POS basico (efectivo y tarjeta)',
-      'Tasa BCV automatica',
-      'Control de vencimientos',
-      'Reportes basicos',
-      'Soporte por email',
-    ],
-  },
-  {
-    name: 'Profesional',
-    description: 'Para farmacias que quieren el paquete completo y crecer sin limites.',
-    price: '$29',
-    period: '/mes',
-    badge: 'Mas popular',
-    cta: 'Empezar prueba gratis',
-    ctaHref: '/auth/register?plan=pro',
-    highlight: true,
-    features: [
-      'Productos ilimitados',
-      'Todos los metodos de pago',
-      'Recetas digitales',
-      'Reportes avanzados y KPIs',
-      'Programa de fidelizacion',
-      'Entregas a domicilio',
-      'Gestion de proveedores',
-      'Gestion de personal',
-      'Integracion con seguros',
-      'Soporte prioritario 24/7',
-    ],
-  },
-  {
-    name: 'Enterprise',
-    description: 'Para cadenas y farmacias con necesidades especificas de integracion.',
-    price: 'Contactar',
-    period: '',
-    badge: null,
-    cta: 'Contactar ventas',
-    ctaHref: '#contacto',
-    highlight: false,
-    features: [
-      'Multi-sucursal ilimitado',
-      'API para integraciones',
-      'Dashboard corporativo',
-      'Transferencias entre sedes',
-      'Reportes consolidados',
-      'Soporte dedicado',
-      'Onboarding personalizado',
-      'SLA garantizado',
-    ],
-  },
-];
+    detail: null,
+  };
+}
+
+function getTiers(billing: BillingCycle) {
+  const proPrice = getProPrice(billing);
+  return [
+    { ...freeTier, price: '$0', period: '/mes', priceDetail: null },
+    { ...proTier, price: proPrice.display, period: proPrice.period, priceDetail: proPrice.detail },
+    { ...enterpriseTier, price: 'Contactar', period: '', priceDetail: null },
+  ];
+}
 
 export function Pricing() {
+  const [billing, setBilling] = useState<BillingCycle>('monthly');
+  const tiers = getTiers(billing);
+
   return (
     <section id="precios" className="relative bg-gray-50/50 py-24 sm:py-32">
       {/* Background */}
@@ -92,8 +130,43 @@ export function Pricing() {
           </p>
         </div>
 
+        {/* Billing toggle */}
+        <div className="mt-10 flex items-center justify-center gap-3">
+          <span
+            className={`text-sm font-medium ${billing === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}
+          >
+            Mensual
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={billing === 'annual'}
+            aria-label="Alternar entre facturacion mensual y anual"
+            onClick={() => setBilling(billing === 'monthly' ? 'annual' : 'monthly')}
+            className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+              billing === 'annual' ? 'bg-blue-600' : 'bg-gray-300'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-6 w-6 rounded-full bg-white shadow-lg ring-0 transition-transform duration-300 ${
+                billing === 'annual' ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+          <span
+            className={`text-sm font-medium ${billing === 'annual' ? 'text-gray-900' : 'text-gray-500'}`}
+          >
+            Anual
+          </span>
+          {billing === 'annual' && (
+            <span className="ml-1 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+              Ahorra 30%
+            </span>
+          )}
+        </div>
+
         {/* Pricing cards */}
-        <div className="mt-16 grid gap-8 lg:grid-cols-3">
+        <div className="mt-12 grid gap-8 lg:grid-cols-3">
           {tiers.map((tier) => (
             <div
               key={tier.name}
@@ -121,7 +194,7 @@ export function Pricing() {
                 </div>
 
                 {/* Price */}
-                <div className="mb-6 flex items-baseline gap-1">
+                <div className="mb-2 flex items-baseline gap-1">
                   <span
                     className={`text-4xl font-extrabold ${
                       tier.highlight
@@ -135,6 +208,12 @@ export function Pricing() {
                     <span className="text-sm text-gray-500">{tier.period}</span>
                   )}
                 </div>
+
+                {/* Annual price detail */}
+                {tier.priceDetail && (
+                  <p className="mb-4 text-xs text-gray-500">{tier.priceDetail}</p>
+                )}
+                {!tier.priceDetail && <div className="mb-4" />}
 
                 {/* CTA */}
                 <a
@@ -173,7 +252,7 @@ export function Pricing() {
                 <div className="border-t border-blue-100 bg-blue-50/30 px-8 py-4">
                   <p className="flex items-center gap-2 text-xs text-blue-600">
                     <Building2 className="h-3.5 w-3.5" />
-                    14 dias de prueba gratis. Sin tarjeta de credito.
+                    30 dias de prueba gratis. Sin tarjeta de credito.
                   </p>
                 </div>
               )}

@@ -6,13 +6,7 @@ import { Button } from "@red-salud/design-system";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
-// TODO: Import MedicalSpecialty from shared types package once available
-interface MedicalSpecialty {
-  id: string;
-  name: string;
-  description?: string;
-  icon?: string;
-}
+import type { MedicalSpecialty } from "@/lib/services/appointments/appointments.types";
 
 interface Props {
   specialties: MedicalSpecialty[];

@@ -1,0 +1,84 @@
+- generic:
+  - button "Open Next.js Dev Tools" [ref=e106] [cursor=pointer]:
+    - img [ref=e107]
+  - alert
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - img
+        - heading [level=1]: Configurar Farmacia
+        - paragraph: Complete los datos para comenzar a usar el sistema
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - img
+            - generic: Datos
+        - generic:
+          - generic:
+            - generic:
+              - img
+            - generic: Ubicacion
+        - generic:
+          - generic:
+            - generic:
+              - img
+            - generic: Horario
+        - generic:
+          - generic:
+            - generic:
+              - img
+            - generic: Configuracion
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - img
+              - text: Datos de la Farmacia
+            - generic:
+              - generic:
+                - generic:
+                  - text: Nombre del Negocio
+                  - generic: "*"
+                - textbox:
+                  - /placeholder: Farmacia El Buen Vivir
+                  - text: Farmacia Demo Red Salud
+              - generic:
+                - generic:
+                  - generic:
+                    - text: RIF
+                    - generic: "*"
+                  - textbox:
+                    - /placeholder: J-12345678-9
+                    - text: J-40123456-7
+                - generic:
+                  - generic: Numero de Licencia
+                  - textbox:
+                    - /placeholder: "Ej: F-001234"
+                    - text: F-001234
+              - generic:
+                - generic:
+                  - text: Tipo de Establecimiento
+                  - generic: "*"
+                - combobox [expanded]:
+                  - generic: Seleccionar tipo
+                  - img
+          - generic:
+            - button:
+              - text: Siguiente
+              - img
+      - paragraph: Podra modificar estos datos despues desde Configuracion.
+  - listbox [ref=e310]:
+    - option "Farmacia" [active] [ref=e311]:
+      - generic [ref=e313]:
+        - img [ref=e314]
+        - text: Farmacia
+    - option "Drogueria" [ref=e319]:
+      - generic [ref=e321]:
+        - img [ref=e322]
+        - text: Drogueria
+    - option "Perfumeria" [ref=e327]:
+      - generic [ref=e329]:
+        - img [ref=e330]
+        - text: Perfumeria

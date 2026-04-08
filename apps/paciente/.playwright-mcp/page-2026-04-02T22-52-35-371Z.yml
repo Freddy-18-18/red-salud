@@ -1,0 +1,27 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "Red-Salud" [ref=e5] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e7]
+        - generic [ref=e9]: Red-Salud
+      - generic [ref=e11]:
+        - img [ref=e12]
+        - textbox "Buscar medico, especialidad..." [ref=e15]
+      - generic [ref=e16]:
+        - link "Mensajes" [ref=e17] [cursor=pointer]:
+          - /url: /dashboard/mensajes
+          - img [ref=e18]
+        - link "Notificaciones" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard/notificaciones
+          - img [ref=e21]
+        - button "P Paciente" [ref=e25]:
+          - generic [ref=e27]: P
+          - generic [ref=e28]: Paciente
+          - img [ref=e29]
+  - generic [ref=e31]:
+    - complementary [ref=e32]
+    - main [ref=e33]
+  - 'button "Emergencia: mantener presionado para activar" [ref=e51]':
+    - img [ref=e53]
+    - generic: Mantener para emergencia

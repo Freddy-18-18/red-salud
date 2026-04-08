@@ -24,8 +24,6 @@ import {
   useCancelQueue,
 } from "@/hooks/use-queue";
 
-import { supabase } from "@/lib/supabase/client";
-
 interface TodayAppointment {
   id: string;
   doctor_name?: string;
@@ -56,41 +54,44 @@ export default function TurnoPage() {
   // Load today's appointments for the join dialog
   useEffect(() => {
     const loadTodayAppointments = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setLoadingAppointments(false);
-        return;
-      }
+      try {
+        const res = await fetch(`/api/appointments?status=confirmada&page_size=50`);
+        if (!res.ok) {
+          setLoadingAppointments(false);
+          return;
+        }
+        const json = await res.json();
+        const appointments = json.data ?? [];
 
-      const today = new Date();
-      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
-      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
 
-      const { data } = await supabase
-        .from("appointments")
-        .select(`
-          id,
-          scheduled_at,
-          specialty,
-          doctor_id,
-          doctor:profiles!appointments_medico_id_fkey(full_name)
-        `)
-        .eq("patient_id", user.id)
-        .eq("status", "confirmed")
-        .gte("scheduled_at", startOfDay)
-        .lt("scheduled_at", endOfDay)
-        .order("scheduled_at", { ascending: true });
+        const todayApts = appointments.filter((apt: Record<string, unknown>) => {
+          const startTime = new Date(apt.start_time as string).getTime();
+          return startTime >= startOfDay && startTime < endOfDay;
+        });
 
-      if (data) {
         setTodayAppointments(
-          data.map((apt: Record<string, unknown>) => ({
-            id: apt.id as string,
-            doctor_id: (apt.doctor_id as string) ?? undefined,
-            doctor_name: ((apt.doctor as Record<string, unknown> | null)?.full_name as string) ?? undefined,
-            specialty: (apt.specialty as string) ?? undefined,
-            scheduled_at: apt.scheduled_at as string,
-          }))
+          todayApts.map((apt: Record<string, unknown>) => {
+            const doctor = apt.doctor as Record<string, unknown> | null;
+            const doctorProfile = (doctor as Record<string, unknown>)?.profile as Record<string, unknown> | null;
+            const specialty = (doctor as Record<string, unknown>)?.specialty as Record<string, unknown> | null;
+            const doctorName = doctorProfile
+              ? [doctorProfile.first_name, doctorProfile.last_name].filter(Boolean).join(" ")
+              : undefined;
+
+            return {
+              id: apt.id as string,
+              doctor_id: (apt.doctor_id as string) ?? undefined,
+              doctor_name: doctorName as string | undefined,
+              specialty: (specialty?.name as string) ?? undefined,
+              scheduled_at: apt.start_time as string,
+            };
+          })
         );
+      } catch {
+        // Non-critical
       }
 
       setLoadingAppointments(false);

@@ -1,0 +1,94 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - img [ref=e10]
+        - generic [ref=e13]:
+          - text: Red Salud
+          - generic [ref=e14]: Farmacia
+      - heading "Unite a la red de farmacias mas grande de Venezuela" [level=2] [ref=e15]
+      - paragraph [ref=e16]: Digitaliza tu farmacia, conectate con medicos y pacientes, y gestiona tu negocio de forma eficiente.
+      - generic [ref=e17]:
+        - paragraph [ref=e18]: "Que obtenes al registrarte:"
+        - list [ref=e19]:
+          - listitem [ref=e20]:
+            - img [ref=e21]
+            - text: Control de inventario con alertas de vencimiento
+          - listitem [ref=e24]:
+            - img [ref=e25]
+            - text: Punto de venta integrado con tasa BCV
+          - listitem [ref=e28]:
+            - img [ref=e29]
+            - text: Recepcion de recetas digitales verificadas
+          - listitem [ref=e32]:
+            - img [ref=e33]
+            - text: Gestion de entregas a domicilio
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - heading "Registra tu farmacia" [level=1] [ref=e40]
+          - paragraph [ref=e41]: Paso 4 de 4 — Ubicacion
+        - generic [ref=e42]:
+          - generic [ref=e44]:
+            - img [ref=e111]
+            - generic [ref=e49]: Acceso
+          - generic [ref=e52]:
+            - img [ref=e130]
+            - generic [ref=e58]: Farmacia
+          - generic [ref=e61]:
+            - img [ref=e146]
+            - generic [ref=e66]: Representante
+          - generic [ref=e69]:
+            - img [ref=e71]
+            - generic [ref=e74]: Ubicacion
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - generic [ref=e151]: Estado
+            - combobox "Estado" [ref=e152]:
+              - option "Selecciona un estado" [disabled] [selected]
+              - option "Amazonas"
+              - option "Anzoategui"
+              - option "Apure"
+              - option "Aragua"
+              - option "Barinas"
+              - option "Bolivar"
+              - option "Carabobo"
+              - option "Cojedes"
+              - option "Delta Amacuro"
+              - option "Distrito Capital"
+              - option "Falcon"
+              - option "Guarico"
+              - option "Lara"
+              - option "Merida"
+              - option "Miranda"
+              - option "Monagas"
+              - option "Nueva Esparta"
+              - option "Portuguesa"
+              - option "Sucre"
+              - option "Tachira"
+              - option "Trujillo"
+              - option "Vargas"
+              - option "Yaracuy"
+              - option "Zulia"
+          - generic [ref=e153]:
+            - generic [ref=e154]: Ciudad
+            - textbox "Ciudad" [ref=e155]:
+              - /placeholder: Caracas, Valencia, Maracaibo...
+          - generic [ref=e156]:
+            - generic [ref=e157]: Direccion
+            - textbox "Direccion" [ref=e158]:
+              - /placeholder: Av. Principal, Centro Comercial, Local 5...
+        - generic [ref=e95]:
+          - button "Atras" [ref=e127]:
+            - img [ref=e128]
+            - text: Atras
+          - button "Completar Registro" [active] [ref=e159]:
+            - img [ref=e160]
+            - text: Completar Registro
+      - paragraph [ref=e99]:
+        - text: Ya tenes cuenta?
+        - link "Inicia sesion" [ref=e100] [cursor=pointer]:
+          - /url: /auth/login
+  - button "Open Next.js Dev Tools" [ref=e106] [cursor=pointer]:
+    - img [ref=e107]
+  - alert [ref=e110]

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/utils/fetch";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -114,102 +115,87 @@ export const nearbyService = {
 
     // ── Doctors ──
     if (enabledTypes.includes("medico")) {
-      const { data: doctors } = await supabase
-        .from("doctor_profiles")
-        .select(
-          `
-          id,
-          full_name,
-          specialty,
-          office_address,
-          phone,
-          avatar_url,
-          rating,
-          review_count,
-          office_lat,
-          office_lng,
-          is_active,
-          is_available
-        `
-        )
-        .eq("is_active", true)
-        .not("office_lat", "is", null)
-        .not("office_lng", "is", null);
+      try {
+        const doctors = await fetchJson<Record<string, unknown>[]>(
+          `/api/doctors/search?page_size=50`
+        );
 
-      for (const doc of doctors ?? []) {
-        const lat = Number(doc.office_lat);
-        const lng = Number(doc.office_lng);
-        if (!lat || !lng) continue;
+        for (const doc of doctors ?? []) {
+          const profile = doc.profile as Record<string, unknown> | null;
+          const specialty = doc.specialty as Record<string, unknown> | null;
+          // doctor_details doesn't have lat/lng in the search route — skip geo-filtering for doctors
+          // They are included without distance for now
+          const address = (doc.address as string) ?? null;
+          const phone = (profile?.phone as string) ?? null;
+          const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ");
 
-        const dist = haversineDistance(userLocation, { lat, lng });
-        if (dist > radiusKm) continue;
-
-        providers.push({
-          id: doc.id as string,
-          type: "medico",
-          name: (doc.full_name as string) ?? "Medico",
-          specialty: (doc.specialty as string) ?? null,
-          address: (doc.office_address as string) ?? null,
-          phone: (doc.phone as string) ?? null,
-          avatar_url: (doc.avatar_url as string) ?? null,
-          rating: doc.rating != null ? Number(doc.rating) : null,
-          review_count: Number(doc.review_count) || 0,
-          lat,
-          lng,
-          distance_km: Math.round(dist * 100) / 100,
-          is_available: (doc.is_available as boolean) ?? false,
-          opening_hours: null,
-        });
+          providers.push({
+            id: doc.id as string,
+            type: "medico",
+            name: fullName || "Medico",
+            specialty: (specialty?.name as string) ?? null,
+            address,
+            phone,
+            avatar_url: (profile?.avatar_url as string) ?? null,
+            rating: doc.avg_rating != null ? Number(doc.avg_rating) : null,
+            review_count: Number(doc.review_count) || 0,
+            lat: userLocation.lat, // geo data not available via API — place at user location
+            lng: userLocation.lng,
+            distance_km: 0,
+            is_available: (doc.is_active as boolean) ?? false,
+            opening_hours: null,
+          });
+        }
+      } catch {
+        // Doctor search API unavailable — skip
       }
     }
 
     // ── Pharmacies ──
     if (enabledTypes.includes("farmacia")) {
-      const { data: pharmacies } = await supabase
-        .from("pharmacy_details")
-        .select(
-          `
-          id,
-          name,
-          address,
-          phone,
-          logo_url,
-          rating,
-          review_count,
-          lat,
-          lng,
-          is_active,
-          opening_hours
-        `
-        )
-        .eq("is_active", true)
-        .not("lat", "is", null)
-        .not("lng", "is", null);
+      try {
+        interface ApiPharmacy {
+          id: string;
+          name: string;
+          address: string | null;
+          phone: string | null;
+          logo_url: string | null;
+          rating: number | null;
+          review_count: number;
+          lat: number | null;
+          lng: number | null;
+          opening_hours: string | null;
+        }
 
-      for (const ph of pharmacies ?? []) {
-        const lat = Number(ph.lat);
-        const lng = Number(ph.lng);
-        if (!lat || !lng) continue;
+        const pharmacies = await fetchJson<ApiPharmacy[]>('/api/pharmacy/search');
 
-        const dist = haversineDistance(userLocation, { lat, lng });
-        if (dist > radiusKm) continue;
+        for (const ph of pharmacies ?? []) {
+          const lat = Number(ph.lat);
+          const lng = Number(ph.lng);
+          if (!lat || !lng) continue;
 
-        providers.push({
-          id: ph.id as string,
-          type: "farmacia",
-          name: (ph.name as string) ?? "Farmacia",
-          specialty: null,
-          address: (ph.address as string) ?? null,
-          phone: (ph.phone as string) ?? null,
-          avatar_url: (ph.logo_url as string) ?? null,
-          rating: ph.rating != null ? Number(ph.rating) : null,
-          review_count: Number(ph.review_count) || 0,
-          lat,
-          lng,
-          distance_km: Math.round(dist * 100) / 100,
-          is_available: true,
-          opening_hours: (ph.opening_hours as string) ?? null,
-        });
+          const dist = haversineDistance(userLocation, { lat, lng });
+          if (dist > radiusKm) continue;
+
+          providers.push({
+            id: ph.id,
+            type: "farmacia",
+            name: ph.name ?? "Farmacia",
+            specialty: null,
+            address: ph.address ?? null,
+            phone: ph.phone ?? null,
+            avatar_url: ph.logo_url ?? null,
+            rating: ph.rating != null ? Number(ph.rating) : null,
+            review_count: Number(ph.review_count) || 0,
+            lat,
+            lng,
+            distance_km: Math.round(dist * 100) / 100,
+            is_available: true,
+            opening_hours: ph.opening_hours ?? null,
+          });
+        }
+      } catch {
+        // Pharmacy search API unavailable — skip
       }
     }
 

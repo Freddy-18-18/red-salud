@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/utils/fetch";
 
 // ---------- Types ----------
 
@@ -103,102 +103,45 @@ export const labResultsService = {
   /**
    * Get all lab orders for a patient, ordered by most recent.
    */
-  async getOrders(patientId: string) {
-    const { data, error } = await supabase
-      .from("lab_orders")
-      .select(`
-        *,
-        doctor:profiles!lab_orders_doctor_id_fkey(full_name, avatar_url),
-        tests:lab_order_tests(
-          *,
-          test_type:lab_test_types(id, name, description)
-        )
-      `)
-      .eq("patient_id", patientId)
-      .order("ordered_at", { ascending: false });
-
-    if (error) throw error;
-    return (data || []) as LabOrder[];
+  async getOrders(_patientId: string) {
+    return fetchJson<LabOrder[]>(`/api/lab/orders`);
   },
 
   /**
    * Get a single lab order with full detail.
    */
   async getOrderDetail(orderId: string) {
-    const { data, error } = await supabase
-      .from("lab_orders")
-      .select(`
-        *,
-        doctor:profiles!lab_orders_doctor_id_fkey(full_name, avatar_url),
-        tests:lab_order_tests(
-          *,
-          test_type:lab_test_types(id, name, description, reference_price)
-        )
-      `)
-      .eq("id", orderId)
-      .single();
-
-    if (error) throw error;
-
-    // Fetch results for this order
-    const { data: results, error: resultsError } = await supabase
-      .from("lab_results")
-      .select(`
-        *,
-        test_type:lab_test_types(id, name, description),
-        values:lab_result_values(*)
-      `)
-      .eq("order_id", orderId)
-      .order("result_at", { ascending: false });
-
-    if (resultsError) throw resultsError;
-
-    return {
-      order: data as LabOrder,
-      results: (results || []) as LabResult[],
-    };
+    return fetchJson<{ order: LabOrder; results: LabResult[] }>(
+      `/api/lab/orders/${orderId}`,
+    );
   },
 
   /**
    * Get result values for a specific result.
    */
   async getResultValues(resultId: string) {
-    const { data, error } = await supabase
-      .from("lab_result_values")
-      .select("*")
-      .eq("result_id", resultId)
-      .order("parameter_name");
-
-    if (error) throw error;
-    return (data || []) as LabResultValue[];
+    return fetchJson<LabResultValue[]>(`/api/lab/results/${resultId}/values`);
   },
 
   /**
    * Get historical data for a specific parameter.
    */
   async getParameterHistory(
-    patientId: string,
+    _patientId: string,
     parameterName: string,
     months: number = 12,
   ): Promise<ParameterHistory> {
     const since = new Date();
     since.setMonth(since.getMonth() - months);
 
-    const { data, error } = await supabase
-      .from("lab_result_values")
-      .select(`
-        value, status, unit, reference_min, reference_max,
-        result:lab_results!inner(
-          result_at,
-          order:lab_orders!inner(patient_id)
-        )
-      `)
-      .eq("parameter_name", parameterName)
-      .eq("result.order.patient_id", patientId)
-      .gte("result.result_at", since.toISOString())
-      .order("result.result_at", { ascending: true });
+    const params = new URLSearchParams({
+      parameter_name: parameterName,
+      since: since.toISOString(),
+    });
 
-    if (error) throw error;
+    const data = await fetchJson<Record<string, unknown>[]>(
+      `/api/lab/parameters/history?${params}`,
+    );
 
     const points: ParameterHistoryPoint[] = (data || []).map(
       (row: Record<string, unknown>) => {
@@ -238,78 +181,36 @@ export const labResultsService = {
 
   /**
    * Get unique parameters that have been tracked, along with their latest values.
+   * NOTE: The BFF /monitored endpoint returns deduplicated rows (latest per
+   * parameter). Trend is set to "stable" because full history isn't available
+   * in a single call. Use getParameterHistory() for accurate per-parameter trends.
    */
   async getMonitoredParameters(
-    patientId: string,
+    _patientId: string,
   ): Promise<MonitoredParameter[]> {
-    const { data, error } = await supabase
-      .from("lab_result_values")
-      .select(`
-        parameter_name, value, unit, reference_min, reference_max, status,
-        result:lab_results!inner(
-          result_at,
-          order:lab_orders!inner(patient_id)
-        )
-      `)
-      .eq("result.order.patient_id", patientId)
-      .order("result.result_at", { ascending: false });
+    const data = await fetchJson<Record<string, unknown>[]>(
+      `/api/lab/parameters/monitored`,
+    );
 
-    if (error) throw error;
-
-    // Group by parameter_name, keep the most recent for each
-    const paramMap = new Map<string, MonitoredParameter>();
-    const historyMap = new Map<string, number[]>();
-
-    for (const row of data || []) {
-      const name = row.parameter_name as string;
+    return (data || []).map((row) => {
       const result = row.result as unknown as Record<string, unknown>;
-
-      if (!historyMap.has(name)) {
-        historyMap.set(name, []);
-      }
-      historyMap.get(name)!.push(row.value as number);
-
-      if (!paramMap.has(name)) {
-        paramMap.set(name, {
-          parameter_name: name,
-          unit: row.unit as string,
-          reference_min: row.reference_min as number,
-          reference_max: row.reference_max as number,
-          latest_value: row.value as number,
-          latest_status: row.status as MonitoredParameter["latest_status"],
-          latest_date: result.result_at as string,
-          trend: "stable",
-        });
-      }
-    }
-
-    // Compute trend for each parameter
-    for (const [name, param] of paramMap) {
-      const values = historyMap.get(name) || [];
-      // Values are in descending order from query, reverse for trend calc
-      param.trend = computeTrend(values.reverse());
-    }
-
-    return Array.from(paramMap.values());
+      return {
+        parameter_name: row.parameter_name as string,
+        unit: row.unit as string,
+        reference_min: row.reference_min as number,
+        reference_max: row.reference_max as number,
+        latest_value: row.value as number,
+        latest_status: row.status as MonitoredParameter["latest_status"],
+        latest_date: result.result_at as string,
+        trend: "stable" as const,
+      };
+    });
   },
 
   /**
    * Get the latest results for a patient, across all orders.
    */
-  async getLatestResults(patientId: string, limit: number = 5) {
-    const { data, error } = await supabase
-      .from("lab_results")
-      .select(`
-        *,
-        test_type:lab_test_types(id, name, description),
-        values:lab_result_values(*),
-        order:lab_orders!inner(patient_id, order_number, ordered_at)
-      `)
-      .eq("order.patient_id", patientId)
-      .order("result_at", { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    return (data || []) as LabResult[];
+  async getLatestResults(_patientId: string, limit: number = 5) {
+    return fetchJson<LabResult[]>(`/api/lab/results/latest?limit=${limit}`);
   },
 };

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/utils/fetch";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -44,19 +45,14 @@ function calculateAge(dateOfBirth: string): number {
 // ─── Insight Generators ──────────────────────────────────────────────────────
 
 async function checkAppointmentGaps(
-  patientId: string,
+  _patientId: string,
 ): Promise<HealthInsight | null> {
   try {
-    const { data, error } = await supabase
-      .from("appointments")
-      .select("appointment_date")
-      .eq("patient_id", patientId)
-      .eq("status", "completed")
-      .order("appointment_date", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const appointments = await fetchJson<Record<string, unknown>[]>(
+      `/api/appointments?status=completada&page_size=1`
+    );
 
-    if (error || !data) {
+    if (!appointments || appointments.length === 0) {
       return {
         id: "no-appointments",
         type: "warning",
@@ -70,7 +66,10 @@ async function checkAppointmentGaps(
       };
     }
 
-    const months = monthsSince(data.appointment_date);
+    const lastDate = (appointments[0].start_time as string) ?? (appointments[0].appointment_date as string);
+    if (!lastDate) return null;
+
+    const months = monthsSince(lastDate);
 
     if (months >= 12) {
       return {
@@ -225,13 +224,11 @@ async function checkLabResults(
   patientId: string,
 ): Promise<HealthInsight | null> {
   try {
-    const { data, error } = await supabase
-      .from("lab_orders")
-      .select("ordered_at")
-      .eq("patient_id", patientId)
-      .order("ordered_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const labRes = await fetch("/api/lab/orders?count_only=false");
+    const labJson = await labRes.json();
+    const labOrders = labJson.data ?? [];
+    const data = labOrders.length > 0 ? labOrders[0] : null;
+    const error = !labRes.ok ? labJson.error : null;
 
     if (error || !data) {
       return {
@@ -389,19 +386,14 @@ async function checkAnnualCheckup(
 }
 
 async function checkPositiveReinforcement(
-  patientId: string,
+  _patientId: string,
 ): Promise<HealthInsight | null> {
   try {
-    // Check how many completed appointments the patient has
-    const { count, error } = await supabase
-      .from("appointments")
-      .select("*", { count: "exact", head: true })
-      .eq("patient_id", patientId)
-      .eq("status", "completed");
-
-    if (error) return null;
-
-    const completedCount = count ?? 0;
+    // Fetch completed appointments via API to get the count from pagination
+    const res = await fetch(`/api/appointments?status=completada&page_size=1`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const completedCount = json.pagination?.total ?? 0;
 
     if (completedCount >= 10) {
       return {
@@ -432,28 +424,40 @@ async function checkPositiveReinforcement(
 }
 
 async function checkUpcomingAppointments(
-  patientId: string,
+  _patientId: string,
 ): Promise<HealthInsight | null> {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    // Fetch confirmed + pending appointments via API
+    const [confirmed, pending] = await Promise.all([
+      fetchJson<Record<string, unknown>[]>(`/api/appointments?status=confirmada&page_size=5`).catch(() => []),
+      fetchJson<Record<string, unknown>[]>(`/api/appointments?status=pendiente&page_size=5`).catch(() => []),
+    ]);
+
+    const upcoming = [...(confirmed ?? []), ...(pending ?? [])];
+    if (upcoming.length === 0) return null;
+
+    // Find the nearest upcoming appointment
+    const now = new Date();
     const threeDaysFromNow = new Date();
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-    const threeDaysStr = threeDaysFromNow.toISOString().split("T")[0];
 
-    const { data, error } = await supabase
-      .from("appointments")
-      .select("appointment_date, appointment_time")
-      .eq("patient_id", patientId)
-      .in("status", ["confirmed", "pending"])
-      .gte("appointment_date", today)
-      .lte("appointment_date", threeDaysStr)
-      .order("appointment_date", { ascending: true })
-      .limit(1)
-      .maybeSingle();
+    const nearestUpcoming = upcoming
+      .map((apt) => {
+        const startTime = (apt.start_time as string) ?? (apt.appointment_date as string);
+        return { ...apt, _dateStr: startTime };
+      })
+      .filter((apt) => {
+        if (!apt._dateStr) return false;
+        const d = new Date(apt._dateStr);
+        return d >= now && d <= threeDaysFromNow;
+      })
+      .sort((a, b) => new Date(a._dateStr).getTime() - new Date(b._dateStr).getTime())[0];
 
-    if (error || !data) return null;
+    if (!nearestUpcoming) return null;
 
-    const days = daysSince(data.appointment_date) * -1; // Future date → negative daysSince
+    const aptDate = new Date(nearestUpcoming._dateStr);
+    const days = Math.floor((aptDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const timeStr = aptDate.toTimeString().slice(0, 5);
 
     if (days === 0) {
       return {
@@ -461,20 +465,20 @@ async function checkUpcomingAppointments(
         type: "reminder",
         icon: "BellRing",
         title: "Tienes una cita hoy",
-        description: `Tu cita es hoy a las ${data.appointment_time?.slice(0, 5)}. No olvides llegar con tiempo.`,
+        description: `Tu cita es hoy a las ${timeStr}. No olvides llegar con tiempo.`,
         actionLabel: "Ver cita",
         actionHref: "/dashboard/citas",
         priority: 10,
       };
     }
 
-    if (days === 1) {
+    if (days <= 1) {
       return {
         id: "appointment-tomorrow",
         type: "reminder",
         icon: "BellRing",
         title: "Cita manana",
-        description: `Tienes una cita manana a las ${data.appointment_time?.slice(0, 5)}. Prepara tus documentos.`,
+        description: `Tienes una cita manana a las ${timeStr}. Prepara tus documentos.`,
         actionLabel: "Ver cita",
         actionHref: "/dashboard/citas",
         priority: 9,

@@ -1,0 +1,12 @@
+- generic [active] [ref=e1]:
+  - main [ref=e74]:
+    - generic [ref=e75]:
+      - img [ref=e159]
+      - heading "Cuenta creada con exito" [level=1] [ref=e161]
+      - paragraph [ref=e162]: Te enviamos un email a test.paciente@red-salud.org para verificar tu cuenta. Revisa tu bandeja de entrada y haz clic en el enlace de confirmacion.
+      - paragraph [ref=e163]: No lo ves? Revisa la carpeta de spam.
+      - link "Ir a Iniciar Sesion" [ref=e164] [cursor=pointer]:
+        - /url: /auth/login
+  - button "Open Next.js Dev Tools" [ref=e69] [cursor=pointer]:
+    - img [ref=e70]
+  - alert [ref=e73]

@@ -1,246 +1,188 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import { useCallback, useEffect } from "react";
 
 import {
-  getNotifications,
-  getUnreadCount,
-  markAsRead,
-  markAllAsRead,
-  deleteNotification,
+  notificationService,
   subscribeToNewNotifications,
   type AppNotification,
-  type NotificationType,
+  type NotificationParams,
+  type NotificationPreferences,
 } from "@/lib/services/notification-service";
+import { supabase } from "@/lib/supabase/client";
+
+// ─── Keys ────────────────────────────────────────────────────────────────────
+
+const KEYS = {
+  notifications: (params?: NotificationParams) => ["notifications", params] as const,
+  unreadCount: ["notifications-unread-count"] as const,
+  preferences: ["notification-preferences"] as const,
+};
+
+// ─── useNotifications — paginated notification list ──────────────────────────
 
 interface UseNotificationsOptions {
-  patientId: string | undefined;
-  /** Auto-fetch on mount. Defaults to true. */
-  autoFetch?: boolean;
+  type?: string;
+  unreadOnly?: boolean;
+  pageSize?: number;
+  enabled?: boolean;
 }
 
-export function useNotifications({
-  patientId,
-  autoFetch = true,
-}: UseNotificationsOptions) {
+export function useNotifications(options: UseNotificationsOptions = {}) {
+  const { type, unreadOnly = false, pageSize = 20, enabled = true } = options;
   const queryClient = useQueryClient();
 
-  // ── Local state ─────────────────────────────────────────────────────────
-  const [accumulated, setAccumulated] = useState<AppNotification[]>([]);
-  const pageRef = useRef(0);
-  const isLoadMoreRef = useRef(false);
-  const [filter, setFilter] = useState<NotificationType | undefined>(undefined);
-  const [unreadOnly, setUnreadOnly] = useState(false);
+  const params: NotificationParams = {
+    type,
+    unread_only: unreadOnly || undefined,
+    page_size: pageSize,
+  };
 
-  // ── Queries ─────────────────────────────────────────────────────────────
-
-  const { data: queryData, isLoading } = useQuery({
-    queryKey: ["notifications", patientId, filter],
-    queryFn: async () => {
-      const result = await getNotifications(patientId!, filter, 0);
-      if (!result.success)
-        throw new Error("Error cargando notificaciones");
-      return result.data;
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: KEYS.notifications(params),
+    queryFn: async ({ pageParam = 1 }) => {
+      return notificationService.getNotifications({
+        ...params,
+        page: pageParam,
+      });
     },
-    enabled: autoFetch && !!patientId,
-    refetchInterval: 30000,
+    getNextPageParam: (lastPage) => {
+      const { page, total_pages } = lastPage.pagination;
+      return page < total_pages ? page + 1 : undefined;
+    },
+    initialPageParam: 1,
+    enabled,
+    refetchInterval: 30_000,
   });
 
-  // Sync query data → accumulated list
-  /* eslint-disable react-hooks/set-state-in-effect -- merging query results into accumulated list */
+  // Flatten pages into a single notification array
+  const notifications: AppNotification[] =
+    data?.pages.flatMap((p) => p.data) ?? [];
+
+  const unreadCount = data?.pages[0]?.unread_count ?? 0;
+  const total = data?.pages[0]?.pagination.total ?? 0;
+
+  // Realtime subscription — push new notifications to cache
   useEffect(() => {
-    if (isLoadMoreRef.current) {
-      isLoadMoreRef.current = false;
-      return;
-    }
-    if (!queryData) return;
-    setAccumulated((prev) => {
-      // Initial load or after reset: replace
-      if (prev.length === 0) return queryData.notifications;
-      // Refetch / auto-refresh: dedup and merge
-      const existingIds = new Set(prev.map((n) => n.id));
-      const newItems = queryData.notifications.filter(
-        (n) => !existingIds.has(n.id)
-      );
-      return newItems.length > 0 ? [...prev, ...newItems] : prev;
-    });
-  }, [queryData]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+    let unsub: (() => void) | undefined;
 
-  const { data: unreadCountData } = useQuery({
-    queryKey: ["notifications-unread", patientId],
-    queryFn: async () => {
-      const result = await getUnreadCount(patientId!);
-      if (!result.success) throw new Error("Error");
-      return result.data;
-    },
-    enabled: !!patientId,
-    refetchInterval: 30000,
-  });
-
-  const unreadCount = unreadCountData ?? 0;
-  const total = queryData?.total ?? 0;
-  const hasMore = queryData?.has_more ?? false;
-
-  // ── Filtered view ───────────────────────────────────────────────────────
-
-  const filteredNotifications = useMemo(() => {
-    if (!unreadOnly) return accumulated;
-    return accumulated.filter((n) => !n.is_read);
-  }, [accumulated, unreadOnly]);
-
-  // ── Mutations ───────────────────────────────────────────────────────────
-
-  const markAsReadMutation = useMutation({
-    mutationFn: (notificationId: string) => markAsRead(notificationId),
-    onMutate: (notificationId) => {
-      setAccumulated((prev) =>
-        prev.map((n) =>
-          n.id === notificationId ? { ...n, is_read: true } : n
-        )
-      );
-      queryClient.setQueryData<number>(
-        ["notifications-unread", patientId],
-        (c) => Math.max(0, (c ?? 1) - 1)
-      );
-    },
-    onError: (_err, notificationId) => {
-      setAccumulated((prev) =>
-        prev.map((n) =>
-          n.id === notificationId ? { ...n, is_read: false } : n
-        )
-      );
-      queryClient.invalidateQueries({
-        queryKey: ["notifications-unread", patientId],
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      unsub = subscribeToNewNotifications(user.id, () => {
+        // On new notification, just refetch to keep data consistent
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        queryClient.invalidateQueries({ queryKey: KEYS.unreadCount });
       });
-    },
-  });
-
-  const markAllAsReadMutation = useMutation({
-    mutationFn: () => markAllAsRead(patientId!),
-    onMutate: () => {
-      setAccumulated((prev) => prev.map((n) => ({ ...n, is_read: true })));
-      queryClient.setQueryData(["notifications-unread", patientId], 0);
-    },
-    onError: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["notifications", patientId, filter],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["notifications-unread", patientId],
-      });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (notificationId: string) => deleteNotification(notificationId),
-    onMutate: (notificationId) => {
-      setAccumulated((prev) => prev.filter((n) => n.id !== notificationId));
-    },
-    onError: (_err, _notificationId) => {
-      // Re-fetch to restore deleted notification
-      queryClient.invalidateQueries({
-        queryKey: ["notifications", patientId, filter],
-      });
-    },
-  });
-
-  // ── Actions ─────────────────────────────────────────────────────────────
-
-  const fetchNotifications = useCallback(
-    async (_reset = true) => {
-      if (!patientId) return;
-      setAccumulated([]);
-      pageRef.current = 0;
-      await queryClient.refetchQueries({
-        queryKey: ["notifications", patientId, filter],
-      });
-    },
-    [patientId, filter, queryClient]
-  );
-
-  const loadMore = useCallback(async () => {
-    if (!patientId) return;
-    const nextPage = pageRef.current + 1;
-    isLoadMoreRef.current = true;
-    const result = await getNotifications(patientId, filter, nextPage);
-    if (result.success) {
-      setAccumulated((prev) => [...prev, ...result.data.notifications]);
-      pageRef.current = nextPage;
-    }
-  }, [patientId, filter]);
-
-  const handleMarkAsRead = useCallback(
-    (notificationId: string) => {
-      markAsReadMutation.mutate(notificationId);
-    },
-    [markAsReadMutation]
-  );
-
-  const handleMarkAllAsRead = useCallback(() => {
-    if (!patientId) return;
-    markAllAsReadMutation.mutate();
-  }, [patientId, markAllAsReadMutation]);
-
-  const handleDelete = useCallback(
-    (notificationId: string) => {
-      deleteMutation.mutate(notificationId);
-    },
-    [deleteMutation]
-  );
-
-  const changeFilter = useCallback((f: NotificationType | undefined) => {
-    setFilter(f);
-    setAccumulated([]);
-    pageRef.current = 0;
-  }, []);
-
-  const toggleUnreadOnly = useCallback((value: boolean) => {
-    setUnreadOnly(value);
-  }, []);
-
-  // ── Realtime subscription ───────────────────────────────────────────────
-
-  useEffect(() => {
-    if (!patientId) return;
-
-    const unsub = subscribeToNewNotifications(patientId, (newNotif) => {
-      setAccumulated((prev) => [newNotif, ...prev]);
-      if (!newNotif.is_read) {
-        queryClient.setQueryData<number>(
-          ["notifications-unread", patientId],
-          (c) => (c ?? 0) + 1
-        );
-      }
     });
 
-    return unsub;
-  }, [patientId, queryClient]);
+    return () => unsub?.();
+  }, [queryClient]);
 
   return {
-    notifications: filteredNotifications,
-    allNotifications: accumulated,
+    notifications,
     unreadCount,
     total,
-    hasMore,
-    loading: isLoading,
-    filter,
-    unreadOnly,
-
-    fetchNotifications,
-    refreshUnreadCount: () =>
-      queryClient.invalidateQueries({
-        queryKey: ["notifications-unread", patientId],
-      }),
-    markAsRead: handleMarkAsRead,
-    markAllAsRead: handleMarkAllAsRead,
-    deleteNotification: handleDelete,
-    loadMore,
-    changeFilter,
-    toggleUnreadOnly,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage: hasNextPage ?? false,
+    fetchNextPage,
+    refetch,
   };
 }
 
-// ── Grouped helpers ────────────────────────────────────────────────────────
+// ─── useUnreadCount — lightweight badge count ────────────────────────────────
+
+export function useUnreadCount() {
+  const { data: count = 0 } = useQuery({
+    queryKey: KEYS.unreadCount,
+    queryFn: () => notificationService.getUnreadCount(),
+    refetchInterval: 30_000,
+    staleTime: 10_000,
+  });
+
+  return count;
+}
+
+// ─── useMarkAsRead — mark specific notifications ─────────────────────────────
+
+export function useMarkAsRead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => notificationService.markAsRead(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: KEYS.unreadCount });
+    },
+  });
+}
+
+// ─── useMarkAllAsRead ────────────────────────────────────────────────────────
+
+export function useMarkAllAsRead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => notificationService.markAllAsRead(),
+    onMutate: () => {
+      // Optimistic: set unread count to 0
+      queryClient.setQueryData(KEYS.unreadCount, 0);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: KEYS.unreadCount });
+    },
+    onError: () => {
+      queryClient.invalidateQueries({ queryKey: KEYS.unreadCount });
+    },
+  });
+}
+
+// ─── useDismissNotification ──────────────────────────────────────────────────
+
+export function useDismissNotification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => notificationService.dismissNotification(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: KEYS.unreadCount });
+    },
+  });
+}
+
+// ─── useNotificationPreferences ──────────────────────────────────────────────
+
+export function useNotificationPreferences() {
+  return useQuery({
+    queryKey: KEYS.preferences,
+    queryFn: () => notificationService.getPreferences(),
+    staleTime: 60_000,
+  });
+}
+
+// ─── useUpdatePreferences ────────────────────────────────────────────────────
+
+export function useUpdatePreferences() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (prefs: Partial<NotificationPreferences>) =>
+      notificationService.updatePreferences(prefs),
+    onSuccess: (updatedPrefs) => {
+      queryClient.setQueryData(KEYS.preferences, updatedPrefs);
+    },
+  });
+}
+
+// ─── Grouped helpers ─────────────────────────────────────────────────────────
 
 export function groupNotificationsByDate(notifications: AppNotification[]) {
   const now = new Date();

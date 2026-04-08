@@ -12,19 +12,16 @@ import { SpecialtyGrid } from "@/components/booking/specialty-grid";
 import { StepIndicator } from "@/components/booking/step-indicator";
 import { TimeSlotGrid } from "@/components/booking/time-slot-grid";
 import { useBooking } from "@/hooks/use-booking";
-import { supabase } from "@/lib/supabase/client";
 import type { Specialty } from "@/lib/services/booking-service";
 
-// Direct specialties query — bypasses booking service cache issues
+// Direct specialties query via API route
 function useDirectSpecialties() {
   const q = useQuery({
     queryKey: ["direct-specialties-v2"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("specialties")
-        .select("*")
-        .order("name");
-      if (error) throw error;
+      const res = await fetch("/api/specialties");
+      if (!res.ok) throw new Error("Failed to fetch specialties");
+      const { data } = await res.json();
       return (data || []) as Specialty[];
     },
   });

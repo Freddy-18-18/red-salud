@@ -1,0 +1,371 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - img [ref=e7]
+          - generic [ref=e10]:
+            - paragraph [ref=e11]: Farmacia Demo Red Salud
+            - paragraph [ref=e12]: F-001234
+        - navigation [ref=e16]:
+          - generic [ref=e17]:
+            - paragraph [ref=e18]: Principal
+            - link "Dashboard" [ref=e20] [cursor=pointer]:
+              - /url: /dashboard
+              - img [ref=e21]
+              - generic [ref=e26]: Dashboard
+            - link "Caja / POS" [ref=e28] [cursor=pointer]:
+              - /url: /dashboard/caja
+              - img [ref=e29]
+              - generic [ref=e33]: Caja / POS
+          - generic [ref=e34]:
+            - paragraph [ref=e35]: Inventario
+            - link "Productos" [ref=e37] [cursor=pointer]:
+              - /url: /dashboard/inventario
+              - img [ref=e38]
+              - generic [ref=e42]: Productos
+            - link "Caducidades" [ref=e44] [cursor=pointer]:
+              - /url: /dashboard/caducidades
+              - img [ref=e45]
+              - generic [ref=e49]: Caducidades
+            - link "Alertas" [ref=e51] [cursor=pointer]:
+              - /url: /dashboard/alertas
+              - img [ref=e52]
+              - generic [ref=e55]: Alertas
+          - generic [ref=e56]:
+            - paragraph [ref=e57]: Ventas
+            - link "Historial Ventas" [ref=e59] [cursor=pointer]:
+              - /url: /dashboard/ventas
+              - img [ref=e60]
+              - generic [ref=e63]: Historial Ventas
+            - link "Reportes" [ref=e65] [cursor=pointer]:
+              - /url: /dashboard/reportes
+              - img [ref=e66]
+              - generic [ref=e68]: Reportes
+          - generic [ref=e69]:
+            - paragraph [ref=e70]: Compras
+            - link "Proveedores" [ref=e72] [cursor=pointer]:
+              - /url: /dashboard/proveedores
+              - img [ref=e73]
+              - generic [ref=e78]: Proveedores
+            - link "Pedidos" [ref=e80] [cursor=pointer]:
+              - /url: /dashboard/pedidos
+              - img [ref=e81]
+              - generic [ref=e84]: Pedidos
+          - generic [ref=e85]:
+            - paragraph [ref=e86]: Clientes
+            - link "Recetas" [ref=e88] [cursor=pointer]:
+              - /url: /dashboard/recetas
+              - img [ref=e89]
+              - generic [ref=e92]: Recetas
+            - link "Entregas" [ref=e94] [cursor=pointer]:
+              - /url: /dashboard/entregas
+              - img [ref=e95]
+              - generic [ref=e98]: Entregas
+            - link "Fidelizacion" [ref=e100] [cursor=pointer]:
+              - /url: /dashboard/fidelizacion
+              - img [ref=e101]
+              - generic [ref=e103]: Fidelizacion
+          - generic [ref=e104]:
+            - paragraph [ref=e105]: Administracion
+            - link "Personal" [ref=e107] [cursor=pointer]:
+              - /url: /dashboard/personal
+              - img [ref=e108]
+              - generic [ref=e113]: Personal
+            - link "Seguros" [ref=e115] [cursor=pointer]:
+              - /url: /dashboard/seguros
+              - img [ref=e116]
+              - generic [ref=e118]: Seguros
+            - link "Configuracion" [ref=e120] [cursor=pointer]:
+              - /url: /dashboard/configuracion
+              - img [ref=e121]
+              - generic [ref=e124]: Configuracion
+        - generic [ref=e126]:
+          - generic [ref=e128]: FR
+          - generic [ref=e129]:
+            - paragraph [ref=e130]: Fernando Rodriguez
+            - paragraph [ref=e131]: test@farmacia-demo.com
+          - button [ref=e132]:
+            - img [ref=e133]
+      - button "Colapsar barra lateral" [ref=e136]:
+        - img [ref=e137]
+    - generic [ref=e140]:
+      - banner [ref=e141]:
+        - navigation [ref=e142]:
+          - generic [ref=e143]:
+            - link "Dashboard" [ref=e144] [cursor=pointer]:
+              - /url: /dashboard
+            - img [ref=e145]
+          - generic [ref=e148]: Configuracion
+        - generic [ref=e149]:
+          - img [ref=e150]
+          - searchbox "Buscar productos, recetas..." [ref=e153]
+        - generic [ref=e154]:
+          - generic [ref=e155]: BCV
+          - generic [ref=e156]: Bs. 36.00
+          - img [ref=e157]
+          - generic [ref=e160]: Sin datos
+        - link [ref=e161] [cursor=pointer]:
+          - /url: /dashboard/alertas
+          - button [ref=e162]:
+            - img [ref=e163]
+        - button "FR Fernando Rodriguez" [ref=e166]:
+          - generic [ref=e168]: FR
+          - generic [ref=e169]: Fernando Rodriguez
+      - main [ref=e170]:
+        - generic [ref=e172]:
+          - generic [ref=e176]:
+            - img [ref=e177]
+            - generic [ref=e180]:
+              - heading "Configuracion" [level=1] [ref=e181]
+              - paragraph [ref=e182]: Administra los ajustes de tu farmacia
+          - generic [ref=e183]:
+            - generic [ref=e184]:
+              - generic [ref=e186]:
+                - generic [ref=e187]:
+                  - img [ref=e189]
+                  - generic [ref=e193]:
+                    - generic [ref=e194]: Datos de la Farmacia
+                    - paragraph [ref=e195]: Informacion general y datos de contacto
+                - button "Guardar" [ref=e196]:
+                  - img [ref=e197]
+                  - text: Guardar
+              - generic [ref=e202]:
+                - generic [ref=e203]:
+                  - generic [ref=e204]:
+                    - generic [ref=e205]: Nombre comercial
+                    - textbox "Nombre comercial" [ref=e206]:
+                      - /placeholder: Farmacia Central
+                  - generic [ref=e207]:
+                    - generic [ref=e208]: Numero de permiso sanitario
+                    - textbox "Numero de permiso sanitario" [ref=e209]:
+                      - /placeholder: PSRF-XXXX-XXXX
+                - generic [ref=e210]:
+                  - generic [ref=e211]:
+                    - generic [ref=e212]: Tipo de establecimiento
+                    - combobox "Tipo de establecimiento" [ref=e213]:
+                      - option "Seleccionar..."
+                      - option "Farmacia" [selected]
+                      - option "Drogueria"
+                      - option "Perfumeria"
+                  - generic [ref=e214]:
+                    - generic [ref=e215]: RIF
+                    - textbox "RIF" [ref=e216]:
+                      - /placeholder: J-12345678-9
+                - generic [ref=e217]:
+                  - generic [ref=e218]:
+                    - generic [ref=e219]: Telefono
+                    - textbox "Telefono" [ref=e220]:
+                      - /placeholder: +58-212-5551234
+                  - generic [ref=e221]:
+                    - generic [ref=e222]: Correo electronico
+                    - textbox "Correo electronico" [ref=e223]:
+                      - /placeholder: farmacia@ejemplo.com
+                - generic [ref=e224]:
+                  - generic [ref=e225]: Direccion
+                  - textbox "Direccion" [ref=e226]:
+                    - /placeholder: Av. Libertador, Edif. Centro, Local 1...
+                - generic [ref=e227]:
+                  - generic [ref=e228]:
+                    - generic [ref=e229]: Ciudad
+                    - textbox "Ciudad" [ref=e230]:
+                      - /placeholder: Caracas
+                  - generic [ref=e231]:
+                    - generic [ref=e232]: Estado
+                    - textbox "Estado" [ref=e233]:
+                      - /placeholder: Distrito Capital
+                - generic [ref=e234]:
+                  - generic [ref=e235]: Horario de atencion
+                  - generic [ref=e236]:
+                    - generic [ref=e237]:
+                      - button [ref=e238]:
+                        - img [ref=e239]
+                      - generic [ref=e242]: Lunes
+                      - generic [ref=e243]: Cerrado
+                    - generic [ref=e244]:
+                      - button [ref=e245]:
+                        - img [ref=e246]
+                      - generic [ref=e249]: Martes
+                      - generic [ref=e250]: Cerrado
+                    - generic [ref=e251]:
+                      - button [ref=e252]:
+                        - img [ref=e253]
+                      - generic [ref=e256]: Miercoles
+                      - generic [ref=e257]: Cerrado
+                    - generic [ref=e258]:
+                      - button [ref=e259]:
+                        - img [ref=e260]
+                      - generic [ref=e263]: Jueves
+                      - generic [ref=e264]: Cerrado
+                    - generic [ref=e265]:
+                      - button [ref=e266]:
+                        - img [ref=e267]
+                      - generic [ref=e270]: Viernes
+                      - generic [ref=e271]: Cerrado
+                    - generic [ref=e272]:
+                      - button [ref=e273]:
+                        - img [ref=e274]
+                      - generic [ref=e277]: Sabado
+                      - generic [ref=e278]: Cerrado
+                    - generic [ref=e279]:
+                      - button [ref=e280]:
+                        - img [ref=e281]
+                      - generic [ref=e284]: Domingo
+                      - generic [ref=e285]: Cerrado
+            - generic [ref=e286]:
+              - generic [ref=e288]:
+                - generic [ref=e289]:
+                  - img [ref=e291]
+                  - generic [ref=e294]:
+                    - generic [ref=e295]: Configuracion Fiscal
+                    - paragraph [ref=e296]: Impuestos, impresora fiscal y formatos de recibo
+                - button "Guardar" [ref=e297]:
+                  - img [ref=e298]
+                  - text: Guardar
+              - generic [ref=e303]:
+                - generic [ref=e305]:
+                  - generic [ref=e306]: Tasa de IVA por defecto (%)
+                  - spinbutton "Tasa de IVA por defecto (%)" [ref=e307]: "16"
+                  - paragraph [ref=e308]: La tasa vigente en Venezuela es 16%
+                - button "Impresora fiscal habilitada Conectar una impresora fiscal para emision de facturas" [ref=e310]:
+                  - img [ref=e312]
+                  - generic [ref=e315]:
+                    - text: Impresora fiscal habilitada
+                    - paragraph [ref=e316]: Conectar una impresora fiscal para emision de facturas
+                - generic [ref=e317]:
+                  - generic [ref=e318]: Encabezado del recibo
+                  - textbox "Encabezado del recibo" [ref=e319]:
+                    - /placeholder: "Farmacia Central\nRIF: J-12345678-9\nAv. Libertador, Caracas"
+                - generic [ref=e320]:
+                  - generic [ref=e321]: Pie del recibo
+                  - textbox "Pie del recibo" [ref=e322]:
+                    - /placeholder: Gracias por su compra. Vuelva pronto!
+            - generic [ref=e323]:
+              - generic [ref=e325]:
+                - generic [ref=e326]:
+                  - img [ref=e328]
+                  - generic [ref=e332]:
+                    - generic [ref=e333]: Inventario
+                    - paragraph [ref=e334]: Umbrales de alerta y configuracion de stock
+                - button "Guardar" [ref=e335]:
+                  - img [ref=e336]
+                  - text: Guardar
+              - generic [ref=e341]:
+                - generic [ref=e342]:
+                  - generic [ref=e343]:
+                    - generic [ref=e344]: Umbral de stock bajo (unidades)
+                    - spinbutton "Umbral de stock bajo (unidades)" [ref=e345]: "10"
+                    - paragraph [ref=e346]: Se generara una alerta cuando un producto tenga menos de esta cantidad
+                  - generic [ref=e347]:
+                    - generic [ref=e348]: Dias de aviso de vencimiento
+                    - spinbutton "Dias de aviso de vencimiento" [ref=e349]: "90"
+                    - paragraph [ref=e350]: Alerta cuando un producto vence dentro de estos dias
+                - button "Generar alertas automaticamente Crear alertas de stock bajo y vencimiento de forma automatica" [ref=e351]:
+                  - img [ref=e353]
+                  - generic [ref=e356]:
+                    - text: Generar alertas automaticamente
+                    - paragraph [ref=e357]: Crear alertas de stock bajo y vencimiento de forma automatica
+            - generic [ref=e358]:
+              - generic [ref=e360]:
+                - generic [ref=e361]:
+                  - img [ref=e363]
+                  - generic [ref=e365]:
+                    - generic [ref=e366]: Moneda y Tasa de Cambio
+                    - paragraph [ref=e367]: Preferencias de moneda e integracion con el BCV
+                - button "Guardar" [ref=e368]:
+                  - img [ref=e369]
+                  - text: Guardar
+              - generic [ref=e374]:
+                - generic [ref=e375]:
+                  - generic [ref=e376]: Moneda de visualizacion
+                  - generic [ref=e377]:
+                    - generic [ref=e378] [cursor=pointer]:
+                      - radio "Solo USD ($)" [ref=e379]
+                      - generic [ref=e381]: Solo USD ($)
+                    - generic [ref=e382] [cursor=pointer]:
+                      - radio "Solo Bolivares (Bs)" [ref=e383]
+                      - generic [ref=e385]: Solo Bolivares (Bs)
+                    - generic [ref=e386] [cursor=pointer]:
+                      - radio "Ambas (USD + Bs)" [checked] [ref=e387]
+                      - generic [ref=e390]: Ambas (USD + Bs)
+                - button "Actualizar tasa automaticamente desde BCV Obtener la tasa oficial del Banco Central de Venezuela cada dia" [ref=e391]:
+                  - img [ref=e393]
+                  - generic [ref=e396]:
+                    - text: Actualizar tasa automaticamente desde BCV
+                    - paragraph [ref=e397]: Obtener la tasa oficial del Banco Central de Venezuela cada dia
+                - generic [ref=e398]:
+                  - generic [ref=e399]:
+                    - paragraph [ref=e400]: Tasa actual
+                    - paragraph [ref=e401]: Bs. 36,00
+                    - paragraph [ref=e402]: 1 USD = 36.00 Bs | Sin datos del BCV | Justo ahora
+                  - button "Actualizar ahora" [ref=e403]:
+                    - img [ref=e404]
+                    - text: Actualizar ahora
+            - generic [ref=e409]:
+              - generic [ref=e411]:
+                - generic [ref=e412]:
+                  - img [ref=e414]
+                  - generic [ref=e417]:
+                    - generic [ref=e418]: Modulos Habilitados
+                    - paragraph [ref=e419]: Activa o desactiva funcionalidades de tu farmacia
+                - button "Guardar" [ref=e420]:
+                  - img [ref=e421]
+                  - text: Guardar
+              - generic [ref=e426]:
+                - button "Servicio de delivery Permitir entregas a domicilio de pedidos" [ref=e427]:
+                  - img [ref=e429]
+                  - generic [ref=e432]:
+                    - text: Servicio de delivery
+                    - paragraph [ref=e433]: Permitir entregas a domicilio de pedidos
+                - button "Programa de fidelizacion Acumular puntos por compras y ofrecer recompensas" [ref=e434]:
+                  - img [ref=e436]
+                  - generic [ref=e439]:
+                    - text: Programa de fidelizacion
+                    - paragraph [ref=e440]: Acumular puntos por compras y ofrecer recompensas
+                - button "Notificaciones SMS Enviar alertas por mensaje de texto a los clientes" [ref=e441]:
+                  - img [ref=e443]
+                  - generic [ref=e446]:
+                    - text: Notificaciones SMS
+                    - paragraph [ref=e447]: Enviar alertas por mensaje de texto a los clientes
+                - button "Notificaciones por correo Enviar confirmaciones y alertas por correo electronico" [ref=e448]:
+                  - img [ref=e450]
+                  - generic [ref=e453]:
+                    - text: Notificaciones por correo
+                    - paragraph [ref=e454]: Enviar confirmaciones y alertas por correo electronico
+                - button "Integracion con seguros Procesar ventas con cobertura de seguros medicos" [ref=e455]:
+                  - img [ref=e457]
+                  - generic [ref=e460]:
+                    - text: Integracion con seguros
+                    - paragraph [ref=e461]: Procesar ventas con cobertura de seguros medicos
+            - generic [ref=e462]:
+              - generic [ref=e465]:
+                - img [ref=e467]
+                - generic [ref=e469]:
+                  - generic [ref=e470]: Cuenta y Seguridad
+                  - paragraph [ref=e471]: Gestion de acceso y configuracion de la cuenta
+              - generic [ref=e473]:
+                - generic [ref=e474]:
+                  - generic [ref=e475]:
+                    - paragraph [ref=e476]: Cambiar contrasena
+                    - paragraph [ref=e477]: Se enviara un enlace de restablecimiento a tu correo
+                  - button "Cambiar contrasena" [ref=e478]
+                - generic [ref=e479]:
+                  - paragraph [ref=e480]: Sesiones activas
+                  - paragraph [ref=e481]: Dispositivos donde tu cuenta esta iniciada
+                  - generic [ref=e484]:
+                    - img [ref=e486]
+                    - generic [ref=e489]:
+                      - paragraph [ref=e490]: Sesion actual
+                      - paragraph [ref=e491]: Este navegador - Activa ahora
+                - generic [ref=e492]:
+                  - generic [ref=e493]:
+                    - img [ref=e494]
+                    - paragraph [ref=e496]: Zona de peligro
+                  - generic [ref=e497]:
+                    - generic [ref=e498]:
+                      - paragraph [ref=e499]: Desactivar farmacia
+                      - paragraph [ref=e500]: La farmacia dejara de estar visible y no podra operar. Esta accion es reversible.
+                    - button "Desactivar" [ref=e501]
+  - button "Open Next.js Dev Tools" [ref=e507] [cursor=pointer]:
+    - img [ref=e508]
+  - alert [ref=e511]

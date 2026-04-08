@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/utils/fetch";
 
 // --- Types ---
 
@@ -283,120 +284,91 @@ export const insuranceService = {
   async getPreauthorizations(
     patientId: string
   ): Promise<InsurancePreauthorization[]> {
-    const { data, error } = await supabase
-      .from("insurance_preauthorizations")
-      .select("*, insurance:patient_insurance(*)")
-      .eq("patient_id", patientId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching preauthorizations:", error);
-      throw error;
+    try {
+      return await fetchJson<InsurancePreauthorization[]>(
+        `/api/insurance/preauthorizations?patientId=${encodeURIComponent(patientId)}`
+      );
+    } catch (err) {
+      console.error("Error fetching preauthorizations:", err);
+      throw err;
     }
-
-    return (data ?? []).map(normalizePreauthorization);
   },
 
   async createPreauthorization(
     patientId: string,
     payload: CreatePreauthorizationData
   ): Promise<InsurancePreauthorization> {
-    const { data, error } = await supabase
-      .from("insurance_preauthorizations")
-      .insert({
-        patient_id: patientId,
-        insurance_id: payload.insurance_id,
-        appointment_id: payload.appointment_id || null,
-        procedure_code: payload.procedure_code || null,
-        procedure_description: payload.procedure_description,
-        estimated_cost: payload.estimated_cost,
-        covered_amount: 0,
-        copay_amount: 0,
-        status: "pending",
-      })
-      .select("*, insurance:patient_insurance(*)")
-      .single();
-
-    if (error) {
-      console.error("Error creating preauthorization:", error);
-      throw error;
+    try {
+      return await fetchJson<InsurancePreauthorization>(
+        "/api/insurance/preauthorizations",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patient_id: patientId,
+            insurance_id: payload.insurance_id,
+            appointment_id: payload.appointment_id || null,
+            procedure_code: payload.procedure_code || null,
+            procedure_description: payload.procedure_description,
+            estimated_cost: payload.estimated_cost,
+          }),
+        }
+      );
+    } catch (err) {
+      console.error("Error creating preauthorization:", err);
+      throw err;
     }
-
-    await supabase.from("user_activity_log").insert({
-      user_id: patientId,
-      activity_type: "preauthorization_requested",
-      description: `Pre-autorizacion solicitada: ${payload.procedure_description}`,
-      status: "success",
-    });
-
-    return normalizePreauthorization(data);
   },
 
   // ---- Claims ----
 
   async getClaims(patientId: string): Promise<InsuranceClaim[]> {
-    const { data, error } = await supabase
-      .from("insurance_claims")
-      .select("*, insurance:patient_insurance(*)")
-      .eq("patient_id", patientId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching claims:", error);
-      throw error;
+    try {
+      return await fetchJson<InsuranceClaim[]>(
+        `/api/insurance/claims?patientId=${encodeURIComponent(patientId)}`
+      );
+    } catch (err) {
+      console.error("Error fetching claims:", err);
+      throw err;
     }
-
-    return (data ?? []).map(normalizeClaim);
   },
 
   async createClaim(
     patientId: string,
     payload: CreateClaimData
   ): Promise<InsuranceClaim> {
-    const { data, error } = await supabase
-      .from("insurance_claims")
-      .insert({
-        patient_id: patientId,
-        insurance_id: payload.insurance_id,
-        appointment_id: payload.appointment_id || null,
-        claim_type: payload.claim_type,
-        total_amount: payload.total_amount,
-        covered_amount: 0,
-        patient_responsibility: payload.total_amount,
-        status: "draft",
-      })
-      .select("*, insurance:patient_insurance(*)")
-      .single();
-
-    if (error) {
-      console.error("Error creating claim:", error);
-      throw error;
+    try {
+      return await fetchJson<InsuranceClaim>("/api/insurance/claims", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patient_id: patientId,
+          insurance_id: payload.insurance_id,
+          appointment_id: payload.appointment_id || null,
+          claim_type: payload.claim_type,
+          total_amount: payload.total_amount,
+        }),
+      });
+    } catch (err) {
+      console.error("Error creating claim:", err);
+      throw err;
     }
-
-    await supabase.from("user_activity_log").insert({
-      user_id: patientId,
-      activity_type: "claim_created",
-      description: `Reclamo creado: ${payload.claim_type} - Bs. ${payload.total_amount}`,
-      status: "success",
-    });
-
-    return normalizeClaim(data);
   },
 
   async submitClaim(id: string): Promise<InsuranceClaim> {
-    const { data, error } = await supabase
-      .from("insurance_claims")
-      .update({ status: "submitted", updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .select("*, insurance:patient_insurance(*)")
-      .single();
-
-    if (error) {
-      console.error("Error submitting claim:", error);
-      throw error;
+    try {
+      return await fetchJson<InsuranceClaim>(
+        `/api/insurance/claims/${encodeURIComponent(id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "submitted" }),
+        }
+      );
+    } catch (err) {
+      console.error("Error submitting claim:", err);
+      throw err;
     }
-
-    return normalizeClaim(data);
   },
 };
 
@@ -418,49 +390,6 @@ function normalizeInsurance(raw: Record<string, unknown>): PatientInsurance {
     coverage_details: (raw.coverage_details as CoverageDetails) ?? {},
     created_at: raw.created_at as string,
     updated_at: raw.updated_at as string,
-  };
-}
-
-function normalizePreauthorization(
-  raw: Record<string, unknown>
-): InsurancePreauthorization {
-  return {
-    id: raw.id as string,
-    patient_id: raw.patient_id as string,
-    insurance_id: raw.insurance_id as string,
-    appointment_id: (raw.appointment_id as string) ?? null,
-    procedure_code: (raw.procedure_code as string) ?? null,
-    procedure_description: raw.procedure_description as string,
-    estimated_cost: Number(raw.estimated_cost) || 0,
-    covered_amount: Number(raw.covered_amount) || 0,
-    copay_amount: Number(raw.copay_amount) || 0,
-    status: raw.status as PreauthorizationStatus,
-    authorization_number: (raw.authorization_number as string) ?? null,
-    created_at: raw.created_at as string,
-    updated_at: raw.updated_at as string,
-    insurance: raw.insurance
-      ? normalizeInsurance(raw.insurance as Record<string, unknown>)
-      : undefined,
-  };
-}
-
-function normalizeClaim(raw: Record<string, unknown>): InsuranceClaim {
-  return {
-    id: raw.id as string,
-    patient_id: raw.patient_id as string,
-    insurance_id: raw.insurance_id as string,
-    appointment_id: (raw.appointment_id as string) ?? null,
-    claim_type: raw.claim_type as ClaimType,
-    total_amount: Number(raw.total_amount) || 0,
-    covered_amount: Number(raw.covered_amount) || 0,
-    patient_responsibility: Number(raw.patient_responsibility) || 0,
-    status: raw.status as ClaimStatus,
-    claim_number: (raw.claim_number as string) ?? null,
-    created_at: raw.created_at as string,
-    updated_at: raw.updated_at as string,
-    insurance: raw.insurance
-      ? normalizeInsurance(raw.insurance as Record<string, unknown>)
-      : undefined,
   };
 }
 

@@ -1,0 +1,56 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e106] [cursor=pointer]:
+    - img [ref=e107]
+  - alert [ref=e110]
+  - generic [ref=e237]:
+    - generic [ref=e238]:
+      - img [ref=e240]
+      - heading "Configurar Farmacia" [level=1] [ref=e243]
+      - paragraph [ref=e244]: Complete los datos para comenzar a usar el sistema
+    - generic [ref=e245]:
+      - generic [ref=e247]:
+        - img [ref=e249]
+        - generic [ref=e253]: Datos
+      - generic [ref=e256]:
+        - img [ref=e258]
+        - generic [ref=e261]: Ubicacion
+      - generic [ref=e264]:
+        - img [ref=e266]
+        - generic [ref=e269]: Horario
+      - generic [ref=e272]:
+        - img [ref=e274]
+        - generic [ref=e277]: Configuracion
+    - generic [ref=e279]:
+      - generic [ref=e280]:
+        - generic [ref=e281]:
+          - img [ref=e282]
+          - text: Datos de la Farmacia
+        - generic [ref=e286]:
+          - generic [ref=e287]:
+            - generic [ref=e288]:
+              - text: Nombre del Negocio
+              - generic [ref=e289]: "*"
+            - textbox "Farmacia El Buen Vivir" [ref=e290]: Farmacia Demo Red Salud
+          - generic [ref=e291]:
+            - generic [ref=e292]:
+              - generic [ref=e293]:
+                - text: RIF
+                - generic [ref=e294]: "*"
+              - textbox "J-12345678-9" [ref=e295]: J-40123456-7
+            - generic [ref=e296]:
+              - generic [ref=e297]: Numero de Licencia
+              - 'textbox "Ej: F-001234" [ref=e298]': F-001234
+          - generic [ref=e299]:
+            - generic [ref=e300]:
+              - text: Tipo de Establecimiento
+              - generic [ref=e301]: "*"
+            - combobox [active] [ref=e302]:
+              - generic:
+                - generic:
+                  - img
+                  - text: Farmacia
+              - img [ref=e303]
+      - button "Siguiente" [ref=e306]:
+        - text: Siguiente
+        - img [ref=e307]
+    - paragraph [ref=e309]: Podra modificar estos datos despues desde Configuracion.

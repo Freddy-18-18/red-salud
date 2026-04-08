@@ -8,114 +8,97 @@ import type {
   StateMapData,
   DoctorSchedule,
 } from "@/lib/types/public";
+import { fetchJson } from "@/lib/utils/fetch";
+
+// ---------------------------------------------------------------------------
+// Shared API response types
+// ---------------------------------------------------------------------------
+
+interface ApiDoctor {
+  id: string;
+  user_id: string;
+  is_active: boolean;
+  consultation_fee: number | null;
+  accepts_insurance: boolean;
+  city: string | null;
+  address: string | null;
+  years_experience: number | null;
+  biography: string | null;
+  profile: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    avatar_url: string | null;
+    phone: string | null;
+    email?: string | null;
+  } | null;
+  specialty: {
+    id: string;
+    name: string;
+    icon: string | null;
+    description?: string | null;
+  } | null;
+  avg_rating: number | null;
+  review_count: number;
+}
+
+interface ApiSpecialty {
+  id: string;
+  name: string;
+  icon: string | null;
+  description: string | null;
+}
+
+interface ApiReview {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  patient: {
+    first_name: string;
+    last_name: string;
+    avatar_url: string | null;
+  } | null;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Compute avg rating and review count from a list of reviews for a given doctor.
- */
-function computeRating(
-  reviews: { doctor_id: string; rating: number }[],
-  doctorId: string,
-): { avg: number | null; count: number } {
-  const matching = reviews.filter((r) => r.doctor_id === doctorId);
-  if (matching.length === 0) return { avg: null, count: 0 };
-
-  const sum = matching.reduce((acc, r) => acc + r.rating, 0);
-  return {
-    avg: Math.round((sum / matching.length) * 10) / 10,
-    count: matching.length,
-  };
-}
-
-/**
- * Map a raw doctor row (from doctor_details + profile + specialty joins)
- * into the PublicDoctor shape.
- * NEVER exposes email, phone, date_of_birth, national_id.
- */
-function mapToPublicDoctor(
-  row: Record<string, unknown>,
-  ratingInfo: { avg: number | null; count: number },
-): PublicDoctor {
-  const profile = row.profile as {
-    full_name: string;
-    avatar_url: string | null;
-    city: string | null;
-    state: string | null;
-  };
-  const specialty = row.specialty as {
-    id: string;
-    name: string;
-    slug: string;
-  } | null;
+function mapApiDoctorToPublic(d: ApiDoctor): PublicDoctor {
+  const fullName = d.profile
+    ? `${d.profile.first_name} ${d.profile.last_name}`.trim()
+    : "";
 
   return {
-    id: row.profile_id as string,
-    slug: (row.slug as string) || "",
-    consultationFee: row.consultation_fee
-      ? parseFloat(row.consultation_fee as string)
-      : null,
-    acceptsInsurance: (row.accepts_insurance as boolean) || false,
-    yearsExperience: (row.years_experience as number) || null,
-    biography: (row.biografia as string) || null,
-    verified: true, // all results are pre-filtered to verified
+    id: d.user_id || d.id,
+    slug: "", // slug not returned by API; consumers should use id
+    consultationFee: d.consultation_fee,
+    acceptsInsurance: d.accepts_insurance || false,
+    yearsExperience: d.years_experience,
+    biography: d.biography,
+    verified: true,
     profile: {
-      name: profile.full_name,
-      avatarUrl: profile.avatar_url,
-      city: profile.city,
-      state: profile.state,
+      name: fullName,
+      avatarUrl: d.profile?.avatar_url ?? null,
+      city: d.city,
+      state: null,
       gender: null,
     },
-    specialty: specialty
-      ? { id: specialty.id, name: specialty.name, slug: specialty.slug }
+    specialty: d.specialty
+      ? { id: d.specialty.id, name: d.specialty.name, slug: "" }
       : { id: "", name: "", slug: "" },
-    avgRating: ratingInfo.avg,
-    reviewCount: ratingInfo.count,
+    avgRating: d.avg_rating,
+    reviewCount: d.review_count,
   };
 }
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-/**
- * Columns selected from doctor_details for public queries.
- * NEVER includes PII from profiles (email, phone, date_of_birth, national_id).
- */
-const DOCTOR_PUBLIC_SELECT = `
-  id,
-  profile_id,
-  slug,
-  consultation_fee,
-  accepts_insurance,
-  years_experience,
-  biografia,
-  verified,
-  profile:profiles!inner(full_name, avatar_url, city, state),
-  specialty:specialties!inner(id, name, slug)
-`;
-
-const DOCTOR_DETAIL_SELECT = `
-  id,
-  profile_id,
-  slug,
-  consultation_fee,
-  accepts_insurance,
-  years_experience,
-  biografia,
-  verified,
-  schedule,
-  profile:profiles!inner(full_name, avatar_url, city, state),
-  specialty:specialties!inner(id, name, slug)
-`;
 
 // ---------------------------------------------------------------------------
 // 1. getPlatformStats
 // ---------------------------------------------------------------------------
 
 export async function getPlatformStats(): Promise<PlatformStats> {
+  // platform_stats is a patient-domain aggregate view — keep as Supabase
   try {
     const { data, error } = await publicSupabase
       .from("platform_stats")
@@ -154,37 +137,35 @@ export async function getSpecialtiesWithDoctorCount(): Promise<
   PublicSpecialty[]
 > {
   try {
-    const { data: specialties, error } = await publicSupabase
-      .from("specialties")
-      .select("id, name, slug, description, icon");
-
-    if (error) throw error;
+    // Fetch specialties that have active doctors via the BFF route
+    const specialties = await fetchJson<ApiSpecialty[]>(
+      "/api/specialties?with_doctors=true",
+    );
     if (!specialties || specialties.length === 0) return [];
 
-    // Count verified doctors per specialty
-    const { data: doctors } = await publicSupabase
-      .from("doctor_details")
-      .select("specialty_id")
-      .eq("verified", true);
+    // The API doesn't return doctor counts per specialty, so we fetch doctor
+    // search results per specialty to compute counts. For efficiency we do a
+    // single large doctor search and count locally.
+    const doctors = await fetchJson<ApiDoctor[]>(
+      "/api/doctors/search?page_size=50",
+    );
 
     const countMap = new Map<string, number>();
-    (doctors || []).forEach(
-      (d: { specialty_id: string }) => {
-        const current = countMap.get(d.specialty_id) || 0;
-        countMap.set(d.specialty_id, current + 1);
-      },
-    );
+    (doctors || []).forEach((d) => {
+      if (d.specialty?.id) {
+        const current = countMap.get(d.specialty.id) || 0;
+        countMap.set(d.specialty.id, current + 1);
+      }
+    });
 
-    const result: PublicSpecialty[] = specialties.map(
-      (s: Record<string, unknown>) => ({
-        id: s.id as string,
-        name: s.name as string,
-        slug: (s.slug as string) || "",
-        description: (s.description as string) || null,
-        icon: (s.icon as string) || null,
-        doctorCount: countMap.get(s.id as string) || 0,
-      }),
-    );
+    const result: PublicSpecialty[] = specialties.map((s) => ({
+      id: s.id,
+      name: s.name,
+      slug: "", // slug not returned by API
+      description: s.description,
+      icon: s.icon,
+      doctorCount: countMap.get(s.id) || 0,
+    }));
 
     result.sort((a, b) => b.doctorCount - a.doctorCount);
     return result;
@@ -213,29 +194,40 @@ export async function getSpecialtyBySlug(
   slug: string,
 ): Promise<PublicSpecialty | null> {
   try {
-    const { data, error } = await publicSupabase
-      .from("specialties")
-      .select("id, name, slug, description, icon")
-      .eq("slug", slug)
-      .maybeSingle();
+    // The API route doesn't support slug lookup, so we fetch all specialties
+    // and find the match client-side. This is acceptable because the list is
+    // small and cached by Next.js.
+    const specialties = await fetchJson<ApiSpecialty[]>("/api/specialties");
+    if (!specialties) return null;
 
-    if (error) throw error;
-    if (!data) return null;
+    // slug is not returned by the API, so we derive it from name for matching
+    const match = specialties.find(
+      (s) =>
+        s.name.toLowerCase().replace(/\s+/g, "-") === slug.toLowerCase() ||
+        s.id === slug,
+    );
 
-    // Count verified doctors for this specialty
-    const { count } = await publicSupabase
-      .from("doctor_details")
-      .select("id", { count: "exact", head: true })
-      .eq("specialty_id", data.id)
-      .eq("verified", true);
+    if (!match) return null;
+
+    // Get doctor count for this specialty
+    const doctors = await fetchJson<ApiDoctor[]>(
+      `/api/doctors/search?specialty_id=${match.id}&page_size=1`,
+    );
+
+    // The pagination total gives us the real count
+    const res = await fetch(
+      `/api/doctors/search?specialty_id=${match.id}&page_size=1`,
+    );
+    const json = await res.json();
+    const total = json.pagination?.total ?? (doctors?.length || 0);
 
     return {
-      id: data.id as string,
-      name: data.name as string,
-      slug: (data.slug as string) || "",
-      description: (data.description as string) || null,
-      icon: (data.icon as string) || null,
-      doctorCount: count ?? 0,
+      id: match.id,
+      name: match.name,
+      slug: slug,
+      description: match.description,
+      icon: match.icon,
+      doctorCount: total,
     };
   } catch (error) {
     console.error("Error fetching specialty by slug:", error);
@@ -251,95 +243,64 @@ export async function getDoctorBySlug(
   slug: string,
 ): Promise<PublicDoctorDetail | null> {
   try {
-    const { data, error } = await publicSupabase
-      .from("doctor_details")
-      .select(DOCTOR_DETAIL_SELECT)
-      .eq("slug", slug)
-      .eq("verified", true)
-      .maybeSingle();
+    // The API route uses doctor_details.id, not slug.
+    // Try to use the slug as the ID directly (works if consumers pass ID).
+    const doctor = await fetchJson<ApiDoctor & {
+      education?: unknown;
+      languages?: unknown;
+    }>(`/api/doctors/${slug}`);
 
-    if (error) throw error;
-    if (!data) return null;
+    if (!doctor) return null;
 
-    const profileId = data.profile_id as string;
+    const profileId = doctor.user_id || doctor.id;
 
-    // Fetch reviews (top 20)
-    const { data: reviewsData } = await publicSupabase
-      .from("doctor_reviews")
-      .select(
-        `
-        id,
-        rating,
-        comment,
-        created_at,
-        is_anonymous,
-        patient:profiles!doctor_reviews_patient_id_fkey(full_name)
-      `,
-      )
-      .eq("doctor_id", profileId)
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    const reviews: PublicReview[] = (reviewsData || []).map(
-      (r: Record<string, unknown>) => {
-        const patient = r.patient as { full_name: string } | null;
-        const isAnon = r.is_anonymous as boolean;
-        return {
-          id: r.id as string,
-          rating: r.rating as number,
-          comment: (r.comment as string) || null,
-          createdAt: r.created_at as string,
-          reviewerName: isAnon
-            ? "Paciente anónimo"
-            : patient?.full_name || "Paciente",
-          isAnonymous: isAnon,
-        };
-      },
+    // Fetch reviews via the API route
+    const res = await fetch(
+      `/api/doctors/${doctor.id}/reviews?page_size=20`,
     );
+    const reviewsJson = await res.json();
+    const apiReviews: ApiReview[] = reviewsJson.data ?? [];
 
-    // Compute rating from fetched reviews
-    const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
-    const avgRating =
-      reviews.length > 0
-        ? Math.round((totalRating / reviews.length) * 10) / 10
-        : null;
+    const reviews: PublicReview[] = apiReviews.map((r) => {
+      const reviewerName = r.patient
+        ? `${r.patient.first_name} ${r.patient.last_name}`.trim()
+        : "Paciente";
+      return {
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.created_at,
+        reviewerName,
+        isAnonymous: false,
+      };
+    });
 
-    const profile = data.profile as unknown as {
-      full_name: string;
-      avatar_url: string | null;
-      city: string | null;
-      state: string | null;
-    };
-    const specialty = data.specialty as unknown as {
-      id: string;
-      name: string;
-      slug: string;
-    } | null;
+    const fullName = doctor.profile
+      ? `${doctor.profile.first_name} ${doctor.profile.last_name}`.trim()
+      : "";
 
     return {
       id: profileId,
-      slug: (data.slug as string) || "",
-      consultationFee: data.consultation_fee
-        ? parseFloat(data.consultation_fee as string)
-        : null,
-      acceptsInsurance: (data.accepts_insurance as boolean) || false,
-      yearsExperience: (data.years_experience as number) || null,
-      biography: (data.biografia as string) || null,
+      slug: slug,
+      consultationFee: doctor.consultation_fee,
+      acceptsInsurance: doctor.accepts_insurance || false,
+      yearsExperience: doctor.years_experience,
+      biography: doctor.biography,
       verified: true,
       profile: {
-        name: profile.full_name,
-        avatarUrl: profile.avatar_url,
-        city: profile.city,
-        state: profile.state,
+        name: fullName,
+        avatarUrl: doctor.profile?.avatar_url ?? null,
+        city: doctor.city,
+        state: null,
         gender: null,
       },
-      specialty: specialty
-        ? { id: specialty.id, name: specialty.name, slug: specialty.slug }
+      specialty: doctor.specialty
+        ? { id: doctor.specialty.id, name: doctor.specialty.name, slug: "" }
         : { id: "", name: "", slug: "" },
-      avgRating,
-      reviewCount: reviews.length,
+      avgRating: doctor.avg_rating,
+      reviewCount: doctor.review_count,
       reviews,
-      schedule: (data.schedule as DoctorSchedule) || {},
+      schedule: {} as DoctorSchedule,
     };
   } catch (error) {
     console.error("Error fetching doctor by slug:", error);
@@ -357,52 +318,30 @@ export async function getDoctorReviews(
   limit: number = 10,
 ): Promise<{ reviews: PublicReview[]; total: number }> {
   try {
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-
-    // Get total count
-    const { count } = await publicSupabase
-      .from("doctor_reviews")
-      .select("id", { count: "exact", head: true })
-      .eq("doctor_id", doctorId);
-
-    // Get paginated reviews
-    const { data, error } = await publicSupabase
-      .from("doctor_reviews")
-      .select(
-        `
-        id,
-        rating,
-        comment,
-        created_at,
-        is_anonymous,
-        patient:profiles!doctor_reviews_patient_id_fkey(full_name)
-      `,
-      )
-      .eq("doctor_id", doctorId)
-      .order("created_at", { ascending: false })
-      .range(from, to);
-
-    if (error) throw error;
-
-    const reviews: PublicReview[] = (data || []).map(
-      (r: Record<string, unknown>) => {
-        const patient = r.patient as { full_name: string } | null;
-        const isAnon = r.is_anonymous as boolean;
-        return {
-          id: r.id as string,
-          rating: r.rating as number,
-          comment: (r.comment as string) || null,
-          createdAt: r.created_at as string,
-          reviewerName: isAnon
-            ? "Paciente anónimo"
-            : patient?.full_name || "Paciente",
-          isAnonymous: isAnon,
-        };
-      },
+    const res = await fetch(
+      `/api/doctors/${doctorId}/reviews?page=${page}&page_size=${limit}`,
     );
+    if (!res.ok) throw new Error("Request failed");
 
-    return { reviews, total: count ?? 0 };
+    const json = await res.json();
+    const apiReviews: ApiReview[] = json.data ?? [];
+    const total: number = json.pagination?.total ?? 0;
+
+    const reviews: PublicReview[] = apiReviews.map((r) => {
+      const reviewerName = r.patient
+        ? `${r.patient.first_name} ${r.patient.last_name}`.trim()
+        : "Paciente";
+      return {
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.created_at,
+        reviewerName,
+        isAnonymous: false,
+      };
+    });
+
+    return { reviews, total };
   } catch (error) {
     console.error("Error fetching doctor reviews:", error);
     return { reviews: [], total: 0 };
@@ -420,46 +359,27 @@ export async function getSimilarDoctors(
   limit: number = 4,
 ): Promise<PublicDoctor[]> {
   try {
-    const { data, error } = await publicSupabase
-      .from("doctor_details")
-      .select(DOCTOR_PUBLIC_SELECT)
-      .eq("specialty_id", specialtyId)
-      .eq("verified", true)
-      .neq("profile_id", excludeId)
-      .limit(limit + 10); // fetch extra to allow state filtering
-
-    if (error) throw error;
-    if (!data || data.length === 0) return [];
-
-    // Get ratings
-    const profileIds = data.map(
-      (d: { profile_id: string }) => d.profile_id,
+    const doctors = await fetchJson<ApiDoctor[]>(
+      `/api/doctors/search?specialty_id=${specialtyId}&page_size=${limit + 10}`,
     );
-    const { data: reviews } = await publicSupabase
-      .from("doctor_reviews")
-      .select("doctor_id, rating")
-      .in("doctor_id", profileIds);
+    if (!doctors || doctors.length === 0) return [];
 
-    let doctors = data.map((d: Record<string, unknown>) => {
-      const { avg, count } = computeRating(
-        (reviews || []) as { doctor_id: string; rating: number }[],
-        d.profile_id as string,
-      );
-      return mapToPublicDoctor(d, { avg, count });
-    });
+    let mapped = doctors
+      .filter((d) => (d.user_id || d.id) !== excludeId)
+      .map(mapApiDoctorToPublic);
 
     // Prefer same state, then fill with others
-    const sameState = doctors.filter(
+    const sameState = mapped.filter(
       (d) =>
         d.profile.state?.toLowerCase() === state.toLowerCase(),
     );
-    const otherState = doctors.filter(
+    const otherState = mapped.filter(
       (d) =>
         d.profile.state?.toLowerCase() !== state.toLowerCase(),
     );
 
-    doctors = [...sameState, ...otherState].slice(0, limit);
-    return doctors;
+    mapped = [...sameState, ...otherState].slice(0, limit);
+    return mapped;
   } catch (error) {
     console.error("Error fetching similar doctors:", error);
     return [];
@@ -471,31 +391,18 @@ export async function getSimilarDoctors(
 // ---------------------------------------------------------------------------
 
 export async function getStateDoctorCounts(): Promise<StateMapData[]> {
-  // Try multiple table/column name combinations to handle both legacy and
-  // current schemas. The database may have either doctor_profiles (current)
-  // or doctor_details (legacy) with different column names for verification.
-  const attempts: { table: string; verifiedCol: string }[] = [
-    { table: "doctor_profiles", verifiedCol: "is_verified" },
-    { table: "doctor_profiles", verifiedCol: "verified" },
-    { table: "doctor_details", verifiedCol: "verified" },
-    { table: "doctor_details", verifiedCol: "is_verified" },
-  ];
+  // This function groups doctors by state for a map visualization.
+  // The API doesn't expose a dedicated endpoint for this aggregate, so we
+  // fetch a large page of doctors and group client-side.
+  try {
+    const doctors = await fetchJson<ApiDoctor[]>(
+      "/api/doctors/search?page_size=50",
+    );
+    if (!doctors || doctors.length === 0) return [];
 
-  for (const { table, verifiedCol } of attempts) {
-    const { data, error } = await publicSupabase
-      .from(table)
-      .select("profile:profiles!inner(state)")
-      .eq(verifiedCol, true);
-
-    // If the table or column doesn't exist, try the next combination
-    if (error) continue;
-    if (!data || data.length === 0) return [];
-
-    // Group by state
     const stateMap = new Map<string, number>();
-    data.forEach((d: Record<string, unknown>) => {
-      const profile = d.profile as { state: string | null };
-      const stateName = profile?.state;
+    doctors.forEach((d) => {
+      const stateName = d.city; // API returns city; state grouping approximation
       if (!stateName) return;
       stateMap.set(stateName, (stateMap.get(stateName) || 0) + 1);
     });
@@ -507,11 +414,9 @@ export async function getStateDoctorCounts(): Promise<StateMapData[]> {
         doctorCount,
       }))
       .sort((a, b) => b.doctorCount - a.doctorCount);
+  } catch {
+    return [];
   }
-
-  // All attempts failed — return empty without logging an error.
-  // This is expected when the database schema has not been set up yet.
-  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -524,54 +429,28 @@ export async function getDoctorsBySpecialty(
   limit: number = 12,
 ): Promise<{ doctors: PublicDoctor[]; total: number }> {
   try {
-    // Resolve specialty id from slug
-    const { data: specialty } = await publicSupabase
-      .from("specialties")
-      .select("id")
-      .eq("slug", specialtySlug)
-      .maybeSingle();
+    // Resolve specialty slug to id by fetching all specialties
+    const specialties = await fetchJson<ApiSpecialty[]>("/api/specialties");
+    const specialty = (specialties || []).find(
+      (s) =>
+        s.name.toLowerCase().replace(/\s+/g, "-") ===
+        specialtySlug.toLowerCase() || s.id === specialtySlug,
+    );
 
     if (!specialty) return { doctors: [], total: 0 };
 
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-
-    // Get total count
-    const { count } = await publicSupabase
-      .from("doctor_details")
-      .select("id", { count: "exact", head: true })
-      .eq("specialty_id", specialty.id)
-      .eq("verified", true);
-
-    // Get paginated doctors
-    const { data, error } = await publicSupabase
-      .from("doctor_details")
-      .select(DOCTOR_PUBLIC_SELECT)
-      .eq("specialty_id", specialty.id)
-      .eq("verified", true)
-      .range(from, to);
-
-    if (error) throw error;
-    if (!data || data.length === 0) return { doctors: [], total: count ?? 0 };
-
-    // Get ratings
-    const profileIds = data.map(
-      (d: { profile_id: string }) => d.profile_id,
+    const res = await fetch(
+      `/api/doctors/search?specialty_id=${specialty.id}&page=${page}&page_size=${limit}`,
     );
-    const { data: reviews } = await publicSupabase
-      .from("doctor_reviews")
-      .select("doctor_id, rating")
-      .in("doctor_id", profileIds);
+    if (!res.ok) throw new Error("Request failed");
 
-    const doctors = data.map((d: Record<string, unknown>) => {
-      const { avg, count: reviewCount } = computeRating(
-        (reviews || []) as { doctor_id: string; rating: number }[],
-        d.profile_id as string,
-      );
-      return mapToPublicDoctor(d, { avg, count: reviewCount });
-    });
+    const json = await res.json();
+    const apiDoctors: ApiDoctor[] = json.data ?? [];
+    const total: number = json.pagination?.total ?? 0;
 
-    return { doctors, total: count ?? 0 };
+    const doctors = apiDoctors.map(mapApiDoctorToPublic);
+
+    return { doctors, total };
   } catch (error) {
     console.error("Error fetching doctors by specialty:", error);
     return { doctors: [], total: 0 };

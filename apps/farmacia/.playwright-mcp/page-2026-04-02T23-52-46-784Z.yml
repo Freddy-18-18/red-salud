@@ -1,0 +1,72 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - img [ref=e10]
+        - generic [ref=e13]:
+          - text: Red Salud
+          - generic [ref=e14]: Farmacia
+      - heading "Unite a la red de farmacias mas grande de Venezuela" [level=2] [ref=e15]
+      - paragraph [ref=e16]: Digitaliza tu farmacia, conectate con medicos y pacientes, y gestiona tu negocio de forma eficiente.
+      - generic [ref=e17]:
+        - paragraph [ref=e18]: "Que obtenes al registrarte:"
+        - list [ref=e19]:
+          - listitem [ref=e20]:
+            - img [ref=e21]
+            - text: Control de inventario con alertas de vencimiento
+          - listitem [ref=e24]:
+            - img [ref=e25]
+            - text: Punto de venta integrado con tasa BCV
+          - listitem [ref=e28]:
+            - img [ref=e29]
+            - text: Recepcion de recetas digitales verificadas
+          - listitem [ref=e32]:
+            - img [ref=e33]
+            - text: Gestion de entregas a domicilio
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - heading "Registra tu farmacia" [level=1] [ref=e40]
+          - paragraph [ref=e41]: Paso 1 de 4 — Acceso
+        - generic [ref=e42]:
+          - generic [ref=e44]:
+            - img [ref=e46]
+            - generic [ref=e49]: Acceso
+          - generic [ref=e52]:
+            - img [ref=e54]
+            - generic [ref=e58]: Farmacia
+          - generic [ref=e61]:
+            - img [ref=e63]
+            - generic [ref=e66]: Representante
+          - generic [ref=e69]:
+            - img [ref=e71]
+            - generic [ref=e74]: Ubicacion
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - generic [ref=e77]: Email
+            - textbox "Email" [ref=e78]:
+              - /placeholder: tu@farmacia.com
+          - generic [ref=e79]:
+            - generic [ref=e80]: Contrasena
+            - generic [ref=e81]:
+              - textbox "Contrasena" [ref=e82]:
+                - /placeholder: Minimo 6 caracteres
+              - button [ref=e83]:
+                - img [ref=e84]
+          - generic [ref=e87]:
+            - generic [ref=e88]: Confirmar contrasena
+            - generic [ref=e89]:
+              - textbox "Confirmar contrasena" [ref=e90]:
+                - /placeholder: Repeti tu contrasena
+              - button [ref=e91]:
+                - img [ref=e92]
+        - button "Siguiente" [ref=e96]:
+          - text: Siguiente
+          - img [ref=e97]
+      - paragraph [ref=e99]:
+        - text: Ya tenes cuenta?
+        - link "Inicia sesion" [ref=e100] [cursor=pointer]:
+          - /url: /auth/login
+  - button "Open Next.js Dev Tools" [ref=e106] [cursor=pointer]:
+    - img [ref=e107]
+  - alert [ref=e110]

@@ -23,17 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/design-system";
 import { MessageSquarePlus, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 
-// TODO: Import DoctorProfile from shared types package once available
-interface DoctorProfile {
-  id: string;
-  profile?: {
-    full_name?: string;
-    avatar_url?: string;
-  };
-  specialty?: {
-    name: string;
-  };
-}
+import type { DoctorProfile } from "@/lib/services/appointments/appointments.types";
 
 // TODO: Import CreateConversationData from shared types package once available
 interface CreateConversationData {

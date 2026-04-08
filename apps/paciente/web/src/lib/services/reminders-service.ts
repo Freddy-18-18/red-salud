@@ -484,27 +484,19 @@ export async function completeGoal(goalId: string) {
 
 // ─── Upcoming Appointments ───────────────────────────────────────────────────
 
-export async function getUpcomingAppointments(patientId: string, limit = 3) {
+export async function getUpcomingAppointments(_patientId: string, _limit = 3) {
   try {
+    const res = await fetch("/api/appointments?status=confirmada");
+    if (!res.ok) throw new Error("Failed to fetch appointments");
+    const { data } = await res.json();
+
+    // Filter to upcoming only and apply limit
     const now = new Date().toISOString();
+    const upcoming = (data || [])
+      .filter((a: Record<string, unknown>) => (a.scheduled_at as string) >= now)
+      .slice(0, _limit);
 
-    const { data, error } = await supabase
-      .from("appointments")
-      .select(`
-        *,
-        doctor:profiles!appointments_medico_id_fkey(
-          id, full_name, email, avatar_url
-        )
-      `)
-      .eq("patient_id", patientId)
-      .gte("scheduled_at", now)
-      .not("status", "in", '("cancelada","rechazada")')
-      .order("scheduled_at", { ascending: true })
-      .limit(limit);
-
-    if (error) throw error;
-
-    return { success: true as const, data: data || [] };
+    return { success: true as const, data: upcoming };
   } catch (error) {
     void error;
     return { success: false as const, error, data: [] };

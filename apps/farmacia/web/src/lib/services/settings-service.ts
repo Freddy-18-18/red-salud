@@ -33,6 +33,10 @@ export interface PharmacyDetails {
   office_hours: Record<string, { open: string; close: string } | null> | null;
   servicios: string[] | null;
   accepts_digital_prescriptions: boolean;
+  rif: string | null;
+  direccion: string | null;
+  ciudad: string | null;
+  estado: string | null;
   latitud: number | null;
   longitud: number | null;
   created_at: string;
@@ -147,11 +151,49 @@ export async function getPharmacyDetails(
     office_hours: data.office_hours || null,
     servicios: data.servicios || null,
     accepts_digital_prescriptions: data.accepts_digital_prescriptions ?? false,
+    rif: data.rif || null,
+    direccion: data.direccion || null,
+    ciudad: data.ciudad || null,
+    estado: data.estado || null,
     latitud: data.latitud || null,
     longitud: data.longitud || null,
     created_at: data.created_at,
     updated_at: data.updated_at,
   };
+}
+
+// ============================================================================
+// Update pharmacy details
+// ============================================================================
+
+export interface UpdatePharmacyDetailsInput {
+  business_name?: string;
+  pharmacy_license?: string;
+  pharmacy_type?: string;
+  rif?: string;
+  direccion?: string;
+  ciudad?: string;
+  estado?: string;
+  office_hours?: Record<string, { open: string; close: string } | null>;
+}
+
+export async function updatePharmacyDetails(
+  pharmacyId: string,
+  updates: UpdatePharmacyDetailsInput
+): Promise<boolean> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("pharmacy_details")
+    .update(updates)
+    .eq("id", pharmacyId);
+
+  if (error) {
+    console.error("Error updating pharmacy details:", error);
+    return false;
+  }
+
+  return true;
 }
 
 // ============================================================================

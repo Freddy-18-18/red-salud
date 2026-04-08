@@ -1,0 +1,81 @@
+- generic:
+  - generic [active]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - navigation [ref=e6]:
+            - button "previous" [disabled] [ref=e7]:
+              - img "previous" [ref=e8]
+            - generic [ref=e10]:
+              - generic [ref=e11]: 1/
+              - text: "1"
+            - button "next" [disabled] [ref=e12]:
+              - img "next" [ref=e13]
+          - img
+        - generic [ref=e15]:
+          - link "Next.js 15.5.14 (outdated) Turbopack" [ref=e16] [cursor=pointer]:
+            - /url: https://nextjs.org/docs/messages/version-staleness
+            - img [ref=e17]
+            - generic "An outdated version detected (latest is 16.2.2), upgrade is highly recommended!" [ref=e19]: Next.js 15.5.14 (outdated)
+            - generic [ref=e20]: Turbopack
+          - img
+      - dialog "Build Error" [ref=e22]:
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e29]: Build Error
+              - generic [ref=e30]:
+                - button "Copy Error Info" [ref=e31] [cursor=pointer]:
+                  - img [ref=e32]
+                - link "Go to related documentation" [ref=e34] [cursor=pointer]:
+                  - /url: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+                  - img [ref=e35]
+                - link "Learn more about enabling Node.js inspector for server code with Chrome DevTools" [ref=e37] [cursor=pointer]:
+                  - /url: https://nextjs.org/docs/app/building-your-application/configuring/debugging#server-side-code
+                  - img [ref=e38]
+            - paragraph [ref=e47]: Ecmascript file had an error
+          - generic [ref=e49]:
+            - generic [ref=e51]:
+              - img [ref=e53]
+              - generic [ref=e57]: ./apps/farmacia/web/src/lib/supabase/server.ts (2:1)
+              - button "Open in editor" [ref=e58] [cursor=pointer]:
+                - img [ref=e60]
+            - generic [ref=e63]:
+              - generic [ref=e64]: Ecmascript file had an error
+              - generic [ref=e65]: 1 |
+              - text: import
+              - generic [ref=e66]: "{ createServerClient }"
+              - text: from '@supabase/ssr'; >
+              - generic [ref=e67]: 2 |
+              - text: import
+              - generic [ref=e68]: "{ cookies }"
+              - text: from 'next/headers';
+              - generic [ref=e69]: "|"
+              - text: ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              - generic [ref=e70]: 3 |
+              - generic [ref=e71]: 4 |
+              - text: export async function
+              - generic [ref=e72]: "createClient() {"
+              - generic [ref=e73]: 5 |
+              - text: const
+              - generic [ref=e74]: cookieStore
+              - text: = await
+              - generic [ref=e75]: cookies()
+              - text: ;
+              - generic [ref=e76]:
+                - text: "You're importing a component that needs \"next/headers\". That only works in a Server Component which is not supported in the pages/ directory. Read more:"
+                - link "https://nextjs.org/docs/app/building-your-application/rendering/server-components" [ref=e77] [cursor=pointer]:
+                  - /url: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+                - text: "Import traces: Server Component: ./apps/farmacia/web/src/lib/supabase/server.ts ./apps/farmacia/web/src/lib/services/exchange-rate-service.ts ./apps/farmacia/web/src/app/dashboard/layout.tsx Client Component Browser: ./apps/farmacia/web/src/lib/supabase/server.ts [Client Component Browser] ./apps/farmacia/web/src/lib/services/exchange-rate-service.ts [Client Component Browser] ./apps/farmacia/web/src/app/dashboard/caja/page.tsx [Client Component Browser] ./apps/farmacia/web/src/app/dashboard/caja/page.tsx [Server Component] Client Component SSR: ./apps/farmacia/web/src/lib/supabase/server.ts [Client Component SSR] ./apps/farmacia/web/src/lib/services/exchange-rate-service.ts [Client Component SSR] ./apps/farmacia/web/src/app/dashboard/caja/page.tsx [Client Component SSR] ./apps/farmacia/web/src/app/dashboard/caja/page.tsx [Server Component]"
+        - generic [ref=e78]:
+          - generic [ref=e79]: "1"
+          - generic [ref=e80]: "2"
+    - generic [ref=e85] [cursor=pointer]:
+      - button "Open Next.js Dev Tools" [ref=e86]:
+        - img [ref=e87]
+      - button "Open issues overlay" [ref=e91]:
+        - generic [ref=e92]:
+          - generic [ref=e93]: "0"
+          - generic [ref=e94]: "1"
+        - generic [ref=e95]: Issue
+  - alert [ref=e96]

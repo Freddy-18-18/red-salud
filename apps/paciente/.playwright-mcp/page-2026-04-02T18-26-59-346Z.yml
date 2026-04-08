@@ -1,0 +1,49 @@
+- generic [active] [ref=e1]:
+  - main [ref=e165]:
+    - generic [ref=e170]:
+      - generic [ref=e171]:
+        - img [ref=e172]
+        - generic [ref=e174]: Red-Salud
+      - heading "Tu salud, en un solo lugar" [level=2] [ref=e175]
+      - paragraph [ref=e176]: Agenda citas con los mejores especialistas, consulta tu historial medico y comunicate con tu doctor desde la comodidad de tu hogar.
+      - generic [ref=e177]:
+        - generic [ref=e180]: Agenda citas en segundos
+        - generic [ref=e183]: Historial medico digital
+        - generic [ref=e186]: Telemedicina desde tu celular
+    - generic [ref=e188]:
+      - generic [ref=e189]:
+        - generic [ref=e190]:
+          - heading "Bienvenido de vuelta" [level=1] [ref=e191]
+          - paragraph [ref=e192]: Ingresa a tu portal del paciente
+        - button "Iniciar sesion con Google" [ref=e193]:
+          - img [ref=e194]
+          - text: Iniciar sesion con Google
+        - generic [ref=e203]: o
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e206]: Email
+            - textbox "Email" [ref=e207]:
+              - /placeholder: tu@email.com
+          - generic [ref=e208]:
+            - generic [ref=e209]: Contrasena
+            - generic [ref=e210]:
+              - textbox "Contrasena" [ref=e211]:
+                - /placeholder: Tu contrasena
+              - button [ref=e212]:
+                - img [ref=e213]
+          - generic [ref=e216]:
+            - generic [ref=e217] [cursor=pointer]:
+              - checkbox "Recordarme" [ref=e218]
+              - generic [ref=e219]: Recordarme
+            - link "Olvide mi contrasena" [ref=e220] [cursor=pointer]:
+              - /url: /auth/forgot-password
+          - button "Iniciar Sesion" [ref=e221]:
+            - img [ref=e222]
+            - text: Iniciar Sesion
+      - paragraph [ref=e225]:
+        - text: No tienes cuenta?
+        - link "Registrate aqui" [ref=e226] [cursor=pointer]:
+          - /url: /auth/register
+  - button "Open Next.js Dev Tools" [ref=e69] [cursor=pointer]:
+    - img [ref=e70]
+  - alert [ref=e73]

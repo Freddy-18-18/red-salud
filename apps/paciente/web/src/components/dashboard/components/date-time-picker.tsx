@@ -6,12 +6,7 @@ import { Calendar } from "@red-salud/design-system";
 import { Button } from "@red-salud/design-system";
 import { es } from "date-fns/locale";
 
-// TODO: Import TimeSlot from shared types package once available
-interface TimeSlot {
-  time: string;
-  available: boolean;
-  appointment_id?: string;
-}
+import type { TimeSlot } from "@/lib/services/appointments/appointments.types";
 
 interface Props {
   selectedDate?: Date;

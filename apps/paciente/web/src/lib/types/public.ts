@@ -60,14 +60,6 @@ export interface DoctorSchedule {
   };
 }
 
-export interface DoctorLocation {
-  lat: number;
-  lng: number;
-  city: string;
-  state: string;
-  address: string | null;
-}
-
 export interface MapDoctorPoint {
   id: string;
   slug: string;

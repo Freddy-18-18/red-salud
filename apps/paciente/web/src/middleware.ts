@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
+import { checkCsrf } from '@/lib/utils/csrf';
 
 const PUBLIC_PATHS = [
   '/',
@@ -22,6 +23,23 @@ function isPublicPath(pathname: string): boolean {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // API request logging
+  if (pathname.startsWith('/api/')) {
+    console.log(`[API] ${request.method} ${pathname}`);
+  }
+
+  // CSRF protection for mutation endpoints
+  if (pathname.startsWith('/api/') && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(request.method)) {
+    const csrfResult = checkCsrf(request);
+    if (csrfResult) return csrfResult;
+  }
+
+  // API routes handle their own auth — skip redirect logic
+  // (logging + CSRF already applied above)
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
 
   // Public paths skip auth entirely — no Supabase call
   if (isPublicPath(pathname)) {
@@ -84,5 +102,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|api/|sw\\.js|manifest\\.json|icons/).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|sw\\.js|manifest\\.json|icons/).*)'],
 };

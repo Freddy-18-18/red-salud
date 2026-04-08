@@ -17,6 +17,7 @@ import {
   MapPin,
   Star,
   Users,
+  DollarSign,
   Shield,
   Settings,
   LogOut,
@@ -70,7 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: "Inventario",
     items: [
-      { label: "Productos", href: "/dashboard/productos", icon: Package },
+      { label: "Productos", href: "/dashboard/inventario", icon: Package },
       { label: "Caducidades", href: "/dashboard/caducidades", icon: CalendarClock },
       { label: "Alertas", href: "/dashboard/alertas", icon: Bell },
     ],
@@ -100,6 +101,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: "Administracion",
     items: [
+      { label: "Precios", href: "/dashboard/precios", icon: DollarSign },
       { label: "Personal", href: "/dashboard/personal", icon: Users },
       { label: "Seguros", href: "/dashboard/seguros", icon: Shield },
       { label: "Configuracion", href: "/dashboard/configuracion", icon: Settings },

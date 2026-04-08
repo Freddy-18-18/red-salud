@@ -1,0 +1,241 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Red-Salud" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e7]
+          - generic [ref=e9]: Red-Salud
+        - generic [ref=e11]:
+          - img [ref=e12]
+          - textbox "Buscar medico, especialidad..." [ref=e15]
+        - generic [ref=e16]:
+          - link "Mensajes" [ref=e17] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e18]
+          - link "Notificaciones" [ref=e20] [cursor=pointer]:
+            - /url: /dashboard/notificaciones
+            - img [ref=e21]
+          - button "CT Carlos Test Paciente" [ref=e120]:
+            - generic [ref=e27]: CT
+            - generic [ref=e28]: Carlos Test Paciente
+            - img [ref=e29]
+    - generic [ref=e31]:
+      - complementary [ref=e32]:
+        - navigation [ref=e33]:
+          - link "Inicio" [ref=e34] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e35]
+            - text: Inicio
+          - link "Agendar Cita" [ref=e38] [cursor=pointer]:
+            - /url: /dashboard/agendar
+            - img [ref=e39]
+            - text: Agendar Cita
+          - link "Buscar Medico" [ref=e41] [cursor=pointer]:
+            - /url: /dashboard/buscar-medico
+            - img [ref=e42]
+            - text: Buscar Medico
+          - link "Mis Citas" [ref=e45] [cursor=pointer]:
+            - /url: /dashboard/citas
+            - img [ref=e46]
+            - text: Mis Citas
+          - link "Historial" [ref=e48] [cursor=pointer]:
+            - /url: /dashboard/historial
+            - img [ref=e49]
+            - text: Historial
+          - link "Recetas" [ref=e52] [cursor=pointer]:
+            - /url: /dashboard/recetas
+            - img [ref=e53]
+            - text: Recetas
+          - link "Documentos" [ref=e56] [cursor=pointer]:
+            - /url: /dashboard/documentos
+            - img [ref=e57]
+            - text: Documentos
+          - link "QR Medico" [ref=e59] [cursor=pointer]:
+            - /url: /dashboard/qr-medico
+            - img [ref=e60]
+            - text: QR Medico
+          - link "Mensajes" [ref=e64] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e65]
+            - text: Mensajes
+          - link "Recompensas" [ref=e67] [cursor=pointer]:
+            - /url: /dashboard/recompensas
+            - img [ref=e68]
+            - text: Recompensas
+          - link "Mi Perfil" [ref=e74] [cursor=pointer]:
+            - /url: /dashboard/perfil
+            - img [ref=e75]
+            - text: Mi Perfil
+      - main [ref=e78]:
+        - generic [ref=e80]:
+          - generic [ref=e122]:
+            - heading "Mis Recompensas" [level=1] [ref=e123]:
+              - img [ref=e124]
+              - text: Mis Recompensas
+            - paragraph [ref=e130]: Gana puntos cuidando tu salud y canjealos por beneficios
+          - generic [ref=e131]:
+            - generic [ref=e132]:
+              - generic [ref=e133]:
+                - generic [ref=e135]:
+                  - img [ref=e136]
+                  - generic [ref=e142]: Nv.1
+                - img [ref=e144]
+              - generic [ref=e146]:
+                - generic [ref=e147]:
+                  - heading "Nivel 1" [level=3] [ref=e148]
+                  - generic [ref=e149]: 0 pts
+                - paragraph [ref=e150]: 50 puntos para el siguiente nivel
+            - generic [ref=e153]:
+              - generic [ref=e154]: 0/50 pts
+              - generic [ref=e155]: Nv. 2
+          - generic [ref=e156]:
+            - generic [ref=e157]:
+              - generic [ref=e159]:
+                - img [ref=e161]
+                - generic [ref=e163]:
+                  - generic [ref=e164]:
+                    - generic [ref=e165]: "0"
+                    - generic [ref=e166]: dias de racha
+                  - generic [ref=e167]:
+                    - img [ref=e168]
+                    - text: "Mejor racha: 0 dias"
+              - generic [ref=e170]:
+                - paragraph [ref=e171]: Ultimos 30 dias
+                - generic [ref=e172]:
+                  - generic "4 mar. - Sin actividad" [ref=e173]
+                  - generic "5 mar. - Sin actividad" [ref=e174]
+                  - generic "6 mar. - Sin actividad" [ref=e175]
+                  - generic "7 mar. - Sin actividad" [ref=e176]
+                  - generic "8 mar. - Sin actividad" [ref=e177]
+                  - generic "9 mar. - Sin actividad" [ref=e178]
+                  - generic "10 mar. - Sin actividad" [ref=e179]
+                  - generic "11 mar. - Sin actividad" [ref=e180]
+                  - generic "12 mar. - Sin actividad" [ref=e181]
+                  - generic "13 mar. - Sin actividad" [ref=e182]
+                  - generic "14 mar. - Sin actividad" [ref=e183]
+                  - generic "15 mar. - Sin actividad" [ref=e184]
+                  - generic "16 mar. - Sin actividad" [ref=e185]
+                  - generic "17 mar. - Sin actividad" [ref=e186]
+                  - generic "18 mar. - Sin actividad" [ref=e187]
+                  - generic "19 mar. - Sin actividad" [ref=e188]
+                  - generic "20 mar. - Sin actividad" [ref=e189]
+                  - generic "21 mar. - Sin actividad" [ref=e190]
+                  - generic "22 mar. - Sin actividad" [ref=e191]
+                  - generic "23 mar. - Sin actividad" [ref=e192]
+                  - generic "24 mar. - Sin actividad" [ref=e193]
+                  - generic "25 mar. - Sin actividad" [ref=e194]
+                  - generic "26 mar. - Sin actividad" [ref=e195]
+                  - generic "27 mar. - Sin actividad" [ref=e196]
+                  - generic "28 mar. - Sin actividad" [ref=e197]
+                  - generic "29 mar. - Sin actividad" [ref=e198]
+                  - generic "30 mar. - Sin actividad" [ref=e199]
+                  - generic "31 mar. - Sin actividad" [ref=e200]
+                  - generic "1 abr. - Sin actividad" [ref=e201]
+                  - generic "2 abr. - Sin actividad" [ref=e202]
+                - generic [ref=e203]:
+                  - generic [ref=e204]: Menos
+                  - generic [ref=e207]: Mas
+            - generic [ref=e208]:
+              - heading "Logros Recientes" [level=3] [ref=e209]:
+                - img [ref=e210]
+                - text: Logros Recientes
+              - generic [ref=e213]:
+                - img [ref=e215]
+                - paragraph [ref=e218]: Completa actividades para ganar insignias
+          - generic [ref=e219]:
+            - generic [ref=e220]:
+              - heading "Insignias" [level=3] [ref=e221]
+              - generic [ref=e222]: 0/10
+            - generic [ref=e223]:
+              - button "Primera Cita" [ref=e224]:
+                - img [ref=e226]
+                - generic [ref=e229]: Primera Cita
+              - button "Perfil Completo" [ref=e230]:
+                - img [ref=e232]
+                - generic [ref=e235]: Perfil Completo
+              - button "Familia Unida" [ref=e236]:
+                - img [ref=e238]
+                - generic [ref=e241]: Familia Unida
+              - button "Comunicador" [ref=e242]:
+                - img [ref=e244]
+                - generic [ref=e247]: Comunicador
+              - button "Constante" [ref=e248]:
+                - img [ref=e250]
+                - generic [ref=e253]: Constante
+              - button "Preventivo" [ref=e254]:
+                - img [ref=e256]
+                - generic [ref=e259]: Preventivo
+              - button "Saludable" [ref=e260]:
+                - img [ref=e262]
+                - generic [ref=e265]: Saludable
+              - button "Nivel 5" [ref=e266]:
+                - img [ref=e268]
+                - generic [ref=e271]: Nivel 5
+              - button "Embajador" [ref=e272]:
+                - img [ref=e274]
+                - generic [ref=e277]: Embajador
+              - button "Nivel 10" [ref=e278]:
+                - img [ref=e280]
+                - generic [ref=e283]: Nivel 10
+          - generic [ref=e284]:
+            - generic [ref=e285]:
+              - heading "Historial de Puntos" [level=3] [ref=e286]
+              - generic [ref=e287]:
+                - button "Todos" [ref=e288]
+                - button "Ganados" [ref=e289]
+                - button "Canjeados" [ref=e290]
+            - generic [ref=e291]:
+              - img [ref=e292]
+              - paragraph [ref=e295]: Aun no tenes transacciones
+          - generic [ref=e296]:
+            - generic [ref=e297]:
+              - heading "Canjear Puntos" [level=3] [ref=e298]
+              - generic [ref=e299]: 0 pts disponibles
+            - generic [ref=e300]:
+              - generic [ref=e301]:
+                - img [ref=e303]
+                - generic [ref=e306]:
+                  - paragraph [ref=e307]: Telemedicina gratis
+                  - paragraph [ref=e308]: Una consulta de telemedicina sin costo
+                - generic [ref=e309]:
+                  - generic [ref=e310]: 500 pts
+                  - button "Canjear" [disabled] [ref=e311]
+              - generic [ref=e312]:
+                - img [ref=e314]
+                - generic [ref=e317]:
+                  - paragraph [ref=e318]: Descuento en farmacia
+                  - paragraph [ref=e319]: 15% de descuento en tu proxima compra en farmacia
+                - generic [ref=e320]:
+                  - generic [ref=e321]: 300 pts
+                  - button "Canjear" [disabled] [ref=e322]
+              - generic [ref=e323]:
+                - img [ref=e325]
+                - generic [ref=e327]:
+                  - paragraph [ref=e328]: Examen de laboratorio
+                  - paragraph [ref=e329]: Un examen de laboratorio basico sin costo
+                - generic [ref=e330]:
+                  - generic [ref=e331]: 200 pts
+                  - button "Canjear" [disabled] [ref=e332]
+              - generic [ref=e333]:
+                - img [ref=e335]
+                - generic [ref=e339]:
+                  - paragraph [ref=e340]: Cita prioritaria
+                  - paragraph [ref=e341]: Agenda una cita con prioridad, sin tiempo de espera
+                - generic [ref=e342]:
+                  - generic [ref=e343]: 400 pts
+                  - button "Canjear" [disabled] [ref=e344]
+              - generic [ref=e345]:
+                - img [ref=e347]
+                - generic [ref=e350]:
+                  - paragraph [ref=e351]: Chequeo basico gratuito
+                  - paragraph [ref=e352]: Un chequeo medico basico completo
+                - generic [ref=e353]:
+                  - generic [ref=e354]: 800 pts
+                  - button "Canjear" [disabled] [ref=e355]
+    - 'button "Emergencia: mantener presionado para activar" [ref=e116]':
+      - img [ref=e118]
+      - generic: Mantener para emergencia
+  - button "Open Next.js Dev Tools" [ref=e361] [cursor=pointer]:
+    - img [ref=e362]
+  - alert [ref=e365]

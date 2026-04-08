@@ -7,11 +7,6 @@ import {
   type ProviderResult,
   type ProviderType,
   type ProviderReview,
-  type RatingBreakdown,
-  type DoctorDetail,
-  type PharmacyDetail,
-  type ClinicDetail,
-  type LabDetail,
   type CreateReview,
 } from "@/lib/services/directory-service";
 

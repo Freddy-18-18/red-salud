@@ -64,7 +64,7 @@ import {
   fetchProductsForPO,
   fetchSuppliersForPO,
 } from "@/lib/services/purchase-order-service";
-import { getLatestExchangeRate } from "@/lib/services/exchange-rate-service";
+import { getLatestExchangeRateClient as getLatestExchangeRate } from "@/lib/services/exchange-rate-client";
 
 // ---------------------------------------------------------------------------
 // Helpers

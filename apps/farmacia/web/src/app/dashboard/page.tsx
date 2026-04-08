@@ -27,9 +27,11 @@ import {
 } from "@/lib/services/dashboard-service";
 import {
   getLatestExchangeRate,
+  getLatestRates,
   formatUsd,
   formatBs,
   formatRelativeTime,
+  CURRENCY_PAIRS,
 } from "@/lib/services/exchange-rate-service";
 import { redirect } from "next/navigation";
 
@@ -90,14 +92,20 @@ export default async function DashboardPage() {
   const bcvRate = exchangeRate.rate;
 
   // Parallel data fetching
-  const [stats, recentSales, recentAlerts, salesLast7Days, topProducts] =
+  const [stats, recentSales, recentAlerts, salesLast7Days, topProducts, allRates] =
     await Promise.all([
       getDashboardStats(pharmacy.id),
       getRecentSales(pharmacy.id, 5),
       getRecentAlerts(pharmacy.id, 5),
       getSalesLast7Days(pharmacy.id),
       getTopProducts(pharmacy.id, 5),
+      getLatestRates(),
     ]);
+
+  // Extract the parallel rate for the KPI card
+  const paraleloRate = allRates.find(
+    (r) => r.currencyPair === CURRENCY_PAIRS.USD_PARALELO,
+  );
 
   // Compute chart bar heights
   const maxDailySales = Math.max(...salesLast7Days.map((d) => d.totalUsd), 1);
@@ -258,6 +266,16 @@ export default async function DashboardPage() {
             <p className="text-xs text-slate-500 mt-1">
               1 USD = Bs. {bcvRate.toFixed(4)}
             </p>
+            {paraleloRate && (
+              <div className="flex items-center gap-1.5 mt-1.5 px-2 py-1 rounded bg-slate-50 border border-slate-100 w-fit">
+                <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">
+                  Paralelo
+                </span>
+                <span className="text-xs font-bold text-slate-700">
+                  Bs. {paraleloRate.rate.toFixed(2)}
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-1 mt-2">
               <span className="text-xs text-slate-400">
                 {exchangeRate.source === "fallback"

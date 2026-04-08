@@ -6,26 +6,7 @@ import { Button } from "@red-salud/design-system";
 import { User, MapPin, Phone, Clock } from "lucide-react";
 import Image from "next/image";
 
-// TODO: Import DoctorProfile from shared types package once available
-interface DoctorProfile {
-  id: string;
-  specialty_id?: string;
-  years_experience?: number;
-  biografia?: string;
-  consultation_fee?: number;
-  verified?: boolean;
-  profile?: {
-    id?: string;
-    full_name?: string;
-    email?: string;
-    avatar_url?: string;
-  };
-  specialty?: {
-    id: string;
-    name: string;
-    description?: string;
-  };
-}
+import type { DoctorProfile } from "@/lib/services/appointments/appointments.types";
 
 interface DoctorProfileExtended extends DoctorProfile {
   address?: string;

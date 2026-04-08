@@ -1,0 +1,45 @@
+- main [ref=e2]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - img [ref=e9]
+      - generic [ref=e11]: Red-Salud
+    - heading "Tu salud, en un solo lugar" [level=2] [ref=e12]
+    - paragraph [ref=e13]: Agenda citas con los mejores especialistas, consulta tu historial medico y comunicate con tu doctor desde la comodidad de tu hogar.
+    - generic [ref=e14]:
+      - generic [ref=e17]: Agenda citas en segundos
+      - generic [ref=e20]: Historial medico digital
+      - generic [ref=e23]: Telemedicina desde tu celular
+  - generic [ref=e25]:
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - heading "Bienvenido de vuelta" [level=1] [ref=e28]
+        - paragraph [ref=e29]: Ingresa a tu portal del paciente
+      - button "Iniciar sesion con Google" [ref=e30]:
+        - img [ref=e31]
+        - text: Iniciar sesion con Google
+      - generic [ref=e40]: o
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: Email
+          - textbox "Email" [ref=e44]:
+            - /placeholder: tu@email.com
+        - generic [ref=e45]:
+          - generic [ref=e46]: Contrasena
+          - generic [ref=e47]:
+            - textbox "Contrasena" [ref=e48]:
+              - /placeholder: Tu contrasena
+            - button [ref=e49]:
+              - img [ref=e50]
+        - generic [ref=e53]:
+          - generic [ref=e54] [cursor=pointer]:
+            - checkbox "Recordarme" [ref=e55]
+            - generic [ref=e56]: Recordarme
+          - link "Olvide mi contrasena" [ref=e57] [cursor=pointer]:
+            - /url: /auth/forgot-password
+        - button "Iniciar Sesion" [ref=e58]:
+          - img [ref=e59]
+          - text: Iniciar Sesion
+    - paragraph [ref=e62]:
+      - text: No tienes cuenta?
+      - link "Registrate aqui" [ref=e63] [cursor=pointer]:
+        - /url: /auth/register

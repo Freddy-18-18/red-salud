@@ -1,0 +1,84 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e106] [cursor=pointer]:
+    - img [ref=e107]
+  - alert [ref=e110]
+  - generic [ref=e237]:
+    - generic [ref=e238]:
+      - img [ref=e240]
+      - heading "Configurar Farmacia" [level=1] [ref=e243]
+      - paragraph [ref=e244]: Complete los datos para comenzar a usar el sistema
+    - generic [ref=e245]:
+      - generic [ref=e247]:
+        - img [ref=e360]
+        - generic [ref=e253]: Datos
+      - generic [ref=e256]:
+        - img [ref=e436]
+        - generic [ref=e261]: Ubicacion
+      - generic [ref=e264]:
+        - img [ref=e266]
+        - generic [ref=e269]: Horario
+      - generic [ref=e272]:
+        - img [ref=e274]
+        - generic [ref=e277]: Configuracion
+    - generic [ref=e279]:
+      - generic [ref=e439]:
+        - generic [ref=e440]:
+          - generic [ref=e441]:
+            - img [ref=e442]
+            - text: Horario de Atencion
+          - button "L-V 7am-8pm, Sab 8am-2pm" [ref=e445]
+        - generic [ref=e446]:
+          - generic [ref=e448]:
+            - switch [checked] [ref=e449] [cursor=pointer]
+            - generic [ref=e450]: Lunes
+            - generic [ref=e451]:
+              - textbox [ref=e452]: 07:00
+              - generic [ref=e453]: a
+              - textbox [ref=e454]: 20:00
+          - generic [ref=e456]:
+            - switch [checked] [ref=e457] [cursor=pointer]
+            - generic [ref=e458]: Martes
+            - generic [ref=e459]:
+              - textbox [ref=e460]: 07:00
+              - generic [ref=e461]: a
+              - textbox [ref=e462]: 20:00
+          - generic [ref=e464]:
+            - switch [checked] [ref=e465] [cursor=pointer]
+            - generic [ref=e466]: Miercoles
+            - generic [ref=e467]:
+              - textbox [ref=e468]: 07:00
+              - generic [ref=e469]: a
+              - textbox [ref=e470]: 20:00
+          - generic [ref=e472]:
+            - switch [checked] [ref=e473] [cursor=pointer]
+            - generic [ref=e474]: Jueves
+            - generic [ref=e475]:
+              - textbox [ref=e476]: 07:00
+              - generic [ref=e477]: a
+              - textbox [ref=e478]: 20:00
+          - generic [ref=e480]:
+            - switch [checked] [ref=e481] [cursor=pointer]
+            - generic [ref=e482]: Viernes
+            - generic [ref=e483]:
+              - textbox [ref=e484]: 07:00
+              - generic [ref=e485]: a
+              - textbox [ref=e486]: 20:00
+          - generic [ref=e488]:
+            - switch [checked] [ref=e489] [cursor=pointer]
+            - generic [ref=e490]: Sabado
+            - generic [ref=e491]:
+              - textbox [ref=e492]: 08:00
+              - generic [ref=e493]: a
+              - textbox [ref=e494]: 14:00
+          - generic [ref=e496]:
+            - switch [ref=e497] [cursor=pointer]
+            - generic [ref=e498]: Domingo
+            - generic [ref=e499]: Cerrado
+      - generic [ref=e305]:
+        - button "Atras" [ref=e389]:
+          - img [ref=e390]
+          - text: Atras
+        - button "Siguiente" [active] [ref=e306]:
+          - text: Siguiente
+          - img [ref=e307]
+    - paragraph [ref=e309]: Podra modificar estos datos despues desde Configuracion.

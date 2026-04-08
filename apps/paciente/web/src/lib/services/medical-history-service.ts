@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/utils/fetch";
 
 // ---------- Types ----------
 
@@ -138,86 +139,64 @@ export const medicalHistoryService = {
     const allEvents: TimelineEvent[] = [];
     const activeTypes = filters.types && filters.types.length > 0 ? filters.types : null;
 
-    // --- Appointments ---
+    // --- Appointments (via API) ---
     if (!activeTypes || activeTypes.includes("appointment")) {
       try {
-        let query = supabase
-          .from("appointments")
-          .select(`
-            id, scheduled_at, reason, notes, status, duration_minutes,
-            doctor:profiles!appointments_medico_id_fkey(id, full_name)
-          `)
-          .eq("patient_id", patientId)
-          .order("scheduled_at", { ascending: false });
+        const appointments = await fetchJson<Record<string, unknown>[]>(
+          `/api/appointments?page_size=50`
+        );
 
-        if (filters.dateFrom) {
-          query = query.gte("scheduled_at", `${filters.dateFrom}T00:00:00`);
-        }
-        if (filters.dateTo) {
-          query = query.lte("scheduled_at", `${filters.dateTo}T23:59:59`);
-        }
-        if (filters.doctorId) {
-          query = query.eq("doctor_id", filters.doctorId);
-        }
-
-        const { data, error } = await query;
-        if (!error && data) {
-          for (const apt of data) {
-            const row = apt as Record<string, unknown>;
-            const doctor = row.doctor as Record<string, unknown> | null;
-            const scheduledAt = row.scheduled_at as string;
-            const mappedStatus = mapAppointmentStatus(row.status as string);
+        if (appointments) {
+          for (const apt of appointments) {
+            const doctor = apt.doctor as Record<string, unknown> | null;
+            const doctorProfile = (doctor as Record<string, unknown>)?.profile as Record<string, unknown> | null;
+            const startTime = apt.start_time as string;
+            const mappedStatus = mapAppointmentStatus(apt.status as string);
             const config = getStatusConfig("appointment", mappedStatus);
+            const doctorName = doctorProfile
+              ? [doctorProfile.first_name, doctorProfile.last_name].filter(Boolean).join(" ")
+              : undefined;
+
+            // Apply client-side date filtering
+            if (filters.dateFrom && startTime < `${filters.dateFrom}T00:00:00`) continue;
+            if (filters.dateTo && startTime > `${filters.dateTo}T23:59:59`) continue;
+            if (filters.doctorId && apt.doctor_id !== filters.doctorId) continue;
 
             allEvents.push({
-              id: `apt-${row.id}`,
+              id: `apt-${apt.id}`,
               type: "appointment",
-              date: scheduledAt,
+              date: startTime,
               title: "Consulta medica",
-              summary: (row.reason as string) || "Consulta con medico",
-              doctor_name: doctor?.full_name as string | undefined,
-              doctor_id: doctor?.id as string | undefined,
+              summary: (apt.motivo as string) || "Consulta con medico",
+              doctor_name: doctorName,
+              doctor_id: (doctor as Record<string, unknown>)?.id as string | undefined,
               status: mappedStatus,
               status_label: config.label,
               status_color: config.color,
               metadata: {
-                duration: row.duration_minutes,
-                notes: row.notes,
+                notes: apt.notes,
               },
             });
           }
         }
       } catch {
-        // Table may not exist yet — skip
+        // API may not be available — skip
       }
     }
 
-    // --- Lab Orders ---
+    // --- Lab Orders (via API) ---
     if (!activeTypes || activeTypes.includes("lab_result")) {
       try {
-        let query = supabase
-          .from("lab_orders")
-          .select(`
-            id, order_number, ordered_at, status,
-            doctor:profiles!lab_orders_doctor_id_fkey(id, full_name),
-            tests:lab_order_tests(test_type:lab_test_types(name))
-          `)
-          .eq("patient_id", patientId)
-          .order("ordered_at", { ascending: false });
+        const labParams = new URLSearchParams();
+        if (filters.dateFrom) labParams.set("from", `${filters.dateFrom}T00:00:00`);
+        if (filters.dateTo) labParams.set("to", `${filters.dateTo}T23:59:59`);
+        const qs = labParams.toString();
+        const labOrders = await fetchJson<Record<string, unknown>[]>(
+          `/api/lab/orders${qs ? `?${qs}` : ""}`,
+        );
 
-        if (filters.dateFrom) {
-          query = query.gte("ordered_at", `${filters.dateFrom}T00:00:00`);
-        }
-        if (filters.dateTo) {
-          query = query.lte("ordered_at", `${filters.dateTo}T23:59:59`);
-        }
-        if (filters.doctorId) {
-          query = query.eq("doctor_id", filters.doctorId);
-        }
-
-        const { data, error } = await query;
-        if (!error && data) {
-          for (const order of data) {
+        if (labOrders) {
+          for (const order of labOrders) {
             const row = order as Record<string, unknown>;
             const doctor = row.doctor as Record<string, unknown> | null;
             const tests = row.tests as Array<Record<string, unknown>> | null;
@@ -227,6 +206,9 @@ export const medicalHistoryService = {
               .join(", ");
             const status = row.status as string;
             const config = getStatusConfig("lab_result", status);
+
+            // Apply client-side doctor filter (API doesn't support doctor_id param)
+            if (filters.doctorId && doctor?.id !== filters.doctorId) continue;
 
             allEvents.push({
               id: `lab-${row.id}`,
@@ -244,37 +226,20 @@ export const medicalHistoryService = {
           }
         }
       } catch {
-        // Table may not exist yet — skip
+        // API may not be available — skip
       }
     }
 
-    // --- Prescriptions ---
+    // --- Prescriptions (via API) ---
     if (!activeTypes || activeTypes.includes("prescription")) {
       try {
-        let query = supabase
-          .from("prescriptions")
-          .select(`
-            id, diagnosis, prescribed_at, expires_at, status,
-            doctor:profiles(id, full_name),
-            medications:prescription_medications(medication_name)
-          `)
-          .eq("patient_id", patientId)
-          .order("prescribed_at", { ascending: false });
+        const prescriptions = await fetchJson<Record<string, unknown>[]>(
+          `/api/prescriptions`,
+        );
 
-        if (filters.dateFrom) {
-          query = query.gte("prescribed_at", `${filters.dateFrom}T00:00:00`);
-        }
-        if (filters.dateTo) {
-          query = query.lte("prescribed_at", `${filters.dateTo}T23:59:59`);
-        }
-        if (filters.doctorId) {
-          query = query.eq("doctor_id", filters.doctorId);
-        }
-
-        const { data, error } = await query;
-        if (!error && data) {
+        if (prescriptions) {
           const now = new Date();
-          for (const rx of data) {
+          for (const rx of prescriptions) {
             const row = rx as Record<string, unknown>;
             const doctor = row.doctor as Record<string, unknown> | null;
             const meds = row.medications as Array<Record<string, unknown>> | null;
@@ -285,10 +250,16 @@ export const medicalHistoryService = {
             }
             const config = getStatusConfig("prescription", status);
 
+            // Apply client-side filters (API returns all prescriptions)
+            const prescribedAt = row.prescribed_at as string;
+            if (filters.dateFrom && prescribedAt < `${filters.dateFrom}T00:00:00`) continue;
+            if (filters.dateTo && prescribedAt > `${filters.dateTo}T23:59:59`) continue;
+            if (filters.doctorId && doctor?.id !== filters.doctorId) continue;
+
             allEvents.push({
               id: `rx-${row.id}`,
               type: "prescription",
-              date: row.prescribed_at as string,
+              date: prescribedAt,
               title: "Receta medica",
               summary: (row.diagnosis as string) || medNames || "Receta",
               doctor_name: doctor?.full_name as string | undefined,
@@ -305,7 +276,7 @@ export const medicalHistoryService = {
           }
         }
       } catch {
-        // Table may not exist yet — skip
+        // API may not be available — skip
       }
     }
 
@@ -437,35 +408,32 @@ export const medicalHistoryService = {
       procedures: 0,
     };
 
-    // Count appointments
+    // Count appointments (via API)
     try {
-      const { count, error } = await supabase
-        .from("appointments")
-        .select("*", { count: "exact", head: true })
-        .eq("patient_id", patientId);
-      if (!error && count !== null) stats.appointments = count;
+      const res = await fetch(`/api/appointments?page_size=1`);
+      if (res.ok) {
+        const json = await res.json();
+        stats.appointments = json.pagination?.total ?? 0;
+      }
     } catch {
       // skip
     }
 
-    // Count lab orders
+    // Count lab orders (via API)
     try {
-      const { count, error } = await supabase
-        .from("lab_orders")
-        .select("*", { count: "exact", head: true })
-        .eq("patient_id", patientId);
-      if (!error && count !== null) stats.lab_results = count;
+      const labRes = await fetch(`/api/lab/orders?count_only=true`);
+      if (labRes.ok) {
+        const { count } = await labRes.json();
+        stats.lab_results = count ?? 0;
+      }
     } catch {
       // skip
     }
 
-    // Count prescriptions
+    // Count prescriptions (via API)
     try {
-      const { count, error } = await supabase
-        .from("prescriptions")
-        .select("*", { count: "exact", head: true })
-        .eq("patient_id", patientId);
-      if (!error && count !== null) stats.prescriptions = count;
+      const rxData = await fetchJson<Record<string, unknown>[]>(`/api/prescriptions`);
+      stats.prescriptions = rxData?.length ?? 0;
     } catch {
       // skip
     }

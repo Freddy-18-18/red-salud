@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/utils/fetch";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -53,59 +54,55 @@ const PROFILE_FIELDS = [
 /*  Category scorers                                                   */
 /* ------------------------------------------------------------------ */
 
-async function scoreAppointments(patientId: string): Promise<number> {
-  const oneYearAgo = new Date();
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+async function scoreAppointments(_patientId: string): Promise<number> {
+  try {
+    // Use pagination total to count completed appointments
+    const res = await fetch(`/api/appointments?status=completada&page_size=1`);
+    if (!res.ok) return 0;
+    const json = await res.json();
+    const completed = json.pagination?.total ?? 0;
 
-  const { data, error } = await supabase
-    .from("appointments")
-    .select("id, status")
-    .eq("patient_id", patientId)
-    .gte("date", oneYearAgo.toISOString());
-
-  if (error || !data) return 0;
-
-  const completed = data.filter(
-    (a) => a.status === "completed" || a.status === "completada"
-  ).length;
-
-  // Recommended: at least 2 checkups per year (general + dental or specialist)
-  const EXPECTED = 2;
-  const ratio = Math.min(completed / EXPECTED, 1);
-  return Math.round(ratio * 20);
+    // Recommended: at least 2 checkups per year (general + dental or specialist)
+    const EXPECTED = 2;
+    const ratio = Math.min(completed / EXPECTED, 1);
+    return Math.round(ratio * 20);
+  } catch {
+    return 0;
+  }
 }
 
-async function scoreMedications(patientId: string): Promise<number> {
+async function scoreMedications(_patientId: string): Promise<number> {
   // Medications/prescriptions tracking tables may not exist yet.
   // Use a heuristic: if patient has recent completed appointments, assume
   // basic adherence. Score 14/20 as reasonable default when no data.
-  const { data } = await supabase
-    .from("appointments")
-    .select("id, status")
-    .eq("patient_id", patientId)
-    .eq("status", "completed")
-    .limit(5);
+  try {
+    const appointments = await fetchJson<Record<string, unknown>[]>(
+      `/api/appointments?status=completada&page_size=5`
+    );
 
-  if (!data || data.length === 0) return 10; // neutral score when no data
-  // More completed appointments → better assumed adherence
-  const adherenceScore = Math.min(data.length * 4, 20);
-  return adherenceScore;
+    if (!appointments || appointments.length === 0) return 10; // neutral score when no data
+    // More completed appointments → better assumed adherence
+    const adherenceScore = Math.min(appointments.length * 4, 20);
+    return adherenceScore;
+  } catch {
+    return 10;
+  }
 }
 
-async function scoreVitals(patientId: string): Promise<number> {
+async function scoreVitals(_patientId: string): Promise<number> {
   // Check if vitals have been logged recently
-  const { data } = await supabase
-    .from("appointments")
-    .select("id")
-    .eq("patient_id", patientId)
-    .eq("status", "completed")
-    .order("date", { ascending: false })
-    .limit(3);
+  try {
+    const appointments = await fetchJson<Record<string, unknown>[]>(
+      `/api/appointments?status=completada&page_size=3`
+    );
 
-  if (!data || data.length === 0) return 8; // Low score — no health data
-  // Assume vitals were taken during appointments
-  const score = Math.min(data.length * 6, 20);
-  return score;
+    if (!appointments || appointments.length === 0) return 8; // Low score — no health data
+    // Assume vitals were taken during appointments
+    const score = Math.min(appointments.length * 6, 20);
+    return score;
+  } catch {
+    return 8;
+  }
 }
 
 async function scoreActivity(patientId: string): Promise<number> {

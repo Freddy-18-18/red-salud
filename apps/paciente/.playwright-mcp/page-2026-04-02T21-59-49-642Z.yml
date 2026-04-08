@@ -1,0 +1,115 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Red-Salud" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e7]
+          - generic [ref=e9]: Red-Salud
+        - generic [ref=e11]:
+          - img [ref=e12]
+          - textbox "Buscar medico, especialidad..." [ref=e15]
+        - generic [ref=e16]:
+          - link "Mensajes" [ref=e17] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e18]
+          - link "Notificaciones" [ref=e20] [cursor=pointer]:
+            - /url: /dashboard/notificaciones
+            - img [ref=e21]
+          - button "CT Carlos Test Paciente" [ref=e115]:
+            - generic [ref=e27]: CT
+            - generic [ref=e28]: Carlos Test Paciente
+            - img [ref=e29]
+    - generic [ref=e31]:
+      - complementary [ref=e32]:
+        - navigation [ref=e33]:
+          - link "Inicio" [ref=e34] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e35]
+            - text: Inicio
+          - link "Agendar Cita" [ref=e38] [cursor=pointer]:
+            - /url: /dashboard/agendar
+            - img [ref=e39]
+            - text: Agendar Cita
+          - link "Buscar Medico" [ref=e41] [cursor=pointer]:
+            - /url: /dashboard/buscar-medico
+            - img [ref=e42]
+            - text: Buscar Medico
+          - link "Mis Citas" [ref=e45] [cursor=pointer]:
+            - /url: /dashboard/citas
+            - img [ref=e46]
+            - text: Mis Citas
+          - link "Historial" [ref=e48] [cursor=pointer]:
+            - /url: /dashboard/historial
+            - img [ref=e49]
+            - text: Historial
+          - link "Recetas" [ref=e52] [cursor=pointer]:
+            - /url: /dashboard/recetas
+            - img [ref=e53]
+            - text: Recetas
+          - link "Documentos" [ref=e56] [cursor=pointer]:
+            - /url: /dashboard/documentos
+            - img [ref=e57]
+            - text: Documentos
+          - link "QR Medico" [ref=e59] [cursor=pointer]:
+            - /url: /dashboard/qr-medico
+            - img [ref=e60]
+            - text: QR Medico
+          - link "Mensajes" [ref=e64] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e65]
+            - text: Mensajes
+          - link "Recompensas" [ref=e67] [cursor=pointer]:
+            - /url: /dashboard/recompensas
+            - img [ref=e68]
+            - text: Recompensas
+          - link "Mi Perfil" [ref=e74] [cursor=pointer]:
+            - /url: /dashboard/perfil
+            - img [ref=e75]
+            - text: Mi Perfil
+      - main [ref=e78]:
+        - generic [ref=e80]:
+          - generic [ref=e116]:
+            - generic [ref=e117]:
+              - heading "Mi Identificacion Medica" [level=1] [ref=e118]
+              - paragraph [ref=e119]: Tu informacion medica en un codigo QR
+            - generic [ref=e120]:
+              - button "Escanear" [ref=e121]:
+                - img [ref=e122]
+                - generic [ref=e127]: Escanear
+              - button [ref=e128]:
+                - img [ref=e129]
+          - generic [ref=e132]:
+            - button "QR Code" [ref=e133]:
+              - generic [ref=e134]:
+                - img [ref=e135]
+                - text: QR Code
+            - button "Tarjeta" [ref=e139]:
+              - generic [ref=e140]:
+                - img [ref=e141]
+                - text: Tarjeta
+          - generic [ref=e143]:
+            - generic [ref=e144]:
+              - img [ref=e146]
+              - generic [ref=e149]:
+                - button "Descargar" [ref=e150]:
+                  - img [ref=e151]
+                  - text: Descargar
+                - button "Compartir" [ref=e154]:
+                  - img [ref=e155]
+                  - text: Compartir
+                - button [ref=e161]:
+                  - img [ref=e162]
+            - generic [ref=e165]:
+              - generic [ref=e166]:
+                - heading "Carlos Test Paciente" [level=2] [ref=e167]
+                - paragraph [ref=e168]: 35 anos
+              - button "Editar informacion medica" [ref=e169]:
+                - img [ref=e170]
+                - text: Editar informacion medica
+    - 'button "Emergencia: mantener presionado para activar" [ref=e111]':
+      - img [ref=e113]
+      - generic: Mantener para emergencia
+  - button "Open Next.js Dev Tools" [ref=e177] [cursor=pointer]:
+    - img [ref=e178]
+  - alert [ref=e181]

@@ -1,0 +1,12 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - img [ref=e163]
+      - heading "Registro exitoso" [level=1] [ref=e166]
+      - paragraph [ref=e167]: Revisa tu correo en test@farmacia-demo.com para confirmar tu cuenta.
+      - paragraph [ref=e168]: No lo ves? Revisa tu carpeta de spam.
+      - link "Ir a Iniciar Sesion" [ref=e169] [cursor=pointer]:
+        - /url: /auth/login
+  - button "Open Next.js Dev Tools" [ref=e106] [cursor=pointer]:
+    - img [ref=e107]
+  - alert [ref=e110]

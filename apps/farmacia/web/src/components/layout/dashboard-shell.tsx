@@ -3,7 +3,7 @@
 import { Sidebar } from "./sidebar";
 import { Navbar } from "./navbar";
 import type { PharmacyProfile, UserProfile } from "@/lib/services/dashboard-service";
-import type { ExchangeRate } from "@/lib/services/exchange-rate-service";
+import type { ExchangeRate } from "@/lib/services/exchange-rate-client";
 
 interface DashboardShellProps {
   pharmacy: PharmacyProfile;

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/utils/rate-limit";
 
 // -------------------------------------------------------------------
 // CNE Cedula Verification API Route
 // -------------------------------------------------------------------
 // Server-side only. Credentials are stored in env vars (NOT NEXT_PUBLIC).
-// Rate-limited to 5 verification attempts per user per calendar day.
+// Rate-limited via the shared rate limiter (sensitive tier: 5/min).
 // -------------------------------------------------------------------
 
 interface CneApiResponse {
@@ -33,30 +34,13 @@ interface VerifyCedulaBody {
   cedula: string;
 }
 
-// Simple in-memory rate limiter (keyed by userId, resets per calendar day)
-const rateLimitMap = new Map<string, { count: number; date: string }>();
-const DAILY_LIMIT = 5;
-
-function isRateLimited(userId: string): boolean {
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const entry = rateLimitMap.get(userId);
-
-  if (!entry || entry.date !== today) {
-    rateLimitMap.set(userId, { count: 1, date: today });
-    return false;
-  }
-
-  if (entry.count >= DAILY_LIMIT) {
-    return true;
-  }
-
-  entry.count += 1;
-  return false;
-}
-
 export async function POST(request: NextRequest) {
   try {
-    // 1. Validate authentication
+    // 1. Rate limit check (sensitive tier: 5/min)
+    const limited = checkRateLimit(request, "sensitive");
+    if (limited) return limited;
+
+    // 2. Validate authentication
     const supabase = await createClient();
     const {
       data: { user },
@@ -67,18 +51,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: true, message: "No autenticado. Inicia sesion para continuar." },
         { status: 401 },
-      );
-    }
-
-    // 2. Rate limit check
-    if (isRateLimited(user.id)) {
-      return NextResponse.json(
-        {
-          error: true,
-          message:
-            "Has alcanzado el limite de 5 verificaciones por dia. Intenta manana.",
-        },
-        { status: 429 },
       );
     }
 

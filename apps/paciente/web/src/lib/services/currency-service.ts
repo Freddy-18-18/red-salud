@@ -98,7 +98,7 @@ function getCachedRates(): ExchangeRate[] | null {
 
 // ─── API helpers ─────────────────────────────────────────────────────
 
-async function fetchJson<T>(endpoint: string): Promise<T> {
+async function fetchDolarApi<T>(endpoint: string): Promise<T> {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     next: { revalidate: 300 }, // 5-min ISR cache for Next.js
   });
@@ -125,7 +125,7 @@ export async function getAllRates(): Promise<ExchangeRate[]> {
   if (cached) return cached.rates;
 
   try {
-    const quotes = await fetchJson<DolarApiQuote[]>("/cotizaciones");
+    const quotes = await fetchDolarApi<DolarApiQuote[]>("/cotizaciones");
     const rates: ExchangeRate[] = quotes.map((q) => {
       // Determine currency from the name
       const currency = q.nombre.toLowerCase().includes("euro") ? "EUR" : "USD";
@@ -143,7 +143,7 @@ export async function getAllRates(): Promise<ExchangeRate[]> {
 
 export async function getOfficialDollar(): Promise<ExchangeRate> {
   try {
-    const data = await fetchJson<DolarApiSingleQuote>("/dolar-oficial");
+    const data = await fetchDolarApi<DolarApiSingleQuote>("/dolar-oficial");
     return mapQuote(data, "USD");
   } catch (error) {
     console.error("Error fetching official dollar:", error);
@@ -158,7 +158,7 @@ export async function getOfficialDollar(): Promise<ExchangeRate> {
 
 export async function getParallelDollar(): Promise<ExchangeRate> {
   try {
-    const data = await fetchJson<DolarApiSingleQuote>("/dolar-paralelo");
+    const data = await fetchDolarApi<DolarApiSingleQuote>("/dolar-paralelo");
     return mapQuote(data, "USD");
   } catch (error) {
     console.error("Error fetching parallel dollar:", error);
@@ -173,7 +173,7 @@ export async function getParallelDollar(): Promise<ExchangeRate> {
 
 export async function getOfficialEuro(): Promise<ExchangeRate> {
   try {
-    const data = await fetchJson<DolarApiSingleQuote>("/euro-oficial");
+    const data = await fetchDolarApi<DolarApiSingleQuote>("/euro-oficial");
     return mapQuote(data, "EUR");
   } catch (error) {
     console.error("Error fetching official euro:", error);
@@ -188,7 +188,7 @@ export async function getOfficialEuro(): Promise<ExchangeRate> {
 
 export async function getParallelEuro(): Promise<ExchangeRate> {
   try {
-    const data = await fetchJson<DolarApiSingleQuote>("/euro-paralelo");
+    const data = await fetchDolarApi<DolarApiSingleQuote>("/euro-paralelo");
     return mapQuote(data, "EUR");
   } catch (error) {
     console.error("Error fetching parallel euro:", error);
@@ -203,7 +203,7 @@ export async function getParallelEuro(): Promise<ExchangeRate> {
 
 export async function getDollarHistory(): Promise<HistoricalRate[]> {
   try {
-    const data = await fetchJson<DolarApiHistorical[]>(
+    const data = await fetchDolarApi<DolarApiHistorical[]>(
       "/historicos-dolar-oficial"
     );
     return data.map((d) => ({

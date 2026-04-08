@@ -1,0 +1,61 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e106] [cursor=pointer]:
+    - img [ref=e107]
+  - alert [ref=e110]
+  - generic [ref=e237]:
+    - generic [ref=e238]:
+      - img [ref=e240]
+      - heading "Configurar Farmacia" [level=1] [ref=e243]
+      - paragraph [ref=e244]: Complete los datos para comenzar a usar el sistema
+    - generic [ref=e245]:
+      - generic [ref=e247]:
+        - img [ref=e360]
+        - generic [ref=e253]: Datos
+      - generic [ref=e256]:
+        - img [ref=e436]
+        - generic [ref=e261]: Ubicacion
+      - generic [ref=e264]:
+        - img [ref=e500]
+        - generic [ref=e269]: Horario
+      - generic [ref=e272]:
+        - img [ref=e274]
+        - generic [ref=e277]: Configuracion
+    - generic [ref=e279]:
+      - generic [ref=e503]:
+        - generic [ref=e504]:
+          - img [ref=e505]
+          - text: Configuracion Inicial
+        - generic [ref=e508]:
+          - generic [ref=e509]:
+            - generic [ref=e510]:
+              - img [ref=e511]
+              - text: Tasa de IVA (%)
+            - spinbutton [ref=e513]: "16"
+          - generic [ref=e514]:
+            - generic [ref=e515]: Moneda de Visualizacion
+            - combobox [ref=e516]:
+              - generic: Ambos (USD + Bs)
+              - img [ref=e517]
+          - generic [ref=e519]:
+            - generic [ref=e520]:
+              - generic [ref=e521]:
+                - img [ref=e523]
+                - generic [ref=e528]:
+                  - paragraph [ref=e529]: Delivery
+                  - paragraph [ref=e530]: Habilitar entregas a domicilio
+              - switch [ref=e531] [cursor=pointer]
+            - generic [ref=e532]:
+              - generic [ref=e533]:
+                - img [ref=e535]
+                - generic [ref=e539]:
+                  - paragraph [ref=e540]: Programa de Fidelizacion
+                  - paragraph [ref=e541]: Sistema de puntos y recompensas
+              - switch [ref=e542] [cursor=pointer]
+      - generic [ref=e305]:
+        - button "Atras" [ref=e389]:
+          - img [ref=e390]
+          - text: Atras
+        - button "Finalizar Configuracion" [active] [ref=e543]:
+          - img [ref=e544]
+          - text: Finalizar Configuracion
+    - paragraph [ref=e309]: Podra modificar estos datos despues desde Configuracion.

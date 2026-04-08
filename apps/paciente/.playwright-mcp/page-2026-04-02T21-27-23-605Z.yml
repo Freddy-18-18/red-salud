@@ -1,0 +1,162 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Red-Salud" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e7]
+          - generic [ref=e9]: Red-Salud
+        - generic [ref=e11]:
+          - img [ref=e12]
+          - textbox "Buscar medico, especialidad..." [ref=e15]
+        - generic [ref=e16]:
+          - link "Mensajes" [ref=e17] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e18]
+          - link "Notificaciones" [ref=e20] [cursor=pointer]:
+            - /url: /dashboard/notificaciones
+            - img [ref=e21]
+          - button "CT Carlos Test Paciente" [ref=e93]:
+            - generic [ref=e27]: CT
+            - generic [ref=e28]: Carlos Test Paciente
+            - img [ref=e29]
+    - generic [ref=e31]:
+      - complementary [ref=e32]:
+        - navigation [ref=e33]:
+          - link "Inicio" [ref=e34] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e35]
+            - text: Inicio
+          - link "Agendar Cita" [ref=e38] [cursor=pointer]:
+            - /url: /dashboard/agendar
+            - img [ref=e39]
+            - text: Agendar Cita
+          - link "Buscar Medico" [ref=e41] [cursor=pointer]:
+            - /url: /dashboard/buscar-medico
+            - img [ref=e42]
+            - text: Buscar Medico
+          - link "Mis Citas" [ref=e45] [cursor=pointer]:
+            - /url: /dashboard/citas
+            - img [ref=e46]
+            - text: Mis Citas
+          - link "Historial" [ref=e48] [cursor=pointer]:
+            - /url: /dashboard/historial
+            - img [ref=e49]
+            - text: Historial
+          - link "Recetas" [ref=e52] [cursor=pointer]:
+            - /url: /dashboard/recetas
+            - img [ref=e53]
+            - text: Recetas
+          - link "Documentos" [ref=e56] [cursor=pointer]:
+            - /url: /dashboard/documentos
+            - img [ref=e57]
+            - text: Documentos
+          - link "QR Medico" [ref=e59] [cursor=pointer]:
+            - /url: /dashboard/qr-medico
+            - img [ref=e60]
+            - text: QR Medico
+          - link "Mensajes" [ref=e64] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e65]
+            - text: Mensajes
+          - link "Recompensas" [ref=e67] [cursor=pointer]:
+            - /url: /dashboard/recompensas
+            - img [ref=e68]
+            - text: Recompensas
+          - link "Mi Perfil" [ref=e74] [cursor=pointer]:
+            - /url: /dashboard/perfil
+            - img [ref=e75]
+            - text: Mi Perfil
+      - main [ref=e78]:
+        - generic [ref=e80]:
+          - generic [ref=e94]:
+            - heading "Mi Perfil" [level=1] [ref=e95]
+            - paragraph [ref=e96]: Gestiona tu informacion personal, seguridad y preferencias
+          - generic [ref=e97]:
+            - button "Datos personales" [ref=e98]:
+              - img [ref=e99]
+              - text: Datos personales
+            - button "Info medica" [ref=e102]:
+              - img [ref=e103]
+              - text: Info medica
+            - button "Seguridad" [ref=e105]:
+              - img [ref=e106]
+              - text: Seguridad
+            - button "Notificaciones" [ref=e109]:
+              - img [ref=e110]
+              - text: Notificaciones
+            - button "Privacidad" [ref=e113]:
+              - img [ref=e114]
+              - text: Privacidad
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - generic [ref=e119]:
+                - generic [ref=e120]: Foto de perfil
+                - generic [ref=e121]: Tu imagen visible para doctores y la plataforma
+              - generic [ref=e123]:
+                - generic [ref=e124]:
+                  - generic [ref=e126]: CT
+                  - button "Cambiar foto de perfil" [disabled] [ref=e127]:
+                    - img [ref=e128]
+                - paragraph [ref=e131]: Subida de imagen no configurada
+            - generic [ref=e132]:
+              - generic [ref=e133]:
+                - generic [ref=e134]: Informacion personal
+                - generic [ref=e135]: Los campos marcados con * son obligatorios
+              - generic [ref=e136]:
+                - generic [ref=e137]:
+                  - generic [ref=e138]:
+                    - generic [ref=e139]: Nombre completo *
+                    - textbox "Nombre completo *" [ref=e140]:
+                      - /placeholder: Tu nombre completo
+                      - text: Carlos Test Paciente
+                  - generic [ref=e141]:
+                    - generic [ref=e142]: Cedula *
+                    - generic [ref=e143]:
+                      - textbox "Cedula *" [ref=e144]:
+                        - /placeholder: V-12345678
+                      - button "Verificar" [ref=e146]
+                  - generic [ref=e147]:
+                    - generic [ref=e148]: Fecha de nacimiento *
+                    - textbox "Fecha de nacimiento *" [ref=e149]: 1990-05-15
+                  - generic [ref=e150]:
+                    - generic [ref=e151]: Genero *
+                    - combobox [ref=e152]:
+                      - generic: Seleccionar
+                      - img [ref=e153]
+                  - generic [ref=e155]:
+                    - generic [ref=e156]: Telefono *
+                    - textbox "Telefono *" [ref=e157]:
+                      - /placeholder: +58 412 1234567
+                      - text: +58 412 555 1234
+                  - generic [ref=e158]:
+                    - generic [ref=e159]:
+                      - text: Email *
+                      - img [ref=e160]
+                    - textbox "Email *" [disabled]: test.paciente@red-salud.org
+                  - generic [ref=e163]:
+                    - generic [ref=e164]: Estado
+                    - textbox "Estado" [ref=e165]:
+                      - /placeholder: "Ej: Caracas"
+                      - text: Distrito Capital
+                  - generic [ref=e166]:
+                    - generic [ref=e167]: Municipio
+                    - textbox "Municipio" [ref=e168]:
+                      - /placeholder: "Ej: Libertador"
+                  - generic [ref=e169]:
+                    - generic [ref=e170]: Parroquia
+                    - textbox "Parroquia" [ref=e171]:
+                      - /placeholder: "Ej: San Juan"
+                  - generic [ref=e172]:
+                    - generic [ref=e173]: Direccion
+                    - textbox "Direccion" [ref=e174]:
+                      - /placeholder: Calle, edificio, apto...
+                - button "Guardar cambios" [ref=e176]:
+                  - img [ref=e177]
+                  - text: Guardar cambios
+    - 'button "Emergencia: mantener presionado para activar" [ref=e89]':
+      - img [ref=e91]
+      - generic: Mantener para emergencia
+  - button "Open Next.js Dev Tools" [ref=e186] [cursor=pointer]:
+    - img [ref=e187]
+  - alert [ref=e190]

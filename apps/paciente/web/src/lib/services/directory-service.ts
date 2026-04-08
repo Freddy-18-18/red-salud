@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/utils/fetch";
 
 // --- Types ---
 
@@ -474,13 +475,14 @@ export const directoryService = {
    * Get specialties list (reused from booking service pattern)
    */
   async getSpecialties(): Promise<{ id: string; name: string }[]> {
-    const { data, error } = await supabase
-      .from("specialties")
-      .select("id, name")
-      .order("name");
-
-    if (error) throw error;
-    return data || [];
+    try {
+      const data = await fetchJson<{ id: string; name: string; icon: string | null; description: string | null }[]>(
+        "/api/specialties"
+      );
+      return (data || []).map((s) => ({ id: s.id, name: s.name }));
+    } catch {
+      return [];
+    }
   },
 
   // --- Internal fetch methods ---
@@ -489,72 +491,69 @@ export const directoryService = {
     q: string,
     filters: DirectoryFilters
   ): Promise<ProviderResult[]> {
-    const { data, error } = await supabase
-      .from("doctor_details")
-      .select(
-        `
-        id,
-        profile_id,
-        specialty_id,
-        consultation_fee,
-        accepts_insurance,
-        years_experience,
-        office_hours,
-        verified,
-        profile:profiles!inner(id, full_name, avatar_url, city, state, phone),
-        specialty:specialties(id, name)
-      `
-      )
-      .eq("verified", true);
+    // Build query params for the BFF API route
+    const params = new URLSearchParams();
+    if (filters.specialtyId) params.set("specialty_id", filters.specialtyId);
+    if (filters.city) params.set("city", filters.city);
+    if (filters.acceptsInsurance) params.set("accepts_insurance", "true");
+    params.set("page_size", "50"); // fetch a large page for client-side filtering
 
-    if (error) throw error;
-    if (!data || data.length === 0) return [];
+    const qs = params.toString();
+    const url = `/api/doctors/search${qs ? `?${qs}` : ""}`;
 
-    // Get ratings
-    const profileIds = data.map((d: { profile_id: string }) => d.profile_id);
-    const { data: reviews } = await supabase
-      .from("provider_reviews")
-      .select("provider_id, rating")
-      .eq("provider_type", "doctor")
-      .in("provider_id", profileIds);
-
-    let results: ProviderResult[] = data.map((d: Record<string, unknown>) => {
-      const profile = d.profile as {
+    interface ApiDoctor {
+      id: string;
+      user_id: string;
+      is_active: boolean;
+      consultation_fee: number | null;
+      accepts_insurance: boolean;
+      city: string | null;
+      address: string | null;
+      years_experience: number | null;
+      biography: string | null;
+      profile: {
         id: string;
-        full_name: string;
+        first_name: string;
+        last_name: string;
         avatar_url: string | null;
-        city: string | null;
-        state: string | null;
         phone: string | null;
-      };
-      const specialty = d.specialty as { id: string; name: string } | null;
-      const { avg, count } = computeRating(
-        (reviews || []) as { provider_id: string; rating: number }[],
-        profile.id
-      );
+      } | null;
+      specialty: {
+        id: string;
+        name: string;
+        icon: string | null;
+      } | null;
+      avg_rating: number | null;
+      review_count: number;
+    }
 
+    const doctors = await fetchJson<ApiDoctor[]>(url);
+    if (!doctors || doctors.length === 0) return [];
+
+    let results: ProviderResult[] = doctors.map((d) => {
+      const fullName = d.profile
+        ? `${d.profile.first_name} ${d.profile.last_name}`.trim()
+        : "";
       return {
-        id: profile.id,
+        id: d.user_id || d.id,
         type: "doctor" as ProviderType,
-        name: profile.full_name,
-        avatarUrl: profile.avatar_url,
-        city: profile.city,
-        state: profile.state,
-        phone: profile.phone,
-        avgRating: avg,
-        reviewCount: count,
-        specialty: specialty?.name,
-        specialtyId: specialty?.id,
-        consultationFee: d.consultation_fee
-          ? parseFloat(d.consultation_fee as string)
-          : null,
-        acceptsInsurance: (d.accepts_insurance as boolean) || false,
-        yearsExperience: (d.years_experience as number) || null,
-        officeHours: (d.office_hours as string) || null,
+        name: fullName,
+        avatarUrl: d.profile?.avatar_url ?? null,
+        city: d.city,
+        state: null, // API doesn't return state separately
+        phone: d.profile?.phone ?? null,
+        avgRating: d.avg_rating,
+        reviewCount: d.review_count,
+        specialty: d.specialty?.name,
+        specialtyId: d.specialty?.id,
+        consultationFee: d.consultation_fee,
+        acceptsInsurance: d.accepts_insurance || false,
+        yearsExperience: d.years_experience,
+        officeHours: null,
       };
     });
 
-    // Apply filters
+    // Apply client-side filters not handled by the API
     if (q) {
       results = results.filter(
         (r) =>
@@ -564,22 +563,13 @@ export const directoryService = {
           matchesQuery(r.state, q)
       );
     }
-    if (filters.city) {
-      results = results.filter((r) => matchesQuery(r.city, filters.city!));
-    }
     if (filters.state) {
       results = results.filter((r) => matchesQuery(r.state, filters.state!));
-    }
-    if (filters.specialtyId) {
-      results = results.filter((r) => r.specialtyId === filters.specialtyId);
     }
     if (filters.minRating) {
       results = results.filter(
         (r) => r.avgRating != null && r.avgRating >= filters.minRating!
       );
-    }
-    if (filters.acceptsInsurance) {
-      results = results.filter((r) => r.acceptsInsurance);
     }
     if (filters.openNow) {
       results = results.filter((r) => isCurrentlyOpen(r.officeHours || null));
@@ -598,76 +588,45 @@ export const directoryService = {
     q: string,
     filters: DirectoryFilters
   ): Promise<ProviderResult[]> {
-    const { data, error } = await supabase
-      .from("pharmacy_details")
-      .select(
-        `
-        id,
-        profile_id,
-        business_name,
-        pharmacy_license,
-        pharmacy_type,
-        office_hours,
-        accepts_digital_prescriptions,
-        profile:profiles!inner(id, full_name, avatar_url, city, state, phone)
-      `
-      );
+    // Build query params for the BFF pharmacy search route
+    const params = new URLSearchParams();
+    if (filters.city) params.set("city", filters.city);
+    if (q) params.set("name", q);
+    const qs = params.toString();
 
-    if (error) throw error;
-    if (!data || data.length === 0) return [];
-
-    const profileIds = data.map((d: { profile_id: string }) => d.profile_id);
-    const { data: reviews } = await supabase
-      .from("provider_reviews")
-      .select("provider_id, rating")
-      .eq("provider_type", "pharmacy")
-      .in("provider_id", profileIds);
-
-    let results: ProviderResult[] = data.map((d: Record<string, unknown>) => {
-      const profile = d.profile as {
-        id: string;
-        full_name: string;
-        avatar_url: string | null;
-        city: string | null;
-        state: string | null;
-        phone: string | null;
-      };
-      const { avg, count } = computeRating(
-        (reviews || []) as { provider_id: string; rating: number }[],
-        profile.id
-      );
-
-      return {
-        id: profile.id,
-        type: "pharmacy" as ProviderType,
-        name: (d.business_name as string) || profile.full_name,
-        avatarUrl: profile.avatar_url,
-        city: profile.city,
-        state: profile.state,
-        phone: profile.phone,
-        avgRating: avg,
-        reviewCount: count,
-        businessName: d.business_name as string,
-        pharmacyType: d.pharmacy_type as string,
-        pharmacyLicense: d.pharmacy_license as string,
-        officeHours: d.office_hours as string | null,
-        acceptsDigitalPrescriptions:
-          (d.accepts_digital_prescriptions as boolean) || false,
-      };
-    });
-
-    if (q) {
-      results = results.filter(
-        (r) =>
-          matchesQuery(r.name, q) ||
-          matchesQuery(r.businessName, q) ||
-          matchesQuery(r.pharmacyType, q) ||
-          matchesQuery(r.city, q)
-      );
+    interface ApiPharmacy {
+      id: string;
+      name: string;
+      address: string | null;
+      phone: string | null;
+      logo_url: string | null;
+      rating: number | null;
+      review_count: number;
+      lat: number | null;
+      lng: number | null;
+      opening_hours: string | null;
     }
-    if (filters.city) {
-      results = results.filter((r) => matchesQuery(r.city, filters.city!));
-    }
+
+    const pharmacies = await fetchJson<ApiPharmacy[]>(
+      `/api/pharmacy/search${qs ? `?${qs}` : ""}`
+    );
+
+    if (!pharmacies || pharmacies.length === 0) return [];
+
+    let results: ProviderResult[] = pharmacies.map((ph) => ({
+      id: ph.id,
+      type: "pharmacy" as ProviderType,
+      name: ph.name || "Farmacia",
+      avatarUrl: ph.logo_url,
+      city: null, // Search route doesn't return city/state separately
+      state: null,
+      phone: ph.phone,
+      avgRating: ph.rating,
+      reviewCount: ph.review_count || 0,
+      businessName: ph.name,
+      officeHours: ph.opening_hours,
+    }));
+
     if (filters.state) {
       results = results.filter((r) => matchesQuery(r.state, filters.state!));
     }
@@ -879,165 +838,113 @@ export const directoryService = {
   // --- Detail fetchers ---
 
   async getDoctorDetail(profileId: string): Promise<DoctorDetail | null> {
-    const { data, error } = await supabase
-      .from("doctor_details")
-      .select(
-        `
-        id,
-        profile_id,
-        specialty_id,
-        consultation_fee,
-        accepts_insurance,
-        years_experience,
-        biografia,
-        office_hours,
-        verified,
-        profile:profiles!inner(id, full_name, email, avatar_url, city, state, phone),
-        specialty:specialties(id, name)
-      `
-      )
-      .eq("profile_id", profileId)
-      .maybeSingle();
-
-    if (error) throw error;
-    if (!data) return null;
-
-    const profile = data.profile as unknown as {
+    interface ApiDoctorDetail {
       id: string;
-      full_name: string;
-      email: string | null;
-      avatar_url: string | null;
+      user_id: string;
+      is_active: boolean;
+      consultation_fee: number | null;
+      accepts_insurance: boolean;
       city: string | null;
-      state: string | null;
-      phone: string | null;
-    };
-    const specialty = data.specialty as unknown as { id: string; name: string };
+      address: string | null;
+      years_experience: number | null;
+      biography: string | null;
+      education: unknown;
+      languages: unknown;
+      profile: {
+        id: string;
+        first_name: string;
+        last_name: string;
+        avatar_url: string | null;
+        phone: string | null;
+        email: string | null;
+      } | null;
+      specialty: {
+        id: string;
+        name: string;
+        icon: string | null;
+        description: string | null;
+      } | null;
+      avg_rating: number | null;
+      review_count: number;
+    }
 
-    // Get offices
-    const { data: offices } = await supabase
-      .from("doctor_offices")
-      .select("id, name, address, city, state, phone")
-      .eq("doctor_id", profileId);
+    try {
+      const doctor = await fetchJson<ApiDoctorDetail>(
+        `/api/doctors/${profileId}`
+      );
+      if (!doctor) return null;
 
-    // Get rating
-    const { data: reviews } = await supabase
-      .from("provider_reviews")
-      .select("rating")
-      .eq("provider_id", profileId)
-      .eq("provider_type", "doctor");
+      const fullName = doctor.profile
+        ? `${doctor.profile.first_name} ${doctor.profile.last_name}`.trim()
+        : "";
 
-    const reviewCount = reviews?.length || 0;
-    const avgRating =
-      reviewCount > 0
-        ? Math.round(
-            ((reviews || []).reduce(
-              (sum: number, r: { rating: number }) => sum + r.rating,
-              0
-            ) /
-              reviewCount) *
-              10
-          ) / 10
-        : null;
-
-    return {
-      id: data.id as string,
-      profileId: profile.id,
-      name: profile.full_name,
-      avatarUrl: profile.avatar_url,
-      email: profile.email,
-      city: profile.city,
-      state: profile.state,
-      phone: profile.phone,
-      specialty: specialty.name,
-      specialtyId: specialty.id,
-      consultationFee: data.consultation_fee
-        ? parseFloat(data.consultation_fee as string)
-        : null,
-      acceptsInsurance: (data.accepts_insurance as boolean) || false,
-      yearsExperience: (data.years_experience as number) || null,
-      biography: (data.biografia as string) || null,
-      verified: (data.verified as boolean) || false,
-      avgRating,
-      reviewCount,
-      officeHours: (data.office_hours as string) || null,
-      offices: (offices || []).map((o: Record<string, unknown>) => ({
-        id: o.id as string,
-        name: o.name as string,
-        address: o.address as string,
-        city: o.city as string | null,
-        state: o.state as string | null,
-        phone: o.phone as string | null,
-      })),
-    };
+      return {
+        id: doctor.id,
+        profileId: doctor.user_id || profileId,
+        name: fullName,
+        avatarUrl: doctor.profile?.avatar_url ?? null,
+        email: doctor.profile?.email ?? null,
+        city: doctor.city,
+        state: null,
+        phone: doctor.profile?.phone ?? null,
+        specialty: doctor.specialty?.name || "",
+        specialtyId: doctor.specialty?.id || "",
+        consultationFee: doctor.consultation_fee,
+        acceptsInsurance: doctor.accepts_insurance || false,
+        yearsExperience: doctor.years_experience,
+        biography: doctor.biography,
+        verified: doctor.is_active || false,
+        avgRating: doctor.avg_rating,
+        reviewCount: doctor.review_count,
+        officeHours: null,
+        offices: [], // Offices not returned by the API route yet
+      };
+    } catch {
+      return null;
+    }
   },
 
   async getPharmacyDetail(
     profileId: string
   ): Promise<PharmacyDetail | null> {
-    const { data, error } = await supabase
-      .from("pharmacy_details")
-      .select(
-        `
-        id,
-        profile_id,
-        business_name,
-        pharmacy_license,
-        pharmacy_type,
-        office_hours,
-        accepts_digital_prescriptions,
-        profile:profiles!inner(id, full_name, avatar_url, city, state, phone)
-      `
-      )
-      .eq("profile_id", profileId)
-      .maybeSingle();
+    try {
+      interface ApiPharmacy {
+        id: string;
+        name: string;
+        address: string | null;
+        phone: string | null;
+        logo_url: string | null;
+        rating: number | null;
+        review_count: number;
+        opening_hours: string | null;
+      }
 
-    if (error) throw error;
-    if (!data) return null;
+      // Use BFF search route filtered to match a specific pharmacy
+      const pharmacies = await fetchJson<ApiPharmacy[]>(
+        `/api/pharmacy/search`
+      );
 
-    const profile = data.profile as unknown as {
-      id: string;
-      full_name: string;
-      avatar_url: string | null;
-      city: string | null;
-      state: string | null;
-      phone: string | null;
-    };
+      const match = (pharmacies || []).find((ph) => ph.id === profileId);
+      if (!match) return null;
 
-    const { data: reviews } = await supabase
-      .from("provider_reviews")
-      .select("rating")
-      .eq("provider_id", profileId)
-      .eq("provider_type", "pharmacy");
-
-    const reviewCount = reviews?.length || 0;
-    const avgRating =
-      reviewCount > 0
-        ? Math.round(
-            ((reviews || []).reduce(
-              (sum: number, r: { rating: number }) => sum + r.rating,
-              0
-            ) /
-              reviewCount) *
-              10
-          ) / 10
-        : null;
-
-    return {
-      id: data.id as string,
-      profileId: profile.id,
-      businessName: (data.business_name as string) || profile.full_name,
-      avatarUrl: profile.avatar_url,
-      city: profile.city,
-      state: profile.state,
-      phone: profile.phone,
-      pharmacyLicense: data.pharmacy_license as string | null,
-      pharmacyType: data.pharmacy_type as string | null,
-      officeHours: data.office_hours as string | null,
-      acceptsDigitalPrescriptions:
-        (data.accepts_digital_prescriptions as boolean) || false,
-      avgRating,
-      reviewCount,
-    };
+      return {
+        id: match.id,
+        profileId,
+        businessName: match.name || "Farmacia",
+        avatarUrl: match.logo_url,
+        city: null,
+        state: null,
+        phone: match.phone,
+        pharmacyLicense: null,
+        pharmacyType: null,
+        officeHours: match.opening_hours,
+        acceptsDigitalPrescriptions: false,
+        avgRating: match.rating,
+        reviewCount: match.review_count || 0,
+      };
+    } catch {
+      return null;
+    }
   },
 
   async getClinicDetail(profileId: string): Promise<ClinicDetail | null> {

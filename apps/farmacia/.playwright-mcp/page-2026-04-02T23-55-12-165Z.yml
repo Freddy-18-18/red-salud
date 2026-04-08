@@ -1,0 +1,55 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e106] [cursor=pointer]:
+    - img [ref=e107]
+  - alert [ref=e110]
+  - main [ref=e170]:
+    - generic [ref=e176]:
+      - generic [ref=e177]:
+        - img [ref=e179]
+        - generic [ref=e182]:
+          - text: Red Salud
+          - generic [ref=e183]: Farmacia
+      - heading "Gestion integral para tu farmacia" [level=2] [ref=e184]
+      - paragraph [ref=e185]: Controla inventario, punto de venta, recetas y entregas desde una sola plataforma disenada para farmacias venezolanas.
+      - generic [ref=e186]:
+        - generic [ref=e187]:
+          - img [ref=e189]
+          - generic [ref=e191]: Inventario con control de lotes y vencimientos
+        - generic [ref=e192]:
+          - img [ref=e194]
+          - generic [ref=e197]: Punto de venta con multiples metodos de pago
+        - generic [ref=e198]:
+          - img [ref=e200]
+          - generic [ref=e203]: Recetas digitales verificadas
+    - generic [ref=e205]:
+      - generic [ref=e206]:
+        - generic [ref=e207]:
+          - heading "Bienvenido de vuelta" [level=1] [ref=e208]
+          - paragraph [ref=e209]: Ingresa a tu panel de farmacia
+        - generic [ref=e210]:
+          - generic [ref=e211]:
+            - generic [ref=e212]: Email
+            - textbox "Email" [ref=e213]:
+              - /placeholder: tu@farmacia.com
+              - text: test@farmacia-demo.com
+          - generic [ref=e214]:
+            - generic [ref=e215]: Contrasena
+            - generic [ref=e216]:
+              - textbox "Contrasena" [ref=e217]:
+                - /placeholder: Tu contrasena
+                - text: TestFarmacia2026!
+              - button [ref=e218]:
+                - img [ref=e219]
+          - generic [ref=e222]:
+            - generic [ref=e223] [cursor=pointer]:
+              - checkbox "Recordar sesion" [ref=e224]
+              - generic [ref=e225]: Recordar sesion
+            - link "Olvidaste tu contrasena?" [ref=e226] [cursor=pointer]:
+              - /url: /auth/forgot-password
+          - button "Iniciar Sesion" [ref=e227]:
+            - img [ref=e233]
+            - text: Iniciar Sesion
+      - paragraph [ref=e231]:
+        - text: No tenes cuenta?
+        - link "Registrate aqui" [ref=e232] [cursor=pointer]:
+          - /url: /auth/register

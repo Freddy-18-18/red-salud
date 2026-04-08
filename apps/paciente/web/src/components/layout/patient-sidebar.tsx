@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  Activity,
+  ArrowRightLeft,
+  Bell,
   Bot,
   Home,
   Search,
@@ -15,6 +18,10 @@ import {
   HeartPulse,
   FolderOpen,
   IdCard,
+  Receipt,
+  Scale,
+  ShieldAlert,
+  Star,
   PanelLeftClose,
   PanelLeft,
   PanelLeftDashed,
@@ -63,17 +70,24 @@ const MODE_TOOLTIP: Record<SidebarMode, string> = {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Inicio", href: "/dashboard", icon: Home },
+  { label: "Notificaciones", href: "/dashboard/notificaciones", icon: Bell },
   { label: "Agendar Cita", href: "/dashboard/agendar", icon: CalendarPlus, highlight: true },
   { label: "Buscar Medico", href: "/dashboard/buscar-medico", icon: Search },
+  { label: "Referencias", href: "/dashboard/referencias-medicas", icon: ArrowRightLeft },
   { label: "Mis Citas", href: "/dashboard/citas", icon: Calendar },
+  { label: "Valoraciones", href: "/dashboard/valoraciones", icon: Star },
   { label: "Historial", href: "/dashboard/historial", icon: Clock },
   { label: "Asistente IA", href: "/dashboard/asistente-ia", icon: Bot },
   { label: "Recetas", href: "/dashboard/recetas", icon: FileText },
+  { label: "Comparador", href: "/dashboard/comparador", icon: Scale },
   { label: "Documentos", href: "/dashboard/documentos", icon: FolderOpen },
   { label: "QR Medico", href: "/dashboard/qr-medico", icon: IdCard },
+  { label: "Perfil Emergencia", href: "/dashboard/emergencia-perfil", icon: ShieldAlert },
   { label: "Mensajes", href: "/dashboard/mensajes", icon: MessageSquare },
   { label: "Recompensas", href: "/dashboard/recompensas", icon: Trophy },
   { label: "Health Score", href: "/dashboard/health-score", icon: HeartPulse },
+  { label: "Mis Cronicos", href: "/dashboard/cronicos", icon: Activity },
+  { label: "Gastos Medicos", href: "/dashboard/gastos", icon: Receipt },
   { label: "Mi Perfil", href: "/dashboard/perfil", icon: User },
 ];
 

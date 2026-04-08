@@ -1,0 +1,126 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "Red-Salud" [ref=e5] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e7]
+        - generic [ref=e9]: Red-Salud
+      - generic [ref=e11]:
+        - img [ref=e12]
+        - textbox "Buscar medico, especialidad..." [ref=e15]
+      - generic [ref=e16]:
+        - link "Mensajes" [ref=e17] [cursor=pointer]:
+          - /url: /dashboard/mensajes
+          - img [ref=e18]
+        - link "Notificaciones" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard/notificaciones
+          - img [ref=e21]
+        - button "P Paciente" [ref=e25]:
+          - generic [ref=e27]: P
+          - generic [ref=e28]: Paciente
+          - img [ref=e29]
+  - generic [ref=e31]:
+    - complementary [ref=e32]:
+      - navigation [ref=e33]:
+        - link "Inicio" [ref=e34] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e35]
+          - text: Inicio
+        - link "Agendar Cita" [ref=e38] [cursor=pointer]:
+          - /url: /dashboard/agendar
+          - img [ref=e39]
+          - text: Agendar Cita
+        - link "Buscar Medico" [ref=e41] [cursor=pointer]:
+          - /url: /dashboard/buscar-medico
+          - img [ref=e42]
+          - text: Buscar Medico
+        - link "Mis Citas" [ref=e45] [cursor=pointer]:
+          - /url: /dashboard/citas
+          - img [ref=e46]
+          - text: Mis Citas
+        - link "Historial" [ref=e48] [cursor=pointer]:
+          - /url: /dashboard/historial
+          - img [ref=e49]
+          - text: Historial
+        - link "Recetas" [ref=e52] [cursor=pointer]:
+          - /url: /dashboard/recetas
+          - img [ref=e53]
+          - text: Recetas
+        - link "Documentos" [ref=e56] [cursor=pointer]:
+          - /url: /dashboard/documentos
+          - img [ref=e57]
+          - text: Documentos
+        - link "QR Medico" [ref=e59] [cursor=pointer]:
+          - /url: /dashboard/qr-medico
+          - img [ref=e60]
+          - text: QR Medico
+        - link "Mensajes" [ref=e64] [cursor=pointer]:
+          - /url: /dashboard/mensajes
+          - img [ref=e65]
+          - text: Mensajes
+        - link "Recompensas" [ref=e67] [cursor=pointer]:
+          - /url: /dashboard/recompensas
+          - img [ref=e68]
+          - text: Recompensas
+        - link "Mi Perfil" [ref=e74] [cursor=pointer]:
+          - /url: /dashboard/perfil
+          - img [ref=e75]
+          - text: Mi Perfil
+    - main [ref=e78]:
+      - generic [ref=e80]:
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - heading "Mis Documentos" [level=1] [ref=e83]
+            - paragraph [ref=e84]: 0 documentos guardados
+          - button "Subir" [ref=e86]:
+            - img [ref=e87]
+            - generic [ref=e90]: Subir
+        - generic [ref=e91]:
+          - button "Documentos" [ref=e92]:
+            - generic [ref=e93]:
+              - img [ref=e94]
+              - text: Documentos
+          - button "Vacunas" [ref=e96]:
+            - generic [ref=e97]:
+              - img [ref=e98]
+              - text: Vacunas
+        - generic [ref=e105]:
+          - heading "Categorias" [level=2] [ref=e107]
+          - generic [ref=e108]:
+            - button "Resultados de laboratorio" [ref=e109]:
+              - img [ref=e112]
+              - paragraph [ref=e114]: Resultados de laboratorio
+            - button "Recetas" [ref=e115]:
+              - img [ref=e118]
+              - paragraph [ref=e121]: Recetas
+            - button "Informes medicos" [ref=e122]:
+              - img [ref=e125]
+              - paragraph [ref=e128]: Informes medicos
+            - button "Tarjetas de seguro" [ref=e129]:
+              - img [ref=e132]
+              - paragraph [ref=e134]: Tarjetas de seguro
+            - button "Vacunas" [ref=e135]:
+              - img [ref=e138]
+              - paragraph [ref=e145]: Vacunas
+            - button "Facturas y recibos" [ref=e146]:
+              - img [ref=e149]
+              - paragraph [ref=e152]: Facturas y recibos
+            - button "Otros documentos" [ref=e153]:
+              - img [ref=e156]
+              - paragraph [ref=e159]: Otros documentos
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - img [ref=e162]
+            - textbox "Buscar documentos..." [ref=e165]
+          - generic [ref=e166]:
+            - button [ref=e167]:
+              - img [ref=e168]
+            - button [ref=e169]:
+              - img [ref=e170]
+        - generic [ref=e176]:
+          - img [ref=e178]
+          - heading "Aun no tienes documentos" [level=3] [ref=e180]
+          - paragraph [ref=e181]: Sube tus documentos medicos para tenerlos siempre a mano
+  - 'button "Emergencia: mantener presionado para activar" [ref=e182]':
+    - img [ref=e184]
+    - generic: Mantener para emergencia

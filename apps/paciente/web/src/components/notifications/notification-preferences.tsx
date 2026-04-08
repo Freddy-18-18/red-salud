@@ -5,81 +5,113 @@ import {
   MessageCircle,
   FlaskConical,
   Pill,
-  Megaphone,
-  ChevronDown,
-  ChevronUp,
+  HeartPulse,
+  Tag,
+  ClipboardCheck,
+  Trophy,
+  Info,
   Mail,
   Smartphone,
-  Settings2,
+  Loader2,
+  type LucideIcon,
 } from "lucide-react";
-import { useState, useCallback } from "react";
 
-export interface NotificationPreference {
+import {
+  useNotificationPreferences,
+  useUpdatePreferences,
+} from "@/hooks/use-notifications";
+
+// ─── Category config ─────────────────────────────────────────────────────────
+
+interface CategoryConfig {
   key: string;
   label: string;
   description: string;
-  icon: typeof CalendarCheck;
+  icon: LucideIcon;
   color: string;
   iconBg: string;
-  email: boolean;
-  push: boolean;
-  /** Some preferences are push-only (no email option) */
+  /** Some categories don't support email (e.g., push-only alerts) */
   emailDisabled?: boolean;
 }
 
-const DEFAULT_PREFERENCES: NotificationPreference[] = [
+const CATEGORIES: CategoryConfig[] = [
   {
     key: "appointments",
     label: "Recordatorios de citas",
     description: "Recordatorio antes de cada cita programada",
     icon: CalendarCheck,
-    color: "text-blue-600 dark:text-blue-400",
-    iconBg: "bg-blue-50 dark:bg-blue-950/40",
-    email: true,
-    push: true,
+    color: "text-blue-600",
+    iconBg: "bg-blue-50",
   },
   {
     key: "messages",
     label: "Mensajes de doctores",
     description: "Cuando un doctor te envia un mensaje nuevo",
     icon: MessageCircle,
-    color: "text-green-600 dark:text-green-400",
-    iconBg: "bg-green-50 dark:bg-green-950/40",
-    email: true,
-    push: true,
+    color: "text-green-600",
+    iconBg: "bg-green-50",
   },
   {
     key: "lab_results",
     label: "Resultados de laboratorio",
     description: "Cuando tus resultados estan disponibles",
     icon: FlaskConical,
-    color: "text-purple-600 dark:text-purple-400",
-    iconBg: "bg-purple-50 dark:bg-purple-950/40",
-    email: true,
-    push: true,
+    color: "text-purple-600",
+    iconBg: "bg-purple-50",
   },
   {
-    key: "medications",
-    label: "Recordatorios de medicamentos",
-    description: "Recordatorio para tomar tus medicamentos",
+    key: "prescriptions",
+    label: "Recetas y medicamentos",
+    description: "Vencimiento de recetas y recordatorios de medicacion",
     icon: Pill,
-    color: "text-orange-600 dark:text-orange-400",
-    iconBg: "bg-orange-50 dark:bg-orange-950/40",
-    email: false,
-    push: true,
+    color: "text-orange-600",
+    iconBg: "bg-orange-50",
     emailDisabled: true,
   },
   {
-    key: "news",
+    key: "chronic_alerts",
+    label: "Alertas cronicas",
+    description: "Alertas de condiciones cronicas y lecturas pendientes",
+    icon: HeartPulse,
+    color: "text-rose-600",
+    iconBg: "bg-rose-50",
+  },
+  {
+    key: "price_alerts",
+    label: "Alertas de precios",
+    description: "Cuando baja el precio de medicamentos que buscas",
+    icon: Tag,
+    color: "text-amber-600",
+    iconBg: "bg-amber-50",
+  },
+  {
+    key: "follow_ups",
+    label: "Seguimientos pendientes",
+    description: "Recordatorios de seguimiento post-consulta",
+    icon: ClipboardCheck,
+    color: "text-teal-600",
+    iconBg: "bg-teal-50",
+  },
+  {
+    key: "rewards",
+    label: "Recompensas",
+    description: "Logros, niveles y puntos ganados",
+    icon: Trophy,
+    color: "text-amber-500",
+    iconBg: "bg-amber-50",
+    emailDisabled: true,
+  },
+  {
+    key: "system",
     label: "Novedades de Red Salud",
     description: "Noticias, mejoras y funciones nuevas",
-    icon: Megaphone,
-    color: "text-gray-600 dark:text-gray-400",
-    iconBg: "bg-gray-100 dark:bg-gray-800",
-    email: true,
-    push: false,
+    icon: Info,
+    color: "text-gray-600",
+    iconBg: "bg-gray-100",
   },
 ];
+
+// ─── Toggle switch ───────────────────────────────────────────────────────────
 
 function ToggleSwitch({
   checked,
@@ -100,12 +132,12 @@ function ToggleSwitch({
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
+      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
         disabled
-          ? "bg-gray-100 dark:bg-gray-800 cursor-not-allowed opacity-40"
+          ? "bg-gray-100 cursor-not-allowed opacity-40"
           : checked
-            ? "bg-emerald-500 dark:bg-emerald-600"
-            : "bg-gray-200 dark:bg-gray-700"
+            ? "bg-emerald-500"
+            : "bg-gray-200"
       }`}
     >
       <span
@@ -117,80 +149,157 @@ function ToggleSwitch({
   );
 }
 
-export function NotificationPreferences() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [preferences, setPreferences] = useState<NotificationPreference[]>(DEFAULT_PREFERENCES);
+// ─── Component ───────────────────────────────────────────────────────────────
 
-  const updatePreference = useCallback(
-    (key: string, field: "email" | "push", value: boolean) => {
-      setPreferences((prev) =>
-        prev.map((p) => (p.key === key ? { ...p, [field]: value } : p)),
-      );
-      // In a real implementation, this would save to Supabase
-      // For now, it updates local state gracefully
-    },
-    [],
-  );
+export function NotificationPreferences() {
+  const { data: preferences, isLoading } = useNotificationPreferences();
+  const updatePrefs = useUpdatePreferences();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 text-gray-400 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!preferences) return null;
+
+  const handleGlobalToggle = (field: "email_enabled" | "push_enabled", value: boolean) => {
+    updatePrefs.mutate({
+      ...preferences,
+      [field]: value,
+    });
+  };
+
+  const handleCategoryToggle = (
+    categoryKey: string,
+    channel: "email" | "push",
+    value: boolean,
+  ) => {
+    const updatedCategories = {
+      ...preferences.categories,
+      [categoryKey]: {
+        ...preferences.categories[categoryKey],
+        [channel]: value,
+      },
+    };
+
+    updatePrefs.mutate({
+      ...preferences,
+      categories: updatedCategories,
+    });
+  };
 
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/60 overflow-hidden">
-      {/* Header toggle */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-            <Settings2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+    <div className="space-y-6">
+      {/* Global toggles */}
+      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100">
+          <h3 className="text-sm font-semibold text-gray-900">
+            Canales de notificacion
+          </h3>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Activa o desactiva canales globalmente
+          </p>
+        </div>
+
+        <div className="divide-y divide-gray-50">
+          {/* Email global */}
+          <div className="flex items-center justify-between px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                <Mail className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-800">
+                  Notificaciones por email
+                </p>
+                <p className="text-xs text-gray-400">
+                  Recibe un correo para cada notificacion habilitada
+                </p>
+              </div>
+            </div>
+            <ToggleSwitch
+              checked={preferences.email_enabled}
+              onChange={(v) => handleGlobalToggle("email_enabled", v)}
+              label="Notificaciones por email"
+            />
           </div>
-          <div>
-            <span className="text-sm font-medium text-gray-900 dark:text-white">
-              Preferencias de notificaciones
-            </span>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-              Configura como y cuando recibis notificaciones
-            </p>
+
+          {/* Push global */}
+          <div className="flex items-center justify-between px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                <Smartphone className="h-4 w-4 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-800">
+                  Notificaciones push
+                </p>
+                <p className="text-xs text-gray-400">
+                  Alertas instantaneas en tu navegador o dispositivo
+                </p>
+              </div>
+            </div>
+            <ToggleSwitch
+              checked={preferences.push_enabled}
+              onChange={(v) => handleGlobalToggle("push_enabled", v)}
+              label="Notificaciones push"
+            />
           </div>
         </div>
-        {isOpen ? (
-          <ChevronUp className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-        )}
-      </button>
+      </div>
 
-      {/* Preferences list */}
-      {isOpen && (
-        <div className="border-t border-gray-100 dark:border-gray-800 animate-fade-in">
-          {/* Column headers */}
-          <div className="flex items-center justify-end gap-6 px-4 py-2 border-b border-gray-100 dark:border-gray-800">
-            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 w-12 justify-center">
-              <Mail className="h-3 w-3" />
-              Email
-            </div>
-            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 w-12 justify-center">
-              <Smartphone className="h-3 w-3" />
-              Push
-            </div>
+      {/* Per-category toggles */}
+      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100">
+          <h3 className="text-sm font-semibold text-gray-900">
+            Categorias
+          </h3>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Configura que tipo de notificaciones recibis por cada canal
+          </p>
+        </div>
+
+        {/* Column headers */}
+        <div className="flex items-center justify-end gap-6 px-4 py-2 border-b border-gray-100">
+          <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-gray-400 w-12 justify-center">
+            <Mail className="h-3 w-3" />
+            Email
           </div>
+          <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-gray-400 w-12 justify-center">
+            <Smartphone className="h-3 w-3" />
+            Push
+          </div>
+        </div>
 
-          {preferences.map((pref) => {
-            const Icon = pref.icon;
+        {/* Category rows */}
+        <div className="divide-y divide-gray-50">
+          {CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            const catPrefs = preferences.categories[cat.key] ?? {
+              email: true,
+              push: true,
+            };
+
             return (
               <div
-                key={pref.key}
-                className="flex items-center justify-between px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors"
+                key={cat.key}
+                className="flex items-center justify-between px-4 py-3 hover:bg-gray-50/50 transition-colors"
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className={`w-8 h-8 rounded-lg ${pref.iconBg} flex items-center justify-center flex-shrink-0`}>
-                    <Icon className={`h-4 w-4 ${pref.color}`} />
+                  <div
+                    className={`w-8 h-8 rounded-lg ${cat.iconBg} flex items-center justify-center flex-shrink-0`}
+                  >
+                    <Icon className={`h-4 w-4 ${cat.color}`} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-                      {pref.label}
+                    <p className="text-sm font-medium text-gray-800 truncate">
+                      {cat.label}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
-                      {pref.description}
+                    <p className="text-xs text-gray-400 truncate">
+                      {cat.description}
                     </p>
                   </div>
                 </div>
@@ -198,23 +307,38 @@ export function NotificationPreferences() {
                 <div className="flex items-center gap-6 flex-shrink-0 ml-3">
                   <div className="w-12 flex justify-center">
                     <ToggleSwitch
-                      checked={pref.email}
-                      onChange={(v) => updatePreference(pref.key, "email", v)}
-                      label={`${pref.label} por email`}
-                      disabled={pref.emailDisabled}
+                      checked={catPrefs.email}
+                      onChange={(v) =>
+                        handleCategoryToggle(cat.key, "email", v)
+                      }
+                      label={`${cat.label} por email`}
+                      disabled={
+                        cat.emailDisabled || !preferences.email_enabled
+                      }
                     />
                   </div>
                   <div className="w-12 flex justify-center">
                     <ToggleSwitch
-                      checked={pref.push}
-                      onChange={(v) => updatePreference(pref.key, "push", v)}
-                      label={`${pref.label} push`}
+                      checked={catPrefs.push}
+                      onChange={(v) =>
+                        handleCategoryToggle(cat.key, "push", v)
+                      }
+                      label={`${cat.label} push`}
+                      disabled={!preferences.push_enabled}
                     />
                   </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Saving indicator */}
+      {updatePrefs.isPending && (
+        <div className="flex items-center gap-2 text-xs text-gray-400 justify-center">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Guardando...
         </div>
       )}
     </div>

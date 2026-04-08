@@ -1,0 +1,108 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Red-Salud" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e7]
+          - generic [ref=e9]: Red-Salud
+        - generic [ref=e11]:
+          - img [ref=e12]
+          - textbox "Buscar medico, especialidad..." [ref=e15]
+        - generic [ref=e16]:
+          - link "Mensajes" [ref=e17] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e18]
+          - link "Notificaciones" [ref=e20] [cursor=pointer]:
+            - /url: /dashboard/notificaciones
+            - img [ref=e21]
+          - button "CT Carlos Test Paciente" [ref=e119]:
+            - generic [ref=e27]: CT
+            - generic [ref=e28]: Carlos Test Paciente
+            - img [ref=e29]
+    - generic [ref=e31]:
+      - complementary [ref=e32]:
+        - navigation [ref=e33]:
+          - link "Inicio" [ref=e34] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e35]
+            - text: Inicio
+          - link "Agendar Cita" [ref=e38] [cursor=pointer]:
+            - /url: /dashboard/agendar
+            - img [ref=e39]
+            - text: Agendar Cita
+          - link "Buscar Medico" [ref=e41] [cursor=pointer]:
+            - /url: /dashboard/buscar-medico
+            - img [ref=e42]
+            - text: Buscar Medico
+          - link "Mis Citas" [ref=e45] [cursor=pointer]:
+            - /url: /dashboard/citas
+            - img [ref=e46]
+            - text: Mis Citas
+          - link "Historial" [ref=e48] [cursor=pointer]:
+            - /url: /dashboard/historial
+            - img [ref=e49]
+            - text: Historial
+          - link "Recetas" [ref=e52] [cursor=pointer]:
+            - /url: /dashboard/recetas
+            - img [ref=e53]
+            - text: Recetas
+          - link "Documentos" [ref=e56] [cursor=pointer]:
+            - /url: /dashboard/documentos
+            - img [ref=e57]
+            - text: Documentos
+          - link "QR Medico" [ref=e59] [cursor=pointer]:
+            - /url: /dashboard/qr-medico
+            - img [ref=e60]
+            - text: QR Medico
+          - link "Mensajes" [ref=e64] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e65]
+            - text: Mensajes
+          - link "Recompensas" [ref=e67] [cursor=pointer]:
+            - /url: /dashboard/recompensas
+            - img [ref=e68]
+            - text: Recompensas
+          - link "Mi Perfil" [ref=e74] [cursor=pointer]:
+            - /url: /dashboard/perfil
+            - img [ref=e75]
+            - text: Mi Perfil
+      - main [ref=e78]:
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - heading "Agendar Cita" [level=1] [ref=e83]
+              - paragraph [ref=e84]: Encuentra tu doctor y agenda tu consulta en minutos
+            - generic [ref=e86]:
+              - button "1 Especialidad" [disabled] [ref=e88]:
+                - generic [ref=e89]: "1"
+                - generic [ref=e90]: Especialidad
+              - button "2 Doctor" [disabled] [ref=e92]:
+                - generic [ref=e93]: "2"
+                - generic [ref=e94]: Doctor
+              - button "3 Fecha" [disabled] [ref=e96]:
+                - generic [ref=e97]: "3"
+                - generic [ref=e98]: Fecha
+              - button "4 Hora" [disabled] [ref=e100]:
+                - generic [ref=e101]: "4"
+                - generic [ref=e102]: Hora
+              - button "5 Detalles" [disabled] [ref=e104]:
+                - generic [ref=e105]: "5"
+                - generic [ref=e106]: Detalles
+              - button "6 Confirmar" [disabled] [ref=e108]:
+                - generic [ref=e109]: "6"
+                - generic [ref=e110]: Confirmar
+          - generic [ref=e111]:
+            - generic [ref=e120]:
+              - heading "Que especialidad necesitas?" [level=2] [ref=e121]
+              - paragraph [ref=e122]: Selecciona el tipo de consulta que necesitas
+            - generic [ref=e123]:
+              - img [ref=e124]
+              - 'textbox "Buscar especialidad (ej: Cardiologia, Pediatria...)" [ref=e127]'
+            - button "Continuar" [disabled] [ref=e129]
+    - 'button "Emergencia: mantener presionado para activar" [ref=e115]':
+      - img [ref=e117]
+      - generic: Mantener para emergencia
+  - button "Open Next.js Dev Tools" [ref=e135] [cursor=pointer]:
+    - img [ref=e136]
+  - alert [ref=e139]

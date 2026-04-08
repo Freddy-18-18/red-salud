@@ -1,127 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchJson, postJson } from "@/lib/utils/fetch";
 
-import { supabase } from "@/lib/supabase/client";
+import type {
+  Appointment,
+  MedicalSpecialty,
+  DoctorProfile,
+  TimeSlot,
+  CreateAppointmentData,
+} from "@/lib/services/appointments/appointments.types";
 
-// TODO: Import types from @red-salud/types once available
-interface Appointment {
-  id: string;
-  patient_id: string;
-  doctor_id: string;
-  appointment_date: string;
-  appointment_time: string;
-  duration: number;
-  status: "pending" | "confirmed" | "completed" | "cancelled";
-  consultation_type: "video" | "presencial" | "telefono";
-  reason?: string;
-  notes?: string;
-  price?: number;
-  created_at: string;
-  updated_at: string;
-  doctor?: {
-    id: string;
-    full_name?: string;
-    email?: string;
-    avatar_url?: string;
-  };
-  patient?: {
-    id: string;
-    full_name?: string;
-    email?: string;
-    avatar_url?: string;
-  };
-}
+// ── usePatientAppointments ───────────────────────────────────────────
 
-interface MedicalSpecialty {
-  id: string;
-  name: string;
-  description?: string;
-  icon?: string;
-}
-
-interface DoctorProfile {
-  id: string;
-  specialty_id?: string;
-  years_experience?: number;
-  biografia?: string;
-  consultation_fee?: number;
-  verified?: boolean;
-  profile?: {
-    id?: string;
-    full_name?: string;
-    email?: string;
-    avatar_url?: string;
-  };
-  specialty?: {
-    id: string;
-    name: string;
-    description?: string;
-  };
-}
-
-interface TimeSlot {
-  time: string;
-  available: boolean;
-  appointment_id?: string;
-}
-
-interface CreateAppointmentData {
-  doctor_id: string;
-  appointment_date: string;
-  appointment_time: string;
-  consultation_type: "video" | "presencial" | "telefono";
-  reason?: string;
-}
-
-// Hook para citas del paciente
 export function usePatientAppointments(patientId: string | undefined) {
-  const queryClient = useQueryClient();
-
   const query = useQuery({
     queryKey: ["appointments", patientId],
     queryFn: async () => {
-      // TODO: Replace with @red-salud/api-client call
-      const { data, error: fetchError } = await supabase
-        .from("appointments")
-        .select(
-          `
-          *,
-          doctor:profiles!appointments_medico_id_fkey(
-            id, full_name, email, avatar_url
-          )
-        `
-        )
-        .eq("patient_id", patientId)
-        .order("scheduled_at", { ascending: false });
-
-      if (fetchError) throw fetchError;
-
-      const mapped = (data || []).map((apt: Record<string, unknown>) => {
-        const scheduledAt = new Date(apt.scheduled_at as string);
-        return {
-          id: apt.id,
-          patient_id: apt.patient_id,
-          doctor_id: apt.doctor_id,
-          appointment_date: scheduledAt.toISOString().split("T")[0],
-          appointment_time: scheduledAt.toTimeString().split(" ")[0],
-          duration: apt.duration_minutes,
-          status:
-            apt.status === "pendiente"
-              ? "pending"
-              : apt.status === "confirmada"
-                ? "confirmed"
-                : apt.status === "completada"
-                  ? "completed"
-                  : "cancelled",
-          consultation_type: "presencial" as const,
-          reason: apt.reason,
-          notes: apt.notes,
-          created_at: apt.created_at,
-          updated_at: apt.updated_at,
-          doctor: apt.doctor,
-        } as Appointment;
-      });
-
-      return mapped;
+      // The API route uses the session cookie — patientId is implicit
+      return fetchJson<Appointment[]>("/api/appointments");
     },
     enabled: !!patientId,
   });
@@ -134,32 +29,16 @@ export function usePatientAppointments(patientId: string | undefined) {
   };
 }
 
-// Hook para especialidades médicas
+// ── useMedicalSpecialties ────────────────────────────────────────────
+
 export function useMedicalSpecialties(onlyWithDoctors: boolean = false) {
   const query = useQuery({
     queryKey: ["specialties", onlyWithDoctors],
     queryFn: async () => {
-      // TODO: Replace with @red-salud/api-client call
-      let query = supabase.from("specialties").select("*").order("name");
-
-      if (onlyWithDoctors) {
-        // Filter to specialties that have at least one verified doctor
-        const { data: doctorSpecialties } = await supabase
-          .from("doctor_details")
-          .select("specialty_id")
-          .eq("verified", true);
-
-        const specialtyIds = [
-          ...new Set((doctorSpecialties || []).map((d) => d.specialty_id)),
-        ];
-        if (specialtyIds.length > 0) {
-          query = query.in("id", specialtyIds);
-        }
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data || []) as MedicalSpecialty[];
+      const url = onlyWithDoctors
+        ? "/api/specialties?with_doctors=true"
+        : "/api/specialties";
+      return fetchJson<MedicalSpecialty[]>(url);
     },
   });
 
@@ -169,44 +48,14 @@ export function useMedicalSpecialties(onlyWithDoctors: boolean = false) {
   };
 }
 
-// Hook para doctores disponibles
+// ── useAvailableDoctors ──────────────────────────────────────────────
+
 export function useAvailableDoctors(specialtyId?: string) {
   const query = useQuery({
     queryKey: ["doctors", specialtyId],
     queryFn: async () => {
-      // TODO: Replace with @red-salud/api-client call
-      let query = supabase
-        .from("doctor_details")
-        .select(
-          `
-          *,
-          specialty:specialties(id, name, description),
-          profile:profiles!inner(id, full_name, email, avatar_url)
-        `
-        )
-        .eq("verified", true);
-
-      if (specialtyId) {
-        query = query.eq("specialty_id", specialtyId);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      const mapped = (data || []).map((d: Record<string, unknown>) => ({
-        id: d.id,
-        specialty_id: d.specialty_id,
-        years_experience: d.years_experience,
-        biografia: d.biografia,
-        consultation_fee: d.consultation_fee
-          ? parseFloat(d.consultation_fee as string)
-          : undefined,
-        verified: d.verified,
-        profile: d.profile,
-        specialty: d.specialty,
-      })) as DoctorProfile[];
-
-      return mapped;
+      const url = `/api/doctors/search?specialty_id=${encodeURIComponent(specialtyId!)}`;
+      return fetchJson<DoctorProfile[]>(url);
     },
     enabled: !!specialtyId,
   });
@@ -217,7 +66,8 @@ export function useAvailableDoctors(specialtyId?: string) {
   };
 }
 
-// Hook para slots de tiempo disponibles
+// ── useAvailableTimeSlots ────────────────────────────────────────────
+
 export function useAvailableTimeSlots(
   doctorId: string | undefined,
   date: string | undefined
@@ -225,79 +75,8 @@ export function useAvailableTimeSlots(
   const query = useQuery({
     queryKey: ["timeSlots", doctorId, date],
     queryFn: async () => {
-      const dayOfWeek = new Date(date!).getDay();
-      const startOfDay = new Date(`${date!}T00:00:00`);
-      const endOfDay = new Date(`${date!}T23:59:59.999`);
-
-      // Get doctor availability for this day of week
-      const { data: availability } = await supabase
-        .from("doctor_availability")
-        .select("hora_inicio, hora_fin")
-        .eq("doctor_id", doctorId!)
-        .eq("dia_semana", dayOfWeek)
-        .eq("activo", true);
-
-      if (!availability || availability.length === 0) {
-        return [] as TimeSlot[];
-      }
-
-      // Get existing appointments for this date
-      const { data: appointments } = await supabase
-        .from("appointments")
-        .select("id, scheduled_at, duration_minutes, status")
-        .eq("doctor_id", doctorId!)
-        .gte("scheduled_at", startOfDay.toISOString())
-        .lte("scheduled_at", endOfDay.toISOString())
-        .not("status", "in", '("cancelada","rechazada")');
-
-      const slotDuration = 30; // Default duration
-
-      const toMinutes = (value: string) => {
-        const [hoursStr = "0", minutesStr = "0"] = value.split(":");
-        return (Number(hoursStr) || 0) * 60 + (Number(minutesStr) || 0);
-      };
-
-      const toTimeString = (minutes: number) => {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:00`;
-      };
-
-      const appointmentIntervals = (
-        appointments || []
-      ).map((apt: Record<string, unknown>) => {
-        const startDate = new Date(apt.scheduled_at as string);
-        const start =
-          startDate.getHours() * 60 + startDate.getMinutes();
-        return {
-          start,
-          end: start + ((apt.duration_minutes as number) || slotDuration),
-        };
-      });
-
-      const hasConflict = (start: number, end: number) =>
-        appointmentIntervals.some(
-          (interval: { start: number; end: number }) =>
-            interval.start < end && interval.end > start
-        );
-
-      const slots: TimeSlot[] = [];
-
-      availability.forEach((slot: Record<string, unknown>) => {
-        const startMinutes = toMinutes(slot.hora_inicio as string);
-        const endMinutes = toMinutes(slot.hora_fin as string);
-        let cursor = startMinutes;
-
-        while (cursor + slotDuration <= endMinutes) {
-          slots.push({
-            time: toTimeString(cursor),
-            available: !hasConflict(cursor, cursor + slotDuration),
-          });
-          cursor += slotDuration;
-        }
-      });
-
-      return slots;
+      const url = `/api/doctors/${doctorId}/availability?date=${encodeURIComponent(date!)}`;
+      return fetchJson<TimeSlot[]>(url);
     },
     enabled: !!doctorId && !!date,
   });
@@ -308,44 +87,19 @@ export function useAvailableTimeSlots(
   };
 }
 
-// Hook para crear cita
+// ── useCreateAppointment ─────────────────────────────────────────────
+
 export function useCreateAppointment() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async ({
-      patientId,
       appointmentData,
     }: {
       patientId: string;
       appointmentData: CreateAppointmentData;
     }) => {
-      const fechaHora = `${appointmentData.appointment_date}T${appointmentData.appointment_time}`;
-
-      const { data, error: insertError } = await supabase
-        .from("appointments")
-        .insert({
-          patient_id: patientId,
-          doctor_id: appointmentData.doctor_id,
-          scheduled_at: fechaHora,
-          duration_minutes: 30,
-          reason: appointmentData.reason || "",
-          status: "pendiente",
-        })
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
-      // Log activity
-      await supabase.from("user_activity_log").insert({
-        user_id: patientId,
-        activity_type: "appointment_created",
-        description: `Cita creada para ${appointmentData.appointment_date}`,
-        status: "success",
-      });
-
-      return data;
+      return postJson<Appointment>("/api/appointments", appointmentData);
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
@@ -369,42 +123,28 @@ export function useCreateAppointment() {
     }
   };
 
-  return { create, loading: mutation.isPending, error: mutation.error?.message ?? null };
+  return {
+    create,
+    loading: mutation.isPending,
+    error: mutation.error?.message ?? null,
+  };
 }
 
-// Hook para cancelar cita
+// ── useCancelAppointment ─────────────────────────────────────────────
+
 export function useCancelAppointment() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async ({
       appointmentId,
-      userId,
       reason,
     }: {
       appointmentId: string;
       userId: string;
       reason?: string;
     }) => {
-      const { error: updateError } = await supabase
-        .from("appointments")
-        .update({
-          status: "cancelada",
-          notes: reason
-            ? `Cancelada: ${reason}`
-            : "Cancelada por paciente",
-        })
-        .eq("id", appointmentId);
-
-      if (updateError) throw updateError;
-
-      await supabase.from("user_activity_log").insert({
-        user_id: userId,
-        activity_type: "appointment_cancelled",
-        description: `Cita cancelada: ${appointmentId}`,
-        status: "success",
-      });
-
+      await postJson(`/api/appointments/${appointmentId}/cancel`, { motivo: reason }, "PATCH");
       return null;
     },
     onSuccess: () => {
@@ -425,5 +165,9 @@ export function useCancelAppointment() {
     }
   };
 
-  return { cancel, loading: mutation.isPending, error: mutation.error?.message ?? null };
+  return {
+    cancel,
+    loading: mutation.isPending,
+    error: mutation.error?.message ?? null,
+  };
 }

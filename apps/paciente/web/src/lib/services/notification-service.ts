@@ -1,10 +1,22 @@
+import { fetchJson, postJson } from "@/lib/utils/fetch";
 import { supabase } from "@/lib/supabase/client";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Notification Types ──────────────────────────────────────────────────────
 
 export type NotificationType =
-  | "medication"
+  | "appointment_confirmed"
+  | "appointment_cancelled"
+  | "appointment_reminder"
+  | "lab_results_ready"
+  | "prescription_expiring"
+  | "message_received"
+  | "chronic_alert"
+  | "price_alert"
+  | "follow_up_due"
+  | "rating_requested"
+  // Legacy compatibility aliases
   | "appointment"
+  | "medication"
   | "lab_result"
   | "message"
   | "reward"
@@ -23,200 +35,150 @@ export interface AppNotification {
   action_label?: string;
   action_data?: Record<string, unknown>;
   is_read: boolean;
+  read_at?: string | null;
   created_at: string;
 }
 
-export interface NotificationPage {
-  notifications: AppNotification[];
+export interface NotificationPagination {
+  page: number;
+  page_size: number;
   total: number;
-  has_more: boolean;
+  total_pages: number;
 }
 
-// ─── Table detection ─────────────────────────────────────────────────────────
-// We use `patient_notifications` if it exists, otherwise fall back to
-// `community_notifications`. If neither exists, return null and all
-// queries return empty defaults silently.
-
-let _resolvedTable: string | null = null;
-let _tableChecked = false;
-
-async function resolveTable(): Promise<string | null> {
-  if (_tableChecked) return _resolvedTable;
-
-  try {
-    // Try patient_notifications first
-    const { error: pnErr } = await supabase
-      .from("patient_notifications")
-      .select("id")
-      .limit(0);
-
-    if (!pnErr) {
-      _resolvedTable = "patient_notifications";
-      _tableChecked = true;
-      return _resolvedTable;
-    }
-
-    // Try community_notifications fallback
-    const { error: cnErr } = await supabase
-      .from("community_notifications")
-      .select("id")
-      .limit(0);
-
-    if (!cnErr) {
-      _resolvedTable = "community_notifications";
-      _tableChecked = true;
-      return _resolvedTable;
-    }
-  } catch {
-    // Neither table exists
-  }
-
-  _tableChecked = true;
-  _resolvedTable = null;
-  return null;
+export interface NotificationsResponse {
+  data: AppNotification[];
+  pagination: NotificationPagination;
+  unread_count: number;
 }
+
+export interface NotificationPreferences {
+  email_enabled: boolean;
+  push_enabled: boolean;
+  categories: Record<string, { email: boolean; push: boolean }>;
+}
+
+// ─── Query params ────────────────────────────────────────────────────────────
+
+export interface NotificationParams {
+  unread_only?: boolean;
+  type?: string;
+  page?: number;
+  page_size?: number;
+}
+
+// ─── Service ─────────────────────────────────────────────────────────────────
+
+export const notificationService = {
+  /**
+   * Fetch paginated notifications via BFF.
+   */
+  async getNotifications(
+    params?: NotificationParams,
+  ): Promise<NotificationsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.unread_only) searchParams.set("unread_only", "true");
+    if (params?.type) searchParams.set("type", params.type);
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.page_size) searchParams.set("page_size", String(params.page_size));
+
+    const qs = searchParams.toString();
+    const url = `/api/notifications${qs ? `?${qs}` : ""}`;
+
+    // This endpoint returns { data, pagination, unread_count } at the top level,
+    // but fetchJson extracts `.data`. We need the full response.
+    const res = await fetch(url);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(
+        (body as Record<string, string>).error ??
+          `Request failed (${res.status})`,
+      );
+    }
+    return res.json() as Promise<NotificationsResponse>;
+  },
+
+  /**
+   * Quick unread count for the notification badge.
+   */
+  async getUnreadCount(): Promise<number> {
+    const res = await this.getNotifications({ page: 1, page_size: 1 });
+    return res.unread_count;
+  },
+
+  /**
+   * Mark specific notifications as read.
+   */
+  async markAsRead(ids: string[]): Promise<void> {
+    await postJson("/api/notifications", { notification_ids: ids });
+  },
+
+  /**
+   * Mark ALL unread notifications as read.
+   */
+  async markAllAsRead(): Promise<void> {
+    await postJson("/api/notifications", { mark_all: true });
+  },
+
+  /**
+   * Toggle a single notification read/unread.
+   */
+  async toggleRead(id: string, isRead: boolean): Promise<AppNotification> {
+    return postJson<AppNotification>(
+      `/api/notifications/${id}`,
+      { is_read: isRead },
+      "PATCH",
+    );
+  },
+
+  /**
+   * Dismiss (delete) a notification.
+   */
+  async dismissNotification(id: string): Promise<void> {
+    await fetchJson(`/api/notifications/${id}`, { method: "DELETE" });
+  },
+
+  /**
+   * Get notification preferences.
+   */
+  async getPreferences(): Promise<NotificationPreferences> {
+    return fetchJson<NotificationPreferences>("/api/notifications/preferences");
+  },
+
+  /**
+   * Update notification preferences.
+   */
+  async updatePreferences(
+    prefs: Partial<NotificationPreferences>,
+  ): Promise<NotificationPreferences> {
+    return postJson<NotificationPreferences>(
+      "/api/notifications/preferences",
+      prefs,
+      "PUT",
+    );
+  },
+};
+
+// ─── Legacy API (backward compat with dashboard layout) ──────────────────────
 
 /**
- * Returns the column name that identifies the user in the resolved table.
- * `patient_notifications` uses `patient_id`, while `community_notifications`
- * uses `user_id`.
+ * @deprecated Use notificationService.getUnreadCount() instead.
+ * Kept for backward compatibility with dashboard layout.tsx polling.
  */
-function userColumn(): string {
-  return _resolvedTable === "community_notifications" ? "user_id" : "patient_id";
-}
-
-// ─── Read helpers ────────────────────────────────────────────────────────────
-
-export async function getNotifications(
-  patientId: string,
-  filter?: NotificationType,
-  page = 0,
-  pageSize = 20,
-): Promise<{ success: boolean; data: NotificationPage; error?: unknown }> {
-  try {
-    const table = await resolveTable();
-    if (!table) {
-      return { success: true, data: { notifications: [], total: 0, has_more: false } };
-    }
-
-    const from = page * pageSize;
-    const to = from + pageSize - 1;
-
-    let query = supabase
-      .from(table)
-      .select("*", { count: "exact" })
-      .eq(userColumn(), patientId)
-      .order("created_at", { ascending: false })
-      .range(from, to);
-
-    if (filter) {
-      query = query.eq("type", filter);
-    }
-
-    const { data, error, count } = await query;
-
-    if (error) throw error;
-
-    const notifications = (data || []) as AppNotification[];
-    const total = count ?? 0;
-
-    return {
-      success: true,
-      data: {
-        notifications,
-        total,
-        has_more: from + notifications.length < total,
-      },
-    };
-  } catch {
-    return {
-      success: true,
-      data: { notifications: [], total: 0, has_more: false },
-    };
-  }
-}
-
 export async function getUnreadCount(
   patientId: string,
-): Promise<{ success: boolean; data: number; error?: unknown }> {
+): Promise<{ success: boolean; data: number }> {
   try {
-    const table = await resolveTable();
-    if (!table) return { success: true, data: 0 };
-
     const { count, error } = await supabase
-      .from(table)
+      .from("patient_notifications")
       .select("id", { count: "exact", head: true })
-      .eq(userColumn(), patientId)
+      .eq("patient_id", patientId)
       .eq("is_read", false);
 
-    if (error) throw error;
-
+    if (error) return { success: true, data: 0 };
     return { success: true, data: count ?? 0 };
   } catch {
     return { success: true, data: 0 };
-  }
-}
-
-// ─── Write helpers ───────────────────────────────────────────────────────────
-
-export async function markAsRead(
-  notificationId: string,
-): Promise<{ success: boolean; error?: unknown }> {
-  try {
-    const table = await resolveTable();
-    if (!table) return { success: true };
-
-    const { error } = await supabase
-      .from(table)
-      .update({ is_read: true })
-      .eq("id", notificationId);
-
-    if (error) throw error;
-
-    return { success: true };
-  } catch {
-    return { success: true };
-  }
-}
-
-export async function markAllAsRead(
-  patientId: string,
-): Promise<{ success: boolean; error?: unknown }> {
-  try {
-    const table = await resolveTable();
-    if (!table) return { success: true };
-
-    const { error } = await supabase
-      .from(table)
-      .update({ is_read: true })
-      .eq(userColumn(), patientId)
-      .eq("is_read", false);
-
-    if (error) throw error;
-
-    return { success: true };
-  } catch {
-    return { success: true };
-  }
-}
-
-export async function deleteNotification(
-  notificationId: string,
-): Promise<{ success: boolean; error?: unknown }> {
-  try {
-    const table = await resolveTable();
-    if (!table) return { success: true };
-
-    const { error } = await supabase
-      .from(table)
-      .delete()
-      .eq("id", notificationId);
-
-    if (error) throw error;
-
-    return { success: true };
-  } catch {
-    return { success: true };
   }
 }
 
@@ -226,43 +188,33 @@ export function subscribeToNewNotifications(
   patientId: string,
   callback: (notification: AppNotification) => void,
 ): () => void {
-  // We cannot await resolveTable() in a sync function, so we subscribe to both
-  // possible channels and let the one that doesn't exist silently fail.
-  // Each table uses a different column name for the user reference.
-  const tableColumnPairs: [string, string][] = [
-    ["patient_notifications", "patient_id"],
-    ["community_notifications", "user_id"],
-  ];
-  const channels = tableColumnPairs.map(
-    ([table, col]) =>
-      supabase
-        .channel(`${table}:${patientId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table,
-            filter: `${col}=eq.${patientId}`,
-          },
-          (payload) => {
-            callback(payload.new as AppNotification);
-          },
-        )
-        .subscribe(),
-  );
+  const channel = supabase
+    .channel(`patient_notifications:${patientId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "patient_notifications",
+        filter: `patient_id=eq.${patientId}`,
+      },
+      (payload) => {
+        callback(payload.new as AppNotification);
+      },
+    )
+    .subscribe();
 
   return () => {
-    channels.forEach((ch) => supabase.removeChannel(ch));
+    supabase.removeChannel(channel);
   };
 }
 
-// ─── Push subscription ───────────────────────────────────────────────────────
+// ─── Push subscription ──────────────────────────────────────────────────────
 
 export async function savePushSubscription(
   patientId: string,
   subscription: PushSubscription,
-): Promise<{ success: boolean; error?: unknown }> {
+): Promise<{ success: boolean }> {
   try {
     const subJson = subscription.toJSON();
 
@@ -278,7 +230,6 @@ export async function savePushSubscription(
     );
 
     if (error) throw error;
-
     return { success: true };
   } catch {
     return { success: true };

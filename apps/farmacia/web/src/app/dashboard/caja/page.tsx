@@ -224,13 +224,27 @@ export default function CajaPage() {
         if (!user) return;
         setCashierId(user.id);
 
-        const { data: profile } = await supabase
-          .from("profiles")
+        // Check pharmacy_staff first (employee), then pharmacy_details (owner)
+        const { data: staff } = await supabase
+          .from("pharmacy_staff")
           .select("pharmacy_id")
-          .eq("id", user.id)
-          .single();
+          .eq("profile_id", user.id)
+          .eq("is_active", true)
+          .limit(1)
+          .maybeSingle();
 
-        const phId = profile?.pharmacy_id;
+        let phId = staff?.pharmacy_id ?? null;
+
+        if (!phId) {
+          const { data: owned } = await supabase
+            .from("pharmacy_details")
+            .select("id")
+            .eq("profile_id", user.id)
+            .limit(1)
+            .maybeSingle();
+          phId = owned?.id ?? null;
+        }
+
         if (phId) {
           setPharmacyId(phId);
           const [exRate, sess] = await Promise.all([

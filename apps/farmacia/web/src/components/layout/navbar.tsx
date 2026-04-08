@@ -8,6 +8,9 @@ import {
   ChevronRight,
   TrendingUp,
   TrendingDown,
+  ChevronDown,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import {
   Avatar,
@@ -21,13 +24,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@red-salud/design-system";
 import { cn } from "@red-salud/core/utils";
-import type { ExchangeRate } from "@/lib/services/exchange-rate-service";
+import type { ExchangeRate } from "@/lib/services/exchange-rate-client";
+import {
+  CURRENCY_PAIR_LABELS,
+  formatBs,
+  formatRelativeTime,
+  type CurrencyPair,
+} from "@/lib/services/exchange-rate-client";
 import type { PharmacyProfile, UserProfile } from "@/lib/services/dashboard-service";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // ---------- Breadcrumb generation ----------
 
@@ -59,6 +71,159 @@ function useBreadcrumbs() {
     href: "/" + segments.slice(0, index + 1).join("/"),
     isLast: index === segments.length - 1,
   }));
+}
+
+// ---------- Exchange Rate Badge with Popover ----------
+
+function ExchangeRateBadge({ exchangeRate }: { exchangeRate: ExchangeRate }) {
+  const [allRates, setAllRates] = useState<ExchangeRate[]>([]);
+  const [loadingRates, setLoadingRates] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  // Fetch all rates when popover opens
+  useEffect(() => {
+    if (!open || allRates.length > 0) return;
+
+    let cancelled = false;
+    setLoadingRates(true);
+
+    fetch("/api/bcv?all=true")
+      .then((res) => res.json())
+      .then((json) => {
+        if (!cancelled && Array.isArray(json.rates)) {
+          setAllRates(json.rates as ExchangeRate[]);
+        }
+      })
+      .catch(() => {
+        /* ignore — we'll just show the primary rate */
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingRates(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, allRates.length]);
+
+  // Allow refreshing from the popover
+  const handleRefresh = useCallback(async () => {
+    setLoadingRates(true);
+    try {
+      // Trigger a POST to fetch fresh rates from external APIs
+      await fetch("/api/bcv", { method: "POST" });
+      // Then reload all rates
+      const res = await fetch("/api/bcv?all=true");
+      const json = await res.json();
+      if (Array.isArray(json.rates)) {
+        setAllRates(json.rates as ExchangeRate[]);
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      setLoadingRates(false);
+    }
+  }, []);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="hidden md:flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 hover:bg-slate-100 transition-colors cursor-pointer"
+        >
+          <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
+            BCV
+          </span>
+          <span className="text-sm font-bold text-slate-900">
+            Bs. {exchangeRate.rate.toFixed(2)}
+          </span>
+          {exchangeRate.source !== "fallback" ? (
+            <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+          ) : (
+            <TrendingDown className="h-3.5 w-3.5 text-slate-400" />
+          )}
+          <ChevronDown className="h-3 w-3 text-slate-400" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 p-0">
+        <div className="p-3 border-b border-slate-100">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-slate-900">
+              Tasas de Cambio
+            </h4>
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={loadingRates}
+              className="flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
+            >
+              <RefreshCw
+                className={cn("h-3 w-3", loadingRates && "animate-spin")}
+              />
+              Actualizar
+            </button>
+          </div>
+        </div>
+
+        <div className="p-2 space-y-1">
+          {loadingRates && allRates.length === 0 ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+              <span className="ml-2 text-xs text-slate-400">
+                Cargando tasas...
+              </span>
+            </div>
+          ) : allRates.length > 0 ? (
+            allRates.map((rate) => (
+              <div
+                key={rate.currencyPair}
+                className="flex items-center justify-between px-2 py-1.5 rounded-md hover:bg-slate-50"
+              >
+                <div>
+                  <p className="text-xs font-medium text-slate-700">
+                    {CURRENCY_PAIR_LABELS[rate.currencyPair as CurrencyPair] ??
+                      rate.currencyPair}
+                  </p>
+                  <p className="text-[10px] text-slate-400">
+                    {rate.source !== "fallback"
+                      ? formatRelativeTime(rate.validDate)
+                      : "Sin datos"}
+                  </p>
+                </div>
+                <span className="text-sm font-bold text-slate-900">
+                  {formatBs(rate.rate)}
+                </span>
+              </div>
+            ))
+          ) : (
+            /* Only the primary rate available */
+            <div className="flex items-center justify-between px-2 py-1.5">
+              <div>
+                <p className="text-xs font-medium text-slate-700">
+                  Dolar BCV Oficial
+                </p>
+                <p className="text-[10px] text-slate-400">
+                  {exchangeRate.source !== "fallback"
+                    ? formatRelativeTime(exchangeRate.validDate)
+                    : "Sin datos"}
+                </p>
+              </div>
+              <span className="text-sm font-bold text-slate-900">
+                {formatBs(exchangeRate.rate)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="p-2 border-t border-slate-100">
+          <p className="text-[10px] text-slate-400 text-center">
+            Fuentes: BCV, DolarAPI.com
+          </p>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 // ---------- Props ----------
@@ -132,29 +297,9 @@ export function Navbar({
         />
       </div>
 
-      {/* BCV exchange rate */}
+      {/* BCV exchange rate with all-rates popover */}
       {exchangeRate && (
-        <div className="hidden md:flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
-          <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
-            BCV
-          </span>
-          <span className="text-sm font-bold text-slate-900">
-            Bs. {exchangeRate.rate.toFixed(2)}
-          </span>
-          {exchangeRate.source !== "fallback" ? (
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-          ) : (
-            <TrendingDown className="h-3.5 w-3.5 text-slate-400" />
-          )}
-          <span className="text-[10px] text-slate-400">
-            {exchangeRate.source === "fallback"
-              ? "Sin datos"
-              : new Date(exchangeRate.validDate).toLocaleDateString("es-VE", {
-                  day: "2-digit",
-                  month: "short",
-                })}
-          </span>
-        </div>
+        <ExchangeRateBadge exchangeRate={exchangeRate} />
       )}
 
       {/* Notifications bell */}

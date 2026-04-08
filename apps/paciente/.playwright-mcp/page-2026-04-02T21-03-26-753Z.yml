@@ -1,0 +1,486 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Red-Salud" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e7]
+          - generic [ref=e9]: Red-Salud
+        - generic [ref=e11]:
+          - img [ref=e12]
+          - textbox "Buscar medico, especialidad..." [ref=e15]
+        - generic [ref=e16]:
+          - link "Mensajes" [ref=e17] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e18]
+          - link "Notificaciones" [ref=e20] [cursor=pointer]:
+            - /url: /dashboard/notificaciones
+            - img [ref=e21]
+          - button "CT Carlos Test Paciente" [ref=e108]:
+            - generic [ref=e27]: CT
+            - generic [ref=e28]: Carlos Test Paciente
+            - img [ref=e29]
+    - generic [ref=e31]:
+      - complementary [ref=e32]:
+        - navigation [ref=e33]:
+          - link "Inicio" [ref=e34] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e35]
+            - text: Inicio
+          - link "Agendar Cita" [ref=e38] [cursor=pointer]:
+            - /url: /dashboard/agendar
+            - img [ref=e39]
+            - text: Agendar Cita
+          - link "Buscar Medico" [ref=e41] [cursor=pointer]:
+            - /url: /dashboard/buscar-medico
+            - img [ref=e42]
+            - text: Buscar Medico
+          - link "Mis Citas" [ref=e45] [cursor=pointer]:
+            - /url: /dashboard/citas
+            - img [ref=e46]
+            - text: Mis Citas
+          - link "Historial" [ref=e48] [cursor=pointer]:
+            - /url: /dashboard/historial
+            - img [ref=e49]
+            - text: Historial
+          - link "Recetas" [ref=e52] [cursor=pointer]:
+            - /url: /dashboard/recetas
+            - img [ref=e53]
+            - text: Recetas
+          - link "Documentos" [ref=e56] [cursor=pointer]:
+            - /url: /dashboard/documentos
+            - img [ref=e57]
+            - text: Documentos
+          - link "QR Medico" [ref=e59] [cursor=pointer]:
+            - /url: /dashboard/qr-medico
+            - img [ref=e60]
+            - text: QR Medico
+          - link "Mensajes" [ref=e64] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e65]
+            - text: Mensajes
+          - link "Recompensas" [ref=e67] [cursor=pointer]:
+            - /url: /dashboard/recompensas
+            - img [ref=e68]
+            - text: Recompensas
+          - link "Mi Perfil" [ref=e74] [cursor=pointer]:
+            - /url: /dashboard/perfil
+            - img [ref=e75]
+            - text: Mi Perfil
+      - main [ref=e78]:
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - heading "Buscar Medico" [level=1] [ref=e82]
+            - paragraph [ref=e83]: Encuentra al especialista ideal para ti
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - img [ref=e86]
+              - textbox "Buscar por nombre, especialidad o ubicacion..." [ref=e89]
+            - button "Filtros" [ref=e90]:
+              - img [ref=e91]
+              - generic [ref=e92]: Filtros
+          - generic [ref=e95]:
+            - heading "Especialidades" [level=2] [ref=e96]
+            - generic [ref=e97]:
+              - button "Acupuntura" [ref=e109]:
+                - img [ref=e111]
+                - heading "Acupuntura" [level=3] [ref=e115]
+              - button "Adicciones y Toxicomanías" [ref=e116]:
+                - img [ref=e118]
+                - heading "Adicciones y Toxicomanías" [level=3] [ref=e122]
+              - button "Alergología" [ref=e123]:
+                - img [ref=e125]
+                - heading "Alergología" [level=3] [ref=e129]
+              - button "Alergología e Inmunología Pediátrica" [ref=e130]:
+                - img [ref=e132]
+                - heading "Alergología e Inmunología Pediátrica" [level=3] [ref=e136]
+              - button "Andrología" [ref=e137]:
+                - img [ref=e139]
+                - heading "Andrología" [level=3] [ref=e143]
+              - button "Anestesia Cardiovascular" [ref=e144]:
+                - img [ref=e146]
+                - heading "Anestesia Cardiovascular" [level=3] [ref=e150]
+              - button "Anestesia Pediátrica" [ref=e151]:
+                - img [ref=e153]
+                - heading "Anestesia Pediátrica" [level=3] [ref=e157]
+              - button "Anestesiología" [ref=e158]:
+                - img [ref=e160]
+                - heading "Anestesiología" [level=3] [ref=e164]
+              - button "Angiología" [ref=e165]:
+                - img [ref=e167]
+                - heading "Angiología" [level=3] [ref=e171]
+              - button "Artroscopia" [ref=e172]:
+                - img [ref=e174]
+                - heading "Artroscopia" [level=3] [ref=e178]
+              - button "Audiología" [ref=e179]:
+                - img [ref=e181]
+                - heading "Audiología" [level=3] [ref=e185]
+              - button "Cardiología" [ref=e186]:
+                - img [ref=e188]
+                - heading "Cardiología" [level=3] [ref=e192]
+              - button "Cardiología Intervencionista" [ref=e193]:
+                - img [ref=e195]
+                - heading "Cardiología Intervencionista" [level=3] [ref=e199]
+              - button "Cardiología Pediátrica" [ref=e200]:
+                - img [ref=e202]
+                - heading "Cardiología Pediátrica" [level=3] [ref=e206]
+              - button "Cirugía Bariátrica" [ref=e207]:
+                - img [ref=e209]
+                - heading "Cirugía Bariátrica" [level=3] [ref=e213]
+              - button "Cirugía Cardiovascular" [ref=e214]:
+                - img [ref=e216]
+                - heading "Cirugía Cardiovascular" [level=3] [ref=e220]
+              - button "Cirugía de Cabeza y Cuello" [ref=e221]:
+                - img [ref=e223]
+                - heading "Cirugía de Cabeza y Cuello" [level=3] [ref=e227]
+              - button "Cirugía de Columna" [ref=e228]:
+                - img [ref=e230]
+                - heading "Cirugía de Columna" [level=3] [ref=e234]
+              - button "Cirugía de Mano" [ref=e235]:
+                - img [ref=e237]
+                - heading "Cirugía de Mano" [level=3] [ref=e241]
+              - button "Cirugía Estética" [ref=e242]:
+                - img [ref=e244]
+                - heading "Cirugía Estética" [level=3] [ref=e248]
+              - button "Cirugía General" [ref=e249]:
+                - img [ref=e251]
+                - heading "Cirugía General" [level=3] [ref=e255]
+              - button "Cirugía Laparoscópica" [ref=e256]:
+                - img [ref=e258]
+                - heading "Cirugía Laparoscópica" [level=3] [ref=e262]
+              - button "Cirugía Oncológica" [ref=e263]:
+                - img [ref=e265]
+                - heading "Cirugía Oncológica" [level=3] [ref=e269]
+              - button "Cirugía Oral y Maxilofacial" [ref=e270]:
+                - img [ref=e272]
+                - heading "Cirugía Oral y Maxilofacial" [level=3] [ref=e276]
+              - button "Cirugía Pediátrica" [ref=e277]:
+                - img [ref=e279]
+                - heading "Cirugía Pediátrica" [level=3] [ref=e283]
+              - button "Cirugía Plástica y Reconstructiva" [ref=e284]:
+                - img [ref=e286]
+                - heading "Cirugía Plástica y Reconstructiva" [level=3] [ref=e290]
+              - button "Cirugía Refractiva" [ref=e291]:
+                - img [ref=e293]
+                - heading "Cirugía Refractiva" [level=3] [ref=e297]
+              - button "Cirugía Torácica" [ref=e298]:
+                - img [ref=e300]
+                - heading "Cirugía Torácica" [level=3] [ref=e304]
+              - button "Cirugía Vascular y Endovascular" [ref=e305]:
+                - img [ref=e307]
+                - heading "Cirugía Vascular y Endovascular" [level=3] [ref=e311]
+              - button "Citopatología" [ref=e312]:
+                - img [ref=e314]
+                - heading "Citopatología" [level=3] [ref=e318]
+              - button "Coloproctología" [ref=e319]:
+                - img [ref=e321]
+                - heading "Coloproctología" [level=3] [ref=e325]
+              - button "Cuidados Intensivos Pediátricos" [ref=e326]:
+                - img [ref=e328]
+                - heading "Cuidados Intensivos Pediátricos" [level=3] [ref=e332]
+              - button "Dermato-oncología" [ref=e333]:
+                - img [ref=e335]
+                - heading "Dermato-oncología" [level=3] [ref=e339]
+              - button "Dermatología" [ref=e340]:
+                - img [ref=e342]
+                - heading "Dermatología" [level=3] [ref=e346]
+              - button "Dermatología Pediátrica" [ref=e347]:
+                - img [ref=e349]
+                - heading "Dermatología Pediátrica" [level=3] [ref=e353]
+              - button "Dermatopatología" [ref=e354]:
+                - img [ref=e356]
+                - heading "Dermatopatología" [level=3] [ref=e360]
+              - button "Diabetología" [ref=e361]:
+                - img [ref=e363]
+                - heading "Diabetología" [level=3] [ref=e367]
+              - button "Ecografía" [ref=e368]:
+                - img [ref=e370]
+                - heading "Ecografía" [level=3] [ref=e374]
+              - button "Electrofisiología Cardíaca" [ref=e375]:
+                - img [ref=e377]
+                - heading "Electrofisiología Cardíaca" [level=3] [ref=e381]
+              - button "Endocrinología" [ref=e382]:
+                - img [ref=e384]
+                - heading "Endocrinología" [level=3] [ref=e388]
+              - button "Endocrinología Pediátrica" [ref=e389]:
+                - img [ref=e391]
+                - heading "Endocrinología Pediátrica" [level=3] [ref=e395]
+              - button "Endodoncia" [ref=e396]:
+                - img [ref=e398]
+                - heading "Endodoncia" [level=3] [ref=e402]
+              - button "Endoscopia Digestiva" [ref=e403]:
+                - img [ref=e405]
+                - heading "Endoscopia Digestiva" [level=3] [ref=e409]
+              - button "Estimulación Temprana" [ref=e410]:
+                - img [ref=e412]
+                - heading "Estimulación Temprana" [level=3] [ref=e416]
+              - button "Farmacología Clínica" [ref=e417]:
+                - img [ref=e419]
+                - heading "Farmacología Clínica" [level=3] [ref=e423]
+              - button "Fisioterapia" [ref=e424]:
+                - img [ref=e426]
+                - heading "Fisioterapia" [level=3] [ref=e430]
+              - button "Flebología" [ref=e431]:
+                - img [ref=e433]
+                - heading "Flebología" [level=3] [ref=e437]
+              - button "Foniatría" [ref=e438]:
+                - img [ref=e440]
+                - heading "Foniatría" [level=3] [ref=e444]
+              - button "Gastroenterología" [ref=e445]:
+                - img [ref=e447]
+                - heading "Gastroenterología" [level=3] [ref=e451]
+              - button "Gastroenterología Pediátrica" [ref=e452]:
+                - img [ref=e454]
+                - heading "Gastroenterología Pediátrica" [level=3] [ref=e458]
+              - button "Genética Médica" [ref=e459]:
+                - img [ref=e461]
+                - heading "Genética Médica" [level=3] [ref=e465]
+              - button "Geriatría" [ref=e466]:
+                - img [ref=e468]
+                - heading "Geriatría" [level=3] [ref=e472]
+              - button "Ginecología" [ref=e473]:
+                - img [ref=e475]
+                - heading "Ginecología" [level=3] [ref=e479]
+              - button "Ginecología Oncológica" [ref=e480]:
+                - img [ref=e482]
+                - heading "Ginecología Oncológica" [level=3] [ref=e486]
+              - button "Glaucoma" [ref=e487]:
+                - img [ref=e489]
+                - heading "Glaucoma" [level=3] [ref=e493]
+              - button "Hemato-Oncología Pediátrica" [ref=e494]:
+                - img [ref=e496]
+                - heading "Hemato-Oncología Pediátrica" [level=3] [ref=e500]
+              - button "Hematología" [ref=e501]:
+                - img [ref=e503]
+                - heading "Hematología" [level=3] [ref=e507]
+              - button "Hemodinamia" [ref=e508]:
+                - img [ref=e510]
+                - heading "Hemodinamia" [level=3] [ref=e514]
+              - button "Hepatología" [ref=e515]:
+                - img [ref=e517]
+                - heading "Hepatología" [level=3] [ref=e521]
+              - button "Homeopatía" [ref=e522]:
+                - img [ref=e524]
+                - heading "Homeopatía" [level=3] [ref=e528]
+              - button "Implantología Dental" [ref=e529]:
+                - img [ref=e531]
+                - heading "Implantología Dental" [level=3] [ref=e535]
+              - button "Infectología" [ref=e536]:
+                - img [ref=e538]
+                - heading "Infectología" [level=3] [ref=e542]
+              - button "Infectología Pediátrica" [ref=e543]:
+                - img [ref=e545]
+                - heading "Infectología Pediátrica" [level=3] [ref=e549]
+              - button "Inmunología" [ref=e550]:
+                - img [ref=e552]
+                - heading "Inmunología" [level=3] [ref=e556]
+              - button "Intervencionismo Vascular" [ref=e557]:
+                - img [ref=e559]
+                - heading "Intervencionismo Vascular" [level=3] [ref=e563]
+              - button "Logofonoaudiología" [ref=e564]:
+                - img [ref=e566]
+                - heading "Logofonoaudiología" [level=3] [ref=e570]
+              - button "Mastología" [ref=e571]:
+                - img [ref=e573]
+                - heading "Mastología" [level=3] [ref=e577]
+              - button "Medicina de Emergencias" [ref=e578]:
+                - img [ref=e580]
+                - heading "Medicina de Emergencias" [level=3] [ref=e584]
+              - button "Medicina del Adolescente" [ref=e585]:
+                - img [ref=e587]
+                - heading "Medicina del Adolescente" [level=3] [ref=e591]
+              - button "Medicina del Deporte" [ref=e592]:
+                - img [ref=e594]
+                - heading "Medicina del Deporte" [level=3] [ref=e598]
+              - button "Medicina del Dolor" [ref=e599]:
+                - img [ref=e601]
+                - heading "Medicina del Dolor" [level=3] [ref=e605]
+              - button "Medicina del Sueño" [ref=e606]:
+                - img [ref=e608]
+                - heading "Medicina del Sueño" [level=3] [ref=e612]
+              - button "Medicina del Trabajo" [ref=e613]:
+                - img [ref=e615]
+                - heading "Medicina del Trabajo" [level=3] [ref=e619]
+              - button "Medicina Familiar" [ref=e620]:
+                - img [ref=e622]
+                - heading "Medicina Familiar" [level=3] [ref=e626]
+              - button "Medicina Física y Rehabilitación" [ref=e627]:
+                - img [ref=e629]
+                - heading "Medicina Física y Rehabilitación" [level=3] [ref=e633]
+              - button "Medicina General" [ref=e634]:
+                - img [ref=e636]
+                - heading "Medicina General" [level=3] [ref=e640]
+              - button "Medicina Hiperbárica" [ref=e641]:
+                - img [ref=e643]
+                - heading "Medicina Hiperbárica" [level=3] [ref=e647]
+              - button "Medicina Intensiva" [ref=e648]:
+                - img [ref=e650]
+                - heading "Medicina Intensiva" [level=3] [ref=e654]
+              - button "Medicina Interna" [ref=e655]:
+                - img [ref=e657]
+                - heading "Medicina Interna" [level=3] [ref=e661]
+              - button "Medicina Legal y Forense" [ref=e662]:
+                - img [ref=e664]
+                - heading "Medicina Legal y Forense" [level=3] [ref=e668]
+              - button "Medicina Materno-Fetal" [ref=e669]:
+                - img [ref=e671]
+                - heading "Medicina Materno-Fetal" [level=3] [ref=e675]
+              - button "Medicina Nuclear" [ref=e676]:
+                - img [ref=e678]
+                - heading "Medicina Nuclear" [level=3] [ref=e682]
+              - button "Medicina Paliativa" [ref=e683]:
+                - img [ref=e685]
+                - heading "Medicina Paliativa" [level=3] [ref=e689]
+              - button "Medicina Preventiva y Salud Pública" [ref=e690]:
+                - img [ref=e692]
+                - heading "Medicina Preventiva y Salud Pública" [level=3] [ref=e696]
+              - button "Medicina Reproductiva" [ref=e697]:
+                - img [ref=e699]
+                - heading "Medicina Reproductiva" [level=3] [ref=e703]
+              - button "Nefrología" [ref=e704]:
+                - img [ref=e706]
+                - heading "Nefrología" [level=3] [ref=e710]
+              - button "Nefrología Pediátrica" [ref=e711]:
+                - img [ref=e713]
+                - heading "Nefrología Pediátrica" [level=3] [ref=e717]
+              - button "Neonatología" [ref=e718]:
+                - img [ref=e720]
+                - heading "Neonatología" [level=3] [ref=e724]
+              - button "Neumología" [ref=e725]:
+                - img [ref=e727]
+                - heading "Neumología" [level=3] [ref=e731]
+              - button "Neumología Pediátrica" [ref=e732]:
+                - img [ref=e734]
+                - heading "Neumología Pediátrica" [level=3] [ref=e738]
+              - button "Neurocirugía" [ref=e739]:
+                - img [ref=e741]
+                - heading "Neurocirugía" [level=3] [ref=e745]
+              - button "Neurofisiología Clínica" [ref=e746]:
+                - img [ref=e748]
+                - heading "Neurofisiología Clínica" [level=3] [ref=e752]
+              - button "Neurología" [ref=e753]:
+                - img [ref=e755]
+                - heading "Neurología" [level=3] [ref=e759]
+              - button "Neurología Pediátrica" [ref=e760]:
+                - img [ref=e762]
+                - heading "Neurología Pediátrica" [level=3] [ref=e766]
+              - button "Neuropsicología" [ref=e767]:
+                - img [ref=e769]
+                - heading "Neuropsicología" [level=3] [ref=e773]
+              - button "Nutriología" [ref=e774]:
+                - img [ref=e776]
+                - heading "Nutriología" [level=3] [ref=e780]
+              - button "Obstetricia" [ref=e781]:
+                - img [ref=e783]
+                - heading "Obstetricia" [level=3] [ref=e787]
+              - button "Odontología" [ref=e788]:
+                - img [ref=e790]
+                - heading "Odontología" [level=3] [ref=e794]
+              - button "Odontopediatría" [ref=e795]:
+                - img [ref=e797]
+                - heading "Odontopediatría" [level=3] [ref=e801]
+              - button "Oftalmología" [ref=e802]:
+                - img [ref=e804]
+                - heading "Oftalmología" [level=3] [ref=e808]
+              - button "Oftalmología Pediátrica" [ref=e809]:
+                - img [ref=e811]
+                - heading "Oftalmología Pediátrica" [level=3] [ref=e815]
+              - button "Oncología Médica" [ref=e816]:
+                - img [ref=e818]
+                - heading "Oncología Médica" [level=3] [ref=e822]
+              - button "Oncología Radioterápica" [ref=e823]:
+                - img [ref=e825]
+                - heading "Oncología Radioterápica" [level=3] [ref=e829]
+              - button "Optometría" [ref=e830]:
+                - img [ref=e832]
+                - heading "Optometría" [level=3] [ref=e836]
+              - button "Ortodoncia" [ref=e837]:
+                - img [ref=e839]
+                - heading "Ortodoncia" [level=3] [ref=e843]
+              - button "Ortopedia Dentomaxilofacial" [ref=e844]:
+                - img [ref=e846]
+                - heading "Ortopedia Dentomaxilofacial" [level=3] [ref=e850]
+              - button "Ortopedia Pediátrica" [ref=e851]:
+                - img [ref=e853]
+                - heading "Ortopedia Pediátrica" [level=3] [ref=e857]
+              - button "Otorrinolaringología" [ref=e858]:
+                - img [ref=e860]
+                - heading "Otorrinolaringología" [level=3] [ref=e864]
+              - button "Patología" [ref=e865]:
+                - img [ref=e867]
+                - heading "Patología" [level=3] [ref=e871]
+              - button "Patología Clínica" [ref=e872]:
+                - img [ref=e874]
+                - heading "Patología Clínica" [level=3] [ref=e878]
+              - button "Pediatría" [ref=e879]:
+                - img [ref=e881]
+                - heading "Pediatría" [level=3] [ref=e885]
+              - button "Periodoncia" [ref=e886]:
+                - img [ref=e888]
+                - heading "Periodoncia" [level=3] [ref=e892]
+              - button "Podología" [ref=e893]:
+                - img [ref=e895]
+                - heading "Podología" [level=3] [ref=e899]
+              - button "Prostodoncia" [ref=e900]:
+                - img [ref=e902]
+                - heading "Prostodoncia" [level=3] [ref=e906]
+              - button "Psicología" [ref=e907]:
+                - img [ref=e909]
+                - heading "Psicología" [level=3] [ref=e913]
+              - button "Psicología Clínica" [ref=e914]:
+                - img [ref=e916]
+                - heading "Psicología Clínica" [level=3] [ref=e920]
+              - button "Psicopedagogía" [ref=e921]:
+                - img [ref=e923]
+                - heading "Psicopedagogía" [level=3] [ref=e927]
+              - button "Psiquiatría" [ref=e928]:
+                - img [ref=e930]
+                - heading "Psiquiatría" [level=3] [ref=e934]
+              - button "Psiquiatría Infantil y del Adolescente" [ref=e935]:
+                - img [ref=e937]
+                - heading "Psiquiatría Infantil y del Adolescente" [level=3] [ref=e941]
+              - button "Quemados" [ref=e942]:
+                - img [ref=e944]
+                - heading "Quemados" [level=3] [ref=e948]
+              - button "Quiropráctica" [ref=e949]:
+                - img [ref=e951]
+                - heading "Quiropráctica" [level=3] [ref=e955]
+              - button "Radiología e Imágenes" [ref=e956]:
+                - img [ref=e958]
+                - heading "Radiología e Imágenes" [level=3] [ref=e962]
+              - button "Retina y Vítreo" [ref=e963]:
+                - img [ref=e965]
+                - heading "Retina y Vítreo" [level=3] [ref=e969]
+              - button "Reumatología" [ref=e970]:
+                - img [ref=e972]
+                - heading "Reumatología" [level=3] [ref=e976]
+              - button "Reumatología Pediátrica" [ref=e977]:
+                - img [ref=e979]
+                - heading "Reumatología Pediátrica" [level=3] [ref=e983]
+              - button "Sexología Clínica" [ref=e984]:
+                - img [ref=e986]
+                - heading "Sexología Clínica" [level=3] [ref=e990]
+              - button "Terapia Ocupacional" [ref=e991]:
+                - img [ref=e993]
+                - heading "Terapia Ocupacional" [level=3] [ref=e997]
+              - button "Toxicología" [ref=e998]:
+                - img [ref=e1000]
+                - heading "Toxicología" [level=3] [ref=e1004]
+              - button "Transplante de Órganos" [ref=e1005]:
+                - img [ref=e1007]
+                - heading "Transplante de Órganos" [level=3] [ref=e1011]
+              - button "Traumatología y Ortopedia" [ref=e1012]:
+                - img [ref=e1014]
+                - heading "Traumatología y Ortopedia" [level=3] [ref=e1018]
+              - button "Urología" [ref=e1019]:
+                - img [ref=e1021]
+                - heading "Urología" [level=3] [ref=e1025]
+              - button "Urología Pediátrica" [ref=e1026]:
+                - img [ref=e1028]
+                - heading "Urología Pediátrica" [level=3] [ref=e1032]
+    - 'button "Emergencia: mantener presionado para activar" [ref=e104]':
+      - img [ref=e106]
+      - generic: Mantener para emergencia
+  - button "Open Next.js Dev Tools" [ref=e1038] [cursor=pointer]:
+    - img [ref=e1039]
+  - alert [ref=e1042]

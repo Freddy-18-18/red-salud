@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/utils/fetch";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -132,14 +133,10 @@ export async function comparePrices(
   prescriptionId: string
 ): Promise<{ success: boolean; data: FulfillmentOption[]; error?: unknown }> {
   try {
-    // Get fulfillment options pre-computed by the system
-    const { data: options, error: optionsError } = await supabase
-      .from("prescription_fulfillment_options")
-      .select("*")
-      .eq("prescription_id", prescriptionId)
-      .order("total_price_bs", { ascending: true });
-
-    if (optionsError) throw optionsError;
+    // Get fulfillment options from BFF API
+    const options = await fetchJson<Record<string, unknown>[]>(
+      `/api/pharmacy/compare?prescription_id=${encodeURIComponent(prescriptionId)}`
+    );
 
     if (!options || options.length === 0) {
       return { success: true, data: [] };
@@ -147,44 +144,43 @@ export async function comparePrices(
 
     // Enrich with pharmacy details and individual medication prices
     const enriched: FulfillmentOption[] = await Promise.all(
-      (options || []).map(async (option) => {
-        // Get pharmacy profile
+      options.map(async (option) => {
+        // Get pharmacy profile (own-domain table — keep as supabase)
         const { data: pharmacy } = await supabase
           .from("profiles")
           .select("id, full_name, phone, address, city, state, avatar_url")
-          .eq("id", option.pharmacy_id)
+          .eq("id", option.pharmacy_id as string)
           .maybeSingle();
 
-        // Get individual medication prices for this pharmacy
-        const { data: inventoryItems } = await supabase
-          .from("pharmacy_inventory")
-          .select("*")
-          .eq("pharmacy_id", option.pharmacy_id);
+        // Get individual medication prices via BFF API
+        const inventoryItems = await fetchJson<Record<string, unknown>[]>(
+          `/api/pharmacy/${encodeURIComponent(option.pharmacy_id as string)}/inventory`
+        );
 
         const items: PharmacyMedicationPrice[] = (inventoryItems || []).map((item) => ({
-          medication_name: item.medication_name,
-          generic_name: item.generic_name,
-          price_bs: item.price_bs,
-          price_usd: item.price_usd,
-          in_stock: item.in_stock,
-          stock_quantity: item.stock_quantity,
+          medication_name: item.medication_name as string,
+          generic_name: item.generic_name as string | undefined,
+          price_bs: item.price_bs as number,
+          price_usd: item.price_usd as number | undefined,
+          in_stock: item.in_stock as boolean,
+          stock_quantity: item.stock_quantity as number,
         }));
 
         // Estimate USD total if individual prices have USD
         const totalUsd = items.reduce((sum, item) => sum + (item.price_usd || 0), 0);
 
         return {
-          id: option.id,
-          prescription_id: option.prescription_id,
-          pharmacy_id: option.pharmacy_id,
-          pharmacy_name: option.pharmacy_name,
-          total_price_bs: option.total_price_bs,
+          id: option.id as string,
+          prescription_id: option.prescription_id as string,
+          pharmacy_id: option.pharmacy_id as string,
+          pharmacy_name: option.pharmacy_name as string,
+          total_price_bs: option.total_price_bs as number,
           total_price_usd: totalUsd > 0 ? totalUsd : undefined,
-          items_available: option.items_available,
-          items_total: option.items_total,
-          all_available: option.all_available,
-          offers_delivery: option.offers_delivery,
-          delivery_fee: option.delivery_fee ?? undefined,
+          items_available: option.items_available as number,
+          items_total: option.items_total as number,
+          all_available: option.all_available as boolean,
+          offers_delivery: option.offers_delivery as boolean,
+          delivery_fee: (option.delivery_fee as number) ?? undefined,
           items,
           pharmacy: pharmacy as PharmacyDetails | undefined,
         } satisfies FulfillmentOption;
@@ -228,10 +224,10 @@ export async function createOrder(
   orderData: CreateOrderData
 ): Promise<{ success: boolean; data: PharmacyOrder | null; error?: unknown }> {
   try {
-    const { data, error } = await supabase
-      .from("pharmacy_orders")
-      .insert({
-        patient_id: orderData.patient_id,
+    const order = await fetchJson<PharmacyOrder>('/api/pharmacy/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         pharmacy_id: orderData.pharmacy_id,
         prescription_id: orderData.prescription_id,
         items: orderData.items,
@@ -241,14 +237,10 @@ export async function createOrder(
         payment_method: orderData.payment_method,
         payment_reference: orderData.payment_reference,
         notes: orderData.notes,
-        status: "pending",
-      })
-      .select()
-      .single();
+      }),
+    });
 
-    if (error) throw error;
-
-    // Log activity
+    // Log activity (own-domain table — keep as supabase)
     await supabase.from("user_activity_log").insert({
       user_id: orderData.patient_id,
       activity_type: "pharmacy_order_created",
@@ -256,7 +248,7 @@ export async function createOrder(
       status: "success",
     });
 
-    return { success: true, data: data as PharmacyOrder };
+    return { success: true, data: order };
   } catch (error) {
     console.error("Error creating pharmacy order:", error);
     return { success: false, data: null, error };
@@ -267,20 +259,11 @@ export async function getOrderStatus(
   orderId: string
 ): Promise<{ success: boolean; data: PharmacyOrder | null; error?: unknown }> {
   try {
-    const { data, error } = await supabase
-      .from("pharmacy_orders")
-      .select(`
-        *,
-        pharmacy:profiles!pharmacy_orders_pharmacy_id_fkey(
-          id, full_name, phone, address, city, state, avatar_url
-        )
-      `)
-      .eq("id", orderId)
-      .single();
+    const order = await fetchJson<PharmacyOrder>(
+      `/api/pharmacy/orders/${encodeURIComponent(orderId)}`
+    );
 
-    if (error) throw error;
-
-    return { success: true, data: data as PharmacyOrder };
+    return { success: true, data: order };
   } catch (error) {
     console.error("Error fetching order status:", error);
     return { success: false, data: null, error };
@@ -288,23 +271,13 @@ export async function getOrderStatus(
 }
 
 export async function getMyOrders(
-  patientId: string
+  _patientId: string
 ): Promise<{ success: boolean; data: PharmacyOrder[]; error?: unknown }> {
   try {
-    const { data, error } = await supabase
-      .from("pharmacy_orders")
-      .select(`
-        *,
-        pharmacy:profiles!pharmacy_orders_pharmacy_id_fkey(
-          id, full_name, phone, address, city, state, avatar_url
-        )
-      `)
-      .eq("patient_id", patientId)
-      .order("created_at", { ascending: false });
+    // BFF route uses auth cookie — patientId is resolved server-side
+    const orders = await fetchJson<PharmacyOrder[]>('/api/pharmacy/orders');
 
-    if (error) throw error;
-
-    return { success: true, data: (data || []) as PharmacyOrder[] };
+    return { success: true, data: orders || [] };
   } catch (error) {
     console.error("Error fetching patient orders:", error);
     return { success: false, data: [], error };

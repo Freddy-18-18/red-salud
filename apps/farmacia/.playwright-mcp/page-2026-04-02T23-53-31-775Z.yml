@@ -1,0 +1,75 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - img [ref=e10]
+        - generic [ref=e13]:
+          - text: Red Salud
+          - generic [ref=e14]: Farmacia
+      - heading "Unite a la red de farmacias mas grande de Venezuela" [level=2] [ref=e15]
+      - paragraph [ref=e16]: Digitaliza tu farmacia, conectate con medicos y pacientes, y gestiona tu negocio de forma eficiente.
+      - generic [ref=e17]:
+        - paragraph [ref=e18]: "Que obtenes al registrarte:"
+        - list [ref=e19]:
+          - listitem [ref=e20]:
+            - img [ref=e21]
+            - text: Control de inventario con alertas de vencimiento
+          - listitem [ref=e24]:
+            - img [ref=e25]
+            - text: Punto de venta integrado con tasa BCV
+          - listitem [ref=e28]:
+            - img [ref=e29]
+            - text: Recepcion de recetas digitales verificadas
+          - listitem [ref=e32]:
+            - img [ref=e33]
+            - text: Gestion de entregas a domicilio
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - heading "Registra tu farmacia" [level=1] [ref=e40]
+          - paragraph [ref=e41]: Paso 3 de 4 — Representante
+        - generic [ref=e42]:
+          - generic [ref=e44]:
+            - img [ref=e111]
+            - generic [ref=e49]: Acceso
+          - generic [ref=e52]:
+            - img [ref=e130]
+            - generic [ref=e58]: Farmacia
+          - generic [ref=e61]:
+            - img [ref=e63]
+            - generic [ref=e66]: Representante
+          - generic [ref=e69]:
+            - img [ref=e71]
+            - generic [ref=e74]: Ubicacion
+        - generic [ref=e133]:
+          - generic [ref=e134]:
+            - generic [ref=e135]: Nombre completo
+            - textbox "Nombre completo" [ref=e136]:
+              - /placeholder: Juan Perez
+          - generic [ref=e137]:
+            - generic [ref=e138]: Cedula de identidad
+            - textbox "Cedula de identidad" [ref=e139]:
+              - /placeholder: V-12345678
+          - generic [ref=e140]:
+            - generic [ref=e141]: Telefono
+            - textbox "Telefono" [ref=e142]:
+              - /placeholder: +58 412 1234567
+              - text: "+58"
+          - generic [ref=e143]:
+            - generic [ref=e144]: Cargo
+            - textbox "Cargo" [ref=e145]:
+              - /placeholder: Propietario, Regente, Gerente...
+        - generic [ref=e95]:
+          - button "Atras" [ref=e127]:
+            - img [ref=e128]
+            - text: Atras
+          - button "Siguiente" [active] [ref=e96]:
+            - text: Siguiente
+            - img [ref=e97]
+      - paragraph [ref=e99]:
+        - text: Ya tenes cuenta?
+        - link "Inicia sesion" [ref=e100] [cursor=pointer]:
+          - /url: /auth/login
+  - button "Open Next.js Dev Tools" [ref=e106] [cursor=pointer]:
+    - img [ref=e107]
+  - alert [ref=e110]

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/utils/fetch";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -122,26 +123,32 @@ export const exportService = {
       .eq("id", patientId);
     counts.push({ category: "perfil", count: profileCount ?? 0 });
 
-    // Appointments
-    const { count: citasCount } = await supabase
-      .from("appointments")
-      .select("id", { count: "exact", head: true })
-      .eq("patient_id", patientId);
-    counts.push({ category: "citas", count: citasCount ?? 0 });
+    // Appointments (via API)
+    try {
+      const citasRes = await fetch(`/api/appointments?page_size=1`);
+      const citasJson = await citasRes.json();
+      counts.push({ category: "citas", count: citasJson.pagination?.total ?? 0 });
+    } catch {
+      counts.push({ category: "citas", count: 0 });
+    }
 
-    // Lab results
-    const { count: labCount } = await supabase
-      .from("lab_orders")
-      .select("id", { count: "exact", head: true })
-      .eq("patient_id", patientId);
-    counts.push({ category: "laboratorio", count: labCount ?? 0 });
+    // Lab results (via API)
+    try {
+      const labRes = await fetch("/api/lab/orders?count_only=true");
+      const labJson = await labRes.json();
+      counts.push({ category: "laboratorio", count: labJson.count ?? 0 });
+    } catch {
+      counts.push({ category: "laboratorio", count: 0 });
+    }
 
-    // Prescriptions
-    const { count: rxCount } = await supabase
-      .from("prescriptions")
-      .select("id", { count: "exact", head: true })
-      .eq("patient_id", patientId);
-    counts.push({ category: "recetas", count: rxCount ?? 0 });
+    // Prescriptions (via API)
+    try {
+      const rxRes = await fetch("/api/prescriptions");
+      const rxJson = await rxRes.json();
+      counts.push({ category: "recetas", count: (rxJson.data ?? []).length });
+    } catch {
+      counts.push({ category: "recetas", count: 0 });
+    }
 
     // Vaccinations
     const { count: vacCount } = await supabase
@@ -189,39 +196,39 @@ export const exportService = {
           break;
         }
         case "citas": {
-          let query = supabase
-            .from("appointments")
-            .select("*")
-            .eq("patient_id", patientId)
-            .order("scheduled_at", { ascending: false });
-          if (dateRange?.from) query = query.gte("scheduled_at", dateRange.from);
-          if (dateRange?.to) query = query.lte("scheduled_at", dateRange.to);
-          const { data } = await query;
-          result.citas = (data ?? []) as Record<string, unknown>[];
+          try {
+            const appointments = await fetchJson<Record<string, unknown>[]>(
+              `/api/appointments?page_size=50`
+            );
+            result.citas = (appointments ?? []) as Record<string, unknown>[];
+          } catch {
+            result.citas = [];
+          }
           break;
         }
         case "laboratorio": {
-          let query = supabase
-            .from("lab_orders")
-            .select("*, lab_results(*)")
-            .eq("patient_id", patientId)
-            .order("created_at", { ascending: false });
-          if (dateRange?.from) query = query.gte("created_at", dateRange.from);
-          if (dateRange?.to) query = query.lte("created_at", dateRange.to);
-          const { data } = await query;
-          result.laboratorio = (data ?? []) as Record<string, unknown>[];
+          try {
+            const params = new URLSearchParams();
+            if (dateRange?.from) params.set("from", dateRange.from);
+            if (dateRange?.to) params.set("to", dateRange.to);
+            const labData = await fetchJson<Record<string, unknown>[]>(
+              `/api/lab/orders?${params}`
+            );
+            result.laboratorio = (labData ?? []) as Record<string, unknown>[];
+          } catch {
+            result.laboratorio = [];
+          }
           break;
         }
         case "recetas": {
-          let query = supabase
-            .from("prescriptions")
-            .select("*, prescription_medications(*)")
-            .eq("patient_id", patientId)
-            .order("prescribed_at", { ascending: false });
-          if (dateRange?.from) query = query.gte("prescribed_at", dateRange.from);
-          if (dateRange?.to) query = query.lte("prescribed_at", dateRange.to);
-          const { data } = await query;
-          result.recetas = (data ?? []) as Record<string, unknown>[];
+          try {
+            const rxData = await fetchJson<Record<string, unknown>[]>(
+              "/api/prescriptions"
+            );
+            result.recetas = (rxData ?? []) as Record<string, unknown>[];
+          } catch {
+            result.recetas = [];
+          }
           break;
         }
         case "vacunas": {

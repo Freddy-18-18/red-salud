@@ -12,8 +12,6 @@ import { useEffect, useState } from "react";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonList } from "@/components/ui/skeleton";
-import { supabase } from "@/lib/supabase/client";
-
 type TabValue = "active" | "expired" | "all";
 
 interface PrescriptionMedication {
@@ -66,24 +64,15 @@ export default function RecetasPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       try {
-        const { data, error } = await supabase
-          .from("prescriptions")
-          .select(`
-            *,
-            doctor:profiles(full_name, avatar_url),
-            medications:prescription_medications(*)
-          `)
-          .eq("patient_id", user.id)
-          .order("prescribed_at", { ascending: false });
+        const res = await fetch('/api/prescriptions');
+        if (!res.ok) throw new Error('Failed to fetch prescriptions');
+        const { data } = await res.json();
 
-        if (!error && data) {
+        if (data) {
           // Determine active/expired status based on dates
           const now = new Date();
-          const mapped = data.map((p: Record<string, unknown>) => {
+          const mapped = (data as Record<string, unknown>[]).map((p) => {
             const expiresAt = p.expires_at as string | null;
             let status = (p.status as string) || "active";
             if (expiresAt && new Date(expiresAt) < now && status === "active") {

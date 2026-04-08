@@ -1,0 +1,288 @@
+- generic [ref=e1]:
+  - generic [active]:
+    - generic [ref=e852]:
+      - generic [ref=e853]:
+        - generic [ref=e854]:
+          - navigation [ref=e855]:
+            - button "previous" [disabled] [ref=e856]:
+              - img "previous" [ref=e857]
+            - generic [ref=e859]:
+              - generic [ref=e860]: 1/
+              - text: "1"
+            - button "next" [disabled] [ref=e861]:
+              - img "next" [ref=e862]
+          - img
+        - generic [ref=e864]:
+          - link "Next.js 15.5.14 (outdated) Turbopack" [ref=e865] [cursor=pointer]:
+            - /url: https://nextjs.org/docs/messages/version-staleness
+            - img [ref=e866]
+            - generic "An outdated version detected (latest is 16.2.2), upgrade is highly recommended!" [ref=e868]: Next.js 15.5.14 (outdated)
+            - generic [ref=e869]: Turbopack
+          - img
+      - dialog "Build Error" [ref=e871]:
+        - generic [ref=e874]:
+          - generic [ref=e875]:
+            - generic [ref=e876]:
+              - generic [ref=e878]: Build Error
+              - generic [ref=e879]:
+                - button "Copy Error Info" [ref=e880] [cursor=pointer]:
+                  - img [ref=e881]
+                - link "Go to related documentation" [ref=e883] [cursor=pointer]:
+                  - /url: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+                  - img [ref=e884]
+                - link "Learn more about enabling Node.js inspector for server code with Chrome DevTools" [ref=e886] [cursor=pointer]:
+                  - /url: https://nextjs.org/docs/app/building-your-application/configuring/debugging#server-side-code
+                  - img [ref=e887]
+            - paragraph [ref=e896]: Ecmascript file had an error
+          - generic [ref=e898]:
+            - generic [ref=e900]:
+              - img [ref=e902]
+              - generic [ref=e906]: ./apps/farmacia/web/src/lib/supabase/server.ts (2:1)
+              - button "Open in editor" [ref=e907] [cursor=pointer]:
+                - img [ref=e909]
+            - generic [ref=e912]:
+              - generic [ref=e913]: Ecmascript file had an error
+              - generic [ref=e914]: 1 |
+              - text: import
+              - generic [ref=e915]: "{ createServerClient }"
+              - text: from '@supabase/ssr'; >
+              - generic [ref=e916]: 2 |
+              - text: import
+              - generic [ref=e917]: "{ cookies }"
+              - text: from 'next/headers';
+              - generic [ref=e918]: "|"
+              - text: ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              - generic [ref=e919]: 3 |
+              - generic [ref=e920]: 4 |
+              - text: export async function
+              - generic [ref=e921]: "createClient() {"
+              - generic [ref=e922]: 5 |
+              - text: const
+              - generic [ref=e923]: cookieStore
+              - text: = await
+              - generic [ref=e924]: cookies()
+              - text: ;
+              - generic [ref=e925]:
+                - text: "You're importing a component that needs \"next/headers\". That only works in a Server Component which is not supported in the pages/ directory. Read more:"
+                - link "https://nextjs.org/docs/app/building-your-application/rendering/server-components" [ref=e926] [cursor=pointer]:
+                  - /url: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+                - text: "Import traces: Server Component: ./apps/farmacia/web/src/lib/supabase/server.ts ./apps/farmacia/web/src/lib/services/exchange-rate-service.ts ./apps/farmacia/web/src/app/dashboard/layout.tsx Client Component Browser: ./apps/farmacia/web/src/lib/supabase/server.ts [Client Component Browser] ./apps/farmacia/web/src/lib/services/exchange-rate-service.ts [Client Component Browser] ./apps/farmacia/web/src/app/dashboard/caja/page.tsx [Client Component Browser] ./apps/farmacia/web/src/app/dashboard/caja/page.tsx [Server Component] Client Component SSR: ./apps/farmacia/web/src/lib/supabase/server.ts [Client Component SSR] ./apps/farmacia/web/src/lib/services/exchange-rate-service.ts [Client Component SSR] ./apps/farmacia/web/src/app/dashboard/caja/page.tsx [Client Component SSR] ./apps/farmacia/web/src/app/dashboard/caja/page.tsx [Server Component]"
+        - generic [ref=e927]:
+          - generic [ref=e928]: "1"
+          - generic [ref=e929]: "2"
+    - generic [ref=e934] [cursor=pointer]:
+      - button "Open Next.js Dev Tools" [ref=e935]:
+        - img [ref=e936]
+      - button "Open issues overlay" [ref=e940]:
+        - generic [ref=e941]:
+          - generic [ref=e942]: "0"
+          - generic [ref=e943]: "1"
+        - generic [ref=e944]: Issue
+  - alert [ref=e110]
+  - generic [ref=e557]:
+    - complementary [ref=e558]:
+      - generic [ref=e559]:
+        - generic [ref=e560]:
+          - img [ref=e562]
+          - generic [ref=e565]:
+            - paragraph [ref=e566]: Farmacia Demo Red Salud
+            - paragraph [ref=e567]: F-001234
+        - navigation [ref=e571]:
+          - generic [ref=e572]:
+            - paragraph [ref=e573]: Principal
+            - link "Dashboard" [ref=e575] [cursor=pointer]:
+              - /url: /dashboard
+              - img [ref=e576]
+              - generic [ref=e581]: Dashboard
+            - link "Caja / POS" [ref=e583] [cursor=pointer]:
+              - /url: /dashboard/caja
+              - img [ref=e584]
+              - generic [ref=e588]: Caja / POS
+          - generic [ref=e589]:
+            - paragraph [ref=e590]: Inventario
+            - link "Productos" [ref=e592] [cursor=pointer]:
+              - /url: /dashboard/productos
+              - img [ref=e593]
+              - generic [ref=e597]: Productos
+            - link "Caducidades" [ref=e599] [cursor=pointer]:
+              - /url: /dashboard/caducidades
+              - img [ref=e600]
+              - generic [ref=e604]: Caducidades
+            - link "Alertas" [ref=e606] [cursor=pointer]:
+              - /url: /dashboard/alertas
+              - img [ref=e607]
+              - generic [ref=e610]: Alertas
+          - generic [ref=e611]:
+            - paragraph [ref=e612]: Ventas
+            - link "Historial Ventas" [ref=e614] [cursor=pointer]:
+              - /url: /dashboard/ventas
+              - img [ref=e615]
+              - generic [ref=e618]: Historial Ventas
+            - link "Reportes" [ref=e620] [cursor=pointer]:
+              - /url: /dashboard/reportes
+              - img [ref=e621]
+              - generic [ref=e623]: Reportes
+          - generic [ref=e624]:
+            - paragraph [ref=e625]: Compras
+            - link "Proveedores" [ref=e627] [cursor=pointer]:
+              - /url: /dashboard/proveedores
+              - img [ref=e628]
+              - generic [ref=e633]: Proveedores
+            - link "Pedidos" [ref=e635] [cursor=pointer]:
+              - /url: /dashboard/pedidos
+              - img [ref=e636]
+              - generic [ref=e639]: Pedidos
+          - generic [ref=e640]:
+            - paragraph [ref=e641]: Clientes
+            - link "Recetas" [ref=e643] [cursor=pointer]:
+              - /url: /dashboard/recetas
+              - img [ref=e644]
+              - generic [ref=e647]: Recetas
+            - link "Entregas" [ref=e649] [cursor=pointer]:
+              - /url: /dashboard/entregas
+              - img [ref=e650]
+              - generic [ref=e653]: Entregas
+            - link "Fidelizacion" [ref=e655] [cursor=pointer]:
+              - /url: /dashboard/fidelizacion
+              - img [ref=e656]
+              - generic [ref=e658]: Fidelizacion
+          - generic [ref=e659]:
+            - paragraph [ref=e660]: Administracion
+            - link "Personal" [ref=e662] [cursor=pointer]:
+              - /url: /dashboard/personal
+              - img [ref=e663]
+              - generic [ref=e668]: Personal
+            - link "Seguros" [ref=e670] [cursor=pointer]:
+              - /url: /dashboard/seguros
+              - img [ref=e671]
+              - generic [ref=e673]: Seguros
+            - link "Configuracion" [ref=e675] [cursor=pointer]:
+              - /url: /dashboard/configuracion
+              - img [ref=e676]
+              - generic [ref=e679]: Configuracion
+        - generic [ref=e681]:
+          - generic [ref=e683]: FR
+          - generic [ref=e684]:
+            - paragraph [ref=e685]: Fernando Rodriguez
+            - paragraph [ref=e686]: test@farmacia-demo.com
+          - button [ref=e687]:
+            - img [ref=e688]
+      - button "Colapsar barra lateral" [ref=e691]:
+        - img [ref=e692]
+    - generic [ref=e695]:
+      - banner [ref=e696]:
+        - navigation [ref=e697]:
+          - generic [ref=e699]: Dashboard
+        - generic [ref=e700]:
+          - img [ref=e701]
+          - searchbox "Buscar productos, recetas..." [ref=e704]
+        - generic [ref=e705]:
+          - generic [ref=e706]: BCV
+          - generic [ref=e707]: Bs. 36.00
+          - img [ref=e708]
+          - generic [ref=e711]: Sin datos
+        - link [ref=e712] [cursor=pointer]:
+          - /url: /dashboard/alertas
+          - button [ref=e713]:
+            - img [ref=e714]
+        - button "FR Fernando Rodriguez" [ref=e717]:
+          - generic [ref=e719]: FR
+          - generic [ref=e720]: Fernando Rodriguez
+      - main [ref=e721]:
+        - generic [ref=e723]:
+          - generic [ref=e724]:
+            - generic [ref=e725]:
+              - heading "Dashboard" [level=1] [ref=e726]
+              - paragraph [ref=e727]: Resumen de tu farmacia — jueves, 2 de abril de 2026
+            - generic [ref=e728]:
+              - img [ref=e729]
+              - text: "Tasa BCV: Bs. 36.00"
+          - generic [ref=e732]:
+            - generic [ref=e733]:
+              - generic [ref=e734]:
+                - generic [ref=e735]: Ventas Hoy
+                - img [ref=e737]
+              - generic [ref=e739]:
+                - generic [ref=e740]: USD 0,00
+                - paragraph [ref=e741]: Bs. 0,00
+                - generic [ref=e743]: 0 ventas
+            - generic [ref=e744]:
+              - generic [ref=e745]:
+                - generic [ref=e746]: Productos Activos
+                - img [ref=e748]
+              - generic [ref=e752]:
+                - generic [ref=e753]: "0"
+                - paragraph [ref=e754]: de 0 total
+            - generic [ref=e755]:
+              - generic [ref=e756]:
+                - generic [ref=e757]: Alertas Sin Leer
+                - img [ref=e759]
+              - generic [ref=e762]: "0"
+            - generic [ref=e763]:
+              - generic [ref=e764]:
+                - generic [ref=e765]: Tasa BCV
+                - img [ref=e767]
+              - generic [ref=e770]:
+                - generic [ref=e771]: Bs. 36.00
+                - paragraph [ref=e772]: 1 USD = Bs. 36.0000
+                - generic [ref=e774]: Sin datos recientes
+          - generic [ref=e775]:
+            - generic [ref=e776]:
+              - generic [ref=e777]:
+                - generic [ref=e778]: Ventas - Ultimos 7 Dias
+                - link "Ver reportes" [ref=e779] [cursor=pointer]:
+                  - /url: /dashboard/reportes
+                  - text: Ver reportes
+                  - img [ref=e780]
+              - generic [ref=e783]:
+                - generic [ref=e784]: Sin ventas registradas en los ultimos 7 dias
+                - generic [ref=e785]:
+                  - generic [ref=e786]: Total del mes
+                  - generic [ref=e787]:
+                    - text: USD 0,00
+                    - generic [ref=e788]: (0 ventas)
+            - generic [ref=e789]:
+              - generic [ref=e790]:
+                - generic [ref=e791]: Productos Top
+                - generic [ref=e792]: Ultimos 30 dias
+              - generic [ref=e794]: Sin datos de ventas
+          - generic [ref=e795]:
+            - generic [ref=e796]:
+              - generic [ref=e797]:
+                - generic [ref=e798]:
+                  - img [ref=e799]
+                  - text: Ventas Recientes
+                - link "Ver todas" [ref=e803] [cursor=pointer]:
+                  - /url: /dashboard/ventas
+                  - text: Ver todas
+                  - img [ref=e804]
+              - generic [ref=e808]: No hay ventas registradas
+            - generic [ref=e809]:
+              - generic [ref=e810]:
+                - generic [ref=e811]:
+                  - img [ref=e812]
+                  - text: Alertas Recientes
+                - link "Ver todas" [ref=e814] [cursor=pointer]:
+                  - /url: /dashboard/alertas
+                  - text: Ver todas
+                  - img [ref=e815]
+              - generic [ref=e819]: No hay alertas activas
+          - generic [ref=e820]:
+            - generic [ref=e822]: Accesos Rapidos
+            - generic [ref=e824]:
+              - link "Nueva Venta" [ref=e825] [cursor=pointer]:
+                - /url: /dashboard/caja
+                - img [ref=e827]
+                - generic [ref=e831]: Nueva Venta
+              - link "Agregar Producto" [ref=e832] [cursor=pointer]:
+                - /url: /dashboard/productos
+                - img [ref=e834]
+                - generic [ref=e838]: Agregar Producto
+              - link "Ver Recetas" [ref=e839] [cursor=pointer]:
+                - /url: /dashboard/recetas
+                - img [ref=e841]
+                - generic [ref=e844]: Ver Recetas
+              - link "Ver Reportes" [ref=e845] [cursor=pointer]:
+                - /url: /dashboard/reportes
+                - img [ref=e847]
+                - generic [ref=e849]: Ver Reportes

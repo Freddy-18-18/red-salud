@@ -15,7 +15,7 @@ import {
 import { Button } from "@red-salud/design-system";
 import { Card, CardContent, CardHeader, CardTitle } from "@red-salud/design-system";
 import { getCurrentPharmacyId } from "@/lib/services/settings-service";
-import { getLatestExchangeRate } from "@/lib/services/exchange-rate-service";
+import { getLatestExchangeRateClient as getLatestExchangeRate } from "@/lib/services/exchange-rate-client";
 import {
   getSalesMetrics,
   getSalesByPaymentMethod,

@@ -3,8 +3,6 @@
 import { X, Search, Send, Loader2, Check, UserCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 
-import { supabase } from "@/lib/supabase/client";
-
 interface Doctor {
   id: string;
   full_name: string;
@@ -36,34 +34,35 @@ export function ShareDialog({
 
     const loadDoctors = async () => {
       setLoading(true);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      try {
+        const res = await fetch(`/api/appointments?page_size=50`);
+        if (!res.ok) {
+          setLoading(false);
+          return;
+        }
+        const json = await res.json();
+        const appointments = json.data ?? [];
 
-      // Get doctors from past appointments
-      const { data } = await supabase
-        .from("appointments")
-        .select("doctor_id, doctor:profiles!doctor_id(id, full_name)")
-        .eq("patient_id", user.id)
-        .not("doctor_id", "is", null);
-
-      if (data) {
         const uniqueDoctors = new Map<string, Doctor>();
-        for (const apt of data) {
-          const doc = apt.doctor as unknown as Record<string, string>;
-          if (doc?.id && !uniqueDoctors.has(doc.id)) {
-            uniqueDoctors.set(doc.id, {
-              id: doc.id,
-              full_name: doc.full_name || "Doctor",
-              specialty: null,
+        for (const apt of appointments) {
+          const doctor = apt.doctor as Record<string, unknown> | null;
+          const doctorProfile = (doctor as Record<string, unknown>)?.profile as Record<string, unknown> | null;
+          const specialty = (doctor as Record<string, unknown>)?.specialty as Record<string, unknown> | null;
+          const doctorId = (doctor as Record<string, unknown>)?.id as string;
+          if (doctorId && !uniqueDoctors.has(doctorId)) {
+            const fullName = doctorProfile
+              ? [doctorProfile.first_name, doctorProfile.last_name].filter(Boolean).join(" ")
+              : "Doctor";
+            uniqueDoctors.set(doctorId, {
+              id: doctorId,
+              full_name: fullName || "Doctor",
+              specialty: (specialty?.name as string) ?? null,
             });
           }
         }
         setDoctors(Array.from(uniqueDoctors.values()));
+      } catch {
+        // Non-critical
       }
       setLoading(false);
     };

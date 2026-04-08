@@ -1,0 +1,142 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Red-Salud" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e7]
+          - generic [ref=e9]: Red-Salud
+        - generic [ref=e11]:
+          - img [ref=e12]
+          - textbox "Buscar medico, especialidad..." [ref=e15]
+        - generic [ref=e16]:
+          - link "Mensajes" [ref=e17] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e18]
+          - link "Notificaciones" [ref=e20] [cursor=pointer]:
+            - /url: /dashboard/notificaciones
+            - img [ref=e21]
+          - button "CT Carlos Test Paciente" [ref=e186]:
+            - generic [ref=e27]: CT
+            - generic [ref=e28]: Carlos Test Paciente
+            - img [ref=e29]
+    - generic [ref=e31]:
+      - complementary [ref=e32]:
+        - navigation [ref=e33]:
+          - link "Inicio" [ref=e34] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e35]
+            - text: Inicio
+          - link "Agendar Cita" [ref=e38] [cursor=pointer]:
+            - /url: /dashboard/agendar
+            - img [ref=e39]
+            - text: Agendar Cita
+          - link "Buscar Medico" [ref=e41] [cursor=pointer]:
+            - /url: /dashboard/buscar-medico
+            - img [ref=e42]
+            - text: Buscar Medico
+          - link "Mis Citas" [ref=e45] [cursor=pointer]:
+            - /url: /dashboard/citas
+            - img [ref=e46]
+            - text: Mis Citas
+          - link "Historial" [ref=e48] [cursor=pointer]:
+            - /url: /dashboard/historial
+            - img [ref=e49]
+            - text: Historial
+          - link "Recetas" [ref=e52] [cursor=pointer]:
+            - /url: /dashboard/recetas
+            - img [ref=e53]
+            - text: Recetas
+          - link "Documentos" [ref=e56] [cursor=pointer]:
+            - /url: /dashboard/documentos
+            - img [ref=e57]
+            - text: Documentos
+          - link "QR Medico" [ref=e59] [cursor=pointer]:
+            - /url: /dashboard/qr-medico
+            - img [ref=e60]
+            - text: QR Medico
+          - link "Mensajes" [ref=e64] [cursor=pointer]:
+            - /url: /dashboard/mensajes
+            - img [ref=e65]
+            - text: Mensajes
+          - link "Recompensas" [ref=e67] [cursor=pointer]:
+            - /url: /dashboard/recompensas
+            - img [ref=e68]
+            - text: Recompensas
+          - link "Mi Perfil" [ref=e74] [cursor=pointer]:
+            - /url: /dashboard/perfil
+            - img [ref=e75]
+            - text: Mi Perfil
+      - main [ref=e78]:
+        - generic [ref=e80]:
+          - generic [ref=e187]:
+            - generic [ref=e188]:
+              - heading "Mis Documentos" [level=1] [ref=e189]
+              - paragraph [ref=e190]: 0 documentos guardados
+            - button "Subir" [ref=e192]:
+              - img [ref=e193]
+              - generic [ref=e196]: Subir
+          - generic [ref=e197]: column patient_documents.document_date does not exist
+          - generic [ref=e91]:
+            - button "Documentos" [ref=e198]:
+              - generic [ref=e199]:
+                - img [ref=e200]
+                - text: Documentos
+            - button "Vacunas" [ref=e202]:
+              - generic [ref=e203]:
+                - img [ref=e204]
+                - text: Vacunas
+          - generic [ref=e211]:
+            - heading "Categorias" [level=2] [ref=e213]
+            - generic [ref=e214]:
+              - button "Resultados de laboratorio" [ref=e215]:
+                - img [ref=e218]
+                - paragraph [ref=e220]: Resultados de laboratorio
+              - button "Recetas" [ref=e221]:
+                - img [ref=e224]
+                - paragraph [ref=e227]: Recetas
+              - button "Informes medicos" [ref=e228]:
+                - img [ref=e231]
+                - paragraph [ref=e234]: Informes medicos
+              - button "Tarjetas de seguro" [ref=e235]:
+                - img [ref=e238]
+                - paragraph [ref=e240]: Tarjetas de seguro
+              - button "Vacunas" [ref=e241]:
+                - img [ref=e244]
+                - paragraph [ref=e251]: Vacunas
+              - button "Facturas y recibos" [ref=e252]:
+                - img [ref=e255]
+                - paragraph [ref=e258]: Facturas y recibos
+              - button "Otros documentos" [ref=e259]:
+                - img [ref=e262]
+                - paragraph [ref=e265]: Otros documentos
+          - generic [ref=e266]:
+            - generic [ref=e267]:
+              - img [ref=e268]
+              - textbox "Buscar documentos..." [ref=e271]
+            - generic [ref=e272]:
+              - button [ref=e273]:
+                - img [ref=e274]
+              - button [ref=e275]:
+                - img [ref=e276]
+          - generic [ref=e282]:
+            - img [ref=e284]
+            - heading "Aun no tienes documentos" [level=3] [ref=e286]
+            - paragraph [ref=e287]: Sube tus documentos medicos para tenerlos siempre a mano
+    - 'button "Emergencia: mantener presionado para activar" [ref=e182]':
+      - img [ref=e184]
+      - generic: Mantener para emergencia
+  - generic [ref=e292] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e293]:
+      - img [ref=e294]
+    - generic [ref=e297]:
+      - button "Open issues overlay" [ref=e298]:
+        - generic [ref=e299]:
+          - generic [ref=e300]: "1"
+          - generic [ref=e301]: "2"
+        - generic [ref=e302]:
+          - text: Issue
+          - generic [ref=e303]: s
+      - button "Collapse issues badge" [ref=e304]:
+        - img [ref=e305]
+  - alert [ref=e307]

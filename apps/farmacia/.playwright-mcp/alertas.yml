@@ -1,0 +1,171 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - img [ref=e7]
+          - generic [ref=e10]:
+            - paragraph [ref=e11]: Farmacia Demo Red Salud
+            - paragraph [ref=e12]: F-001234
+        - navigation [ref=e16]:
+          - generic [ref=e17]:
+            - paragraph [ref=e18]: Principal
+            - link "Dashboard" [ref=e20] [cursor=pointer]:
+              - /url: /dashboard
+              - img [ref=e21]
+              - generic [ref=e26]: Dashboard
+            - link "Caja / POS" [ref=e28] [cursor=pointer]:
+              - /url: /dashboard/caja
+              - img [ref=e29]
+              - generic [ref=e33]: Caja / POS
+          - generic [ref=e34]:
+            - paragraph [ref=e35]: Inventario
+            - link "Productos" [ref=e37] [cursor=pointer]:
+              - /url: /dashboard/inventario
+              - img [ref=e38]
+              - generic [ref=e42]: Productos
+            - link "Caducidades" [ref=e44] [cursor=pointer]:
+              - /url: /dashboard/caducidades
+              - img [ref=e45]
+              - generic [ref=e49]: Caducidades
+            - link "Alertas" [ref=e51] [cursor=pointer]:
+              - /url: /dashboard/alertas
+              - img [ref=e52]
+              - generic [ref=e55]: Alertas
+          - generic [ref=e56]:
+            - paragraph [ref=e57]: Ventas
+            - link "Historial Ventas" [ref=e59] [cursor=pointer]:
+              - /url: /dashboard/ventas
+              - img [ref=e60]
+              - generic [ref=e63]: Historial Ventas
+            - link "Reportes" [ref=e65] [cursor=pointer]:
+              - /url: /dashboard/reportes
+              - img [ref=e66]
+              - generic [ref=e68]: Reportes
+          - generic [ref=e69]:
+            - paragraph [ref=e70]: Compras
+            - link "Proveedores" [ref=e72] [cursor=pointer]:
+              - /url: /dashboard/proveedores
+              - img [ref=e73]
+              - generic [ref=e78]: Proveedores
+            - link "Pedidos" [ref=e80] [cursor=pointer]:
+              - /url: /dashboard/pedidos
+              - img [ref=e81]
+              - generic [ref=e84]: Pedidos
+          - generic [ref=e85]:
+            - paragraph [ref=e86]: Clientes
+            - link "Recetas" [ref=e88] [cursor=pointer]:
+              - /url: /dashboard/recetas
+              - img [ref=e89]
+              - generic [ref=e92]: Recetas
+            - link "Entregas" [ref=e94] [cursor=pointer]:
+              - /url: /dashboard/entregas
+              - img [ref=e95]
+              - generic [ref=e98]: Entregas
+            - link "Fidelizacion" [ref=e100] [cursor=pointer]:
+              - /url: /dashboard/fidelizacion
+              - img [ref=e101]
+              - generic [ref=e103]: Fidelizacion
+          - generic [ref=e104]:
+            - paragraph [ref=e105]: Administracion
+            - link "Personal" [ref=e107] [cursor=pointer]:
+              - /url: /dashboard/personal
+              - img [ref=e108]
+              - generic [ref=e113]: Personal
+            - link "Seguros" [ref=e115] [cursor=pointer]:
+              - /url: /dashboard/seguros
+              - img [ref=e116]
+              - generic [ref=e118]: Seguros
+            - link "Configuracion" [ref=e120] [cursor=pointer]:
+              - /url: /dashboard/configuracion
+              - img [ref=e121]
+              - generic [ref=e124]: Configuracion
+        - generic [ref=e126]:
+          - generic [ref=e128]: FR
+          - generic [ref=e129]:
+            - paragraph [ref=e130]: Fernando Rodriguez
+            - paragraph [ref=e131]: test@farmacia-demo.com
+          - button [ref=e132]:
+            - img [ref=e133]
+      - button "Colapsar barra lateral" [ref=e136]:
+        - img [ref=e137]
+    - generic [ref=e140]:
+      - banner [ref=e141]:
+        - navigation [ref=e142]:
+          - generic [ref=e143]:
+            - link "Dashboard" [ref=e144] [cursor=pointer]:
+              - /url: /dashboard
+            - img [ref=e145]
+          - generic [ref=e148]: Alertas
+        - generic [ref=e149]:
+          - img [ref=e150]
+          - searchbox "Buscar productos, recetas..." [ref=e153]
+        - generic [ref=e154]:
+          - generic [ref=e155]: BCV
+          - generic [ref=e156]: Bs. 36.00
+          - img [ref=e157]
+          - generic [ref=e160]: Sin datos
+        - link [ref=e161] [cursor=pointer]:
+          - /url: /dashboard/alertas
+          - button [ref=e162]:
+            - img [ref=e163]
+        - button "FR Fernando Rodriguez" [ref=e166]:
+          - generic [ref=e168]: FR
+          - generic [ref=e169]: Fernando Rodriguez
+      - main [ref=e170]:
+        - generic [ref=e172]:
+          - generic [ref=e176]:
+            - generic [ref=e178]:
+              - heading "Centro de Alertas" [level=1] [ref=e180]
+              - paragraph [ref=e181]: Monitoreo de inventario y notificaciones
+            - button "Marcar todas como leidas" [disabled] [ref=e183]:
+              - img [ref=e184]
+              - text: Marcar todas como leidas
+          - generic [ref=e187]:
+            - generic [ref=e188]:
+              - generic [ref=e191]:
+                - generic [ref=e192]:
+                  - paragraph [ref=e193]: Total alertas
+                  - paragraph [ref=e194]: "0"
+                - img [ref=e195]
+              - generic [ref=e200]:
+                - generic [ref=e201]:
+                  - paragraph [ref=e202]: Sin leer
+                  - paragraph [ref=e203]: "0"
+                - img [ref=e204]
+              - generic [ref=e209]:
+                - generic [ref=e210]:
+                  - paragraph [ref=e211]: Criticas
+                  - paragraph [ref=e212]: "0"
+                - img [ref=e213]
+              - generic [ref=e217]:
+                - generic [ref=e218]:
+                  - paragraph [ref=e219]: Resueltas hoy
+                  - paragraph [ref=e220]: "0"
+                - img [ref=e221]
+            - generic [ref=e226]:
+              - combobox [ref=e227]:
+                - 'option "Tipo: Todos" [selected]'
+                - 'option "Tipo: Stock bajo"'
+                - 'option "Tipo: Vencimiento"'
+                - 'option "Tipo: Agotado"'
+                - 'option "Tipo: Pedido recibido"'
+                - 'option "Tipo: Cambio precio"'
+                - 'option "Tipo: Medicamento controlado"'
+              - combobox [ref=e228]:
+                - 'option "Severidad: Todas" [selected]'
+                - 'option "Severidad: Info"'
+                - 'option "Severidad: Advertencia"'
+                - 'option "Severidad: Critica"'
+              - combobox [ref=e229]:
+                - 'option "Estado: Todas" [selected]'
+                - 'option "Estado: Sin leer"'
+                - 'option "Estado: Leidas"'
+                - 'option "Estado: Resueltas"'
+            - generic [ref=e232]:
+              - img [ref=e233]
+              - paragraph [ref=e236]: No hay alertas
+              - paragraph [ref=e237]: Todo esta bajo control.
+  - button "Open Next.js Dev Tools" [ref=e243] [cursor=pointer]:
+    - img [ref=e244]
+  - alert [ref=e247]
