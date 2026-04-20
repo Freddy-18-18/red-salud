@@ -49,27 +49,26 @@ export async function GET(request: NextRequest) {
           `
           id,
           doctor_id,
-          start_time,
-          end_time,
+          scheduled_at,
+          duration_minutes,
           status,
-          motivo,
-          type,
-          doctor:doctor_details!appointments_doctor_id_fkey (
+          reason,
+          appointment_type,
+          doctor:doctor_profiles!appointments_doctor_id_fkey (
             id,
-            profile:profiles!doctor_details_user_id_fkey (
+            specialty_id,
+            profile:profiles!doctor_profiles_profile_id_fkey (
               full_name,
               avatar_url
-            ),
-            specialty:medical_specialties!doctor_details_specialty_id_fkey (
-              name
             )
           )
           `,
         )
         .eq('patient_id', user.id)
-        .gte('start_time', new Date().toISOString())
-        .neq('status', 'cancelada')
-        .order('start_time', { ascending: true })
+        .is('deleted_at', null)
+        .gte('scheduled_at', new Date().toISOString())
+        .neq('status', 'cancelled')
+        .order('scheduled_at', { ascending: true })
         .limit(3),
 
       // Active prescriptions count
@@ -93,11 +92,9 @@ export async function GET(request: NextRequest) {
         .eq('id', user.id)
         .single(),
 
-      // Conversations for unread message counting
-      supabase
-        .from('conversations')
-        .select('id')
-        .or(`patient_id.eq.${user.id},doctor_id.eq.${user.id}`),
+      // Unread messages — single SECURITY DEFINER RPC returns inbox rows
+      // with unread_count already computed per channel.
+      supabase.rpc('get_user_dm_inbox', { p_user_id: user.id }),
 
       // Active chronic conditions count
       supabase
@@ -121,24 +118,19 @@ export async function GET(request: NextRequest) {
         .eq('status', 'pending'),
     ]);
 
-    // ── Unread messages requires a second hop (conversation ids → count) ─
+    // ── Unread messages already aggregated by the RPC ───────────────
     let unreadMessages = 0;
     if (
       messagesConversationsResult.status === 'fulfilled' &&
-      messagesConversationsResult.value.data &&
-      messagesConversationsResult.value.data.length > 0
+      Array.isArray(messagesConversationsResult.value.data)
     ) {
-      const conversationIds = messagesConversationsResult.value.data.map(
-        (c) => c.id,
+      const inbox = messagesConversationsResult.value.data as Array<{
+        unread_count: number;
+      }>;
+      unreadMessages = inbox.reduce(
+        (acc, row) => acc + (row.unread_count ?? 0),
+        0,
       );
-      const { count } = await supabase
-        .from('messages_new')
-        .select('*', { count: 'exact', head: true })
-        .in('conversation_id', conversationIds)
-        .eq('is_read', false)
-        .neq('sender_id', user.id);
-
-      unreadMessages = count ?? 0;
     }
 
     // ── Extract results with safe defaults ────────────────────────

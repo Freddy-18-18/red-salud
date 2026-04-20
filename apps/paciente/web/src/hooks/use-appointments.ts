@@ -144,7 +144,7 @@ export function useCancelAppointment() {
       userId: string;
       reason?: string;
     }) => {
-      await postJson(`/api/appointments/${appointmentId}/cancel`, { motivo: reason }, "PATCH");
+      await postJson(`/api/appointments/${appointmentId}/cancel`, { reason }, "PATCH");
       return null;
     },
     onSuccess: () => {

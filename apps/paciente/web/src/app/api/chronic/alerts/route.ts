@@ -199,24 +199,25 @@ export async function GET(request: NextRequest) {
       .select(
         `
         id,
-        start_time,
-        doctor:doctor_details!appointments_doctor_id_fkey (
-          profile:profiles!doctor_details_user_id_fkey (
+        scheduled_at,
+        doctor:doctor_profiles!appointments_doctor_id_fkey (
+          profile:profiles!doctor_profiles_profile_id_fkey (
             full_name
           )
         )
       `,
       )
       .eq("patient_id", user.id)
-      .in("status", ["pendiente", "confirmada"])
-      .gte("start_time", now.toISOString())
-      .lte("start_time", twoWeeksFromNow.toISOString())
-      .order("start_time", { ascending: true })
+      .is("deleted_at", null)
+      .in("status", ["pending", "confirmed"])
+      .gte("scheduled_at", now.toISOString())
+      .lte("scheduled_at", twoWeeksFromNow.toISOString())
+      .order("scheduled_at", { ascending: true })
       .limit(3);
 
     if (upcomingAppointments) {
       for (const appt of upcomingAppointments) {
-        const apptDate = new Date(appt.start_time);
+        const apptDate = new Date(appt.scheduled_at);
         const daysUntil = Math.ceil(
           (apptDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
         );
