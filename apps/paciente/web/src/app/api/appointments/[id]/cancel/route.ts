@@ -7,9 +7,10 @@ import { checkRateLimit } from '@/lib/utils/rate-limit';
 // -------------------------------------------------------------------
 // Cancel Appointment — BFF API Route
 // -------------------------------------------------------------------
-// PATCH: Updates an appointment status to 'cancelada'.
-// Requires authentication. Patients can only cancel their own
-// appointments. Optionally accepts a cancellation reason (motivo).
+// PATCH: Marks an appointment as cancelled.
+// Patients may only cancel their own appointments. Status values follow
+// the English `appointment_status` enum (pending, confirmed, completed,
+// cancelled, waiting, in_progress, no_show).
 // -------------------------------------------------------------------
 
 export async function PATCH(
@@ -23,7 +24,6 @@ export async function PATCH(
     const { id: appointmentId } = await params;
     const supabase = await createClient();
 
-    // Auth check
     const {
       data: { user },
       error: authError,
@@ -36,25 +36,19 @@ export async function PATCH(
       );
     }
 
-    // --- Verify the appointment belongs to this patient ---
     const { data: existing, error: fetchError } = await supabase
       .from('appointments')
       .select('id, status, patient_id')
       .eq('id', appointmentId)
+      .is('deleted_at', null)
       .single();
 
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Cita no encontrada.' },
-          { status: 404 },
-        );
+        return NextResponse.json({ error: 'Cita no encontrada.' }, { status: 404 });
       }
       console.error('[Cancel Appointment] Fetch error:', fetchError);
-      return NextResponse.json(
-        { error: 'Error al obtener la cita.' },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: 'Error al obtener la cita.' }, { status: 500 });
     }
 
     if (existing.patient_id !== user.id) {
@@ -64,39 +58,35 @@ export async function PATCH(
       );
     }
 
-    if (existing.status === 'cancelada') {
-      return NextResponse.json(
-        { error: 'La cita ya fue cancelada.' },
-        { status: 400 },
-      );
+    if (existing.status === 'cancelled') {
+      return NextResponse.json({ error: 'La cita ya fue cancelada.' }, { status: 400 });
     }
 
-    if (existing.status === 'completada') {
+    if (existing.status === 'completed') {
       return NextResponse.json(
         { error: 'No se puede cancelar una cita completada.' },
         { status: 400 },
       );
     }
 
-    // --- Parse optional body ---
-    let motivo: string | null = null;
+    let reason: string | null = null;
     try {
       const body = await request.json();
       const validation = validateBody(cancelAppointmentSchema, body);
       if (validation.success) {
-        motivo = validation.data.motivo ?? null;
+        reason = validation.data.reason ?? null;
       }
     } catch {
-      // Body is optional for PATCH — if absent or invalid, continue without motivo
+      // PATCH body is optional
     }
 
-    // --- Update appointment ---
     const { data: updated, error: updateError } = await supabase
       .from('appointments')
       .update({
-        status: 'cancelada',
-        ...(motivo ? { cancellation_reason: motivo } : {}),
+        status: 'cancelled',
         cancelled_at: new Date().toISOString(),
+        cancelled_by: user.id,
+        ...(reason ? { cancellation_reason: reason } : {}),
       })
       .eq('id', appointmentId)
       .select()
@@ -104,35 +94,23 @@ export async function PATCH(
 
     if (updateError) {
       console.error('[Cancel Appointment] Update error:', updateError);
-      return NextResponse.json(
-        { error: 'Error al cancelar la cita.' },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: 'Error al cancelar la cita.' }, { status: 500 });
     }
 
-    // --- Log activity (best-effort) ---
-    await supabase
+    void supabase
       .from('user_activity_log')
       .insert({
         user_id: user.id,
         action: 'appointment_cancelled',
-        details: {
-          appointment_id: appointmentId,
-          motivo,
-        },
+        details: { appointment_id: appointmentId, reason },
       })
       .then(({ error: logError }) => {
-        if (logError) {
-          console.error('[Cancel Appointment] Activity log error:', logError);
-        }
+        if (logError) console.error('[Cancel Appointment] Activity log error:', logError);
       });
 
     return NextResponse.json({ data: updated });
   } catch (error) {
     console.error('[Cancel Appointment] Unexpected error:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor.' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Error interno del servidor.' }, { status: 500 });
   }
 }

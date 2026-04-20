@@ -137,7 +137,7 @@ export function useBooking() {
         duration_minutes: number;
         reason: string;
         notes: string | undefined;
-        appointment_type: "presencial" | "telemedicina";
+        appointment_type: "in_person" | "telemedicine";
       };
     }) => bookingService.createAppointment(userId, data),
   });
@@ -239,16 +239,22 @@ export function useBooking() {
     setError(null);
 
     try {
-      const scheduledAt = `${state.date}T${state.timeSlot.start}:00`;
+      // Compose wall-clock Caracas (UTC-4) then convert to a proper UTC ISO
+      // string so the API contract stays timezone-aware end-to-end.
+      const scheduledAtIso = new Date(
+        `${state.date}T${state.timeSlot.start}:00-04:00`,
+      ).toISOString();
+      const appointmentTypeEn =
+        state.appointmentType === "telemedicina" ? "telemedicine" : "in_person";
       const result = await createAppointmentMutation.mutateAsync({
         userId,
         data: {
           doctor_id: state.doctor.profile_id,
-          scheduled_at: scheduledAt,
+          scheduled_at: scheduledAtIso,
           duration_minutes: 30,
           reason: state.reason,
           notes: state.notes || undefined,
-          appointment_type: state.appointmentType,
+          appointment_type: appointmentTypeEn,
         },
       });
 
