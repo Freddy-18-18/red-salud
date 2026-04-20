@@ -341,7 +341,7 @@ async function queryEfficiency(
 ): Promise<Record<string, unknown>> {
   try {
     const { data } = await supabase
-      .from("mv_doctor_efficiency_agg")
+      .from("my_doctor_efficiency_agg")
       .select("*")
       .eq("doctor_id", ctx.doctorId)
       .gte("month", ctx.dateRange.start.toISOString())
@@ -367,7 +367,7 @@ async function queryPatients(
 ): Promise<Record<string, unknown>> {
   try {
     const { data } = await supabase
-      .from("mv_doctor_patients_agg")
+      .from("my_doctor_patients_agg")
       .select("*")
       .eq("doctor_id", ctx.doctorId)
       .gte("month", ctx.dateRange.start.toISOString())
@@ -387,7 +387,7 @@ async function queryRevenue(
 ): Promise<Record<string, unknown>> {
   try {
     const { data } = await supabase
-      .from("mv_doctor_revenue_agg")
+      .from("my_doctor_revenue_agg")
       .select("*")
       .eq("doctor_id", ctx.doctorId)
       .eq("status", "completed")
@@ -434,7 +434,7 @@ async function queryRatings(
   try {
     // Use mv_doctor_ratings_agg (aggregated from doctor_reviews table)
     const { data } = await supabase
-      .from("mv_doctor_ratings_agg")
+      .from("my_doctor_ratings_agg")
       .select("*")
       .eq("doctor_id", ctx.doctorId)
       .gte("month", ctx.dateRange.start.toISOString())
