@@ -135,7 +135,7 @@ async function scoreProfile(patientId: string): Promise<number> {
 
   let filled = 0;
   for (const field of PROFILE_FIELDS) {
-    const value = (data as Record<string, unknown>)[field];
+    const value = (data as unknown as Record<string, unknown>)[field];
     if (value !== null && value !== undefined && value !== "") {
       filled++;
     }

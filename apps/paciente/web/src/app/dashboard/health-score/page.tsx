@@ -116,13 +116,12 @@ export default function HealthScorePage() {
                     border: "1px solid #e5e7eb",
                     fontSize: 13,
                   }}
-                  labelFormatter={(val: string) =>
-                    new Date(val).toLocaleDateString("es-VE", {
+                  labelFormatter={((val: unknown) =>
+                    new Date(String(val)).toLocaleDateString("es-VE", {
                       day: "numeric",
                       month: "long",
-                    })
-                  }
-                  formatter={(value: number) => [`${value} pts`, "Score"]}
+                    })) as never}
+                  formatter={((value: unknown) => [`${Number(value)} pts`, "Score"]) as never}
                 />
                 <Line
                   type="monotone"

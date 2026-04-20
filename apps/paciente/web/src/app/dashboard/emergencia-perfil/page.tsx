@@ -202,8 +202,17 @@ function PageHeader() {
 
 // --- Helpers ---
 
+type EmergencyShareConfig = {
+  share_blood_type?: boolean;
+  share_allergies?: boolean;
+  share_medications?: boolean;
+  share_conditions?: boolean;
+  share_emergency_contacts?: boolean;
+  share_insurance?: boolean;
+};
+
 function buildPreviewProfile(
-  config: NonNullable<typeof undefined & { share_blood_type: boolean }>,
+  config: EmergencyShareConfig,
   medicalData: {
     full_name: string | null;
     date_of_birth: string | null;

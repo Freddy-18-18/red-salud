@@ -189,7 +189,7 @@ export function SpendingChart({ summary, loading }: SpendingChartProps) {
                 tickLine={false}
                 tickFormatter={(v) => currency === "usd" ? `$${v}` : `Bs.${v}`}
               />
-              <Tooltip content={(props) => <ChartTooltip {...props} currency={currency} />} />
+              <Tooltip content={((props: Record<string, unknown>) => <ChartTooltip {...(props as unknown as { active?: boolean; payload?: { value: number; name: string; color: string }[]; label?: string })} currency={currency} />) as never} />
               <Bar
                 dataKey="total"
                 name="Total"
@@ -213,7 +213,7 @@ export function SpendingChart({ summary, loading }: SpendingChartProps) {
                   outerRadius={110}
                   paddingAngle={3}
                   dataKey="value"
-                  label={({ name, percentage }) => `${name} (${percentage}%)`}
+                  label={((props: Record<string, unknown>) => `${String(props.name ?? "")} (${String(props.percentage ?? "")}%)`) as never}
                   labelLine={{ stroke: "#d1d5db", strokeWidth: 1 }}
                 >
                   {pieData.map((entry, i) => (
@@ -221,9 +221,8 @@ export function SpendingChart({ summary, loading }: SpendingChartProps) {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number) =>
-                    currency === "usd" ? formatUsd(value) : formatBs(value)
-                  }
+                  formatter={((value: unknown) =>
+                    currency === "usd" ? formatUsd(Number(value)) : formatBs(Number(value))) as never}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -262,7 +261,7 @@ export function SpendingChart({ summary, loading }: SpendingChartProps) {
                 tickLine={false}
                 tickFormatter={(v) => currency === "usd" ? `$${v}` : `Bs.${v}`}
               />
-              <Tooltip content={(props) => <ChartTooltip {...props} currency={currency} />} />
+              <Tooltip content={((props: Record<string, unknown>) => <ChartTooltip {...(props as unknown as { active?: boolean; payload?: { value: number; name: string; color: string }[]; label?: string })} currency={currency} />) as never} />
               <Legend
                 wrapperStyle={{ fontSize: 11 }}
                 iconType="circle"
