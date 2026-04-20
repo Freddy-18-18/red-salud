@@ -57,7 +57,7 @@ const PROFILE_FIELDS = [
 async function scoreAppointments(_patientId: string): Promise<number> {
   try {
     // Use pagination total to count completed appointments
-    const res = await fetch(`/api/appointments?status=completada&page_size=1`);
+    const res = await fetch(`/api/appointments?status=completed&page_size=1`);
     if (!res.ok) return 0;
     const json = await res.json();
     const completed = json.pagination?.total ?? 0;
@@ -77,7 +77,7 @@ async function scoreMedications(_patientId: string): Promise<number> {
   // basic adherence. Score 14/20 as reasonable default when no data.
   try {
     const appointments = await fetchJson<Record<string, unknown>[]>(
-      `/api/appointments?status=completada&page_size=5`
+      `/api/appointments?status=completed&page_size=5`
     );
 
     if (!appointments || appointments.length === 0) return 10; // neutral score when no data
@@ -93,7 +93,7 @@ async function scoreVitals(_patientId: string): Promise<number> {
   // Check if vitals have been logged recently
   try {
     const appointments = await fetchJson<Record<string, unknown>[]>(
-      `/api/appointments?status=completada&page_size=3`
+      `/api/appointments?status=completed&page_size=3`
     );
 
     if (!appointments || appointments.length === 0) return 8; // Low score — no health data

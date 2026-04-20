@@ -50,21 +50,17 @@ export async function GET(request: NextRequest) {
         created_at,
         appointment:appointments!appointment_follow_ups_appointment_id_fkey (
           id,
-          start_time,
-          end_time,
+          scheduled_at,
+          duration_minutes,
           status,
-          type,
-          motivo,
-          doctor:doctor_details!appointments_doctor_id_fkey (
+          appointment_type,
+          reason,
+          doctor:doctor_profiles!appointments_doctor_id_fkey (
             id,
-            profile:profiles!doctor_details_user_id_fkey (
-              first_name,
-              last_name,
+            specialty_id,
+            profile:profiles!doctor_profiles_profile_id_fkey (
+              full_name,
               avatar_url
-            ),
-            specialty:medical_specialties!doctor_details_specialty_id_fkey (
-              id,
-              name
             )
           )
         )
