@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
 
     const { data } = validation;
     const scheduledAt = data.scheduled_at;
-    const durationMin = data.duration_minutes;
+    const durationMin = data.duration_minutes ?? 30;
     const locationId = data.location_id && data.location_id !== '' ? data.location_id : null;
 
     // --- Slot conflict check (buffers, other appointments) ---

@@ -147,7 +147,7 @@ export interface BookingCreateAppointmentData {
   duration_minutes: number;
   reason: string;
   notes?: string;
-  appointment_type: "presencial" | "telemedicina";
+  appointment_type: "in_person" | "telemedicine" | "emergency" | "follow_up" | "first_visit";
 }
 
 export interface AppointmentResult {
