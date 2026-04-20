@@ -9,25 +9,22 @@ const shortText = z.string().trim().max(500);
 // Appointments
 export const createAppointmentSchema = z.object({
   doctor_id: uuid,
-  start_time: z.string().datetime(),
-  end_time: z.string().datetime(),
-  tipo_cita: z.enum(["presencial", "telemedicina", "urgencia", "seguimiento", "primera_vez"]).default("presencial"),
-  motivo: shortText.optional(),
-  notas_internas: safeText.optional(),
+  scheduled_at: z.string().datetime({ offset: true }),
+  duration_minutes: z.number().int().positive().max(480).default(30),
+  reason: shortText,
+  notes: safeText.optional(),
+  appointment_type: z.enum(["in_person", "telemedicine", "emergency", "follow_up", "first_visit"]).default("in_person"),
   price: z.number().nonnegative().optional(),
-  metodo_pago: z.enum(["efectivo", "transferencia", "tarjeta", "seguro", "pago_movil", "pendiente"]).optional(),
-  office_id: optionalUuid,
+  payment_method: z.enum(["cash", "transfer", "card", "insurance", "mobile_payment", "pending"]).optional(),
+  location_id: optionalUuid,
 }).superRefine((d, ctx) => {
-  if (new Date(d.start_time) >= new Date(d.end_time)) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "start must be before end", path: ["start_time"] });
-  }
-  if (new Date(d.start_time) <= new Date()) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "cannot book in the past", path: ["start_time"] });
+  if (new Date(d.scheduled_at) <= new Date()) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "cannot book in the past", path: ["scheduled_at"] });
   }
 });
 
 export const cancelAppointmentSchema = z.object({
-  motivo: shortText.optional(),
+  reason: shortText.optional(),
 });
 
 // Ratings

@@ -9,10 +9,19 @@ import { checkRateLimit } from '@/lib/utils/rate-limit';
 // -------------------------------------------------------------------
 // GET:  List the authenticated patient's appointments (with filters).
 // POST: Create a new appointment for the authenticated patient.
-// Both handlers require authentication.
+// Conflict detection runs through the `check_slot_available` and
+// `check_time_block_conflict` Postgres RPCs so the same business rules
+// are enforced regardless of caller (paciente, medico, secretaria).
 // -------------------------------------------------------------------
 
-// --- GET: List patient's appointments ---
+type AppointmentStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'completed'
+  | 'cancelled'
+  | 'waiting'
+  | 'in_progress'
+  | 'no_show';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,8 +29,6 @@ export async function GET(request: NextRequest) {
     if (limited) return limited;
 
     const supabase = await createClient();
-
-    // Auth check
     const {
       data: { user },
       error: authError,
@@ -35,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status'); // pendiente, confirmada, completada, cancelada
+    const statusParam = searchParams.get('status') as AppointmentStatus | null;
     const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
     const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get('page_size') ?? '10', 10)));
     const offset = (page - 1) * pageSize;
@@ -46,36 +53,35 @@ export async function GET(request: NextRequest) {
         `
         id,
         doctor_id,
-        start_time,
-        end_time,
+        scheduled_at,
+        duration_minutes,
         status,
-        type,
-        motivo,
+        appointment_type,
+        reason,
         notes,
+        location_id,
+        price,
+        payment_method,
         created_at,
-        doctor:doctor_details!appointments_doctor_id_fkey (
+        doctor:doctor_profiles!appointments_doctor_id_fkey (
           id,
+          specialty_id,
           consultation_fee,
-          city,
-          profile:profiles!doctor_details_user_id_fkey (
+          profile:profiles!doctor_profiles_profile_id_fkey (
             first_name,
             last_name,
             avatar_url
-          ),
-          specialty:medical_specialties!doctor_details_specialty_id_fkey (
-            id,
-            name,
-            icon
           )
         )
         `,
         { count: 'exact' },
       )
       .eq('patient_id', user.id)
-      .order('start_time', { ascending: false });
+      .is('deleted_at', null)
+      .order('scheduled_at', { ascending: false });
 
-    if (status) {
-      query = query.eq('status', status);
+    if (statusParam) {
+      query = query.eq('status', statusParam);
     }
 
     query = query.range(offset, offset + pageSize - 1);
@@ -84,10 +90,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('[Appointments GET] Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Error al obtener citas.' },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: 'Error al obtener citas.' }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -101,14 +104,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Appointments GET] Unexpected error:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor.' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Error interno del servidor.' }, { status: 500 });
   }
 }
-
-// --- POST: Create appointment ---
 
 export async function POST(request: NextRequest) {
   try {
@@ -116,8 +114,6 @@ export async function POST(request: NextRequest) {
     if (limited) return limited;
 
     const supabase = await createClient();
-
-    // Auth check
     const {
       data: { user },
       error: authError,
@@ -139,58 +135,81 @@ export async function POST(request: NextRequest) {
     if (!validation.success) return validation.response;
 
     const { data } = validation;
+    const scheduledAt = data.scheduled_at;
+    const durationMin = data.duration_minutes;
+    const locationId = data.location_id && data.location_id !== '' ? data.location_id : null;
 
-    // --- Check for time conflicts ---
-    const { data: conflicts, error: conflictError } = await supabase
-      .from('appointments')
-      .select('id')
-      .eq('doctor_id', data.doctor_id)
-      .neq('status', 'cancelada')
-      .lt('start_time', data.end_time)
-      .gt('end_time', data.start_time)
-      .limit(1);
+    // --- Slot conflict check (buffers, other appointments) ---
+    const { data: slotCheck, error: slotErr } = await supabase.rpc('check_slot_available', {
+      p_doctor_id: data.doctor_id,
+      p_location_id: locationId,
+      p_start: scheduledAt,
+      p_duration_min: durationMin,
+      p_buffer_before: 0,
+      p_buffer_after: 0,
+      p_exclude_id: null,
+    });
 
-    if (conflictError) {
-      console.error('[Appointments POST] Conflict check error:', conflictError);
-      return NextResponse.json(
-        { error: 'Error al verificar disponibilidad.' },
-        { status: 500 },
-      );
+    if (slotErr) {
+      console.error('[Appointments POST] check_slot_available error:', slotErr);
+      return NextResponse.json({ error: 'Error al verificar disponibilidad.' }, { status: 500 });
     }
 
-    if (conflicts && conflicts.length > 0) {
+    const slotRow = Array.isArray(slotCheck) ? slotCheck[0] : slotCheck;
+    if (slotRow && slotRow.is_available === false) {
       return NextResponse.json(
-        { error: 'El horario seleccionado ya no está disponible.' },
+        { error: 'El horario seleccionado ya no está disponible.', conflicts: slotRow.conflicts ?? [] },
         { status: 409 },
       );
     }
 
-    // --- Insert appointment ---
+    // --- Time-block check (doctor vacations, blocked ranges) ---
+    const endISO = new Date(new Date(scheduledAt).getTime() + durationMin * 60_000).toISOString();
+    const { data: blockOk, error: blockErr } = await supabase.rpc('check_time_block_conflict', {
+      p_doctor_id: data.doctor_id,
+      p_start: scheduledAt,
+      p_end: endISO,
+      p_exclude_id: null,
+    });
+
+    if (blockErr) {
+      console.error('[Appointments POST] check_time_block_conflict error:', blockErr);
+      return NextResponse.json({ error: 'Error al verificar bloqueos de agenda.' }, { status: 500 });
+    }
+
+    if (blockOk === false) {
+      return NextResponse.json(
+        { error: 'El médico no atiende en ese rango (bloqueo de agenda).' },
+        { status: 409 },
+      );
+    }
+
+    // --- Insert ---
     const { data: appointment, error: insertError } = await supabase
       .from('appointments')
       .insert({
         patient_id: user.id,
         doctor_id: data.doctor_id,
-        start_time: data.start_time,
-        end_time: data.end_time,
-        type: data.tipo_cita,
-        motivo: data.motivo ?? null,
-        notes: data.notas_internas ?? null,
-        status: 'pendiente',
+        scheduled_at: scheduledAt,
+        duration_minutes: durationMin,
+        reason: data.reason,
+        notes: data.notes ?? null,
+        appointment_type: data.appointment_type,
+        price: data.price ?? null,
+        payment_method: data.payment_method ?? 'cash',
+        location_id: locationId,
+        status: 'pending' satisfies AppointmentStatus,
       })
       .select()
       .single();
 
     if (insertError) {
       console.error('[Appointments POST] Insert error:', insertError);
-      return NextResponse.json(
-        { error: 'Error al crear la cita.' },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: 'Error al crear la cita.' }, { status: 500 });
     }
 
-    // --- Log activity (best-effort, don't fail the request) ---
-    await supabase
+    // --- Log activity (best-effort) ---
+    void supabase
       .from('user_activity_log')
       .insert({
         user_id: user.id,
@@ -198,13 +217,11 @@ export async function POST(request: NextRequest) {
         details: {
           appointment_id: appointment.id,
           doctor_id: data.doctor_id,
-          start_time: data.start_time,
+          scheduled_at: scheduledAt,
         },
       })
       .then(({ error: logError }) => {
-        if (logError) {
-          console.error('[Appointments POST] Activity log error:', logError);
-        }
+        if (logError) console.error('[Appointments POST] Activity log error:', logError);
       });
 
     return NextResponse.json({ data: appointment }, { status: 201 });
@@ -216,9 +233,6 @@ export async function POST(request: NextRequest) {
       );
     }
     console.error('[Appointments POST] Unexpected error:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor.' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Error interno del servidor.' }, { status: 500 });
   }
 }
