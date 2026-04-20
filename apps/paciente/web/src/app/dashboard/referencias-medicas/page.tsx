@@ -271,6 +271,7 @@ function EmptyState({ activeTab }: { activeTab: FilterTab }) {
     pending: "No tenes referencias pendientes.",
     scheduled: "No tenes referencias agendadas.",
     completed: "No tenes referencias completadas.",
+    expired: "No tenes referencias vencidas.",
   };
 
   return (

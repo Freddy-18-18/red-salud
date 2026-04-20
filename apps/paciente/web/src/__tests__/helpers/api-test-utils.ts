@@ -29,7 +29,13 @@ export function createRequest(
     init.body = JSON.stringify(body);
   }
 
-  return new NextRequest(new URL(url, 'http://localhost:3003'), init);
+  // `init` is the DOM RequestInit; NextRequest's constructor accepts a compatible
+  // subset but TS complains about signal being `AbortSignal | null` vs its own
+  // `AbortSignal | undefined`. Cast through unknown — we never set a signal.
+  return new NextRequest(
+    new URL(url, 'http://localhost:3003'),
+    init as unknown as ConstructorParameters<typeof NextRequest>[1],
+  );
 }
 
 /**

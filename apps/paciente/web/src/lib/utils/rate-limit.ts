@@ -115,10 +115,9 @@ function getIdentifier(request: NextRequest): string {
     return forwarded.split(",")[0].trim();
   }
 
-  // Next.js provides request.ip in some environments
-  if (request.ip) {
-    return request.ip;
-  }
+  // NextRequest.ip was removed in Next 15; x-real-ip is the common fallback
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp.trim();
 
   return "anonymous";
 }

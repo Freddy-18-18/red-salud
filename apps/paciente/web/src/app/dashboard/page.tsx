@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Calendar,
   MessageSquare,
@@ -18,7 +19,25 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SectionErrorBoundary } from "@/components/ui/error-boundary";
 import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
-import { useDashboardSummary } from "@/hooks/use-dashboard";
+import { usePatientAppointments } from "@/hooks/use-appointments";
+import { getUnreadMessagesCount } from "@/lib/services/messaging-service";
+import { supabase } from "@/lib/supabase/client";
+
+// Lightweight local shape for the appointment cards on this dashboard.
+// Full typing lives in the appointments service; we only touch a handful of
+// fields here so we keep this permissive until the booking-flow follow-up.
+type DashboardAppointment = {
+  id: string;
+  status: string;
+  appointment_date: string;
+  appointment_time: string;
+  doctor?: {
+    full_name?: string;
+    specialty?: string;
+    avatar_url?: string | null;
+  } | null;
+  [key: string]: unknown;
+};
 
 const HEALTH_TIPS = [
   "Recuerda beber al menos 8 vasos de agua al dia para mantenerte hidratado.",
@@ -111,11 +130,12 @@ export default function PatientDashboard() {
   const todayTip = HEALTH_TIPS[new Date().getDate() % HEALTH_TIPS.length];
 
   const now = new Date();
-  const upcomingAppointments = appointments
-    .filter((a) => a.status !== "cancelled" && new Date(`${a.appointment_date}T${a.appointment_time}`) >= now)
+  const list = (appointments ?? []) as unknown as DashboardAppointment[];
+  const upcomingAppointments = list
+    .filter((a: DashboardAppointment) => a.status !== "cancelled" && new Date(`${a.appointment_date}T${a.appointment_time}`) >= now)
     .slice(0, 3);
 
-  const completedCount = appointments.filter((a) => a.status === "completed").length;
+  const completedCount = list.filter((a: DashboardAppointment) => a.status === "completed").length;
   const firstName = userName.split(" ")[0] || "Paciente";
 
   if (loading) {
@@ -241,7 +261,7 @@ export default function PatientDashboard() {
             </div>
           ) : upcomingAppointments.length > 0 ? (
             <div className="space-y-3">
-              {upcomingAppointments.map((apt) => (
+              {upcomingAppointments.map((apt: DashboardAppointment) => (
                 <a
                   key={apt.id}
                   href="/dashboard/citas"

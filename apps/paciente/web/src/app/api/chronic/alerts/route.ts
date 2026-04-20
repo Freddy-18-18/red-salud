@@ -220,8 +220,8 @@ export async function GET(request: NextRequest) {
         const daysUntil = Math.ceil(
           (apptDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
         );
-        const doctor = appt.doctor as Record<string, unknown> | null;
-        const profile = doctor?.profile as Record<string, unknown> | null;
+        const doctor = appt.doctor as unknown as Record<string, unknown> | null;
+        const profile = doctor?.profile as unknown as Record<string, unknown> | null;
         const doctorName = (profile?.full_name as string) ?? "tu medico";
 
         alerts.push({

@@ -198,7 +198,7 @@ describe('bookingService', () => {
         reason: 'Consulta general',
         notes: null,
         status: 'pending',
-        appointment_type: 'presencial',
+        appointment_type: 'in_person',
       };
       mockFetchJson.mockResolvedValue(appointmentResult);
 
@@ -207,7 +207,7 @@ describe('bookingService', () => {
         scheduled_at: '2026-05-15T10:00:00Z',
         duration_minutes: 30,
         reason: 'Consulta general',
-        appointment_type: 'presencial' as const,
+        appointment_type: 'in_person' as const,
       };
 
       const result = await bookingService.createAppointment('pat-1', data);
@@ -241,7 +241,7 @@ describe('bookingService', () => {
           scheduled_at: '2026-05-15T10:00:00Z',
           duration_minutes: 30,
           reason: 'Test',
-          appointment_type: 'presencial',
+          appointment_type: 'in_person',
         }),
       ).rejects.toThrow('Horario no disponible.');
     });

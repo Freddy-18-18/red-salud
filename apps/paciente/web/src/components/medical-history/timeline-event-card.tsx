@@ -208,52 +208,52 @@ export function TimelineEventCard({ event }: TimelineEventCardProps) {
                 </div>
 
                 {/* Type-specific metadata */}
-                {event.type === "appointment" && event.metadata?.duration && (
+                {event.type === "appointment" && Boolean((event.metadata as Record<string, unknown>)?.duration) && (
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <Clock className="h-3 w-3" />
-                    Duracion: {event.metadata.duration as number} minutos
+                    Duracion: {(event.metadata as Record<string, unknown>).duration as number} minutos
                   </div>
                 )}
 
-                {event.type === "appointment" && event.metadata?.notes && (
+                {event.type === "appointment" && Boolean((event.metadata as Record<string, unknown>)?.notes) && (
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Notas del doctor</p>
                     <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                      {event.metadata.notes as string}
+                      {(event.metadata as Record<string, unknown>).notes as string}
                     </p>
                   </div>
                 )}
 
-                {event.type === "prescription" && event.metadata?.medications && (
+                {event.type === "prescription" && Boolean((event.metadata as Record<string, unknown>)?.medications) && (
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Medicamentos</p>
-                    <p className="text-sm text-gray-700">{event.metadata.medications as string}</p>
+                    <p className="text-sm text-gray-700">{(event.metadata as Record<string, unknown>).medications as string}</p>
                   </div>
                 )}
 
-                {event.type === "prescription" && event.metadata?.expires_at && (
+                {event.type === "prescription" && Boolean((event.metadata as Record<string, unknown>)?.expires_at) && (
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <Clock className="h-3 w-3" />
-                    Expira: {formatShortDate(event.metadata.expires_at as string)}
+                    Expira: {formatShortDate((event.metadata as Record<string, unknown>).expires_at as string)}
                   </div>
                 )}
 
-                {event.type === "emergency" && event.metadata?.location_address && (
+                {event.type === "emergency" && Boolean((event.metadata as Record<string, unknown>)?.location_address) && (
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <MapPin className="h-3 w-3" />
-                    {event.metadata.location_address as string}
+                    {(event.metadata as Record<string, unknown>).location_address as string}
                   </div>
                 )}
 
-                {event.type === "vaccination" && event.metadata?.dose_number && (
+                {event.type === "vaccination" && Boolean((event.metadata as Record<string, unknown>)?.dose_number) && (
                   <div className="text-xs text-gray-500">
-                    Dosis numero {event.metadata.dose_number as number}
+                    Dosis numero {(event.metadata as Record<string, unknown>).dose_number as number}
                   </div>
                 )}
 
-                {event.type === "lab_result" && event.metadata?.order_number && (
+                {event.type === "lab_result" && Boolean((event.metadata as Record<string, unknown>)?.order_number) && (
                   <div className="text-xs text-gray-500">
-                    Orden: {event.metadata.order_number as string}
+                    Orden: {(event.metadata as Record<string, unknown>).order_number as string}
                   </div>
                 )}
               </div>

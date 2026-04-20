@@ -124,7 +124,9 @@ export function ExchangeRateCompact() {
   return (
     <div className="flex items-center gap-3 text-xs">
       {isOffline && (
-        <WifiOff className="h-3 w-3 text-amber-500" title="Datos en cache" />
+        <span title="Datos en cache" className="inline-flex">
+          <WifiOff className="h-3 w-3 text-amber-500" aria-label="Datos en cache" />
+        </span>
       )}
       {officialDollar && (
         <span className="text-gray-600">

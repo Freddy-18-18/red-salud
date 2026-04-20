@@ -34,10 +34,9 @@ export function ExchangeRateDashboardCard() {
             Tasa de cambio
           </p>
           {isOffline && (
-            <WifiOff
-              className="h-2.5 w-2.5 text-amber-500"
-              title="Datos en cache"
-            />
+            <span title="Datos en cache" className="inline-flex">
+              <WifiOff className="h-2.5 w-2.5 text-amber-500" aria-label="Datos en cache" />
+            </span>
           )}
         </div>
         <div className="flex items-center gap-3 mt-0.5">
