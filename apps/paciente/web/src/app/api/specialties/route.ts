@@ -6,9 +6,14 @@ import { checkRateLimit } from '@/lib/utils/rate-limit';
 // Medical Specialties — BFF API Route
 // -------------------------------------------------------------------
 // Lists all medical specialties. Optionally filters to only those
-// that have at least one active, verified doctor.
+// that have at least one verified doctor.
 // Public endpoint — no authentication required.
 // -------------------------------------------------------------------
+//
+// Schema notes (post Phase A5.5 migration):
+// - Live source of truth: `doctor_profiles` (NOT the legacy `doctor_details`).
+// - Specialty catalog: `specialties` (NOT `medical_specialties`).
+// - Doctor activity flag: `verified` (NOT the legacy `is_active`).
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,13 +25,11 @@ export async function GET(request: NextRequest) {
     const withDoctors = searchParams.get('with_doctors') === 'true';
 
     if (withDoctors) {
-      // Fetch specialties that have at least one active doctor
-      // We query doctor_details to get distinct specialty IDs, then
-      // fetch those specialties.
+      // Specialties that have at least one verified doctor.
       const { data: doctorSpecialties, error: dsError } = await supabase
-        .from('doctor_details')
+        .from('doctor_profiles')
         .select('specialty_id')
-        .eq('is_active', true);
+        .eq('verified', true);
 
       if (dsError) {
         console.error('[Specialties] Error fetching doctor specialties:', dsError);
@@ -49,7 +52,7 @@ export async function GET(request: NextRequest) {
       }
 
       const { data: specialties, error } = await supabase
-        .from('medical_specialties')
+        .from('specialties')
         .select('id, name, icon, description')
         .in('id', uniqueIds)
         .order('name', { ascending: true });
@@ -67,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     // Default: return all specialties
     const { data: specialties, error } = await supabase
-      .from('medical_specialties')
+      .from('specialties')
       .select('id, name, icon, description')
       .order('name', { ascending: true });
 

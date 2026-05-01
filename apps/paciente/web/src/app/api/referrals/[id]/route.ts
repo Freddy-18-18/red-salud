@@ -53,41 +53,41 @@ export async function GET(
         scheduled_appointment_id,
         created_at,
         updated_at,
-        referring_doctor:doctor_details!medical_referrals_referring_doctor_id_fkey (
+        referring_doctor:doctor_profiles!medical_referrals_referring_doctor_id_fkey (
           id,
           consultation_fee,
           years_experience,
-          biografia,
-          profile:profiles!doctor_details_user_id_fkey (
+          biography,
+          profile:profiles!doctor_details_profile_id_fkey (
             first_name,
             last_name,
             avatar_url,
             phone
           ),
-          specialty:medical_specialties!doctor_details_specialty_id_fkey (
+          specialty:specialties!fk_doctor_specialty (
             id,
             name,
             icon
           )
         ),
-        specialist:doctor_details!medical_referrals_specialist_doctor_id_fkey (
+        specialist:doctor_profiles!medical_referrals_specialist_doctor_id_fkey (
           id,
           consultation_fee,
           years_experience,
-          biografia,
-          profile:profiles!doctor_details_user_id_fkey (
+          biography,
+          profile:profiles!doctor_details_profile_id_fkey (
             first_name,
             last_name,
             avatar_url,
             phone
           ),
-          specialty:medical_specialties!doctor_details_specialty_id_fkey (
+          specialty:specialties!fk_doctor_specialty (
             id,
             name,
             icon
           )
         ),
-        target_specialty:medical_specialties!medical_referrals_specialty_id_fkey (
+        target_specialty:specialties!medical_referrals_specialty_id_fkey (
           id,
           name,
           icon

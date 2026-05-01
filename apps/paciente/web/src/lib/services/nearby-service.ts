@@ -123,11 +123,16 @@ export const nearbyService = {
         for (const doc of doctors ?? []) {
           const profile = doc.profile as Record<string, unknown> | null;
           const specialty = doc.specialty as Record<string, unknown> | null;
-          // doctor_details doesn't have lat/lng in the search route — skip geo-filtering for doctors
-          // They are included without distance for now
-          const address = (doc.address as string) ?? null;
+          // doctor_profiles doesn't expose lat/lng via the search route — skip
+          // geo-filtering for doctors and place them at the user location for
+          // display purposes only.
+          const address = (doc.clinic_address as string) ?? null;
           const phone = (profile?.phone as string) ?? null;
-          const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ");
+          const fullName =
+            (profile?.full_name as string) ||
+            [profile?.first_name, profile?.last_name]
+              .filter(Boolean)
+              .join(" ");
 
           providers.push({
             id: doc.id as string,
@@ -139,10 +144,10 @@ export const nearbyService = {
             avatar_url: (profile?.avatar_url as string) ?? null,
             rating: doc.avg_rating != null ? Number(doc.avg_rating) : null,
             review_count: Number(doc.review_count) || 0,
-            lat: userLocation.lat, // geo data not available via API — place at user location
+            lat: userLocation.lat,
             lng: userLocation.lng,
             distance_km: 0,
-            is_available: (doc.is_active as boolean) ?? false,
+            is_available: (doc.verified as boolean) ?? false,
             opening_hours: null,
           });
         }

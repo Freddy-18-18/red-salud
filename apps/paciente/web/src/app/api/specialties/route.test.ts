@@ -35,7 +35,7 @@ describe('GET /api/specialties', () => {
 
     expect(status).toBe(200);
     expect(body.data).toEqual(specialties);
-    expect(mock.client.from).toHaveBeenCalledWith('medical_specialties');
+    expect(mock.client.from).toHaveBeenCalledWith('specialties');
   });
 
   it('returns empty array when no specialties exist', async () => {
@@ -96,11 +96,11 @@ describe('GET /api/specialties', () => {
           then: (resolve: (v: unknown) => void) => {
             if (callCount === 1) {
               // First query: doctor_details
-              expect(table).toBe('doctor_details');
+              expect(table).toBe('doctor_profiles');
               resolve({ data: doctorSpecialties, error: null });
             } else {
               // Second query: medical_specialties
-              expect(table).toBe('medical_specialties');
+              expect(table).toBe('specialties');
               resolve({ data: filteredSpecialties, error: null });
             }
           },
@@ -138,7 +138,7 @@ describe('GET /api/specialties', () => {
       expect(body.data).toEqual([]);
     });
 
-    it('returns 500 when doctor_details query fails', async () => {
+    it('returns 500 when doctor_profiles query fails', async () => {
       mock.client.from.mockImplementation(() => {
         const chain = {
           select: vi.fn().mockReturnThis(),

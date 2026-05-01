@@ -19,20 +19,26 @@ import { GET } from './route';
 function makeDoctorRow(overrides?: Record<string, unknown>) {
   return {
     id: 'doc-1',
-    user_id: 'user-1',
-    is_active: true,
+    profile_id: 'user-1',
+    verified: true,
     consultation_fee: 50,
+    consultation_price: null,
     accepts_insurance: true,
-    city: 'Caracas',
-    address: 'Av. Principal 123',
+    clinic_address: 'Av. Principal 123, Caracas',
     years_experience: 10,
     biography: 'Especialista en cardiologia',
+    slug: 'ana-garcia',
+    average_rating: null,
+    total_reviews: 0,
     profile: {
       id: 'user-1',
       first_name: 'Ana',
       last_name: 'Garcia',
+      full_name: 'Ana Garcia',
       avatar_url: null,
       phone: '+58412123456',
+      city: 'Caracas',
+      state: 'Distrito Capital',
     },
     specialty: {
       id: 'sp-1',
@@ -112,7 +118,7 @@ describe('GET /api/doctors/search', () => {
     const request = createRequest('/api/doctors/search?specialty_id=sp-cardio');
     await GET(request);
 
-    expect(mock.client.from).toHaveBeenCalledWith('doctor_details');
+    expect(mock.client.from).toHaveBeenCalledWith('doctor_profiles');
     // The eq mock should have been called — we verify via the queryBuilder
     // Because of the proxy, eq is always called. We verify the table was queried.
   });
@@ -123,7 +129,7 @@ describe('GET /api/doctors/search', () => {
     const request = createRequest('/api/doctors/search?city=Maracaibo');
     await GET(request);
 
-    expect(mock.client.from).toHaveBeenCalledWith('doctor_details');
+    expect(mock.client.from).toHaveBeenCalledWith('doctor_profiles');
   });
 
   it('queries with accepts_insurance filter', async () => {
@@ -132,7 +138,7 @@ describe('GET /api/doctors/search', () => {
     const request = createRequest('/api/doctors/search?accepts_insurance=true');
     await GET(request);
 
-    expect(mock.client.from).toHaveBeenCalledWith('doctor_details');
+    expect(mock.client.from).toHaveBeenCalledWith('doctor_profiles');
   });
 
   it('sorts by rating (post-query, descending)', async () => {

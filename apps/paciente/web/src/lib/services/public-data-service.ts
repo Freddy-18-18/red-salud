@@ -16,21 +16,25 @@ import { fetchJson } from "@/lib/utils/fetch";
 
 interface ApiDoctor {
   id: string;
-  user_id: string;
-  is_active: boolean;
+  profile_id: string;
+  verified: boolean;
   consultation_fee: number | null;
+  consultation_price?: number | null;
   accepts_insurance: boolean;
-  city: string | null;
-  address: string | null;
+  clinic_address: string | null;
   years_experience: number | null;
   biography: string | null;
+  slug?: string | null;
   profile: {
     id: string;
-    first_name: string;
-    last_name: string;
+    first_name: string | null;
+    last_name: string | null;
+    full_name?: string | null;
     avatar_url: string | null;
     phone: string | null;
     email?: string | null;
+    city?: string | null;
+    state?: string | null;
   } | null;
   specialty: {
     id: string;
@@ -66,23 +70,26 @@ interface ApiReview {
 // ---------------------------------------------------------------------------
 
 function mapApiDoctorToPublic(d: ApiDoctor): PublicDoctor {
-  const fullName = d.profile
-    ? `${d.profile.first_name} ${d.profile.last_name}`.trim()
-    : "";
+  const fullName =
+    d.profile?.full_name?.trim() ||
+    [d.profile?.first_name, d.profile?.last_name]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
 
   return {
-    id: d.user_id || d.id,
-    slug: "", // slug not returned by API; consumers should use id
-    consultationFee: d.consultation_fee,
+    id: d.profile_id || d.id,
+    slug: d.slug ?? "",
+    consultationFee: d.consultation_fee ?? d.consultation_price ?? null,
     acceptsInsurance: d.accepts_insurance || false,
     yearsExperience: d.years_experience,
     biography: d.biography,
-    verified: true,
+    verified: d.verified ?? true,
     profile: {
       name: fullName,
       avatarUrl: d.profile?.avatar_url ?? null,
-      city: d.city,
-      state: null,
+      city: d.profile?.city ?? null,
+      state: d.profile?.state ?? null,
       gender: null,
     },
     specialty: d.specialty
@@ -252,7 +259,7 @@ export async function getDoctorBySlug(
 
     if (!doctor) return null;
 
-    const profileId = doctor.user_id || doctor.id;
+    const profileId = doctor.profile_id || doctor.id;
 
     // Fetch reviews via the API route
     const res = await fetch(
@@ -275,23 +282,26 @@ export async function getDoctorBySlug(
       };
     });
 
-    const fullName = doctor.profile
-      ? `${doctor.profile.first_name} ${doctor.profile.last_name}`.trim()
-      : "";
+    const fullName =
+      doctor.profile?.full_name?.trim() ||
+      [doctor.profile?.first_name, doctor.profile?.last_name]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
 
     return {
       id: profileId,
       slug: slug,
-      consultationFee: doctor.consultation_fee,
+      consultationFee: doctor.consultation_fee ?? doctor.consultation_price ?? null,
       acceptsInsurance: doctor.accepts_insurance || false,
       yearsExperience: doctor.years_experience,
       biography: doctor.biography,
-      verified: true,
+      verified: doctor.verified ?? true,
       profile: {
         name: fullName,
         avatarUrl: doctor.profile?.avatar_url ?? null,
-        city: doctor.city,
-        state: null,
+        city: doctor.profile?.city ?? null,
+        state: doctor.profile?.state ?? null,
         gender: null,
       },
       specialty: doctor.specialty
@@ -365,7 +375,7 @@ export async function getSimilarDoctors(
     if (!doctors || doctors.length === 0) return [];
 
     let mapped = doctors
-      .filter((d) => (d.user_id || d.id) !== excludeId)
+      .filter((d) => (d.profile_id || d.id) !== excludeId)
       .map(mapApiDoctorToPublic);
 
     // Prefer same state, then fill with others
@@ -402,7 +412,8 @@ export async function getStateDoctorCounts(): Promise<StateMapData[]> {
 
     const stateMap = new Map<string, number>();
     doctors.forEach((d) => {
-      const stateName = d.city; // API returns city; state grouping approximation
+      // Group by the patient profile's state when available; fall back to city.
+      const stateName = d.profile?.state ?? d.profile?.city ?? null;
       if (!stateName) return;
       stateMap.set(stateName, (stateMap.get(stateName) || 0) + 1);
     });

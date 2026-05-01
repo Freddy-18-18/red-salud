@@ -5,9 +5,13 @@ import { checkRateLimit } from '@/lib/utils/rate-limit';
 // -------------------------------------------------------------------
 // Doctor Profile — BFF API Route
 // -------------------------------------------------------------------
-// Returns a single doctor's full profile with specialty, ratings, etc.
-// Public endpoint — no authentication required.
+// Returns a single verified doctor's full profile with specialty, ratings,
+// languages, etc. Public endpoint — no authentication required.
 // -------------------------------------------------------------------
+//
+// Schema notes (post Phase A5.5):
+// - Source of truth is `doctor_profiles`. FK names preserved from the
+//   original `doctor_details` table when it was renamed.
 
 export async function GET(
   _request: NextRequest,
@@ -20,41 +24,49 @@ export async function GET(
     const supabase = await createClient();
 
     const { data: doctor, error } = await supabase
-      .from('doctor_details')
+      .from('doctor_profiles')
       .select(
         `
         id,
-        user_id,
-        is_active,
+        profile_id,
+        verified,
         consultation_fee,
+        consultation_price,
         accepts_insurance,
-        city,
-        address,
+        clinic_address,
+        clinic_phone,
         years_experience,
         biography,
-        education,
+        slug,
+        average_rating,
+        total_reviews,
         languages,
-        profile:profiles!doctor_details_user_id_fkey (
+        university,
+        graduation_year,
+        college_number,
+        accepts_telemedicine,
+        is_featured,
+        profile:profiles!doctor_details_profile_id_fkey (
           id,
           first_name,
           last_name,
+          full_name,
           avatar_url,
           phone,
-          email
+          email,
+          city,
+          state
         ),
-        specialty:medical_specialties!doctor_details_specialty_id_fkey (
+        specialty:specialties!fk_doctor_specialty (
           id,
           name,
           icon,
           description
-        ),
-        reviews:doctor_reviews (
-          rating
         )
         `,
       )
       .eq('id', id)
-      .eq('is_active', true)
+      .eq('verified', true)
       .single();
 
     if (error) {
@@ -71,24 +83,11 @@ export async function GET(
       );
     }
 
-    // --- Compute ratings ---
-    const reviews = (doctor.reviews as { rating: number }[]) ?? [];
-    const reviewCount = reviews.length;
-    const avgRating =
-      reviewCount > 0
-        ? Math.round(
-            (reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount) * 10,
-          ) / 10
-        : null;
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { reviews: _reviews, ...rest } = doctor;
-
     return NextResponse.json({
       data: {
-        ...rest,
-        avg_rating: avgRating,
-        review_count: reviewCount,
+        ...doctor,
+        avg_rating: doctor.average_rating ?? null,
+        review_count: doctor.total_reviews ?? 0,
       },
     });
   } catch (error) {

@@ -5,9 +5,17 @@ import { checkRateLimit } from '@/lib/utils/rate-limit';
 // -------------------------------------------------------------------
 // Doctor Search — BFF API Route
 // -------------------------------------------------------------------
-// Searches doctors by specialty, city, insurance acceptance, etc.
+// Searches verified doctors by specialty, city, insurance acceptance, etc.
 // Public endpoint — no authentication required.
 // -------------------------------------------------------------------
+//
+// Schema notes (post Phase A5.5):
+// - Table is `doctor_profiles` (FK constraint name kept as the legacy
+//   `doctor_details_profile_id_fkey` because it was renamed by ALTER TABLE).
+// - Specialty FK constraint is `fk_doctor_specialty` and points at
+//   `specialties` (NOT `medical_specialties`).
+// - Doctor's clinic location lives in `clinic_address` (text); the patient
+//   profile's city/state come from `profiles` via the embedded join.
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +24,6 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
 
-    // --- Parse query params ---
     const specialtyId = searchParams.get('specialty_id');
     const city = searchParams.get('city');
     const acceptsInsurance = searchParams.get('accepts_insurance');
@@ -26,63 +33,69 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * pageSize;
 
-    // --- Build query ---
     let query = supabase
-      .from('doctor_details')
+      .from('doctor_profiles')
       .select(
         `
         id,
-        user_id,
-        is_active,
+        profile_id,
+        verified,
         consultation_fee,
+        consultation_price,
         accepts_insurance,
-        city,
-        address,
+        clinic_address,
         years_experience,
         biography,
-        profile:profiles!doctor_details_user_id_fkey (
+        slug,
+        average_rating,
+        total_reviews,
+        profile:profiles!doctor_details_profile_id_fkey (
           id,
           first_name,
           last_name,
+          full_name,
           avatar_url,
-          phone
+          phone,
+          city,
+          state
         ),
-        specialty:medical_specialties!doctor_details_specialty_id_fkey (
+        specialty:specialties!fk_doctor_specialty (
           id,
           name,
           icon
-        ),
-        reviews:doctor_reviews (
-          rating
         )
         `,
         { count: 'exact' },
       )
-      .eq('is_active', true);
+      .eq('verified', true);
 
-    // --- Apply filters ---
+    // doctor_reviews has FK to profiles(id), not doctor_profiles, so we can't
+    // embed it through PostgREST. The denormalized average_rating /
+    // total_reviews columns on doctor_profiles are kept in sync via trigger
+    // and are good enough for list views.
+
     if (specialtyId) {
       query = query.eq('specialty_id', specialtyId);
     }
 
+    // City filter targets the doctor's clinic_address as a text search.
+    // (Patient-side profile.city is also available but filtering on an
+    // embedded resource requires the URL syntax which the JS client
+    // doesn't expose ergonomically — this is good enough for v1.)
     if (city) {
-      query = query.ilike('city', `%${city}%`);
+      query = query.ilike('clinic_address', `%${city}%`);
     }
 
     if (acceptsInsurance === 'true') {
       query = query.eq('accepts_insurance', true);
     }
 
-    // --- Sorting ---
-    // Note: rating sort is applied post-query since it's computed.
-    // For name/price we can sort at the DB level.
     if (sortBy === 'name') {
-      query = query.order('user_id', { ascending: true });
+      query = query.order('profile_id', { ascending: true });
     } else if (sortBy === 'price') {
       query = query.order('consultation_fee', { ascending: true });
     }
 
-    // --- Pagination ---
     query = query.range(offset, offset + pageSize - 1);
 
     const { data: doctors, error, count } = await query;
@@ -95,28 +108,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // --- Compute ratings and shape response ---
-    const results = (doctors ?? []).map((doctor) => {
-      const reviews = (doctor.reviews as { rating: number }[]) ?? [];
-      const reviewCount = reviews.length;
-      const avgRating =
-        reviewCount > 0
-          ? Math.round(
-              (reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount) * 10,
-            ) / 10
-          : null;
+    const results = (doctors ?? []).map((doctor) => ({
+      ...doctor,
+      avg_rating: doctor.average_rating ?? null,
+      review_count: doctor.total_reviews ?? 0,
+    }));
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { reviews: _reviews, ...rest } = doctor;
-
-      return {
-        ...rest,
-        avg_rating: avgRating,
-        review_count: reviewCount,
-      };
-    });
-
-    // --- Sort by rating post-query if needed ---
     if (sortBy === 'rating') {
       results.sort((a, b) => (b.avg_rating ?? 0) - (a.avg_rating ?? 0));
     }
