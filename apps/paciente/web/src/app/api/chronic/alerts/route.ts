@@ -50,7 +50,7 @@ const MISSED_READING_DAYS: Record<string, number> = {
 
 export async function GET(request: NextRequest) {
   try {
-    const limited = checkRateLimit(request, "authenticated");
+    const limited = await checkRateLimit(request, "authenticated");
     if (limited) return limited;
     const supabase = await createClient();
 

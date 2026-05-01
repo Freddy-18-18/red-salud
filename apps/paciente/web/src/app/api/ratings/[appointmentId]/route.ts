@@ -14,7 +14,7 @@ export async function GET(
   { params }: { params: Promise<{ appointmentId: string }> },
 ) {
   try {
-    const limited = checkRateLimit(_request, 'authenticated');
+    const limited = await checkRateLimit(_request, 'authenticated');
     if (limited) return limited;
 
     const supabase = await createClient();

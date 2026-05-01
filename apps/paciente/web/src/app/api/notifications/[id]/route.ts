@@ -19,7 +19,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const limited = checkRateLimit(request, "mutation");
+    const limited = await checkRateLimit(request, "mutation");
     if (limited) return limited;
 
     const { id } = await params;
@@ -99,7 +99,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const limited = checkRateLimit(_request, "mutation");
+    const limited = await checkRateLimit(_request, "mutation");
     if (limited) return limited;
 
     const { id } = await params;

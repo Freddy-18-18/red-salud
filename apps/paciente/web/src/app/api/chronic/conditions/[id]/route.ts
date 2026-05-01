@@ -17,7 +17,7 @@ type RouteParams = { params: Promise<{ id: string }> };
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
-    const limited = checkRateLimit(_request, "authenticated");
+    const limited = await checkRateLimit(_request, "authenticated");
     if (limited) return limited;
 
     const { id } = await params;
@@ -85,7 +85,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
-    const limited = checkRateLimit(request, "mutation");
+    const limited = await checkRateLimit(request, "mutation");
     if (limited) return limited;
 
     const { id } = await params;
@@ -149,7 +149,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
-    const limited = checkRateLimit(_request, "mutation");
+    const limited = await checkRateLimit(_request, "mutation");
     if (limited) return limited;
 
     const { id } = await params;

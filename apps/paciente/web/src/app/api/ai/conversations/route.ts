@@ -12,7 +12,7 @@ import { checkRateLimit } from "@/lib/utils/rate-limit";
 export async function GET(request: NextRequest) {
   try {
     // Rate limit
-    const limited = checkRateLimit(request, "authenticated");
+    const limited = await checkRateLimit(request, "authenticated");
     if (limited) return limited;
 
     // Auth

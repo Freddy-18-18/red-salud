@@ -15,7 +15,7 @@ type RouteParams = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
-    const limited = checkRateLimit(request, "mutation");
+    const limited = await checkRateLimit(request, "mutation");
     if (limited) return limited;
 
     const { id } = await params;

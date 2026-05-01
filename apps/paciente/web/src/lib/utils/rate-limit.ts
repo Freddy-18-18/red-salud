@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { MemoryStrategy } from "./rate-limit-memory";
+import { createUpstashStrategy } from "./rate-limit-upstash";
+import type {
+  RateLimitConfig,
+  RateLimitResult,
+  RateLimitStrategy,
+} from "./rate-limit-types";
+
 // -------------------------------------------------------------------
-// Sliding Window Rate Limiter with LRU Eviction
+// Rate limiter — pluggable strategy
 // -------------------------------------------------------------------
-// In-memory implementation suitable for single-instance deployments.
-// For production clustering, replace with Redis/Upstash.
+// `RATE_LIMIT_BACKEND=memory|upstash` selects the backend at startup.
+// Memory: dev only — counters reset per process, useless on Vercel.
+// Upstash: multi-instance safe — counters in Redis via @upstash/ratelimit.
 // -------------------------------------------------------------------
 
-interface RateLimitConfig {
-  windowMs: number;
-  maxRequests: number;
-}
-
-interface RateLimitResult {
-  success: boolean;
-  remaining: number;
-  resetAt: number;
-}
+export type Tier = keyof typeof RATE_LIMITS;
 
 // --- Predefined tiers ---
 
@@ -31,124 +31,89 @@ export const RATE_LIMITS = {
   search: { windowMs: 60_000, maxRequests: 30 },
   /** 5/min — sensitive operations (cedula verification, etc.) */
   sensitive: { windowMs: 60_000, maxRequests: 5 },
-} as const;
+} as const satisfies Record<string, RateLimitConfig>;
 
-// --- Internal state ---
+// --- Strategy selection (lazy, single-instance per process) ---
 
-const store = new Map<string, { timestamps: number[] }>();
-const MAX_STORE_SIZE = 10_000;
+let strategy: RateLimitStrategy | null = null;
 
-/**
- * Evict the oldest 20% of entries when the store exceeds MAX_STORE_SIZE.
- * Entries are sorted by their most recent timestamp (LRU).
- */
-function evictIfNeeded(): void {
-  if (store.size <= MAX_STORE_SIZE) return;
+function buildStrategy(): RateLimitStrategy {
+  const backend = process.env.RATE_LIMIT_BACKEND ?? "memory";
 
-  const entries = Array.from(store.entries())
-    .map(([key, value]) => ({
-      key,
-      lastAccess: value.timestamps.length > 0
-        ? value.timestamps[value.timestamps.length - 1]
-        : 0,
-    }))
-    .sort((a, b) => a.lastAccess - b.lastAccess);
-
-  const evictCount = Math.ceil(store.size * 0.2);
-  for (let i = 0; i < evictCount; i++) {
-    store.delete(entries[i].key);
+  if (backend === "upstash") {
+    const url = process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (!url || !token) {
+      console.warn(
+        "[rate-limit] RATE_LIMIT_BACKEND=upstash but UPSTASH_REDIS_REST_URL/_TOKEN are missing. Falling back to in-memory limiter — this is broken on multi-instance deploys.",
+      );
+      return new MemoryStrategy();
+    }
+    return createUpstashStrategy({ url, token });
   }
+
+  if (backend === "memory" && process.env.NODE_ENV === "production") {
+    console.warn(
+      "[rate-limit] WARNING: in-memory rate limiter active in production. Each Vercel instance gets its own counter, so a client can multiply their quota by hitting different instances. Set RATE_LIMIT_BACKEND=upstash + UPSTASH_REDIS_REST_URL/_TOKEN.",
+    );
+  }
+
+  return new MemoryStrategy();
+}
+
+function getStrategy(): RateLimitStrategy {
+  if (!strategy) strategy = buildStrategy();
+  return strategy;
+}
+
+/** Test seam — reset the cached strategy so env changes are picked up. */
+export function _resetRateLimitStrategy(): void {
+  strategy = null;
 }
 
 /**
  * Core sliding window rate limiter.
- *
  * @param key    - Unique identifier (e.g., IP or user ID + route)
  * @param config - Window size and max requests
- * @returns      - Whether the request is allowed, remaining quota, and reset timestamp
  */
-export function rateLimit(key: string, config: RateLimitConfig): RateLimitResult {
-  const now = Date.now();
-  const windowStart = now - config.windowMs;
-
-  let entry = store.get(key);
-
-  if (!entry) {
-    evictIfNeeded();
-    entry = { timestamps: [] };
-    store.set(key, entry);
-  }
-
-  // Prune timestamps outside the current window
-  entry.timestamps = entry.timestamps.filter((t) => t > windowStart);
-
-  if (entry.timestamps.length >= config.maxRequests) {
-    // Rate limited — calculate when the oldest request in the window expires
-    const oldestInWindow = entry.timestamps[0];
-    const resetAt = oldestInWindow + config.windowMs;
-
-    return {
-      success: false,
-      remaining: 0,
-      resetAt,
-    };
-  }
-
-  // Allow the request
-  entry.timestamps.push(now);
-
-  return {
-    success: true,
-    remaining: config.maxRequests - entry.timestamps.length,
-    resetAt: now + config.windowMs,
-  };
+export async function rateLimit(
+  key: string,
+  config: RateLimitConfig,
+): Promise<RateLimitResult> {
+  return getStrategy().check(key, config);
 }
 
 /**
  * Extract a client identifier from a Next.js request.
- * Prefers x-forwarded-for, then request.ip, then a generic fallback.
+ * Prefers x-forwarded-for, then x-real-ip, then a generic fallback.
  */
 function getIdentifier(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
-    // x-forwarded-for can contain multiple IPs; take the first (client IP)
     return forwarded.split(",")[0].trim();
   }
-
-  // NextRequest.ip was removed in Next 15; x-real-ip is the common fallback
   const realIp = request.headers.get("x-real-ip");
   if (realIp) return realIp.trim();
-
   return "anonymous";
 }
 
 /**
- * Helper for Next.js API routes.
- *
- * Returns `null` if the request is within limits (proceed normally),
- * or a 429 `NextResponse` if the client has exceeded their quota.
- *
- * @param request    - The incoming Next.js request
- * @param tier       - One of the predefined rate limit tiers
- * @param identifier - Optional override for the client identifier
+ * Helper for Next.js API routes. Returns null when the request is allowed,
+ * or a 429 NextResponse when the client has exceeded their quota.
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   request: NextRequest,
-  tier: keyof typeof RATE_LIMITS,
+  tier: Tier,
   identifier?: string,
-): NextResponse | null {
+): Promise<NextResponse | null> {
   const config = RATE_LIMITS[tier];
   const id = identifier ?? getIdentifier(request);
-
-  // Include the pathname in the key so different routes have independent limits
   const pathname = new URL(request.url).pathname;
   const key = `${tier}:${id}:${pathname}`;
 
-  const result = rateLimit(key, config);
+  const result = await rateLimit(key, config);
 
-  if (result.success) {
-    return null;
-  }
+  if (result.success) return null;
 
   const retryAfterSeconds = Math.ceil((result.resetAt - Date.now()) / 1000);
 

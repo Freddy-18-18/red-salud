@@ -37,7 +37,7 @@ interface VerifyCedulaBody {
 export async function POST(request: NextRequest) {
   try {
     // 1. Rate limit check (sensitive tier: 5/min)
-    const limited = checkRateLimit(request, "sensitive");
+    const limited = await checkRateLimit(request, "sensitive");
     if (limited) return limited;
 
     // 2. Validate authentication

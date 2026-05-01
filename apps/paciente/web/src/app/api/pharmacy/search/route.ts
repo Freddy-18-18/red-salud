@@ -11,7 +11,7 @@ import { checkRateLimit } from '@/lib/utils/rate-limit';
 
 export async function GET(request: NextRequest) {
   try {
-    const limited = checkRateLimit(request, 'search');
+    const limited = await checkRateLimit(request, 'search');
     if (limited) return limited;
 
     const supabase = await createClient();

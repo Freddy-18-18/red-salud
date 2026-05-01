@@ -17,7 +17,7 @@ interface RouteParams {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const limited = checkRateLimit(request, "authenticated");
+    const limited = await checkRateLimit(request, "authenticated");
     if (limited) return limited;
 
     const supabase = await createClient();
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const limited = checkRateLimit(request, "mutation");
+    const limited = await checkRateLimit(request, "mutation");
     if (limited) return limited;
 
     const supabase = await createClient();

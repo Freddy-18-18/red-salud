@@ -33,7 +33,7 @@ const DEFAULT_PREFERENCES = {
 
 export async function GET(request: NextRequest) {
   try {
-    const limited = checkRateLimit(request, "authenticated");
+    const limited = await checkRateLimit(request, "authenticated");
     if (limited) return limited;
     const supabase = await createClient();
 
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const limited = checkRateLimit(request, "mutation");
+    const limited = await checkRateLimit(request, "mutation");
     if (limited) return limited;
 
     const supabase = await createClient();

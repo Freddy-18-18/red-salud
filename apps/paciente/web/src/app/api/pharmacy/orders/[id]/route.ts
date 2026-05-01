@@ -14,7 +14,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const limited = checkRateLimit(request, 'authenticated');
+    const limited = await checkRateLimit(request, 'authenticated');
     if (limited) return limited;
 
     const { id } = await params;

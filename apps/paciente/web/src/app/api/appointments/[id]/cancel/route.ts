@@ -18,7 +18,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const limited = checkRateLimit(request, 'mutation');
+    const limited = await checkRateLimit(request, 'mutation');
     if (limited) return limited;
 
     const { id: appointmentId } = await params;

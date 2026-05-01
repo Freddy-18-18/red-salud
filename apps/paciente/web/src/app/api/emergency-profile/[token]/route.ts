@@ -15,7 +15,7 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> },
 ) {
   try {
-    const limited = checkRateLimit(_request, "public");
+    const limited = await checkRateLimit(_request, "public");
     if (limited) return limited;
 
     const { token } = await params;

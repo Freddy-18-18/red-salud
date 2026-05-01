@@ -321,7 +321,7 @@ async function saveMessages(
 export async function POST(request: NextRequest) {
   try {
     // 1. Rate limit check
-    const limited = checkRateLimit(request, "mutation");
+    const limited = await checkRateLimit(request, "mutation");
     if (limited) return limited;
 
     // 2. Validate authentication

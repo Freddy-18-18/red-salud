@@ -13,7 +13,7 @@ import { checkRateLimit } from '@/lib/utils/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
-    const limited = checkRateLimit(request, 'mutation');
+    const limited = await checkRateLimit(request, 'mutation');
     if (limited) return limited;
 
     const supabase = await createClient();
