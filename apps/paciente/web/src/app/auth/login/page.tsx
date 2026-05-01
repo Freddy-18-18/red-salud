@@ -25,7 +25,6 @@ export default function LoginPage() {
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
-    rememberMe: false,
   });
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<keyof LoginFormData, string>>
@@ -51,7 +50,7 @@ export default function LoginPage() {
     }
   };
 
-  const updateField = (field: keyof LoginFormData, value: string | boolean) => {
+  const updateField = (field: keyof LoginFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
     setError(null);
@@ -277,18 +276,7 @@ export default function LoginPage() {
                 )}
               </div>
 
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.rememberMe}
-                    onChange={(e) =>
-                      updateField("rememberMe", e.target.checked)
-                    }
-                    className="w-4 h-4 rounded border-[hsl(var(--border))] text-emerald-600 focus:ring-emerald-500"
-                  />
-                  <span className="text-sm text-[hsl(var(--muted-foreground))]">Recordarme</span>
-                </label>
+              <div className="flex items-center justify-end">
                 <Link
                   href="/auth/forgot-password"
                   className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium"

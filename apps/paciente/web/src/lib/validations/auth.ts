@@ -1,5 +1,45 @@
 import { z } from 'zod';
 
+// -----------------------------------------------------------------------------
+// Password rules
+// -----------------------------------------------------------------------------
+
+// Strong password rule shared by reset-password, register, and any future
+// password-change flow. 12+ chars + complexity classes (upper, lower, digit,
+// symbol). Defined at the top so other schemas can reference it.
+export const strongPasswordSchema = z
+  .string()
+  .min(12, 'La contrasena debe tener al menos 12 caracteres')
+  .regex(/[A-Z]/, 'Debe contener al menos una mayuscula')
+  .regex(/[a-z]/, 'Debe contener al menos una minuscula')
+  .regex(/[0-9]/, 'Debe contener al menos un numero')
+  .regex(/[^A-Za-z0-9]/, 'Debe contener al menos un simbolo');
+
+// Password strength calculator (UX hint, not security gate).
+export function getPasswordStrength(password: string): {
+  score: number;
+  label: string;
+  color: string;
+} {
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+
+  if (score <= 2) return { score, label: 'Debil', color: 'bg-red-500' };
+  if (score <= 3) return { score, label: 'Regular', color: 'bg-orange-500' };
+  if (score <= 4) return { score, label: 'Buena', color: 'bg-yellow-500' };
+  if (score <= 5) return { score, label: 'Fuerte', color: 'bg-emerald-500' };
+  return { score, label: 'Muy fuerte', color: 'bg-emerald-600' };
+}
+
+// -----------------------------------------------------------------------------
+// Auth form schemas
+// -----------------------------------------------------------------------------
+
 export const loginSchema = z.object({
   email: z
     .string()
@@ -8,11 +48,13 @@ export const loginSchema = z.object({
   password: z
     .string()
     .min(1, 'La contrasena es requerida'),
-  rememberMe: z.boolean().optional(),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 
+// Full registration with personal data. Currently unused — register flow uses
+// simpleRegisterSchema and collects personal data in onboarding. Kept here for
+// the eventual full-form variant.
 export const registerSchema = z
   .object({
     full_name: z
@@ -24,12 +66,7 @@ export const registerSchema = z
       .string()
       .min(1, 'El email es requerido')
       .email('Ingresa un email valido'),
-    password: z
-      .string()
-      .min(8, 'La contrasena debe tener al menos 8 caracteres')
-      .regex(/[A-Z]/, 'Debe contener al menos una mayuscula')
-      .regex(/[a-z]/, 'Debe contener al menos una minuscula')
-      .regex(/[0-9]/, 'Debe contener al menos un numero'),
+    password: strongPasswordSchema,
     confirmPassword: z
       .string()
       .min(1, 'Confirma tu contrasena'),
@@ -62,17 +99,16 @@ export const registerSchema = z
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
-// Simplified registration schema — only credentials + terms
-// Personal data is collected in the onboarding modal after registration
+// Simplified registration schema — only credentials + terms.
+// Personal data (cedula, address, phone) is collected post-signup in onboarding
+// because verify-cedula requires an authenticated session.
 export const simpleRegisterSchema = z
   .object({
     email: z
       .string()
       .min(1, 'El email es requerido')
       .email('Ingresa un email valido'),
-    password: z
-      .string()
-      .min(8, 'La contrasena debe tener al menos 8 caracteres'),
+    password: strongPasswordSchema,
     confirmPassword: z
       .string()
       .min(1, 'Confirma tu contrasena'),
@@ -96,16 +132,6 @@ export const forgotPasswordSchema = z.object({
 
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
-// Strong password rule shared by reset-password, register, and any future
-// password-change flow. 12+ chars + complexity classes.
-export const strongPasswordSchema = z
-  .string()
-  .min(12, 'La contrasena debe tener al menos 12 caracteres')
-  .regex(/[A-Z]/, 'Debe contener al menos una mayuscula')
-  .regex(/[a-z]/, 'Debe contener al menos una minuscula')
-  .regex(/[0-9]/, 'Debe contener al menos un numero')
-  .regex(/[^A-Za-z0-9]/, 'Debe contener al menos un simbolo');
-
 export const resetPasswordSchema = z
   .object({
     password: strongPasswordSchema,
@@ -117,24 +143,3 @@ export const resetPasswordSchema = z
   });
 
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
-
-// Password strength calculator
-export function getPasswordStrength(password: string): {
-  score: number;
-  label: string;
-  color: string;
-} {
-  let score = 0;
-  if (password.length >= 8) score++;
-  if (password.length >= 12) score++;
-  if (/[A-Z]/.test(password)) score++;
-  if (/[a-z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[^A-Za-z0-9]/.test(password)) score++;
-
-  if (score <= 2) return { score, label: 'Debil', color: 'bg-red-500' };
-  if (score <= 3) return { score, label: 'Regular', color: 'bg-orange-500' };
-  if (score <= 4) return { score, label: 'Buena', color: 'bg-yellow-500' };
-  if (score <= 5) return { score, label: 'Fuerte', color: 'bg-emerald-500' };
-  return { score, label: 'Muy fuerte', color: 'bg-emerald-600' };
-}

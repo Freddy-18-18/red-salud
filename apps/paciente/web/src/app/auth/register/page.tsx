@@ -340,7 +340,7 @@ export default function RegisterPacientePage() {
                     value={formData.password}
                     onChange={(e) => updateField("password", e.target.value)}
                     className={`${inputClasses("password")} pr-12`}
-                    placeholder="Minimo 8 caracteres"
+                    placeholder="Minimo 12 caracteres con simbolo"
                   />
                   <button
                     type="button"
