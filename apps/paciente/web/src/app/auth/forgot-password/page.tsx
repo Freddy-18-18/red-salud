@@ -93,11 +93,8 @@ export default function ForgotPasswordPage() {
             Revisa tu email
           </h1>
           <p className="text-[hsl(var(--muted-foreground))] mb-6">
-            Si existe una cuenta con{" "}
-            <span className="font-semibold text-[hsl(var(--foreground))]">
-              {formData.email}
-            </span>
-            , recibiras un enlace para restablecer tu contrasena.
+            Si tu email esta registrado, recibiras un enlace para restablecer
+            tu contrasena en los proximos minutos.
           </p>
           <p className="text-sm text-[hsl(var(--muted-foreground))] mb-6">
             No lo ves? Revisa tu carpeta de spam.

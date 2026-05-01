@@ -96,6 +96,28 @@ export const forgotPasswordSchema = z.object({
 
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
+// Strong password rule shared by reset-password, register, and any future
+// password-change flow. 12+ chars + complexity classes.
+export const strongPasswordSchema = z
+  .string()
+  .min(12, 'La contrasena debe tener al menos 12 caracteres')
+  .regex(/[A-Z]/, 'Debe contener al menos una mayuscula')
+  .regex(/[a-z]/, 'Debe contener al menos una minuscula')
+  .regex(/[0-9]/, 'Debe contener al menos un numero')
+  .regex(/[^A-Za-z0-9]/, 'Debe contener al menos un simbolo');
+
+export const resetPasswordSchema = z
+  .object({
+    password: strongPasswordSchema,
+    confirmPassword: z.string().min(1, 'Confirma tu contrasena'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Las contrasenas no coinciden',
+    path: ['confirmPassword'],
+  });
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
 // Password strength calculator
 export function getPasswordStrength(password: string): {
   score: number;
