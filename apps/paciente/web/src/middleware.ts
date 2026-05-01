@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 import { checkCsrf } from '@/lib/utils/csrf';
+import { PACIENTE_AUTH_COOKIE_NAME } from '@/lib/supabase/cookie-name';
 
 const PUBLIC_PATHS = [
   '/',
@@ -14,11 +15,23 @@ const PUBLIC_PATHS = [
   '/descargar',
 ];
 
+const PACIENTE_ROLE = 'paciente';
+
 function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith('/auth/')) return true;
   return PUBLIC_PATHS.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
+}
+
+function redirectToLogin(request: NextRequest, error?: 'role_mismatch' | 'profile_missing') {
+  const url = request.nextUrl.clone();
+  url.pathname = '/auth/login';
+  url.search = '';
+  if (error) {
+    url.searchParams.set('error', error);
+  }
+  return NextResponse.redirect(url);
 }
 
 export async function middleware(request: NextRequest) {
@@ -35,8 +48,7 @@ export async function middleware(request: NextRequest) {
     if (csrfResult) return csrfResult;
   }
 
-  // API routes handle their own auth — skip redirect logic
-  // (logging + CSRF already applied above)
+  // API routes handle their own auth + role checks — skip page-level role gating
   if (pathname.startsWith('/api/')) {
     return NextResponse.next();
   }
@@ -65,6 +77,7 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: { name: PACIENTE_AUTH_COOKIE_NAME },
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -82,9 +95,24 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/auth/login';
-    return NextResponse.redirect(url);
+    return redirectToLogin(request);
+  }
+
+  // Role gating: only profiles.role === 'paciente' may enter the dashboard.
+  // The Supabase project hosts every Red Salud app, so without this check a
+  // doctor or admin token would happily browse the patient portal.
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile) {
+    return redirectToLogin(request, 'profile_missing');
+  }
+
+  if (profile.role !== PACIENTE_ROLE) {
+    return redirectToLogin(request, 'role_mismatch');
   }
 
   // Set geo cookie on authenticated responses too
