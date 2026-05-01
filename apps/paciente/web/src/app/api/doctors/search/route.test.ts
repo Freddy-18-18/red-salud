@@ -59,8 +59,11 @@ describe('GET /api/doctors/search', () => {
     mock.reset();
   });
 
-  it('returns doctors with computed avg_rating and review_count', async () => {
-    const doctorRow = makeDoctorRow();
+  it('returns doctors with avg_rating and review_count from denormalized columns', async () => {
+    // doctor_reviews has its FK on profiles(id), not doctor_profiles, so the
+    // route reads the precomputed average_rating/total_reviews columns kept
+    // in sync by trigger instead of embedding the reviews array.
+    const doctorRow = makeDoctorRow({ average_rating: 4.7, total_reviews: 3 });
     mock.mockResolvedData([doctorRow], 1);
 
     const request = createRequest('/api/doctors/search');
@@ -78,13 +81,11 @@ describe('GET /api/doctors/search', () => {
     expect(body.data).toHaveLength(1);
     expect(body.data[0].id).toBe('doc-1');
     expect(body.data[0].review_count).toBe(3);
-    expect(body.data[0].avg_rating).toBe(4.7); // (5+4+5)/3 = 4.666... rounded to 4.7
-    // reviews array should be stripped from the response
-    expect(body.data[0]).not.toHaveProperty('reviews');
+    expect(body.data[0].avg_rating).toBe(4.7);
   });
 
-  it('returns null avg_rating when doctor has no reviews', async () => {
-    const doctorRow = makeDoctorRow({ reviews: [] });
+  it('returns null avg_rating when doctor has no rating data', async () => {
+    const doctorRow = makeDoctorRow({ average_rating: null, total_reviews: 0 });
     mock.mockResolvedData([doctorRow], 1);
 
     const request = createRequest('/api/doctors/search');
@@ -142,8 +143,8 @@ describe('GET /api/doctors/search', () => {
   });
 
   it('sorts by rating (post-query, descending)', async () => {
-    const doc1 = makeDoctorRow({ id: 'doc-low', reviews: [{ rating: 2 }] });
-    const doc2 = makeDoctorRow({ id: 'doc-high', reviews: [{ rating: 5 }, { rating: 5 }] });
+    const doc1 = makeDoctorRow({ id: 'doc-low', average_rating: 2.0, total_reviews: 1 });
+    const doc2 = makeDoctorRow({ id: 'doc-high', average_rating: 5.0, total_reviews: 2 });
 
     mock.mockResolvedData([doc1, doc2], 2);
 
@@ -153,14 +154,13 @@ describe('GET /api/doctors/search', () => {
       data: Array<{ id: string; avg_rating: number | null }>;
     }>(response);
 
-    // doc-high should come first (avg 5.0 vs 2.0)
     expect(body.data[0].id).toBe('doc-high');
     expect(body.data[1].id).toBe('doc-low');
   });
 
   it('uses default sort_by=rating when no sort param', async () => {
-    const doc1 = makeDoctorRow({ id: 'doc-3star', reviews: [{ rating: 3 }] });
-    const doc2 = makeDoctorRow({ id: 'doc-5star', reviews: [{ rating: 5 }] });
+    const doc1 = makeDoctorRow({ id: 'doc-3star', average_rating: 3.0, total_reviews: 1 });
+    const doc2 = makeDoctorRow({ id: 'doc-5star', average_rating: 5.0, total_reviews: 1 });
 
     mock.mockResolvedData([doc1, doc2], 2);
 

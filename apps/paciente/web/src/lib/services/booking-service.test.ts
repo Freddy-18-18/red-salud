@@ -5,7 +5,13 @@ const mockFetchJson = vi.fn();
 
 vi.mock('@/lib/utils/fetch', () => ({
   fetchJson: (...args: unknown[]) => mockFetchJson(...args),
-  postJson: vi.fn(),
+  // postJson delegates to fetchJson so tests can intercept either entry point.
+  postJson: (url: string, body: unknown, method: 'POST' | 'PATCH' | 'PUT' = 'POST') =>
+    mockFetchJson(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
 }));
 
 // Import AFTER mock is set up
@@ -212,10 +218,20 @@ describe('bookingService', () => {
 
       const result = await bookingService.createAppointment('pat-1', data);
 
+      // The route resolves patient_id from the session, so the BFF body
+      // intentionally does NOT include it — the explicit argument exists
+      // only for source compatibility with older callers.
       expect(mockFetchJson).toHaveBeenCalledWith('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patient_id: 'pat-1', ...data }),
+        body: JSON.stringify({
+          doctor_id: data.doctor_id,
+          scheduled_at: data.scheduled_at,
+          duration_minutes: data.duration_minutes,
+          reason: data.reason,
+          notes: undefined,
+          appointment_type: data.appointment_type,
+        }),
       });
       expect(result).toEqual(appointmentResult);
     });

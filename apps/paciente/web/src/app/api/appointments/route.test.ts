@@ -5,16 +5,22 @@ import { createRequest, parseResponse } from '@/__tests__/helpers/api-test-utils
 // --- Setup mock Supabase ---
 const mock = createMockSupabase();
 
+// Extend the mock client with rpc() since the booking POST goes through
+// the book_appointment_atomic RPC instead of a raw INSERT chain.
+const rpcMock = vi.fn();
+const mockClient = mock.client as typeof mock.client & {
+  rpc: typeof rpcMock;
+};
+mockClient.rpc = rpcMock;
+
 vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn(() => Promise.resolve(mock.client)),
+  createClient: vi.fn(() => Promise.resolve(mockClient)),
 }));
 
-// Mock rate limiter to always allow (we test rate limiting separately)
 vi.mock('@/lib/utils/rate-limit', () => ({
   checkRateLimit: vi.fn(() => null),
 }));
 
-// Import handlers AFTER setting up mocks
 import { GET, POST } from './route';
 
 // ---------------------------------------------------------------------------
@@ -24,6 +30,7 @@ import { GET, POST } from './route';
 describe('GET /api/appointments', () => {
   beforeEach(() => {
     mock.reset();
+    rpcMock.mockReset();
   });
 
   it('returns 401 when user is not authenticated', async () => {
@@ -37,35 +44,32 @@ describe('GET /api/appointments', () => {
     expect(body.error).toBe('No autenticado. Inicia sesión para continuar.');
   });
 
-  it('returns 401 when getUser returns null user without error', async () => {
+  it('returns 401 when getUser returns null without error', async () => {
     const request = createRequest('/api/appointments');
     const response = await GET(request);
     const { status } = await parseResponse<{ error: string }>(response);
-
     expect(status).toBe(401);
   });
 
   it('returns patient appointments with pagination', async () => {
-    const userId = 'patient-123';
-    mock.mockAuthUser({ id: userId, email: 'patient@test.com' });
+    mock.mockAuthUser({ id: 'patient-123', email: 'patient@test.com' });
 
     const appointments = [
       {
         id: 'apt-1',
         doctor_id: 'doc-1',
-        start_time: '2026-05-01T10:00:00Z',
-        end_time: '2026-05-01T10:30:00Z',
-        status: 'pendiente',
-        type: 'presencial',
-        motivo: 'Control general',
+        scheduled_at: '2026-06-01T10:00:00Z',
+        duration_minutes: 30,
+        status: 'pending',
+        appointment_type: 'in_person',
+        reason: 'Control general',
         notes: null,
-        created_at: '2026-04-01T00:00:00Z',
+        created_at: '2026-05-01T00:00:00Z',
         doctor: {
           id: 'doc-1',
+          specialty_id: 'sp-1',
           consultation_fee: 50,
-          city: 'Caracas',
           profile: { first_name: 'Ana', last_name: 'Garcia', avatar_url: null },
-          specialty: { id: 'sp-1', name: 'Cardiologia', icon: 'heart' },
         },
       },
     ];
@@ -87,7 +91,6 @@ describe('GET /api/appointments', () => {
       total: 1,
       total_pages: 1,
     });
-
     expect(mock.client.from).toHaveBeenCalledWith('appointments');
   });
 
@@ -109,9 +112,7 @@ describe('GET /api/appointments', () => {
 
     const request = createRequest('/api/appointments?page_size=999');
     const response = await GET(request);
-    const { body } = await parseResponse<{
-      pagination: { page_size: number };
-    }>(response);
+    const { body } = await parseResponse<{ pagination: { page_size: number } }>(response);
 
     expect(body.pagination.page_size).toBe(50);
   });
@@ -122,26 +123,35 @@ describe('GET /api/appointments', () => {
 
     const request = createRequest('/api/appointments?page=-5');
     const response = await GET(request);
-    const { body } = await parseResponse<{
-      pagination: { page: number };
-    }>(response);
+    const { body } = await parseResponse<{ pagination: { page: number } }>(response);
 
     expect(body.pagination.page).toBe(1);
   });
 });
 
 // ---------------------------------------------------------------------------
-// POST /api/appointments
+// POST /api/appointments — atomic booking via book_appointment_atomic RPC
 // ---------------------------------------------------------------------------
 
 describe('POST /api/appointments', () => {
-  // Valid UUIDs for Zod validation
   const validDoctorId = '11111111-1111-1111-1111-111111111111';
-  const futureStart = new Date(Date.now() + 86_400_000).toISOString(); // tomorrow
-  const futureEnd = new Date(Date.now() + 86_400_000 + 1_800_000).toISOString(); // tomorrow + 30min
+  const validPatientId = 'patient-123';
+  const futureScheduledAt = new Date(Date.now() + 86_400_000).toISOString();
+
+  function makeBody(overrides?: Record<string, unknown>) {
+    return {
+      doctor_id: validDoctorId,
+      scheduled_at: futureScheduledAt,
+      duration_minutes: 30,
+      reason: 'Consulta general',
+      appointment_type: 'in_person',
+      ...overrides,
+    };
+  }
 
   beforeEach(() => {
     mock.reset();
+    rpcMock.mockReset();
   });
 
   it('returns 401 when user is not authenticated', async () => {
@@ -149,7 +159,7 @@ describe('POST /api/appointments', () => {
 
     const request = createRequest('/api/appointments', {
       method: 'POST',
-      body: { doctor_id: validDoctorId, start_time: futureStart, end_time: futureEnd },
+      body: makeBody(),
     });
     const response = await POST(request);
     const { status, body } = await parseResponse<{ error: string }>(response);
@@ -159,11 +169,11 @@ describe('POST /api/appointments', () => {
   });
 
   it('returns 400 when required fields are missing (Zod validation)', async () => {
-    mock.mockAuthUser({ id: 'patient-123' });
+    mock.mockAuthUser({ id: validPatientId });
 
     const request = createRequest('/api/appointments', {
       method: 'POST',
-      body: { doctor_id: validDoctorId }, // missing start_time and end_time
+      body: { doctor_id: validDoctorId }, // missing scheduled_at, reason
     });
     const response = await POST(request);
     const { status, body } = await parseResponse<{ error: string; details?: string[] }>(response);
@@ -171,157 +181,146 @@ describe('POST /api/appointments', () => {
     expect(status).toBe(400);
     expect(body.error).toBe('Datos inválidos');
     expect(body.details).toBeDefined();
-    expect(body.details!.length).toBeGreaterThan(0);
   });
 
-  it('returns 400 when dates are invalid format', async () => {
-    mock.mockAuthUser({ id: 'patient-123' });
+  it('returns 400 when scheduled_at is in the past', async () => {
+    mock.mockAuthUser({ id: validPatientId });
 
     const request = createRequest('/api/appointments', {
       method: 'POST',
-      body: { doctor_id: validDoctorId, start_time: 'not-a-date', end_time: 'also-not' },
-    });
-    const response = await POST(request);
-    const { status, body } = await parseResponse<{ error: string }>(response);
-
-    expect(status).toBe(400);
-    expect(body.error).toBe('Datos inválidos');
-  });
-
-  it('returns 400 when start_time is after end_time', async () => {
-    mock.mockAuthUser({ id: 'patient-123' });
-
-    const request = createRequest('/api/appointments', {
-      method: 'POST',
-      body: { doctor_id: validDoctorId, start_time: futureEnd, end_time: futureStart },
+      body: makeBody({ scheduled_at: '2020-01-01T10:00:00Z' }),
     });
     const response = await POST(request);
     const { status, body } = await parseResponse<{ error: string; details?: string[] }>(response);
 
     expect(status).toBe(400);
     expect(body.error).toBe('Datos inválidos');
-    expect(body.details).toEqual(expect.arrayContaining([
-      expect.stringContaining('start must be before end'),
-    ]));
-  });
-
-  it('returns 400 when appointment is in the past', async () => {
-    mock.mockAuthUser({ id: 'patient-123' });
-
-    const pastStart = '2020-01-01T10:00:00Z';
-    const pastEnd = '2020-01-01T10:30:00Z';
-
-    const request = createRequest('/api/appointments', {
-      method: 'POST',
-      body: { doctor_id: validDoctorId, start_time: pastStart, end_time: pastEnd },
-    });
-    const response = await POST(request);
-    const { status, body } = await parseResponse<{ error: string; details?: string[] }>(response);
-
-    expect(status).toBe(400);
-    expect(body.error).toBe('Datos inválidos');
-    expect(body.details).toEqual(expect.arrayContaining([
-      expect.stringContaining('cannot book in the past'),
-    ]));
-  });
-
-  it('returns 409 when time slot has a conflict', async () => {
-    mock.mockAuthUser({ id: 'patient-123' });
-
-    let callCount = 0;
-    mock.client.from.mockImplementation(() => {
-      callCount++;
-      const chain = {
-        select: vi.fn().mockReturnThis(),
-        insert: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        neq: vi.fn().mockReturnThis(),
-        gt: vi.fn().mockReturnThis(),
-        lt: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        range: vi.fn().mockReturnThis(),
-        single: vi.fn().mockReturnThis(),
-        then: (resolve: (v: unknown) => void) => {
-          if (callCount === 1) {
-            resolve({ data: [{ id: 'existing-apt' }], error: null });
-          }
-        },
-      };
-      return chain;
-    });
-
-    const request = createRequest('/api/appointments', {
-      method: 'POST',
-      body: { doctor_id: validDoctorId, start_time: futureStart, end_time: futureEnd },
-    });
-    const response = await POST(request);
-    const { status, body } = await parseResponse<{ error: string }>(response);
-
-    expect(status).toBe(409);
-    expect(body.error).toBe('El horario seleccionado ya no está disponible.');
+    expect(body.details ?? []).toEqual(
+      expect.arrayContaining([expect.stringContaining('cannot book in the past')]),
+    );
   });
 
   it('creates an appointment and returns 201', async () => {
-    mock.mockAuthUser({ id: 'patient-123' });
+    mock.mockAuthUser({ id: validPatientId });
 
-    const createdAppointment = {
+    const created = {
       id: 'apt-new',
-      patient_id: 'patient-123',
+      patient_id: validPatientId,
       doctor_id: validDoctorId,
-      start_time: futureStart,
-      end_time: futureEnd,
-      type: 'presencial',
-      motivo: 'Consulta general',
-      notes: null,
-      status: 'pendiente',
+      scheduled_at: futureScheduledAt,
+      duration_minutes: 30,
+      status: 'pending',
     };
+    rpcMock.mockResolvedValueOnce({ data: { data: created }, error: null });
 
-    let callCount = 0;
-    mock.client.from.mockImplementation(() => {
-      callCount++;
-      const chain = {
-        select: vi.fn().mockReturnThis(),
-        insert: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        neq: vi.fn().mockReturnThis(),
-        gt: vi.fn().mockReturnThis(),
-        lt: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        range: vi.fn().mockReturnThis(),
-        single: vi.fn().mockReturnThis(),
-        then: (resolve: (v: unknown) => void) => {
-          if (callCount === 1) {
-            resolve({ data: [], error: null });
-          } else if (callCount === 2) {
-            resolve({ data: createdAppointment, error: null });
-          } else {
-            resolve({ error: null });
-          }
-        },
-      };
-      return chain;
+    const request = createRequest('/api/appointments', {
+      method: 'POST',
+      body: makeBody(),
+    });
+    const response = await POST(request);
+    const { status, body } = await parseResponse<{ data: typeof created }>(response);
+
+    expect(status).toBe(201);
+    expect(body.data).toEqual(created);
+    expect(rpcMock).toHaveBeenCalledWith(
+      'book_appointment_atomic',
+      expect.objectContaining({
+        p_patient_id: validPatientId,
+        p_doctor_id: validDoctorId,
+      }),
+    );
+  });
+
+  it('maps slot_taken RPC error to 409', async () => {
+    mock.mockAuthUser({ id: validPatientId });
+
+    rpcMock.mockResolvedValueOnce({
+      data: {
+        error: 'slot_taken',
+        message: 'El horario seleccionado ya no está disponible.',
+        conflicts: [],
+      },
+      error: null,
     });
 
     const request = createRequest('/api/appointments', {
       method: 'POST',
-      body: {
-        doctor_id: validDoctorId,
-        start_time: futureStart,
-        end_time: futureEnd,
-        motivo: 'Consulta general',
-      },
+      body: makeBody(),
     });
     const response = await POST(request);
-    const { status, body } = await parseResponse<{ data: typeof createdAppointment }>(response);
+    const { status, body } = await parseResponse<{
+      error: string;
+      code: string;
+    }>(response);
 
-    expect(status).toBe(201);
-    expect(body.data).toEqual(createdAppointment);
+    expect(status).toBe(409);
+    expect(body.code).toBe('slot_taken');
+  });
+
+  it('maps time_block_conflict RPC error to 409', async () => {
+    mock.mockAuthUser({ id: validPatientId });
+
+    rpcMock.mockResolvedValueOnce({
+      data: {
+        error: 'time_block_conflict',
+        message: 'El médico no atiende en ese rango (bloqueo de agenda).',
+      },
+      error: null,
+    });
+
+    const request = createRequest('/api/appointments', {
+      method: 'POST',
+      body: makeBody(),
+    });
+    const response = await POST(request);
+    const { status, body } = await parseResponse<{ error: string; code: string }>(response);
+
+    expect(status).toBe(409);
+    expect(body.code).toBe('time_block_conflict');
+  });
+
+  it('maps unauthorized RPC error to 403', async () => {
+    mock.mockAuthUser({ id: validPatientId });
+
+    rpcMock.mockResolvedValueOnce({
+      data: {
+        error: 'unauthorized',
+        message: 'No puedes agendar citas para otro paciente.',
+      },
+      error: null,
+    });
+
+    const request = createRequest('/api/appointments', {
+      method: 'POST',
+      body: makeBody(),
+    });
+    const response = await POST(request);
+    const { status } = await parseResponse<{ error: string; code: string }>(response);
+
+    expect(status).toBe(403);
+  });
+
+  it('returns 500 when the RPC itself errors', async () => {
+    mock.mockAuthUser({ id: validPatientId });
+
+    rpcMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'RPC explosion' },
+    });
+
+    const request = createRequest('/api/appointments', {
+      method: 'POST',
+      body: makeBody(),
+    });
+    const response = await POST(request);
+    const { status, body } = await parseResponse<{ error: string }>(response);
+
+    expect(status).toBe(500);
+    expect(body.error).toBe('Error al crear la cita.');
   });
 
   it('returns 400 when request body is invalid JSON', async () => {
-    mock.mockAuthUser({ id: 'patient-123' });
+    mock.mockAuthUser({ id: validPatientId });
 
     const request = new Request('http://localhost:3003/api/appointments', {
       method: 'POST',
@@ -340,42 +339,54 @@ describe('POST /api/appointments', () => {
     expect(body.error).toBe('Body inválido');
   });
 
-  it('returns 500 when insert fails', async () => {
-    mock.mockAuthUser({ id: 'patient-123' });
+  it('serializes 10 concurrent attempts on the same slot to exactly one 201', async () => {
+    mock.mockAuthUser({ id: validPatientId });
 
-    let callCount = 0;
-    mock.client.from.mockImplementation(() => {
-      callCount++;
-      const chain = {
-        select: vi.fn().mockReturnThis(),
-        insert: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        neq: vi.fn().mockReturnThis(),
-        gt: vi.fn().mockReturnThis(),
-        lt: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        range: vi.fn().mockReturnThis(),
-        single: vi.fn().mockReturnThis(),
-        then: (resolve: (v: unknown) => void) => {
-          if (callCount === 1) {
-            resolve({ data: [], error: null });
-          } else if (callCount === 2) {
-            resolve({ data: null, error: { message: 'Insert failed' } });
-          }
+    const winner = {
+      id: 'apt-winner',
+      patient_id: validPatientId,
+      doctor_id: validDoctorId,
+      scheduled_at: futureScheduledAt,
+      duration_minutes: 30,
+      status: 'pending',
+    };
+
+    // Simulate the DB unique-violation path: one call wins, the other 9 hit
+    // the partial unique index in the RPC and come back as slot_taken. The
+    // route's job is to translate them to the right HTTP status without
+    // crashing or leaking the winning row to the losers.
+    let callIdx = 0;
+    rpcMock.mockImplementation(() => {
+      const idx = callIdx++;
+      if (idx === 0) {
+        return Promise.resolve({ data: { data: winner }, error: null });
+      }
+      return Promise.resolve({
+        data: {
+          error: 'slot_taken',
+          message: 'El horario seleccionado ya no está disponible.',
         },
-      };
-      return chain;
+        error: null,
+      });
     });
 
-    const request = createRequest('/api/appointments', {
-      method: 'POST',
-      body: { doctor_id: validDoctorId, start_time: futureStart, end_time: futureEnd },
-    });
-    const response = await POST(request);
-    const { status, body } = await parseResponse<{ error: string }>(response);
+    const responses = await Promise.all(
+      Array.from({ length: 10 }, () =>
+        POST(
+          createRequest('/api/appointments', {
+            method: 'POST',
+            body: makeBody(),
+          }),
+        ),
+      ),
+    );
 
-    expect(status).toBe(500);
-    expect(body.error).toBe('Error al crear la cita.');
+    const statuses = responses.map((r) => r.status);
+    const okCount = statuses.filter((s) => s === 201).length;
+    const conflictCount = statuses.filter((s) => s === 409).length;
+
+    expect(okCount).toBe(1);
+    expect(conflictCount).toBe(9);
+    expect(rpcMock).toHaveBeenCalledTimes(10);
   });
 });

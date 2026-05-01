@@ -139,73 +139,68 @@ export async function POST(request: NextRequest) {
     const durationMin = data.duration_minutes ?? 30;
     const locationId = data.location_id && data.location_id !== '' ? data.location_id : null;
 
-    // --- Slot conflict check (buffers, other appointments) ---
-    const { data: slotCheck, error: slotErr } = await supabase.rpc('check_slot_available', {
-      p_doctor_id: data.doctor_id,
-      p_location_id: locationId,
-      p_start: scheduledAt,
-      p_duration_min: durationMin,
-      p_buffer_before: 0,
-      p_buffer_after: 0,
-      p_exclude_id: null,
-    });
+    // Atomic booking — runs slot/block checks + INSERT inside a SECURITY
+    // DEFINER function on the database. The partial unique index
+    // `appointments_no_double_book` is the ultimate guard: even if two
+    // requests pass `check_slot_available` simultaneously, only one INSERT
+    // wins and the other is mapped to `slot_taken` here.
+    const { data: rpcResult, error: rpcError } = await supabase.rpc(
+      'book_appointment_atomic',
+      {
+        p_patient_id: user.id,
+        p_doctor_id: data.doctor_id,
+        p_scheduled_at: scheduledAt,
+        p_duration_minutes: durationMin,
+        p_reason: data.reason,
+        p_appointment_type: data.appointment_type,
+        p_notes: data.notes ?? null,
+        p_price: data.price ?? null,
+        p_payment_method: data.payment_method ?? 'cash',
+        p_location_id: locationId,
+        p_buffer_before_min: 0,
+        p_buffer_after_min: 0,
+      },
+    );
 
-    if (slotErr) {
-      console.error('[Appointments POST] check_slot_available error:', slotErr);
-      return NextResponse.json({ error: 'Error al verificar disponibilidad.' }, { status: 500 });
-    }
-
-    const slotRow = Array.isArray(slotCheck) ? slotCheck[0] : slotCheck;
-    if (slotRow && slotRow.is_available === false) {
+    if (rpcError) {
+      console.error('[Appointments POST] book_appointment_atomic error:', rpcError);
       return NextResponse.json(
-        { error: 'El horario seleccionado ya no está disponible.', conflicts: slotRow.conflicts ?? [] },
-        { status: 409 },
+        { error: 'Error al crear la cita.' },
+        { status: 500 },
       );
     }
 
-    // --- Time-block check (doctor vacations, blocked ranges) ---
-    const endISO = new Date(new Date(scheduledAt).getTime() + durationMin * 60_000).toISOString();
-    const { data: blockOk, error: blockErr } = await supabase.rpc('check_time_block_conflict', {
-      p_doctor_id: data.doctor_id,
-      p_start: scheduledAt,
-      p_end: endISO,
-      p_exclude_id: null,
-    });
+    const result = (rpcResult ?? {}) as {
+      data?: Record<string, unknown>;
+      error?: string;
+      message?: string;
+      conflicts?: unknown;
+    };
 
-    if (blockErr) {
-      console.error('[Appointments POST] check_time_block_conflict error:', blockErr);
-      return NextResponse.json({ error: 'Error al verificar bloqueos de agenda.' }, { status: 500 });
-    }
-
-    if (blockOk === false) {
+    if (result.error) {
+      const status =
+        result.error === 'unauthorized'
+          ? 403
+          : result.error === 'invalid_input'
+            ? 400
+            : 409;
       return NextResponse.json(
-        { error: 'El médico no atiende en ese rango (bloqueo de agenda).' },
-        { status: 409 },
+        {
+          error: result.message ?? 'No se pudo crear la cita.',
+          code: result.error,
+          conflicts: result.conflicts ?? undefined,
+        },
+        { status },
       );
     }
 
-    // --- Insert ---
-    const { data: appointment, error: insertError } = await supabase
-      .from('appointments')
-      .insert({
-        patient_id: user.id,
-        doctor_id: data.doctor_id,
-        scheduled_at: scheduledAt,
-        duration_minutes: durationMin,
-        reason: data.reason,
-        notes: data.notes ?? null,
-        appointment_type: data.appointment_type,
-        price: data.price ?? null,
-        payment_method: data.payment_method ?? 'cash',
-        location_id: locationId,
-        status: 'pending' satisfies AppointmentStatus,
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('[Appointments POST] Insert error:', insertError);
-      return NextResponse.json({ error: 'Error al crear la cita.' }, { status: 500 });
+    const appointment = result.data as { id: string } | undefined;
+    if (!appointment) {
+      console.error('[Appointments POST] RPC returned no data:', rpcResult);
+      return NextResponse.json(
+        { error: 'Error al crear la cita.' },
+        { status: 500 },
+      );
     }
 
     // --- Log activity (best-effort) ---

@@ -31,13 +31,24 @@ export interface MockQueryBuilder {
   eq: ReturnType<typeof vi.fn>;
   neq: ReturnType<typeof vi.fn>;
   gt: ReturnType<typeof vi.fn>;
+  gte: ReturnType<typeof vi.fn>;
   lt: ReturnType<typeof vi.fn>;
+  lte: ReturnType<typeof vi.fn>;
   in: ReturnType<typeof vi.fn>;
+  is: ReturnType<typeof vi.fn>;
+  not: ReturnType<typeof vi.fn>;
   ilike: ReturnType<typeof vi.fn>;
+  like: ReturnType<typeof vi.fn>;
+  filter: ReturnType<typeof vi.fn>;
+  match: ReturnType<typeof vi.fn>;
+  or: ReturnType<typeof vi.fn>;
+  contains: ReturnType<typeof vi.fn>;
   order: ReturnType<typeof vi.fn>;
   range: ReturnType<typeof vi.fn>;
   limit: ReturnType<typeof vi.fn>;
   single: ReturnType<typeof vi.fn>;
+  maybeSingle: ReturnType<typeof vi.fn>;
+  upsert: ReturnType<typeof vi.fn>;
   then: ReturnType<typeof vi.fn>;
 }
 
@@ -56,13 +67,24 @@ export function createMockSupabase() {
     eq: vi.fn(),
     neq: vi.fn(),
     gt: vi.fn(),
+    gte: vi.fn(),
     lt: vi.fn(),
+    lte: vi.fn(),
     in: vi.fn(),
+    is: vi.fn(),
+    not: vi.fn(),
     ilike: vi.fn(),
+    like: vi.fn(),
+    filter: vi.fn(),
+    match: vi.fn(),
+    or: vi.fn(),
+    contains: vi.fn(),
     order: vi.fn(),
     range: vi.fn(),
     limit: vi.fn(),
     single: vi.fn(),
+    maybeSingle: vi.fn(),
+    upsert: vi.fn(),
     then: vi.fn(),
   };
 

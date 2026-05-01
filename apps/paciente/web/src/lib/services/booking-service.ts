@@ -1,4 +1,4 @@
-import { fetchJson } from "@/lib/utils/fetch";
+import { fetchJson, postJson } from "@/lib/utils/fetch";
 
 import type {
   Specialty,
@@ -89,19 +89,44 @@ export const bookingService = {
   },
 
   /**
-   * Create an appointment
+   * Create an appointment via the BFF route. The route resolves patient_id
+   * from the authenticated session and calls book_appointment_atomic on the
+   * database, so checks + insert + double-book guard happen in one txn.
+   * The Rust gateway PoC is intentionally bypassed for now.
    */
   async createAppointment(
-    patientId: string,
+    _patientId: string,
     data: BookingCreateAppointmentData
   ): Promise<AppointmentResult> {
-    return fetchJson<AppointmentResult>("/api/appointments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        patient_id: patientId,
-        ...data,
-      }),
+    const a = await postJson<{
+      id: string;
+      patient_id: string | null;
+      doctor_id: string;
+      scheduled_at: string;
+      duration_minutes: number;
+      reason: string;
+      notes: string | null;
+      status: string;
+      appointment_type: string | null;
+    }>("/api/appointments", {
+      doctor_id: data.doctor_id,
+      scheduled_at: data.scheduled_at,
+      duration_minutes: data.duration_minutes,
+      reason: data.reason,
+      notes: data.notes,
+      appointment_type: data.appointment_type,
     });
+
+    return {
+      id: a.id,
+      patient_id: a.patient_id ?? "",
+      doctor_id: a.doctor_id,
+      scheduled_at: a.scheduled_at,
+      duration_minutes: a.duration_minutes,
+      reason: a.reason,
+      notes: a.notes,
+      status: a.status,
+      appointment_type: a.appointment_type ?? "in_person",
+    };
   },
 };
