@@ -7,10 +7,15 @@ const mockFetch = vi.fn();
 
 beforeEach(() => {
   vi.stubGlobal('fetch', mockFetch);
+  // Pretend we're in the browser so resolveUrl returns the relative URL
+  // unchanged. The server-side path is exercised by integration tests
+  // because it depends on next/headers and the inbound request scope.
+  vi.stubGlobal('window', {});
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 // ---------------------------------------------------------------------------
