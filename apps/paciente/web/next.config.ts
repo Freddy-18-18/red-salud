@@ -16,6 +16,13 @@ const securityHeaders = [
       "form-action 'self'",
     ].join('; '),
   },
+  // Two-year HSTS with subdomain inheritance + preload eligibility. The header
+  // is sent on every response; browsers honor it once over HTTPS, so it has no
+  // effect during local http://localhost development.
+  {
+    key: 'Strict-Transport-Security',
+    value: 'max-age=63072000; includeSubDomains; preload',
+  },
   {
     key: 'X-Content-Type-Options',
     value: 'nosniff',
