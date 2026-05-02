@@ -102,8 +102,18 @@ export function useCreateAppointment() {
       return postJson<Appointment>("/api/appointments", appointmentData);
     },
     onSuccess: (_data, variables) => {
+      // The patient's own appointments list shows the new row.
       queryClient.invalidateQueries({
         queryKey: ["appointments", variables.patientId],
+      });
+      // The doctor's slot we just consumed is no longer available — invalidate
+      // every cache that fed the booking UI for that doctor so the next user
+      // who lands on the picker doesn't see a stale "available" badge.
+      queryClient.invalidateQueries({
+        queryKey: ["timeSlots", variables.appointmentData.doctor_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["doctors", variables.appointmentData.doctor_id],
       });
     },
   });
@@ -148,7 +158,12 @@ export function useCancelAppointment() {
       return null;
     },
     onSuccess: () => {
+      // The patient's own list needs a refresh, AND every availability cache
+      // for any doctor needs to drop because the cancelled slot is now free.
+      // We don't know the doctor_id at this layer (the cancel endpoint takes
+      // only appointment_id), so we invalidate the prefixes broadly.
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["timeSlots"] });
     },
   });
 
