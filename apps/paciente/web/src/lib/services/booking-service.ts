@@ -90,12 +90,20 @@ export const bookingService = {
         date: r.date,
         dayOfWeek: d.getDay(),
         hasSlots: r.available_count > 0,
-      };
+        // Surface the real slot count so the calendar's side panel can show
+        // it. AvailableDate type ignores extras, so this is read via cast.
+        available_count: r.available_count,
+      } as AvailableDate & { available_count: number };
     });
   },
 
   /**
-   * Get available time slots for a specific doctor on a specific date
+   * Get available time slots for a specific doctor on a specific date.
+   *
+   * The BFF returns `{ date, slots: { morning, afternoon, evening },
+   * total_available }`, but the booking flow consumes a `TimeSlotGroup[]`
+   * with `{ label, slots }` items. Map here so the time-slot grid can
+   * keep `groups.flatMap`/`groups.map` without crashing on shape drift.
    */
   async getAvailableSlots(
     doctorId: string,
@@ -104,9 +112,26 @@ export const bookingService = {
     const params = new URLSearchParams();
     params.set("date", date);
 
-    return fetchJson<TimeSlotGroup[]>(
-      `/api/doctors/${doctorId}/availability?${params}`
-    );
+    const res = await fetchJson<
+      | TimeSlotGroup[]
+      | {
+          date: string;
+          slots: {
+            morning: { start: string; end: string; available: boolean }[];
+            afternoon: { start: string; end: string; available: boolean }[];
+            evening: { start: string; end: string; available: boolean }[];
+          };
+          total_available: number;
+        }
+    >(`/api/doctors/${doctorId}/availability?${params}`);
+
+    if (Array.isArray(res)) return res;
+
+    const out: TimeSlotGroup[] = [];
+    if (res.slots.morning?.length) out.push({ label: "Mañana", slots: res.slots.morning });
+    if (res.slots.afternoon?.length) out.push({ label: "Tarde", slots: res.slots.afternoon });
+    if (res.slots.evening?.length) out.push({ label: "Noche", slots: res.slots.evening });
+    return out;
   },
 
   /**
