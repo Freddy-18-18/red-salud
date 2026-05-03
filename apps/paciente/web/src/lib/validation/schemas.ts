@@ -183,9 +183,19 @@ export const updateReferralSchema = z.object({
   scheduled_appointment_id: z.string().uuid().optional(),
 });
 
-// Notification preferences
+// Notification preferences. The wire shape from the client is:
+//   { email_enabled, push_enabled, categories: { [slug]: { email, push } } }
+// not a flat `{ slug: boolean }`, so the per-category record value is an
+// object — the previous z.record(z.boolean()) rejected every PUT with 400.
 export const updateNotificationPrefsSchema = z.object({
   email_enabled: z.boolean().optional(),
   push_enabled: z.boolean().optional(),
-  categories: z.record(z.boolean()).optional(),
+  categories: z
+    .record(
+      z.object({
+        email: z.boolean(),
+        push: z.boolean(),
+      }),
+    )
+    .optional(),
 });

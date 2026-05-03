@@ -81,8 +81,19 @@ export async function GET(request: NextRequest) {
       console.error("[Notifications GET] Unread count error:", unreadError);
     }
 
+    // The DB column is `message`; the client `AppNotification` shape expects
+    // `body`. Map here so legacy rows and any future migrations both flow
+    // through a single field name on the wire.
+    const mapped = (notifications ?? []).map((n: Record<string, unknown>) => {
+      const { message, ...rest } = n as { message?: string } & Record<string, unknown>;
+      return {
+        ...rest,
+        body: (rest as { body?: string }).body ?? message ?? "",
+      };
+    });
+
     return NextResponse.json({
-      data: notifications ?? [],
+      data: mapped,
       pagination: {
         page,
         page_size: pageSize,

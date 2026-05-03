@@ -79,7 +79,7 @@ export default function NotificacionesPage() {
     activeTab === "notifications" && unreadCount > 0;
 
   return (
-    <div className="space-y-5 max-w-3xl mx-auto">
+    <div className="space-y-5">
       {/* Hero header */}
       <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white p-5 sm:p-6 dark:border-emerald-900/40 dark:from-emerald-950/40 dark:via-[hsl(var(--card))] dark:to-[hsl(var(--card))]">
         {/* Decorative blobs */}
@@ -102,9 +102,11 @@ export default function NotificacionesPage() {
                 Notificaciones
               </h1>
               <p className="mt-0.5 text-sm text-[hsl(var(--muted-foreground))]">
-                {unreadCount > 0
-                  ? `Tenes ${unreadCount} ${unreadCount === 1 ? "alerta sin leer" : "alertas sin leer"} pendientes`
-                  : "Estas al dia con todas tus alertas"}
+                {activeTab === "preferences"
+                  ? "Configura como y cuando queres recibir cada tipo de aviso"
+                  : unreadCount > 0
+                    ? `Tenes ${unreadCount} ${unreadCount === 1 ? "alerta sin leer" : "alertas sin leer"} pendientes`
+                    : "Estas al dia con todas tus alertas"}
               </p>
             </div>
           </div>

@@ -126,13 +126,30 @@ export async function getAllRates(): Promise<ExchangeRate[]> {
   const cached = getCached();
   if (cached) return cached.rates;
 
+  // `/v1/cotizaciones` only returns the BCV (oficial) rates — it does not
+  // include parallel-market quotes, so a single call would leave the UI
+  // showing "Paralelo: <oficial value>". Hit the four single-quote
+  // endpoints in parallel instead and assemble the full set ourselves.
+  // `Promise.allSettled` keeps the widget alive when any one source
+  // hiccups (cold cache + 502, etc).
   try {
-    const quotes = await fetchDolarApi<DolarApiQuote[]>("/cotizaciones");
-    const rates: ExchangeRate[] = quotes.map((q) => {
-      // Determine currency from the name
-      const currency = q.nombre.toLowerCase().includes("euro") ? "EUR" : "USD";
-      return mapQuote(q, currency);
-    });
+    const results = await Promise.allSettled([
+      fetchDolarApi<DolarApiSingleQuote>("/dolares/oficial"),
+      fetchDolarApi<DolarApiSingleQuote>("/dolares/paralelo"),
+      fetchDolarApi<DolarApiSingleQuote>("/euros/oficial"),
+      fetchDolarApi<DolarApiSingleQuote>("/euros/paralelo"),
+    ]);
+
+    const rates: ExchangeRate[] = [];
+    if (results[0].status === "fulfilled") rates.push(mapQuote(results[0].value, "USD"));
+    if (results[1].status === "fulfilled") rates.push(mapQuote(results[1].value, "USD"));
+    if (results[2].status === "fulfilled") rates.push(mapQuote(results[2].value, "EUR"));
+    if (results[3].status === "fulfilled") rates.push(mapQuote(results[3].value, "EUR"));
+
+    if (rates.length === 0) {
+      throw new Error("No exchange rates available");
+    }
+
     setCache(rates);
     return rates;
   } catch (error) {

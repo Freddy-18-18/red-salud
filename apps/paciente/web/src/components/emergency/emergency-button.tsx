@@ -77,29 +77,30 @@ export function EmergencyButton() {
       onTouchEnd={onPressEnd}
       onTouchCancel={onPressEnd}
       className="
-        fixed z-50
-        bottom-24 right-4
-        lg:bottom-8 lg:right-8
-        w-16 h-16 lg:w-18 lg:h-18
+        group fixed z-40 select-none touch-none
+        bottom-20 right-3
+        lg:bottom-6 lg:right-6
+        flex items-center gap-0
+        h-10 lg:h-9
+        pl-0 pr-0
         rounded-full
-        bg-red-600 hover:bg-red-700
+        bg-red-600/90 hover:bg-red-600
         text-white
-        shadow-lg shadow-red-600/40
-        flex items-center justify-center
-        transition-transform
+        ring-1 ring-red-700/30
+        shadow-md shadow-red-900/20
+        backdrop-blur-sm
         active:scale-95
-        select-none touch-none
-        group
+        transition-[width,padding,background-color,box-shadow] duration-200 ease-out
+        w-10 lg:w-9 hover:w-auto lg:hover:w-auto
+        lg:hover:pr-3.5
+        overflow-hidden
       "
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
-      {/* Pulse ring */}
-      <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-30 group-hover:opacity-40" />
-
       {/* Progress ring (visible during long-press) */}
       {pressing && (
         <svg
-          className="absolute inset-0 w-full h-full -rotate-90"
+          className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
           viewBox="0 0 100 100"
         >
           <circle
@@ -108,33 +109,28 @@ export function EmergencyButton() {
             r="46"
             fill="none"
             stroke="white"
-            strokeWidth="4"
+            strokeWidth="6"
             strokeDasharray={`${progress * 289} 289`}
             strokeLinecap="round"
-            opacity={0.8}
+            opacity={0.9}
           />
         </svg>
       )}
 
       {/* Icon */}
-      <Phone
-        className={`h-7 w-7 lg:h-8 lg:w-8 relative z-10 transition-transform ${
-          pressing ? "scale-110" : ""
-        }`}
-        fill="currentColor"
-      />
+      <span className="flex h-10 w-10 lg:h-9 lg:w-9 shrink-0 items-center justify-center">
+        <Phone
+          className={`relative z-10 h-4 w-4 lg:h-4 lg:w-4 transition-transform ${
+            pressing ? "scale-110" : ""
+          }`}
+          fill="currentColor"
+        />
+      </span>
 
-      {/* Tooltip — desktop only */}
-      <span className="
-        hidden lg:block
-        absolute right-full mr-3
-        whitespace-nowrap
-        bg-gray-900 text-white text-xs font-medium
-        px-3 py-1.5 rounded-lg
-        opacity-0 group-hover:opacity-100
-        transition-opacity pointer-events-none
-      ">
-        Mantener para emergencia
+      {/* Label expands on hover (desktop) only — kept hidden on mobile to
+          stay out of the way of the bottom tab bar. */}
+      <span className="hidden lg:inline-block whitespace-nowrap text-xs font-semibold opacity-0 -translate-x-1 transition-all duration-200 ease-out group-hover:opacity-100 group-hover:translate-x-0 group-hover:pr-1">
+        Emergencia
       </span>
     </button>
   );

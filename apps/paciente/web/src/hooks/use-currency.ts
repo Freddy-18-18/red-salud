@@ -90,19 +90,27 @@ export function useCurrencyRates(): UseCurrencyRatesReturn {
     return () => clearInterval(interval);
   }, [fetchRates]);
 
+  // The dolarapi v1 response uses `fuente` (= `source` in our mapped shape)
+  // with literal values "oficial" | "paralelo", so we can detect by source
+  // first. Older cached records used `BCV` / non-`BCV` and arbitrary
+  // `nombre` values, so we keep those fallbacks too.
   const officialDollar =
     rates.find(
       (r) =>
         r.currency === "USD" &&
-        (r.source === "BCV" || r.name.toLowerCase().includes("oficial"))
+        (r.source === "oficial" ||
+          r.source === "BCV" ||
+          r.name.toLowerCase().includes("oficial") ||
+          r.name.toLowerCase() === "dólar" ||
+          r.name.toLowerCase() === "dolar")
     ) ?? null;
 
   const parallelDollar =
     rates.find(
       (r) =>
         r.currency === "USD" &&
-        r.source !== "BCV" &&
-        !r.name.toLowerCase().includes("oficial")
+        (r.source === "paralelo" ||
+          r.name.toLowerCase().includes("paralelo"))
     ) ?? null;
 
   const convert = useCallback(
