@@ -8,7 +8,7 @@ import { BookingSuccess } from "@/components/booking/booking-success";
 import { BookingSummary } from "@/components/booking/booking-summary";
 import { CalendarPicker } from "@/components/booking/calendar-picker";
 import { DoctorList } from "@/components/booking/doctor-list";
-import { SpecialtyGrid } from "@/components/booking/specialty-grid";
+import { SpecialtySearch } from "@/components/booking/specialty-search";
 import { StepIndicator } from "@/components/booking/step-indicator";
 import { TimeSlotGrid } from "@/components/booking/time-slot-grid";
 import { useBooking } from "@/hooks/use-booking";
@@ -88,7 +88,7 @@ export default function AgendarCitaPage() {
 
       {/* Step 1: Specialty */}
       {state.step === "specialty" && (
-        <SpecialtyGrid
+        <SpecialtySearch
           specialties={directSpecialties.specialties}
           loading={directSpecialties.loading}
           selected={state.specialty}
