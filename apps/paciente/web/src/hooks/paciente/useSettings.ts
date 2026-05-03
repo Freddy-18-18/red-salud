@@ -21,11 +21,12 @@ export interface Profile {
   address?: string;
   city?: string;
   state?: string;
-  municipality?: string;
-  parish?: string;
+  cne_municipality?: string;
+  cne_parroquia?: string;
   national_id?: string;
   national_id_verified?: boolean;
   avatar_url?: string;
+  onboarding_completed_at?: string | null;
 }
 
 export interface PatientDetails {
@@ -321,8 +322,8 @@ export function useSettings() {
           address: current.address,
           city: current.city,
           state: current.state,
-          municipality: current.municipality,
-          parish: current.parish,
+          cne_municipality: current.cne_municipality,
+          cne_parroquia: current.cne_parroquia,
           national_id: current.national_id,
           avatar_url: current.avatar_url,
         })

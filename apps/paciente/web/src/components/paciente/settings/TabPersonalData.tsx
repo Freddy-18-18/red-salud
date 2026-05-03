@@ -214,9 +214,9 @@ export function TabPersonalData({
               <Label htmlFor="municipio">Municipio</Label>
               <Input
                 id="municipio"
-                value={profile.municipality || ""}
+                value={profile.cne_municipality || ""}
                 onChange={(e) =>
-                  setProfile({ ...profile, municipality: e.target.value })
+                  setProfile({ ...profile, cne_municipality: e.target.value })
                 }
                 placeholder="Ej: Libertador"
               />
@@ -227,9 +227,9 @@ export function TabPersonalData({
               <Label htmlFor="parroquia">Parroquia</Label>
               <Input
                 id="parroquia"
-                value={profile.parish || ""}
+                value={profile.cne_parroquia || ""}
                 onChange={(e) =>
-                  setProfile({ ...profile, parish: e.target.value })
+                  setProfile({ ...profile, cne_parroquia: e.target.value })
                 }
                 placeholder="Ej: San Juan"
               />

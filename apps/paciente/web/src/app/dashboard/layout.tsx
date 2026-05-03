@@ -32,15 +32,28 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       // Load profile for potentially more complete data
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name, avatar_url, state")
+        .select("full_name, avatar_url, state, onboarding_completed_at")
         .eq("id", user.id)
         .maybeSingle();
 
       if (profile?.full_name) setUserName(profile.full_name);
       if (profile?.avatar_url) setAvatarUrl(profile.avatar_url);
 
-      // Check if profile is incomplete → show onboarding
-      if (!profile?.full_name || !profile?.state) {
+      // Check if profile is incomplete → show onboarding.
+      // Respect the persistent dismissal flag (`onboarding_completed_at`) so
+      // the wizard does not reopen on every dashboard mount once the user
+      // has either finished it or chosen to skip.
+      const dismissedLocally = (() => {
+        try {
+          return typeof window !== "undefined" &&
+            window.localStorage.getItem(`paciente:onboarding-dismissed:${user.id}`) === "1";
+        } catch {
+          return false;
+        }
+      })();
+      const onboardingDone = !!profile?.onboarding_completed_at || dismissedLocally;
+      const profileIncomplete = !profile?.full_name || !profile?.state;
+      if (profileIncomplete && !onboardingDone) {
         setShowOnboarding(true);
       }
 

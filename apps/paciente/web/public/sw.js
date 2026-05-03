@@ -1,6 +1,11 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = "red-salud-paciente-v1";
+// IMPORTANT: bump this string on every release that ships a behavioural SW
+// change OR an asset-strategy change. The activate handler deletes any cache
+// whose key does not match, so a version bump is what evicts stale chunks
+// for users who already had the app open. Pair this with `skipWaiting` +
+// `clients.claim()` below so the rollover happens without manual refresh.
+const CACHE_NAME = "red-salud-paciente-v2";
 
 const OFFLINE_URLS = [
   "/",
@@ -35,6 +40,15 @@ self.addEventListener("activate", (event) => {
   );
   // Take control of all open tabs immediately
   self.clients.claim();
+});
+
+// ─── Manual update channel ───────────────────────────────────────────────────
+// Lets the page push the SW past `waiting` on its own (e.g. an "update
+// available" banner) without forcing a full reload first.
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 // ─── Fetch Strategy ──────────────────────────────────────────────────────────
@@ -93,9 +107,31 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // ── Static assets ─────────────────────────────────────────────────────
+  // ── Next.js bundle chunks ─────────────────────────────────────────────
+  // Each build emits chunks under `/_next/static/chunks/` with content-hashed
+  // filenames (e.g. `apps_paciente_web_src_<hash>._.js`). After a deploy the
+  // freshly served HTML references new hashes; an old SW that returns a
+  // cached chunk for one of those names ships the WRONG bytes back, which
+  // manifests as React hydration mismatches in production. Always go to the
+  // network for chunks and only fall back to cache when offline.
+  if (url.pathname.startsWith("/_next/static/chunks/")) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request)),
+    );
+    return;
+  }
+
+  // ── Static assets (CSS, fonts, images, icons) ─────────────────────────
   const isStatic =
-    url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|gif|woff2?|ttf|ico)$/) ||
+    url.pathname.match(/\.(css|png|jpg|jpeg|svg|gif|woff2?|ttf|ico)$/) ||
     url.pathname.startsWith("/_next/static/");
 
   if (isStatic) {

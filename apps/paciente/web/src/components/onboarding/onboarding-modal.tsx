@@ -221,6 +221,40 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
     setIsDragging(false);
   };
 
+  // Persistently mark the onboarding as done so it does not reopen on the
+  // next dashboard mount. We try the DB column first (cross-device) and
+  // fall back to localStorage when the column or RLS path is unavailable.
+  const markOnboardingDone = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      try {
+        await supabase
+          .from("profiles")
+          .update({ onboarding_completed_at: new Date().toISOString() })
+          .eq("id", user.id);
+      } catch {
+        // Column might not exist yet on older instances — ignore.
+      }
+
+      try {
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(
+            `paciente:onboarding-dismissed:${user.id}`,
+            "1"
+          );
+        }
+      } catch {
+        // localStorage might be disabled — ignore.
+      }
+    } catch {
+      // No-op: best effort.
+    }
+  }, []);
+
   const handleFinish = async () => {
     if (avatarFile) {
       setLoading(true);
@@ -258,16 +292,25 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
         setLoading(false);
       }
     }
+    await markOnboardingDone();
     onComplete();
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     if (step < 3) {
       setStep(step + 1);
       setError(null);
     } else {
+      await markOnboardingDone();
       onComplete();
     }
+  };
+
+  // The X button in the header bypasses the per-step "Omitir" advance and
+  // closes the wizard outright; treat that as a definitive dismiss too.
+  const handleDismiss = async () => {
+    await markOnboardingDone();
+    onComplete();
   };
 
   const inputClasses =
@@ -308,9 +351,10 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
               </div>
             </div>
             <button
-              onClick={handleSkip}
+              onClick={handleDismiss}
               className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition"
-              title="Omitir"
+              title="Cerrar"
+              aria-label="Cerrar y no volver a mostrar"
             >
               <X className="h-5 w-5" />
             </button>
