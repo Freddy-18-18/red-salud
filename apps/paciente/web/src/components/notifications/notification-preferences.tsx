@@ -132,18 +132,48 @@ function ToggleSwitch({
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
-        disabled
-          ? "bg-gray-100 cursor-not-allowed opacity-40"
-          : checked
-            ? "bg-emerald-500"
-            : "bg-gray-200"
-      }`}
+      className={`
+        group relative inline-flex h-5 w-9 items-center rounded-full
+        transition-[background-color,box-shadow,transform] duration-300 ease-out
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2
+        active:scale-[0.92]
+        ${
+          disabled
+            ? "bg-gray-200 cursor-not-allowed opacity-40"
+            : checked
+              ? "bg-emerald-500 hover:bg-emerald-600 cursor-pointer shadow-[inset_0_1px_2px_rgba(0,0,0,0.10)] hover:shadow-[0_0_0_4px_rgba(16,185,129,0.15)]"
+              : "bg-gray-200 hover:bg-gray-300 cursor-pointer hover:shadow-[0_0_0_4px_rgba(0,0,0,0.05)]"
+        }
+      `}
     >
+      {/* Track shimmer on hover (only when enabled, animates the gradient
+          left-to-right so the user perceives the toggle as live). */}
+      {!disabled && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
+        >
+          <span
+            className={`absolute inset-y-0 -inset-x-full opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${
+              checked
+                ? "bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                : "bg-gradient-to-r from-transparent via-black/5 to-transparent"
+            }`}
+          />
+        </span>
+      )}
+
+      {/* Thumb. The width briefly stretches while the user is pressing
+          the button (group-active:w-[18px]) for a tactile "squish" cue,
+          then snaps back when released. */}
       <span
-        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform ${
-          checked ? "translate-x-4" : "translate-x-0.5"
-        }`}
+        className={`
+          pointer-events-none relative z-10 inline-block h-3.5 rounded-full bg-white
+          shadow-[0_1px_2px_rgba(0,0,0,0.18),0_2px_4px_rgba(0,0,0,0.06)]
+          transition-[transform,width] duration-300 ease-out
+          group-active:w-[18px]
+          ${checked ? "w-3.5 translate-x-[18px] group-active:translate-x-[14px]" : "w-3.5 translate-x-0.5"}
+        `}
       />
     </button>
   );
