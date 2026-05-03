@@ -114,10 +114,14 @@ export default function LoginPage() {
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl" />
         </div>
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-          <div className="flex items-center gap-3 mb-8">
+          <Link
+            href="/"
+            aria-label="Ir al inicio"
+            className="flex items-center gap-3 mb-8 w-fit hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-md transition"
+          >
             <Heart className="h-10 w-10 fill-white" />
             <span className="text-3xl font-bold">Red-Salud</span>
-          </div>
+          </Link>
           <h2 className="text-4xl font-bold leading-tight mb-4">
             Tu salud, en un solo lugar
           </h2>
@@ -146,10 +150,14 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-[hsl(var(--background))]">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
+          <Link
+            href="/"
+            aria-label="Ir al inicio"
+            className="lg:hidden flex items-center justify-center gap-2 mb-8 hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-md transition"
+          >
             <Heart className="h-8 w-8 text-emerald-600 fill-emerald-600" />
             <span className="text-2xl font-bold text-[hsl(var(--foreground))]">Red-Salud</span>
-          </div>
+          </Link>
 
           <div className="bg-[hsl(var(--card))] rounded-2xl shadow-sm border border-[hsl(var(--border))] p-8">
             <div className="text-center mb-8">

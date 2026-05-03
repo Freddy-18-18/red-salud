@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       .select(
         `
         *,
-        doctor:profiles!prescriptions_doctor_id_fkey(id, full_name, avatar_url),
+        doctor:profiles!prescriptions_medico_id_fkey(id, full_name, avatar_url),
         medications:prescription_medications(*)
       `,
       )

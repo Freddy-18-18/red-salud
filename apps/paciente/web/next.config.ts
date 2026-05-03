@@ -9,7 +9,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://*.supabase.co https://*.mapbox.com",
       "font-src 'self'",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://generativelanguage.googleapis.com https://dolarapi.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://generativelanguage.googleapis.com https://dolarapi.com https://ve.dolarapi.com",
       "frame-src 'none'",
       "object-src 'none'",
       "base-uri 'self'",

@@ -23,6 +23,34 @@ type AppointmentStatus =
   | 'in_progress'
   | 'no_show';
 
+// Defensive mapping: clients (legacy or otherwise) may send Spanish status
+// labels. The DB enum is English, so we normalize before querying.
+const STATUS_ALIASES: Record<string, AppointmentStatus> = {
+  pendiente: 'pending',
+  confirmada: 'confirmed',
+  completada: 'completed',
+  cancelada: 'cancelled',
+  en_espera: 'waiting',
+  en_progreso: 'in_progress',
+  no_asistio: 'no_show',
+};
+
+function normalizeStatus(raw: string | null): AppointmentStatus | null {
+  if (!raw) return null;
+  const lower = raw.toLowerCase();
+  if (lower in STATUS_ALIASES) return STATUS_ALIASES[lower];
+  const valid: AppointmentStatus[] = [
+    'pending',
+    'confirmed',
+    'completed',
+    'cancelled',
+    'waiting',
+    'in_progress',
+    'no_show',
+  ];
+  return (valid as string[]).includes(lower) ? (lower as AppointmentStatus) : null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const limited = await checkRateLimit(request, 'authenticated');
@@ -42,7 +70,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const statusParam = searchParams.get('status') as AppointmentStatus | null;
+    const statusParam = normalizeStatus(searchParams.get('status'));
     const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
     const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get('page_size') ?? '10', 10)));
     const offset = (page - 1) * pageSize;
@@ -63,15 +91,12 @@ export async function GET(request: NextRequest) {
         price,
         payment_method,
         created_at,
-        doctor:doctor_profiles!appointments_doctor_id_fkey (
+        doctor:profiles!appointments_medico_id_fkey (
           id,
-          specialty_id,
-          consultation_fee,
-          profile:profiles!doctor_profiles_profile_id_fkey (
-            first_name,
-            last_name,
-            avatar_url
-          )
+          first_name,
+          last_name,
+          full_name,
+          avatar_url
         )
         `,
         { count: 'exact' },

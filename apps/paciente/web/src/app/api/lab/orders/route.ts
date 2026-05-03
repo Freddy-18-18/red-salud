@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       .select(
         `
         *,
-        doctor:profiles!lab_orders_doctor_id_fkey(id, full_name, avatar_url),
+        doctor:profiles!lab_orders_medico_id_fkey(id, full_name, avatar_url),
         tests:lab_order_tests(*, test_type:lab_test_types(id, name, description))
       `,
       )

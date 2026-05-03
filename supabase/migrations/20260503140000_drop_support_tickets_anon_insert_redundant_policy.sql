@@ -1,0 +1,11 @@
+-- Drop redundant RLS policy that allowed anon+authenticated to insert support
+-- tickets with WITH CHECK = true (no constraint at all). This effectively
+-- bypassed RLS for the table.
+--
+-- Existing safer policies remain in place:
+--  - "Allow public ticket creation" (role public, anon path) — WITH CHECK (created_by IS NULL)
+--  - "Users can create their own tickets" (authenticated)    — WITH CHECK (auth.uid() = created_by)
+--  - "Users can create tickets" (public)                     — WITH CHECK (auth.uid() IS NOT NULL)
+--
+-- Source: Supabase advisor `rls_policy_always_true` (WARN, public.support_tickets).
+DROP POLICY IF EXISTS "support_tickets_anon_insert" ON public.support_tickets;
