@@ -61,16 +61,37 @@ export const bookingService = {
   },
 
   /**
-   * Get available dates for a doctor in a date range (next 30 days)
+   * Get available dates for a doctor in a date range (next 30 days).
+   *
+   * The BFF returns `{ available_dates: string[], day_counts: { date,
+   * available_count }[] }`, not the `AvailableDate[]` the booking flow
+   * consumes. Map here so the calendar picker can keep filtering/iterating
+   * an array — without this mapping, `availableDates.filter is not a
+   * function` blows up the calendar step on first render.
    */
   async getAvailableDates(
     doctorId: string,
     _startDate: string,
     _endDate: string
   ): Promise<AvailableDate[]> {
-    return fetchJson<AvailableDate[]>(
-      `/api/doctors/${doctorId}/availability`
-    );
+    const res = await fetchJson<{
+      available_dates?: string[];
+      day_counts?: { date: string; available_count: number }[];
+    }>(`/api/doctors/${doctorId}/availability`);
+
+    // Some payload shapes already arrive as an array (legacy or test fixtures);
+    // accept that too so we don't double-blow up here.
+    if (Array.isArray(res)) return res as AvailableDate[];
+
+    const rows = res.day_counts ?? [];
+    return rows.map((r) => {
+      const d = new Date(`${r.date}T00:00:00`);
+      return {
+        date: r.date,
+        dayOfWeek: d.getDay(),
+        hasSlots: r.available_count > 0,
+      };
+    });
   },
 
   /**

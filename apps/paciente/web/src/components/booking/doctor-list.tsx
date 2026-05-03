@@ -346,8 +346,10 @@ export function DoctorList({
         </div>
       )}
 
-      {/* List */}
-      <div className="space-y-3">
+      {/* List — single column on phones, two columns from md up so wide
+          screens actually use the available space instead of one
+          stretched card per row. */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {doctors.map((doctor) => (
           <DoctorCard
             key={doctor.id}
