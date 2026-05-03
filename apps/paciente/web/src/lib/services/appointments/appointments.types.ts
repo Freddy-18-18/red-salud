@@ -38,6 +38,13 @@ export interface MedicalSpecialty {
   name: string;
   description?: string;
   icon?: string;
+  /**
+   * Number of verified doctors registered under this specialty. The booking
+   * UI shows specialties with `doctor_count === 0` as "Próximamente" and
+   * blocks the user from advancing to the doctor-selection step until at
+   * least one doctor exists.
+   */
+  doctor_count?: number;
 }
 
 /** Alias used by the booking flow */

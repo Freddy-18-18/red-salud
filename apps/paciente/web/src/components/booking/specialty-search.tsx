@@ -6,14 +6,18 @@ import {
   Bone,
   Brain,
   ChevronRight,
+  Clock4,
   Eye,
   Heart,
   Loader2,
   Search,
   SearchX,
   Stethoscope,
+  UserPlus,
+  Users,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -98,6 +102,15 @@ interface SpecialtySearchProps {
   onContinue: () => void;
 }
 
+// Where to send patients who are actually doctors looking to register.
+// Lives on the public side of the patient app; the medico app has its own
+// onboarding but routing across origins is out of scope for this component.
+const DOCTOR_REGISTRATION_HREF = "/para-profesionales";
+
+function specialtyDoctorCount(s: Specialty | null | undefined): number {
+  return s?.doctor_count ?? 0;
+}
+
 export function SpecialtySearch({
   specialties,
   loading,
@@ -113,6 +126,16 @@ export function SpecialtySearch({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listboxId = useId();
+
+  // Hydrate the selected pick with its full record so we can read the
+  // doctor count. The parent only stores { id, name } in booking state, so
+  // anything richer (count, description) we look up here from the catalog.
+  const selectedFull = useMemo(() => {
+    if (!selected?.id) return null;
+    return specialties.find((s) => s.id === selected.id) ?? null;
+  }, [selected, specialties]);
+  const selectedCount = specialtyDoctorCount(selectedFull);
+  const selectedHasDoctors = selectedCount > 0;
 
   // Server renders the loading state; defer to client so the React Query
   // cache can repopulate without triggering a hydration mismatch.
@@ -324,6 +347,8 @@ export function SpecialtySearch({
                 const Icon = getSpecialtyIcon(s.name);
                 const active = idx === activeIdx;
                 const isSelected = selected?.id === s.id;
+                const count = specialtyDoctorCount(s);
+                const hasDoctors = count > 0;
                 return (
                   <li
                     id={`${listboxId}-${s.id}`}
@@ -342,17 +367,30 @@ export function SpecialtySearch({
                       } ${idx > 0 ? "border-t border-[hsl(var(--border))]" : ""}`}
                     >
                       <span
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors ${
                           active
                             ? "bg-emerald-600 text-white"
-                            : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
-                        } transition-colors`}
+                            : hasDoctors
+                              ? "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+                              : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] opacity-60"
+                        }`}
                       >
                         <Icon className="h-4 w-4" />
                       </span>
                       <span className="flex-1 min-w-0">
-                        <span className="block text-sm font-medium text-[hsl(var(--foreground))] truncate">
-                          {highlightMatch(s.name, query)}
+                        <span className={`flex items-center gap-2 text-sm font-medium truncate ${hasDoctors ? "text-[hsl(var(--foreground))]" : "text-[hsl(var(--muted-foreground))]"}`}>
+                          <span className="truncate">{highlightMatch(s.name, query)}</span>
+                          {hasDoctors ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 shrink-0">
+                              <Users className="h-2.5 w-2.5" />
+                              {count}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 shrink-0">
+                              <Clock4 className="h-2.5 w-2.5" />
+                              Proximamente
+                            </span>
+                          )}
                         </span>
                         {s.description && (
                           <span className="block text-xs text-[hsl(var(--muted-foreground))] truncate">
@@ -361,7 +399,7 @@ export function SpecialtySearch({
                         )}
                       </span>
                       {isSelected && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 shrink-0">
                           Actual
                         </span>
                       )}
@@ -396,8 +434,15 @@ export function SpecialtySearch({
         )}
       </div>
 
-      {/* Selected card — appears below the search once the user picks one */}
-      {selected && (
+      {/* Selected card. Two flavours:
+          - With doctors: emerald, shows the count, primary "Continuar".
+          - Without doctors yet: amber, shows the "Próximamente" copy and a
+            CTA pointing to /para-profesionales for the doctor-of-this-
+            specialty path. The user can still pick another specialty via
+            "Cambiar". The actual "Continuar" button at the bottom of the
+            page is disabled in the no-doctor case so the booking flow
+            never advances into an empty doctor list. */}
+      {selected && selectedHasDoctors && (
         <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/50 px-4 py-3 dark:border-emerald-900/40 dark:bg-emerald-950/30 animate-in fade-in slide-in-from-top-1 duration-200">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
             {SelectedIcon ? <SelectedIcon className="h-5 w-5" /> : null}
@@ -408,6 +453,10 @@ export function SpecialtySearch({
             </p>
             <p className="text-sm font-semibold text-[hsl(var(--foreground))] truncate">
               {selected.name}
+            </p>
+            <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400">
+              <Users className="h-3 w-3" />
+              {selectedCount} {selectedCount === 1 ? "doctor disponible" : "doctores disponibles"}
             </p>
           </div>
           <button
@@ -424,9 +473,52 @@ export function SpecialtySearch({
         </div>
       )}
 
-      {/* Quick picks — minimalist chips, only when nothing is selected and the
-          input is idle. They give the user a "I don't know what to type"
-          escape hatch. */}
+      {selected && !selectedHasDoctors && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-900/40 dark:bg-amber-950/30 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm">
+              <Clock4 className="h-5 w-5" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                Proximamente
+              </p>
+              <p className="text-sm font-semibold text-[hsl(var(--foreground))] truncate">
+                {selected.name}
+              </p>
+              <p className="mt-1 text-xs text-amber-800/80 dark:text-amber-200/80">
+                Aun no tenemos especialistas en esta area. Probá con otra especialidad o sumate vos mismo si sos medico de {selected.name}.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <Link
+                  href={DOCTOR_REGISTRATION_HREF}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Sos medico? Registrate
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelect({ id: "", name: "" });
+                    inputRef.current?.focus();
+                    setOpen(true);
+                  }}
+                  className="text-xs font-medium text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 hover:underline"
+                >
+                  Elegir otra especialidad
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick picks — minimalist chips, only when nothing is selected and
+          the input is idle. The chips reflect availability: green count
+          badge when at least one doctor is on the platform, amber dot for
+          "Próximamente" so users know the chip is still tappable but won't
+          let them book yet. */}
       {!selected && !query && quickPicks.length > 0 && (
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-2">
@@ -435,15 +527,29 @@ export function SpecialtySearch({
           <div className="flex flex-wrap gap-2">
             {quickPicks.map((s) => {
               const Icon = getSpecialtyIcon(s.name);
+              const count = specialtyDoctorCount(s);
+              const hasDoctors = count > 0;
               return (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => handlePick(s)}
-                  className="group flex items-center gap-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-1.5 text-xs font-medium text-[hsl(var(--foreground))] hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+                  className={`group flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    hasDoctors
+                      ? "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                      : "border-amber-200 bg-amber-50/60 text-amber-900 hover:border-amber-300 hover:bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200"
+                  }`}
+                  title={hasDoctors ? `${count} doctores disponibles` : "Aun sin especialistas — proximamente"}
                 >
-                  <Icon className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] group-hover:text-emerald-600 transition-colors" />
-                  {s.name}
+                  <Icon className={`h-3.5 w-3.5 transition-colors ${hasDoctors ? "text-[hsl(var(--muted-foreground))] group-hover:text-emerald-600" : "text-amber-600 dark:text-amber-400"}`} />
+                  <span>{s.name}</span>
+                  {hasDoctors ? (
+                    <span className="rounded-full bg-emerald-100 px-1.5 py-0 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                      {count}
+                    </span>
+                  ) : (
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden />
+                  )}
                 </button>
               );
             })}
@@ -451,12 +557,23 @@ export function SpecialtySearch({
         </div>
       )}
 
-      {/* Continue */}
+      {/* Continue. Disabled when nothing is selected OR when the selected
+          specialty has no doctors yet — in that case the in-page card above
+          is already telling the user what to do, so the bottom CTA stays
+          hidden behind opacity to avoid a contradictory "Continuar" call. */}
       <div className="flex justify-end pt-2">
         <button
           type="button"
           onClick={onContinue}
-          disabled={!selected}
+          disabled={!selected || !selectedHasDoctors}
+          aria-disabled={!selected || !selectedHasDoctors}
+          title={
+            !selected
+              ? "Elegi una especialidad primero"
+              : !selectedHasDoctors
+                ? "Esta especialidad aun no tiene doctores registrados"
+                : undefined
+          }
           className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Continuar

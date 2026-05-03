@@ -68,11 +68,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data: specialties ?? [] });
     }
 
-    // Default: return all specialties
-    const { data: specialties, error } = await supabase
-      .from('specialties')
-      .select('id, name, icon, description')
-      .order('name', { ascending: true });
+    // Default: return all specialties + the count of verified doctors per
+    // specialty so the booking UI can flag "Próximamente" specialties without
+    // a second round-trip. Two queries keeps this simple — joining count via
+    // PostgREST is awkward on a many-to-one relation.
+    const [{ data: specialties, error }, { data: doctorCounts, error: countErr }] =
+      await Promise.all([
+        supabase
+          .from('specialties')
+          .select('id, name, icon, description')
+          .order('name', { ascending: true }),
+        supabase
+          .from('doctor_profiles')
+          .select('specialty_id')
+          .eq('verified', true),
+      ]);
 
     if (error) {
       console.error('[Specialties] Supabase error:', error);
@@ -82,7 +92,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ data: specialties ?? [] });
+    if (countErr) {
+      // Non-fatal: log it and ship counts as zero everywhere. The UI will
+      // just show every specialty as "Próximamente", which is recoverable
+      // when the next request succeeds.
+      console.error('[Specialties] Doctor count error (non-fatal):', countErr);
+    }
+
+    const counts = new Map<string, number>();
+    for (const row of doctorCounts ?? []) {
+      const id = row.specialty_id as string | null;
+      if (!id) continue;
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+
+    const enriched = (specialties ?? []).map((s) => ({
+      ...s,
+      doctor_count: counts.get(s.id as string) ?? 0,
+    }));
+
+    return NextResponse.json({ data: enriched });
   } catch (error) {
     console.error('[Specialties] Unexpected error:', error);
     return NextResponse.json(
