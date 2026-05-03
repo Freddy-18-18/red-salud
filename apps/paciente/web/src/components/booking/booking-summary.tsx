@@ -1,16 +1,19 @@
 "use client";
 
 import {
+  AlertCircle,
   ArrowLeft,
   Calendar,
+  CheckCircle2,
   Clock,
-  MapPin,
-  Video,
-  User,
-  FileText,
   CreditCard,
+  FileText,
+  Info,
   Loader2,
-  AlertCircle,
+  Lock,
+  MapPin,
+  Stethoscope,
+  Video,
 } from "lucide-react";
 
 import type { BookingState } from "@/hooks/use-booking";
@@ -24,14 +27,23 @@ interface BookingSummaryProps {
 }
 
 function formatDateLabel(dateStr: string): string {
-  const date = new Date(dateStr + "T12:00:00");
-  const options: Intl.DateTimeFormatOptions = {
+  const date = new Date(`${dateStr}T12:00:00`);
+  return date.toLocaleDateString("es-VE", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
-  };
-  return date.toLocaleDateString("es-VE", options);
+  });
+}
+
+function honorific(fullName: string, gender?: string | null): "Dr." | "Dra." {
+  const g = (gender || "").toLowerCase();
+  if (g === "femenino" || g === "f" || g === "female") return "Dra.";
+  if (g === "masculino" || g === "m" || g === "male") return "Dr.";
+  // Heuristic by first name (vowel ending → Dra. for Venezuelan female names)
+  const first = (fullName?.split(" ")[0] || "").toLowerCase();
+  if (first.endsWith("a")) return "Dra.";
+  return "Dr.";
 }
 
 export function BookingSummary({
@@ -41,189 +53,285 @@ export function BookingSummary({
   onConfirm,
   onBack,
 }: BookingSummaryProps) {
-  const doctorName =
-    state.doctor?.profile.full_name || "Doctor";
-  const fee = state.doctor?.consultation_fee;
+  const fullName = state.doctor?.profile.full_name || "Doctor";
+  const title = honorific(
+    fullName,
+    (state.doctor?.profile as { gender?: string })?.gender
+  );
+  const initials = fullName
+    .split(" ")
+    .filter((p) => p.length > 0)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  const fee = state.doctor?.consultation_fee ?? null;
+  const isTele = state.appointmentType === "telemedicina";
+  const location =
+    [state.doctor?.profile.city, state.doctor?.profile.state]
+      .filter(Boolean)
+      .join(", ") || null;
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <button
+          type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition mb-3"
+          disabled={loading}
+          className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors disabled:opacity-50"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3.5 w-3.5" />
           Modificar detalles
         </button>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">
-          Confirmar tu cita
+        <h2 className="text-xl font-bold text-[hsl(var(--foreground))]">
+          Confirma tu cita
         </h2>
-        <p className="text-gray-500 text-sm">
-          Verifica los detalles antes de confirmar
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          Revisa los detalles. Una vez confirmada, el doctor recibirá tu solicitud.
         </p>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-900/40 dark:bg-red-950/30">
+          <AlertCircle className="h-5 w-5 shrink-0 text-red-500" />
+          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
         </div>
       )}
 
-      {/* Summary card */}
-      <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
-        {/* Doctor header */}
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-6 py-5 text-white">
-          <div className="flex items-center gap-4">
-            {state.doctor?.profile.avatar_url ? (
-              <img
-                src={state.doctor.profile.avatar_url}
-                alt={doctorName}
-                className="w-14 h-14 rounded-full object-cover border-2 border-white/30"
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
+        {/* Main column — appointment details */}
+        <div className="space-y-4">
+          {/* Doctor banner card */}
+          <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm">
+            <div className="relative h-20 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600">
+              <div
+                aria-hidden
+                className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_50%,white_0,transparent_40%),radial-gradient(circle_at_80%_30%,white_0,transparent_40%)]"
               />
-            ) : (
-              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
-                {doctorName
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .slice(0, 2)}
+            </div>
+            <div className="px-6 pb-5">
+              <div className="-mt-12 flex items-end gap-4">
+                {state.doctor?.profile.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={state.doctor.profile.avatar_url}
+                    alt={fullName}
+                    className="h-24 w-24 rounded-2xl object-cover ring-4 ring-[hsl(var(--card))] shadow-md"
+                  />
+                ) : (
+                  <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-emerald-600 text-2xl font-bold text-white ring-4 ring-[hsl(var(--card))] shadow-md">
+                    {initials}
+                  </div>
+                )}
+                <div className="pb-2">
+                  <h3 className="text-lg font-bold text-[hsl(var(--foreground))]">
+                    {title} {fullName}
+                  </h3>
+                  <div className="mt-0.5 flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                    <Stethoscope className="h-3 w-3" />
+                    {state.specialty?.name}
+                  </div>
+                </div>
               </div>
-            )}
-            <div>
-              <h3 className="font-semibold text-lg">Dr. {doctorName}</h3>
-              <p className="text-emerald-100 text-sm">
-                {state.specialty?.name}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Details */}
-        <div className="p-6 space-y-4">
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-emerald-50 rounded-lg">
-              <Calendar className="h-4 w-4 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Fecha
-              </p>
-              <p className="text-sm font-medium text-gray-900 capitalize">
-                {state.date ? formatDateLabel(state.date) : "-"}
-              </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-amber-50 rounded-lg">
-              <Clock className="h-4 w-4 text-amber-600" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Hora
-              </p>
-              <p className="text-sm font-medium text-gray-900">
-                {state.timeSlot
-                  ? `${state.timeSlot.start} - ${state.timeSlot.end}`
-                  : "-"}{" "}
-                <span className="text-gray-500">(30 min)</span>
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              {state.appointmentType === "telemedicina" ? (
-                <Video className="h-4 w-4 text-blue-600" />
-              ) : (
-                <MapPin className="h-4 w-4 text-blue-600" />
-              )}
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Modalidad
-              </p>
-              <p className="text-sm font-medium text-gray-900 capitalize">
-                {state.appointmentType === "telemedicina"
+          {/* Detail rows */}
+          <div className="space-y-3 rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm">
+            <DetailRow
+              icon={Calendar}
+              accent="emerald"
+              label="Fecha"
+              value={
+                state.date ? (
+                  <span className="capitalize">{formatDateLabel(state.date)}</span>
+                ) : (
+                  "—"
+                )
+              }
+            />
+            <DetailRow
+              icon={Clock}
+              accent="amber"
+              label="Hora"
+              value={
+                state.timeSlot ? (
+                  <>
+                    <span className="font-bold tabular-nums">
+                      {state.timeSlot.start} → {state.timeSlot.end}
+                    </span>
+                    <span className="ml-2 text-xs text-[hsl(var(--muted-foreground))]">
+                      30 min
+                    </span>
+                  </>
+                ) : (
+                  "—"
+                )
+              }
+            />
+            <DetailRow
+              icon={isTele ? Video : MapPin}
+              accent={isTele ? "sky" : "indigo"}
+              label="Modalidad"
+              value={
+                isTele
                   ? "Telemedicina (videollamada)"
-                  : "Presencial"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-violet-50 rounded-lg">
-              <FileText className="h-4 w-4 text-violet-600" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Motivo
-              </p>
-              <p className="text-sm text-gray-900">{state.reason || "-"}</p>
-              {state.notes && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Notas: {state.notes}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {fee !== null && fee !== undefined && (
-            <>
-              <div className="h-px bg-gray-100" />
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-green-50 rounded-lg">
-                  <CreditCard className="h-4 w-4 text-green-600" />
-                </div>
+                  : `Presencial${location ? ` · ${location}` : ""}`
+              }
+            />
+            <DetailRow
+              icon={FileText}
+              accent="violet"
+              label="Motivo"
+              value={
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Costo de consulta
+                  <p className="font-medium text-[hsl(var(--foreground))]">
+                    {state.reason || "—"}
                   </p>
-                  <p className="text-xl font-bold text-green-700">
-                    ${fee.toFixed(2)}
-                  </p>
+                  {state.notes && (
+                    <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                      <span className="font-semibold">Notas:</span> {state.notes}
+                    </p>
+                  )}
                 </div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+              }
+            />
+          </div>
 
-      {/* Important note */}
-      <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-        <div className="flex items-start gap-2">
-          <User className="h-4 w-4 text-amber-600 mt-0.5" />
-          <p className="text-sm text-amber-800">
-            Tu cita quedara en estado <strong>pendiente</strong> hasta que el
-            doctor la confirme. Recibiras una notificacion cuando sea aceptada.
-          </p>
+          {/* Pending notice */}
+          <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-900/40 dark:bg-amber-950/30">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white">
+              <Info className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-[hsl(var(--foreground))]">
+                Tu cita queda <span className="text-amber-700 dark:text-amber-400">pendiente</span>
+              </p>
+              <p className="text-xs text-amber-800/80 dark:text-amber-200/80">
+                {title} {fullName.split(" ")[0]} la revisará y te avisamos por notificación cuando la confirme.
+              </p>
+            </div>
+          </div>
         </div>
+
+        {/* Aside — billing + security */}
+        <aside className="flex flex-col gap-4">
+          <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-sm dark:border-emerald-900/40 dark:from-emerald-950/40 dark:via-[hsl(var(--card))] dark:to-[hsl(var(--card))]">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/20">
+                <CreditCard className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                  Costo de la consulta
+                </p>
+                <p className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                  {fee !== null && fee !== undefined ? `$${fee.toFixed(2)}` : "Sin precio"}
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 text-[11px] text-[hsl(var(--muted-foreground))]">
+              El pago se coordina directamente con el doctor al confirmar la cita. Aceptamos efectivo, transferencia o pago digital según lo que el doctor indique.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5">
+            <div className="flex items-start gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
+                <Lock className="h-3.5 w-3.5" />
+              </span>
+              <div>
+                <p className="text-[11px] font-semibold text-[hsl(var(--foreground))]">
+                  Seguro y privado
+                </p>
+                <p className="mt-0.5 text-[11px] text-[hsl(var(--muted-foreground))]">
+                  Tus datos están cifrados. Sólo el doctor que elegiste verá tu motivo y notas.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+              Política de cancelación
+            </p>
+            <p className="mt-2 text-[11px] text-[hsl(var(--muted-foreground))]">
+              Podés cancelar la cita hasta <strong>24 horas antes</strong> sin costo. Después de eso queda registrada como inasistencia.
+            </p>
+          </div>
+        </aside>
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex items-center gap-3 pt-2">
         <button
+          type="button"
           onClick={onBack}
           disabled={loading}
-          className="flex-1 py-3 px-4 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-5 py-3 text-sm font-medium text-[hsl(var(--foreground))] transition-colors hover:bg-[hsl(var(--muted))] disabled:opacity-50"
         >
+          <ArrowLeft className="h-4 w-4" />
           Volver
         </button>
         <button
+          type="button"
           onClick={onConfirm}
           disabled={loading}
-          className="flex-1 py-3.5 px-4 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Agendando...
             </>
           ) : (
-            "Confirmar Cita"
+            <>
+              <CheckCircle2 className="h-4 w-4" />
+              Confirmar cita
+            </>
           )}
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Detail row ────────────────────────────────────────────────────────────
+
+type Accent = "emerald" | "amber" | "sky" | "indigo" | "violet";
+
+function DetailRow({
+  icon: Icon,
+  accent,
+  label,
+  value,
+}: {
+  icon: typeof Calendar;
+  accent: Accent;
+  label: string;
+  value: React.ReactNode;
+}) {
+  const tones: Record<Accent, { bg: string; text: string }> = {
+    emerald: { bg: "bg-emerald-50 dark:bg-emerald-950/40", text: "text-emerald-700 dark:text-emerald-400" },
+    amber: { bg: "bg-amber-50 dark:bg-amber-950/40", text: "text-amber-700 dark:text-amber-400" },
+    sky: { bg: "bg-sky-50 dark:bg-sky-950/40", text: "text-sky-700 dark:text-sky-400" },
+    indigo: { bg: "bg-indigo-50 dark:bg-indigo-950/40", text: "text-indigo-700 dark:text-indigo-400" },
+    violet: { bg: "bg-violet-50 dark:bg-violet-950/40", text: "text-violet-700 dark:text-violet-400" },
+  };
+  const tone = tones[accent];
+  return (
+    <div className="flex items-start gap-3">
+      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${tone.bg}`}>
+        <Icon className={`h-4 w-4 ${tone.text}`} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+          {label}
+        </p>
+        <div className="mt-0.5 text-sm text-[hsl(var(--foreground))]">{value}</div>
       </div>
     </div>
   );
