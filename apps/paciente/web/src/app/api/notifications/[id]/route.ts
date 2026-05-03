@@ -117,11 +117,17 @@ export async function DELETE(
       );
     }
 
-    const { error } = await supabase
+    // .select("id") forces PostgREST to return the rows actually affected.
+    // Without it a row that's filtered out by RLS yields zero affected rows
+    // but no error, so the route would 200 OK while the row stayed put —
+    // exactly the silent failure that hid a missing DELETE policy on
+    // patient_notifications until this commit.
+    const { data: deleted, error } = await supabase
       .from("patient_notifications")
       .delete()
       .eq("id", id)
-      .eq("patient_id", user.id);
+      .eq("patient_id", user.id)
+      .select("id");
 
     if (error) {
       console.error("[Notification DELETE] Supabase error:", error);
@@ -131,7 +137,14 @@ export async function DELETE(
       );
     }
 
-    return NextResponse.json({ data: { deleted: true } });
+    if (!deleted || deleted.length === 0) {
+      return NextResponse.json(
+        { error: "Notificacion no encontrada o sin permisos." },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ data: { deleted: true, id: deleted[0].id } });
   } catch (error) {
     console.error("[Notification DELETE] Unexpected error:", error);
     return NextResponse.json(
