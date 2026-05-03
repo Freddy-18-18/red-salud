@@ -83,14 +83,22 @@ export interface BookingDoctorProfile {
   profile_id: string;
   specialty_id: string;
   consultation_fee: number | null;
+  consultation_duration?: number | null;
   accepts_insurance: boolean;
+  accepts_telemedicine?: boolean;
+  accepts_new_patients?: boolean;
   years_experience: number | null;
   biografia: string | null;
+  biography?: string | null;
   verified: boolean;
+  languages?: string[];
   profile: {
     id: string;
     full_name: string;
-    email: string;
+    first_name?: string | null;
+    last_name?: string | null;
+    gender?: string | null;
+    email?: string;
     avatar_url: string | null;
     city: string | null;
     state: string | null;

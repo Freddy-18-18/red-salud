@@ -267,7 +267,7 @@ export function SpecialtySearch({
           Que especialidad necesitas?
         </h2>
         <p className="text-[hsl(var(--muted-foreground))] text-sm">
-          Escribi y elegi entre las coincidencias, o tocá un atajo
+          Escribe y elige entre las coincidencias, o toca un atajo
         </p>
       </div>
 
@@ -487,7 +487,7 @@ export function SpecialtySearch({
                 {selected.name}
               </p>
               <p className="mt-1 text-xs text-amber-800/80 dark:text-amber-200/80">
-                Aun no tenemos especialistas en esta area. Probá con otra especialidad o sumate vos mismo si sos medico de {selected.name}.
+                Aún no tenemos especialistas en esta área. Prueba con otra especialidad o súmate si eres médico de {selected.name}.
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <Link
@@ -495,7 +495,7 @@ export function SpecialtySearch({
                   className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                 >
                   <UserPlus className="h-3.5 w-3.5" />
-                  Sos medico? Registrate
+                  ¿Eres médico? Regístrate
                 </Link>
                 <button
                   type="button"
@@ -539,7 +539,7 @@ export function SpecialtySearch({
                       ? "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
                       : "border-amber-200 bg-amber-50/60 text-amber-900 hover:border-amber-300 hover:bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200"
                   }`}
-                  title={hasDoctors ? `${count} doctores disponibles` : "Aun sin especialistas — proximamente"}
+                  title={hasDoctors ? `${count} doctores disponibles` : "Aún sin especialistas — próximamente"}
                 >
                   <Icon className={`h-3.5 w-3.5 transition-colors ${hasDoctors ? "text-[hsl(var(--muted-foreground))] group-hover:text-emerald-600" : "text-amber-600 dark:text-amber-400"}`} />
                   <span>{s.name}</span>
@@ -569,9 +569,9 @@ export function SpecialtySearch({
           aria-disabled={!selected || !selectedHasDoctors}
           title={
             !selected
-              ? "Elegi una especialidad primero"
+              ? "Elige una especialidad primero"
               : !selectedHasDoctors
-                ? "Esta especialidad aun no tiene doctores registrados"
+                ? "Esta especialidad aún no tiene doctores registrados"
                 : undefined
           }
           className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
