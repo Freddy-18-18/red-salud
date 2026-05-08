@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase/client';
 import { useDoctorAppointments } from '@red-salud/core';
 import { PatientList, type PatientSummary } from '@/components/patients/patient-list';
 import { PatientDetail } from '@/components/patients/patient-detail';
+import { PageHeader } from '@/components/shell';
 import { Users, Plus } from 'lucide-react';
 
 // ============================================================================
@@ -87,20 +88,22 @@ export default function PacientesPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Pacientes</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {patients.length} paciente{patients.length !== 1 ? 's' : ''} en tu registro
-          </p>
-        </div>
-      </div>
+      <PageHeader>
+        <PageHeader.Title>Pacientes</PageHeader.Title>
+        <PageHeader.Meta>
+          {patients.length} paciente{patients.length !== 1 ? 's' : ''} en tu registro
+        </PageHeader.Meta>
+      </PageHeader>
 
-      {/* Error */}
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-          {error}
+      {/* Inline notice — only when an actual data fetch failed AND we had something to show.
+          For brand-new doctors with zero appointments, an empty list is the expected state,
+          not an error worth surfacing as a red banner. */}
+      {error && patients.length > 0 && (
+        <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-700">
+          <p className="font-medium">No pudimos actualizar la lista</p>
+          <p className="mt-0.5 text-xs text-amber-600">
+            Mostramos la última versión disponible. Reintentá en unos segundos.
+          </p>
         </div>
       )}
 
