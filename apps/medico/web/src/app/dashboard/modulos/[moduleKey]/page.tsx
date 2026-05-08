@@ -7,7 +7,8 @@ import { supabase } from '@/lib/supabase/client';
 import { getSpecialtyExperienceConfig, type SpecialtyConfig } from '@/lib/specialties';
 import { ModuleRenderer } from '@/components/modules/module-renderer';
 import { isModuleRegistered } from '@/components/modules/module-registry';
-import { ChevronRight, LayoutDashboard, Puzzle, AlertTriangle } from 'lucide-react';
+import { PageHeader } from '@/components/shell';
+import { Puzzle, AlertTriangle } from 'lucide-react';
 
 // ============================================================================
 // TYPES
@@ -50,8 +51,8 @@ export default function ModulePage() {
           .from('doctor_profiles')
           .select(`
             especialidad:specialties(name, slug),
-            profile:profiles!doctor_profiles_profile_id_fkey(
-              sacs_especialidad
+            profile:profiles!doctor_details_profile_id_fkey(
+              sacs_specialty
             )
           `)
           .eq('profile_id', user.id)
@@ -69,7 +70,7 @@ export default function ModulePage() {
         const specialtyConfig = getSpecialtyExperienceConfig({
           specialtySlug: especialidad?.slug ?? undefined,
           specialtyName: especialidad?.name ?? undefined,
-          sacsEspecialidad: profileData?.sacs_especialidad ?? undefined,
+          sacsEspecialidad: profileData?.sacs_specialty ?? undefined,
         });
 
         setCtx({
@@ -108,7 +109,16 @@ export default function ModulePage() {
   if (error || !ctx) {
     return (
       <div className="space-y-4">
-        <Breadcrumb moduleLabel={moduleKey} />
+        <PageHeader>
+          <PageHeader.Breadcrumb
+            items={[
+              { label: 'Inicio', href: '/dashboard' },
+              { label: 'Módulos', href: '/dashboard/modulos' },
+              { label: moduleKey ?? 'Módulo' },
+            ]}
+          />
+          <PageHeader.Title>{moduleKey ?? 'Módulo'}</PageHeader.Title>
+        </PageHeader>
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <AlertTriangle className="h-10 w-10 text-amber-400 mb-3" />
           <p className="text-sm font-medium text-gray-600">
@@ -128,7 +138,16 @@ export default function ModulePage() {
   if (!isModuleRegistered(moduleKey)) {
     return (
       <div className="space-y-4">
-        <Breadcrumb moduleLabel={moduleKey} />
+        <PageHeader>
+          <PageHeader.Breadcrumb
+            items={[
+              { label: 'Inicio', href: '/dashboard' },
+              { label: 'Módulos', href: '/dashboard/modulos' },
+              { label: moduleKey ?? 'Módulo' },
+            ]}
+          />
+          <PageHeader.Title>{moduleKey ?? 'Módulo'}</PageHeader.Title>
+        </PageHeader>
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Puzzle className="h-10 w-10 text-gray-300 mb-3" />
           <p className="text-sm font-medium text-gray-600">Módulo no disponible</p>
@@ -148,7 +167,16 @@ export default function ModulePage() {
 
   return (
     <div className="space-y-4">
-      <Breadcrumb moduleLabel={moduleLabel} themeColor={themeColor} />
+      <PageHeader>
+        <PageHeader.Breadcrumb
+          items={[
+            { label: 'Inicio', href: '/dashboard' },
+            { label: 'Módulos', href: '/dashboard/modulos' },
+            { label: moduleLabel ?? 'Módulo' },
+          ]}
+        />
+        <PageHeader.Title>{moduleLabel ?? 'Módulo'}</PageHeader.Title>
+      </PageHeader>
 
       <ModuleRenderer
         moduleKey={moduleKey}
@@ -164,40 +192,6 @@ export default function ModulePage() {
 // ============================================================================
 // SUB-COMPONENTS
 // ============================================================================
-
-function Breadcrumb({
-  moduleLabel,
-  themeColor,
-}: {
-  moduleLabel: string;
-  themeColor?: string;
-}) {
-  return (
-    <nav className="flex items-center gap-1.5 text-sm text-gray-500">
-      <Link
-        href="/dashboard"
-        className="flex items-center gap-1 hover:text-gray-700 transition-colors"
-      >
-        <LayoutDashboard className="h-4 w-4" />
-        Inicio
-      </Link>
-      <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
-      <Link
-        href="/dashboard/modulos"
-        className="hover:text-gray-700 transition-colors"
-      >
-        Módulos
-      </Link>
-      <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
-      <span
-        className="font-medium"
-        style={themeColor ? { color: themeColor } : undefined}
-      >
-        {moduleLabel}
-      </span>
-    </nav>
-  );
-}
 
 function ModulePageSkeleton() {
   return (
