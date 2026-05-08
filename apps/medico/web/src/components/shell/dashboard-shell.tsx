@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 
-import { DesktopSidebar } from '@/components/shell/desktop-sidebar';
-import { MobileBottomNav } from '@/components/shell/mobile-bottom-nav';
-import { MobileSidebarSheet } from '@/components/shell/mobile-sidebar-sheet';
-import { MobileTopBar } from '@/components/shell/mobile-top-bar';
-import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed';
+import { useSidebarCollapsed } from '../../hooks/use-sidebar-collapsed';
 
+import { DesktopSidebar } from './desktop-sidebar';
+import { MobileBottomNav } from './mobile-bottom-nav';
+import { MobileSidebarSheet } from './mobile-sidebar-sheet';
+import { MobileTopBar } from './mobile-top-bar';
 import type { DashboardShellProps } from './types';
 
 /**

@@ -1,6 +1,6 @@
+import { ThemeProvider } from '@red-salud/design-system';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { ThemeProvider } from '@red-salud/design-system';
 import { Toaster } from 'sonner';
 
 import './globals.css';
