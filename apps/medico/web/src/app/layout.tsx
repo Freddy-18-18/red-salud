@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { ThemeProvider } from '@red-salud/design-system';
+import { Toaster } from 'sonner';
+
 import './globals.css';
 
 const inter = Inter({
@@ -19,9 +22,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className="dark">
-      <body className={`${inter.variable} font-sans bg-zinc-950 text-white antialiased`}>
-        {children}
+    <html lang="es" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <ThemeProvider defaultTheme="system">
+          {children}
+          {/*
+            App-wide toast surface. Mounted at root so any client component
+            (UserMenuDropdown logout failure, future feedback flows, etc.) can
+            call `toast(...)` without per-page wiring. `richColors` lights up
+            success/error/warning variants; `closeButton` adds a manual dismiss
+            for sticky toasts; `top-right` keeps it clear of the bottom nav on
+            mobile.
+          */}
+          <Toaster richColors closeButton position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );
