@@ -3,11 +3,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
+import { EmptyState } from '@red-salud/design-system';
 import {
   getSpecialtyExperienceConfig,
   type SpecialtyConfig,
 } from '@/lib/specialties';
 import { isModuleRegistered } from '@/components/modules/module-registry';
+import { PageHeader } from '@/components/shell';
 import {
   Puzzle,
   CheckCircle2,
@@ -99,8 +101,8 @@ export default function ModulosPage() {
         .from('doctor_profiles')
         .select(`
           especialidad:specialties(name, slug),
-          profile:profiles!doctor_profiles_profile_id_fkey(
-            sacs_especialidad
+          profile:profiles!doctor_details_profile_id_fkey(
+            sacs_specialty
           )
         `)
         .eq('profile_id', user.id)
@@ -116,7 +118,7 @@ export default function ModulosPage() {
       const config = getSpecialtyExperienceConfig({
         specialtySlug: especialidad?.slug ?? undefined,
         specialtyName: especialidad?.name ?? undefined,
-        sacsEspecialidad: profileData?.sacs_especialidad ?? undefined,
+        sacsEspecialidad: profileData?.sacs_specialty ?? undefined,
       });
 
       setSpecialtyConfig(config);
@@ -166,28 +168,20 @@ export default function ModulosPage() {
 
   return (
     <div className="space-y-8">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-gray-500">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-1 hover:text-gray-700 transition-colors"
-        >
-          <LayoutDashboard className="h-4 w-4" />
-          Inicio
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5 text-gray-300" />
-        <span className="font-medium text-gray-700">Módulos</span>
-      </nav>
-
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
+      <PageHeader>
+        <PageHeader.Breadcrumb
+          items={[
+            { label: 'Inicio', href: '/dashboard' },
+            { label: 'Módulos' },
+          ]}
+        />
+        <PageHeader.Title>
           Módulos de {specialtyConfig?.name ?? 'tu especialidad'}
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        </PageHeader.Title>
+        <PageHeader.Meta>
           Herramientas especializadas disponibles para tu práctica médica
-        </p>
-      </div>
+        </PageHeader.Meta>
+      </PageHeader>
 
       {/* Enabled modules */}
       {enabledModules.length > 0 && (
@@ -239,15 +233,11 @@ export default function ModulosPage() {
 
       {/* Empty state */}
       {enabledModules.length === 0 && disabledModules.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Puzzle className="h-12 w-12 text-gray-300 mb-3" />
-          <p className="text-sm font-medium text-gray-600">
-            No hay módulos configurados para tu especialidad
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
-            Contacta al administrador para habilitar módulos
-          </p>
-        </div>
+        <EmptyState
+          icon={Puzzle}
+          title="Aún no tenés módulos configurados"
+          description="Tu especialidad todavía no tiene módulos habilitados. Contactá al administrador para activarlos."
+        />
       )}
     </div>
   );
