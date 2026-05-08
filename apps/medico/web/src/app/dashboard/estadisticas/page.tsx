@@ -3,12 +3,14 @@
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useDoctorAppointments } from '@red-salud/core';
+import { EmptyState } from '@red-salud/design-system';
 import { useDoctorProfile } from '@/hooks/use-doctor-profile';
 import {
   getSpecialtyExperienceConfig,
   type SpecialtyConfig,
 } from '@/lib/specialties';
 import { useSpecialtyKpis } from '@/hooks/dashboard/use-specialty-kpis';
+import { PageHeader } from '@/components/shell';
 import {
   BarChart3,
   TrendingUp,
@@ -62,7 +64,7 @@ export default function EstadisticasPage() {
         .from('doctor_profiles')
         .select(`
           especialidad:specialties(name, slug),
-          profile:profiles!doctor_profiles_profile_id_fkey(sacs_especialidad)
+          profile:profiles!doctor_details_profile_id_fkey(sacs_specialty)
         `)
         .eq('profile_id', user.id)
         .maybeSingle();
@@ -76,7 +78,7 @@ export default function EstadisticasPage() {
       const config = getSpecialtyExperienceConfig({
         specialtySlug: especialidad?.slug ?? undefined,
         specialtyName: especialidad?.name ?? undefined,
-        sacsEspecialidad: profileData?.sacs_especialidad ?? undefined,
+        sacsEspecialidad: profileData?.sacs_specialty ?? undefined,
       });
       setSpecialtyConfig(config);
     }
@@ -194,23 +196,20 @@ export default function EstadisticasPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Estadísticas</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Métricas y análisis de tu práctica médica
-          </p>
-        </div>
-        <button
-          onClick={() => kpis.refresh()}
-          disabled={kpis.isRefreshing}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          <RefreshCw className={`h-4 w-4 ${kpis.isRefreshing ? 'animate-spin' : ''}`} />
-          Actualizar
-        </button>
-      </div>
+      <PageHeader>
+        <PageHeader.Title>Estadísticas</PageHeader.Title>
+        <PageHeader.Meta>Métricas y análisis de tu práctica médica</PageHeader.Meta>
+        <PageHeader.Actions>
+          <button
+            onClick={() => kpis.refresh()}
+            disabled={kpis.isRefreshing}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <RefreshCw className={`h-4 w-4 ${kpis.isRefreshing ? 'animate-spin' : ''}`} />
+            Actualizar
+          </button>
+        </PageHeader.Actions>
+      </PageHeader>
 
       {/* Specialty KPIs from resolver */}
       {kpiKeys.length > 0 && (
@@ -255,12 +254,13 @@ export default function EstadisticasPage() {
             <div className="h-6 w-6 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : monthlyStats.length === 0 ? (
-          <div className="h-48 flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <BarChart3 className="h-10 w-10 mx-auto text-gray-300 mb-2" />
-              <p className="text-sm">Sin datos suficientes para graficar</p>
-            </div>
-          </div>
+          <EmptyState
+            icon={BarChart3}
+            title="Aún no hay datos para graficar"
+            description="Cuando empieces a atender pacientes, vas a ver acá la evolución mes a mes."
+            size="compact"
+            className="border-0 bg-transparent"
+          />
         ) : (
           <div className="space-y-3">
             {monthlyStats.map((month) => {
@@ -314,10 +314,13 @@ export default function EstadisticasPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Diagnósticos más frecuentes</h2>
           {topDiagnoses.length === 0 ? (
-            <div className="py-8 text-center text-gray-400">
-              <Activity className="h-8 w-8 mx-auto text-gray-300 mb-2" />
-              <p className="text-sm">Sin diagnósticos registrados</p>
-            </div>
+            <EmptyState
+              icon={Activity}
+              title="Sin diagnósticos todavía"
+              description="Los diagnósticos que registres en consultas van a aparecer acá."
+              size="compact"
+              className="border-0 bg-transparent"
+            />
           ) : (
             <div className="space-y-2">
               {topDiagnoses.map((diag, idx) => {
