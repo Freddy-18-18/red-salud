@@ -1,10 +1,35 @@
 @import 'tailwindcss';
+@source "../../../../../packages/design-system/src";
+@import '@red-salud/design-system/styles/tokens.css';
 
-@theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+/* -----------------------------------------------------------------------------
+   Medico-specific theme extension.
+   The base palette is Caribbean Trust (see @red-salud/design-system/tokens.css).
+   Per-domain accent for medico = clinical teal (--domain-medico).
+   ----------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    /* Wire the medico app's accent to the clinical teal token. Components
+       should reference --accent-domain when they want the per-domain hue
+       (e.g., active nav item, specialty badges) and keep using --primary
+       for global CTAs. */
+    --accent-domain: var(--domain-medico);
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
 }
 
-/* Hide scrollbar for specialty pills */
+/* Hide scrollbar while keeping scroll functionality. */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
