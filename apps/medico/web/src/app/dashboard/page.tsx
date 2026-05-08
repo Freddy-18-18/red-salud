@@ -11,6 +11,7 @@ import { KpiCard } from '@/components/dashboard/kpi-card';
 import { TodayAgenda } from '@/components/dashboard/today-agenda';
 import { SpecialtyWidgets } from '@/components/dashboard/specialty-widgets';
 import { ExchangeRateWidget } from '@/components/dashboard/exchange-rate-widget';
+import { PageHeader } from '@/components/shell';
 import {
   Users,
   CalendarCheck,
@@ -53,13 +54,22 @@ export default function DashboardPage() {
 
       setUserId(user.id);
 
+      // Fetch name independently so a join failure on doctor_profiles doesn't
+      // wipe out the heading. profiles is the single source of truth for full_name.
+      const { data: profileRow } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      // Joined query for specialty + sacs metadata. If this fails (missing
+      // column / RLS), we still have profileRow above.
       const { data: details } = await supabase
         .from('doctor_profiles')
         .select(`
           especialidad:specialties(name, slug),
-          profile:profiles!doctor_profiles_profile_id_fkey(
-            full_name,
-            sacs_especialidad
+          profile:profiles!doctor_details_profile_id_fkey(
+            sacs_specialty
           )
         `)
         .eq('profile_id', user.id)
@@ -71,13 +81,18 @@ export default function DashboardPage() {
       const profileData = Array.isArray(details?.profile)
         ? details.profile[0]
         : details?.profile;
-      const name = profileData?.full_name ?? user.email ?? '';
+
+      // Fallback chain: profiles.full_name → user.user_metadata.full_name → 'Doctor'
+      // We deliberately avoid email so headings never read like an inbox address.
+      const metaFullName =
+        (user.user_metadata as { full_name?: string } | null)?.full_name ?? null;
+      const name = profileRow?.full_name ?? metaFullName ?? '';
       setDoctorName(name);
 
       const config = getSpecialtyExperienceConfig({
         specialtySlug: especialidad?.slug ?? undefined,
         specialtyName: especialidad?.name ?? undefined,
-        sacsEspecialidad: profileData?.sacs_especialidad ?? undefined,
+        sacsEspecialidad: profileData?.sacs_specialty ?? undefined,
       });
       setSpecialtyConfig(config);
       setInitialLoading(false);
@@ -123,29 +138,34 @@ export default function DashboardPage() {
     },
   ];
 
-  const firstName = doctorName.split(' ')[0] ?? 'Doctor';
+  // Use only the first token of the full name. If the name is missing or
+  // accidentally contains an "@" (legacy data), fall back to a neutral label
+  // instead of leaking the email into the heading.
+  const firstName =
+    doctorName && !doctorName.includes('@')
+      ? (doctorName.split(' ')[0] ?? 'Doctor')
+      : 'Doctor';
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Buen{getGreeting()}, Dr. {firstName}
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {specialtyConfig?.name ?? 'Medicina General'} &mdash; {formatToday()}
-          </p>
-        </div>
-        <button
-          onClick={() => dashboard.refresh()}
-          disabled={dashboard.isRefreshing}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`h-4 w-4 ${dashboard.isRefreshing ? 'animate-spin' : ''}`} />
-          Actualizar
-        </button>
-      </div>
+      <PageHeader>
+        <PageHeader.Title>
+          {getGreeting()}, Dr. {firstName}
+        </PageHeader.Title>
+        <PageHeader.Meta>
+          {specialtyConfig?.name ?? 'Medicina General'} &mdash; {formatToday()}
+        </PageHeader.Meta>
+        <PageHeader.Actions>
+          <button
+            onClick={() => dashboard.refresh()}
+            disabled={dashboard.isRefreshing}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw aria-hidden="true" className={`h-4 w-4 ${dashboard.isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
+            Actualizar
+          </button>
+        </PageHeader.Actions>
+      </PageHeader>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -194,7 +214,7 @@ export default function DashboardPage() {
                       className="h-9 w-9 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: `${action.color}15` }}
                     >
-                      <Icon className="h-4.5 w-4.5" style={{ color: action.color }} />
+                      <Icon aria-hidden="true" className="h-4.5 w-4.5" style={{ color: action.color }} />
                     </div>
                     <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
                       {action.label}
@@ -236,11 +256,15 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Error display */}
-      {dashboard.error && (
+      {/* Error display — only when the doctor actually had data to lose.
+          For brand-new doctors with zero appointments, this banner is noise
+          and exposes raw schema details. */}
+      {dashboard.error && dashboard.todayAppointments.total > 0 && (
         <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
           <p className="font-medium">Algunos datos no pudieron cargarse</p>
-          <p className="mt-1 text-amber-600">{dashboard.error}</p>
+          <p className="mt-1 text-amber-600">
+            Reintentá en unos segundos. Si el problema persiste, contactá a soporte.
+          </p>
         </div>
       )}
     </div>
@@ -286,9 +310,9 @@ function DashboardSkeleton() {
 
 function getGreeting(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return 'os días';
-  if (hour < 18) return 'as tardes';
-  return 'as noches';
+  if (hour < 12) return 'Buenos días';
+  if (hour < 18) return 'Buenas tardes';
+  return 'Buenas noches';
 }
 
 function formatToday(): string {
