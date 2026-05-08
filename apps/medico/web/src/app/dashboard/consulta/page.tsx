@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase/client';
 import { SoapEditor, type SoapNotes } from '@/components/consultation/soap-editor';
 import { VitalSignsForm, type VitalSigns } from '@/components/consultation/vital-signs-form';
 import { DiagnosisSearch, type DiagnosisEntry } from '@/components/consultation/diagnosis-search';
+import { PageHeader } from '@/components/shell';
 import {
   getSpecialtyExperienceConfig,
   type SpecialtyConfig,
@@ -95,7 +96,7 @@ export default function ConsultaPage() {
         .from('doctor_profiles')
         .select(`
           especialidad:specialties(name, slug),
-          profile:profiles!doctor_profiles_profile_id_fkey(sacs_especialidad)
+          profile:profiles!doctor_details_profile_id_fkey(sacs_specialty)
         `)
         .eq('profile_id', user.id)
         .maybeSingle();
@@ -109,7 +110,7 @@ export default function ConsultaPage() {
       const config = getSpecialtyExperienceConfig({
         specialtySlug: especialidad?.slug ?? undefined,
         specialtyName: especialidad?.name ?? undefined,
-        sacsEspecialidad: profileData?.sacs_especialidad ?? undefined,
+        sacsEspecialidad: profileData?.sacs_specialty ?? undefined,
       });
       setSpecialtyConfig(config);
     }
@@ -196,15 +197,10 @@ export default function ConsultaPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Consulta Médica</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Notas clínicas, diagnósticos y examen médico
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHeader>
+        <PageHeader.Title>Consulta Médica</PageHeader.Title>
+        <PageHeader.Meta>Notas clínicas, diagnósticos y examen médico</PageHeader.Meta>
+        <PageHeader.Actions>
           <button
             onClick={saveConsultation}
             disabled={saving || !form.patient_id}
@@ -220,8 +216,8 @@ export default function ConsultaPage() {
             )}
             {saving ? 'Guardando...' : saveSuccess ? 'Guardado' : 'Guardar consulta'}
           </button>
-        </div>
-      </div>
+        </PageHeader.Actions>
+      </PageHeader>
 
       {/* Patient selector */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
