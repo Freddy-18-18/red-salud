@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@red-salud/auth-sdk';
 import {
   Avatar,
   AvatarFallback,
@@ -20,6 +19,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 
+import { supabase } from '@/lib/supabase/client';
+
 /**
  * @file user-menu-dropdown.tsx
  * @description Sidebar footer user menu (T-007).
@@ -28,10 +29,12 @@ import { toast } from 'sonner';
  * theme switcher, settings, and logout. Implements FR-4 + FR-8 of the
  * medico-shell-sanvia spec.
  *
- * Logout uses `useAuth().signOut()` from `@red-salud/auth-sdk` exclusively —
- * NEVER call `supabase.auth.signOut()` directly from the shell. On error a
- * destructive toast appears and the user stays logged in (graceful failure
- * per FR-8 edge case).
+ * Logout uses the shared `supabase` browser client from `@/lib/supabase/client`,
+ * which wraps `@supabase/ssr`'s `createBrowserClient` — the canonical pattern
+ * used everywhere else in the medico app (e.g. /auth/login). The `<AuthProvider>`
+ * from `@red-salud/auth-sdk` is intentionally NOT mounted in this app, so
+ * `useAuth()` would throw at runtime. On error a destructive toast appears and
+ * the user stays logged in (graceful failure per FR-8 edge case).
  *
  * Theme is rendered as a flat `DropdownMenuRadioGroup` (Claro / Oscuro / Auto)
  * inside the same dropdown — NOT a Radix Sub menu. The Sub-portal pattern
@@ -83,7 +86,6 @@ export function UserMenuDropdown({
   collapsed = false,
 }: UserMenuDropdownProps): React.ReactElement {
   const router = useRouter();
-  const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
 
   const initials = computeInitials(doctorName);
@@ -97,14 +99,15 @@ export function UserMenuDropdown({
 
   const handleLogout = useCallback(async () => {
     try {
-      await signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       router.push('/auth/login');
       router.refresh();
     } catch {
       // Spec FR-8 edge case: toast error and keep user logged in.
       toast.error('No se pudo cerrar sesión. Intentalo de nuevo.');
     }
-  }, [router, signOut]);
+  }, [router]);
 
   const handleThemeChange = useCallback(
     (value: string) => {

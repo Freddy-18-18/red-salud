@@ -44,8 +44,8 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-vi.mock('@red-salud/auth-sdk', () => ({
-  useAuth: () => ({ signOut: vi.fn() }),
+vi.mock('@/lib/supabase/client', () => ({
+  supabase: { auth: { signOut: vi.fn(async () => ({ error: null })) } },
 }));
 
 vi.mock('@red-salud/design-system', async () => {

@@ -46,10 +46,10 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-// Auth + theme stubs — UserMenuDropdown is rendered in the footer and pulls
+// Supabase + theme stubs — UserMenuDropdown is rendered in the footer and pulls
 // from these. We don't drive their behavior here (covered in user-menu tests).
-vi.mock('@red-salud/auth-sdk', () => ({
-  useAuth: () => ({ signOut: vi.fn() }),
+vi.mock('@/lib/supabase/client', () => ({
+  supabase: { auth: { signOut: vi.fn(async () => ({ error: null })) } },
 }));
 
 vi.mock('@red-salud/design-system', async () => {

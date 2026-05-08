@@ -10,7 +10,7 @@
  * - "Mi perfil" item navigates via router.push.
  * - "Verificación SACS" item navigates via router.push.
  * - "Configuración" item navigates via router.push.
- * - "Cerrar sesión" calls useAuth().signOut() and navigates to /auth/login.
+ * - "Cerrar sesión" calls supabase.auth.signOut() and navigates to /auth/login.
  * - Theme switcher reflects current theme via setTheme.
  * - Avatar fallback computes initials from doctorName.
  */
@@ -44,9 +44,9 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock, refresh: refreshMock }),
 }));
 
-const signOutMock = vi.fn<() => Promise<void>>();
-vi.mock('@red-salud/auth-sdk', () => ({
-  useAuth: () => ({ signOut: signOutMock }),
+const signOutMock = vi.fn<() => Promise<{ error: Error | null }>>();
+vi.mock('@/lib/supabase/client', () => ({
+  supabase: { auth: { signOut: () => signOutMock() } },
 }));
 
 const setThemeMock = vi.fn();
@@ -75,7 +75,7 @@ const baseProps = {
 beforeEach(() => {
   pushMock.mockReset();
   refreshMock.mockReset();
-  signOutMock.mockReset().mockResolvedValue();
+  signOutMock.mockReset().mockResolvedValue({ error: null });
   setThemeMock.mockReset();
   toastErrorMock.mockReset();
   useThemeReturn.theme = 'system';
@@ -162,7 +162,7 @@ describe('<UserMenuDropdown />', () => {
 
   it('shows a toast error and stays put when signOut fails', async () => {
     const user = userEvent.setup();
-    signOutMock.mockRejectedValueOnce(new Error('boom'));
+    signOutMock.mockResolvedValueOnce({ error: new Error('boom') });
     render(<UserMenuDropdown {...baseProps} />);
     await user.click(screen.getByRole('button', { name: /abrir menu de usuario/i }));
     await user.click(screen.getByText('Cerrar sesión'));
