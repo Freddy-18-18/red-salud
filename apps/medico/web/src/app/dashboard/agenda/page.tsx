@@ -7,6 +7,7 @@ import {
   useUpdateAppointmentStatus,
   type AppointmentRow,
 } from '@red-salud/core';
+import { PageHeader } from '@/components/shell';
 import {
   ChevronLeft,
   ChevronRight,
@@ -206,16 +207,10 @@ export default function AgendaPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Gestión de citas y horarios disponibles
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* View toggle */}
+      <PageHeader>
+        <PageHeader.Title>Agenda</PageHeader.Title>
+        <PageHeader.Meta>Gestión de citas y horarios disponibles</PageHeader.Meta>
+        <PageHeader.Actions>
           <div className="flex bg-gray-100 rounded-lg p-0.5">
             <button
               onClick={() => setViewMode('day')}
@@ -234,8 +229,8 @@ export default function AgendaPage() {
               Semana
             </button>
           </div>
-        </div>
-      </div>
+        </PageHeader.Actions>
+      </PageHeader>
 
       {/* Navigation bar */}
       <div className="flex items-center justify-between bg-white rounded-xl border border-gray-200 px-4 py-3">
