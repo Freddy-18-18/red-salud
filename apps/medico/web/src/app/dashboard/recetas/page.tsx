@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { EmptyState } from '@red-salud/design-system';
+import { PageHeader } from '@/components/shell';
 import {
   Pill,
   Plus,
@@ -220,22 +222,19 @@ export default function RecetasPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Recetas</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Creación y gestión de prescripciones médicas
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          {showCreate ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {showCreate ? 'Cancelar' : 'Nueva receta'}
-        </button>
-      </div>
+      <PageHeader>
+        <PageHeader.Title>Recetas</PageHeader.Title>
+        <PageHeader.Meta>Creación y gestión de prescripciones médicas</PageHeader.Meta>
+        <PageHeader.Actions>
+          <button
+            onClick={() => setShowCreate(!showCreate)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            {showCreate ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {showCreate ? 'Cancelar' : 'Nueva receta'}
+          </button>
+        </PageHeader.Actions>
+      </PageHeader>
 
       {/* Digital signature notice */}
       <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
@@ -430,11 +429,13 @@ export default function RecetasPage() {
             ))}
           </div>
         ) : prescriptions.length === 0 ? (
-          <div className="p-8 text-center">
-            <Pill className="h-12 w-12 mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500 font-medium">Sin recetas registradas</p>
-            <p className="text-sm text-gray-400 mt-1">Las recetas que crees aparecerán aquí</p>
-          </div>
+          <EmptyState
+            icon={Pill}
+            title="Aún no tenés recetas"
+            description="Las recetas que crees aparecerán acá. Empezá creando una desde el botón Nueva receta."
+            size="compact"
+            className="border-0 rounded-none"
+          />
         ) : (
           <div className="divide-y divide-gray-100">
             {prescriptions.map((rx) => {
