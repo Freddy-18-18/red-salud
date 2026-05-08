@@ -1,6 +1,7 @@
-import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { DashboardShell } from './dashboard-shell';
+
+import { DashboardShell } from '@/components/shell/dashboard-shell';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardLayout({
   children,
@@ -16,17 +17,19 @@ export default async function DashboardLayout({
     redirect('/auth/login');
   }
 
-  // Fetch doctor profile for the sidebar
+  // Fetch doctor profile for the sidebar (specialty is informational only —
+  // Phase 1 chrome is specialty-agnostic per FR-9; the new shell does not
+  // compute themeColor or branch on slug).
   const { data: doctorDetails } = await supabase
     .from('doctor_profiles')
     .select(`
       profile_id,
       specialty_id,
       specialty:specialties(id, name, slug, icon),
-      profile:profiles!doctor_profiles_profile_id_fkey(
+      profile:profiles!doctor_details_profile_id_fkey(
         full_name,
         avatar_url,
-        sacs_especialidad
+        sacs_specialty
       )
     `)
     .eq('profile_id', user.id)
@@ -40,18 +43,14 @@ export default async function DashboardLayout({
     : doctorDetails?.profile;
   const doctorName = profileData?.full_name ?? user.email ?? 'Doctor';
   const specialtyName = specialty?.name ?? 'Medicina General';
-  const specialtySlug = specialty?.slug ?? null;
   const avatarUrl = profileData?.avatar_url ?? null;
-  const sacsEspecialidad = profileData?.sacs_especialidad ?? null;
 
   return (
     <DashboardShell
-      userId={user.id}
       doctorName={doctorName}
-      specialtyName={specialtyName}
-      specialtySlug={specialtySlug}
+      email={user.email ?? ''}
       avatarUrl={avatarUrl}
-      sacsEspecialidad={sacsEspecialidad}
+      specialtyName={specialtyName}
     >
       {children}
     </DashboardShell>
