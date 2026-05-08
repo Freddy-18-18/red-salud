@@ -1,5 +1,7 @@
 'use client';
 
+import { PageHeader } from '@/components/shell';
+
 /**
  * SACS verification page.
  * Venezuelan medical registry verification for doctors.
@@ -8,12 +10,10 @@
 export default function VerificacionPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Verificación SACS</h1>
-        <p className="text-gray-600 mt-1">
-          Verificación del registro médico venezolano
-        </p>
-      </div>
+      <PageHeader>
+        <PageHeader.Title>Verificación SACS</PageHeader.Title>
+        <PageHeader.Meta>Próximamente — esta sección está en desarrollo</PageHeader.Meta>
+      </PageHeader>
 
       {/* TODO: SACS verification status display */}
       {/* TODO: Verification form (cédula, MPPS number) */}
