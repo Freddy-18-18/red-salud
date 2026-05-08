@@ -1,11 +1,13 @@
 "use client";
 
+import { EmptyState } from "@red-salud/design-system";
 import { MessageSquare, ArrowLeft } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 
 import { ConversationList } from "@/components/messaging/conversation-list";
 import { MessageInput } from "@/components/messaging/message-input";
 import { MessageThread } from "@/components/messaging/message-thread";
+import { PageHeader } from "@/components/shell";
 import {
   getUserConversations,
   getConversationMessages,
@@ -124,10 +126,10 @@ export default function MedicoMensajesPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Mensajes</h1>
-        <p className="text-gray-500 mt-1">Comunicate con tus pacientes</p>
-      </div>
+      <PageHeader>
+        <PageHeader.Title>Mensajes</PageHeader.Title>
+        <PageHeader.Meta>Comunicate con tus pacientes</PageHeader.Meta>
+      </PageHeader>
 
       <div className="bg-white border border-gray-100 rounded-xl overflow-hidden h-[calc(100vh-16rem)] lg:h-[calc(100vh-14rem)]">
         <div className="flex h-full">
@@ -152,13 +154,13 @@ export default function MedicoMensajesPage() {
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center p-6">
-                <div className="text-center">
-                  <MessageSquare className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500">Sin conversaciones todavia</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Cuando un paciente te escriba, aparecera aqui.
-                  </p>
-                </div>
+                <EmptyState
+                  icon={MessageSquare}
+                  title="Aún no tenés conversaciones"
+                  description="Cuando un paciente te escriba, vas a verlo acá."
+                  size="compact"
+                  className="border-0 bg-transparent"
+                />
               </div>
             )}
           </div>
@@ -193,14 +195,13 @@ export default function MedicoMensajesPage() {
                 <MessageInput onSend={handleSendMessage} />
               </>
             ) : (
-              <div className="flex items-center justify-center h-full text-center px-6">
-                <div>
-                  <MessageSquare className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500">Selecciona una conversacion</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Elige una conversacion de la lista para responder.
-                  </p>
-                </div>
+              <div className="flex items-center justify-center h-full px-6">
+                <EmptyState
+                  icon={MessageSquare}
+                  title="Elegí una conversación"
+                  description="Seleccioná una conversación de la lista para empezar a responder."
+                  className="border-0 bg-transparent"
+                />
               </div>
             )}
           </div>
