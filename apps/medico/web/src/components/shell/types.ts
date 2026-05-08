@@ -62,10 +62,13 @@ export interface PageHeaderBreadcrumbItem {
 /**
  * Props consumed by the `<DashboardShell>` orchestrator. The server layout
  * fetches doctor data and forwards it; the shell does NOT call Supabase.
+ *
+ * Phase 1 deliberately drops `userId`, `specialtySlug`, and `sacsEspecialidad`
+ * — the new shell is specialty-agnostic per FR-9 and the validation checklist
+ * (themeColor const removed, no per-specialty branching at the chrome layer).
+ * Any per-specialty UX returns in Fase 2 via the capability engine.
  */
 export interface DashboardShellProps {
-  /** Authenticated user id (Supabase `auth.users.id`). */
-  userId: string;
   /** Doctor display name. Falls back to email upstream. */
   doctorName: string;
   /** Doctor email; rendered in the user-menu trigger / dropdown. */
@@ -74,10 +77,6 @@ export interface DashboardShellProps {
   avatarUrl: string | null;
   /** Specialty display name (e.g. "Cardiología"). */
   specialtyName: string;
-  /** Specialty slug from the catalog. `null` when unset. */
-  specialtySlug: string | null;
-  /** SACS-registered specialty string. `null` when unset. */
-  sacsEspecialidad: string | null;
   /** Page tree rendered inside the shell's `<main>`. */
   children: ReactNode;
 }
