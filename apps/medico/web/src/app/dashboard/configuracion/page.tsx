@@ -22,6 +22,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { ScheduleManager } from '@/components/settings/schedule-manager';
+import { PageHeader } from '@/components/shell';
 
 // ============================================================================
 // TYPES
@@ -118,31 +119,28 @@ export default function ConfiguracionPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Perfil profesional y preferencias del consultorio
-          </p>
-        </div>
+      <PageHeader>
+        <PageHeader.Title>Configuración</PageHeader.Title>
+        <PageHeader.Meta>Perfil profesional y preferencias del consultorio</PageHeader.Meta>
         {activeTab === 'profile' && (
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : saveSuccess ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            {saving ? 'Guardando...' : saveSuccess ? 'Guardado' : 'Guardar'}
-          </button>
+          <PageHeader.Actions>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : saveSuccess ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              {saving ? 'Guardando...' : saveSuccess ? 'Guardado' : 'Guardar'}
+            </button>
+          </PageHeader.Actions>
         )}
-      </div>
+      </PageHeader>
 
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
@@ -194,7 +192,7 @@ export default function ConfiguracionPage() {
               <h2 className="text-lg font-bold text-gray-900">{profile?.full_name ?? 'Doctor'}</h2>
               <p className="text-sm text-gray-500">{profile?.specialty?.name ?? 'Medicina General'}</p>
               <div className="flex items-center gap-2 mt-1">
-                {profile?.sacs_verificado && (
+                {profile?.sacs_verified && (
                   <span className="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                     <Shield className="h-3 w-3" /> SACS Verificado
                   </span>
