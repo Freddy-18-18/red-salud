@@ -96,4 +96,42 @@ export interface DashboardShellProps {
   pinnedModules?: import('@/lib/capabilities/types').MedicoModule[];
   /** When true, render a banner pointing the doctor to complete SACS verification. */
   verificationPending?: boolean;
+  /**
+   * Active sede label for the GlobalHeader breadcrumb (Phase 2 +). When omitted
+   * the breadcrumb degrades gracefully to a "Sin sede" placeholder.
+   */
+  sedeName?: string;
+  /**
+   * Current module label (e.g. "Pacientes", "Agenda") derived from the
+   * pathname segment. Threaded into the GlobalHeader's third breadcrumb.
+   */
+  moduleLabel?: string;
+  /**
+   * Resolver attention flags driving the GlobalHeader Advisor red-dot and the
+   * sidebar NavLink attention dots. When omitted, no attention indicators
+   * render — safe degradation when the capability engine is OFF.
+   */
+  attention?: import('@/lib/capabilities/types').DoctorAttention;
+}
+
+/**
+ * Props for the new GlobalHeader (Phase 2 of medico-shell-supabase-style).
+ * Mounted under `FEATURE_NEW_SHELL=true` only — legacy shell does not render
+ * this header. See `app-shell-medico` R6 + R7.
+ */
+export interface GlobalHeaderProps {
+  /** Doctor display name shown as the first breadcrumb level. */
+  doctorName: string;
+  /**
+   * Active sede label. When undefined, the breadcrumb shows "Sin sede" with
+   * a disabled chevron — degrades gracefully until Phase 3 wires sedes data.
+   */
+  sedeName?: string;
+  /** Current module label shown as the terminal breadcrumb. */
+  moduleLabel: string;
+  /**
+   * Resolver-derived attention flags. When either flag is true, the Advisor
+   * button renders a destructive-colored red dot.
+   */
+  attention?: import('@/lib/capabilities/types').DoctorAttention;
 }

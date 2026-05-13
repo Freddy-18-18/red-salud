@@ -47,6 +47,17 @@ interface DoctorProfileRow {
   sacs_data: { data?: { postgrados?: Array<{ postgrado?: string }> } } | null;
   certifications: string[] | null;
   specialty: { slug: string | null } | null;
+  /**
+   * Joined from the `profiles` table — owns the SACS verification timestamp.
+   * Surface as a join because `doctor_profiles.sacs_verified` and
+   * `profiles.sacs_verified_at` are split between tables in the current
+   * schema (see onboarding-wizard). The resolver consumes the timestamp to
+   * compute `attention.sacsExpired`.
+   */
+  profile?:
+    | { sacs_verified_at: string | null }
+    | { sacs_verified_at: string | null }[]
+    | null;
 }
 
 type Supabase = {
@@ -86,7 +97,8 @@ export function buildSupabaseResolverDeps(
           sacs_verified,
           sacs_data,
           certifications,
-          specialty:specialties(slug)
+          specialty:specialties(slug),
+          profile:profiles!doctor_details_profile_id_fkey(sacs_verified_at)
         `)
         .eq('profile_id', doctorId)
         .maybeSingle();
@@ -94,10 +106,12 @@ export function buildSupabaseResolverDeps(
       if (error || !data) return null;
       const row = data as DoctorProfileRow;
       const specialty = Array.isArray(row.specialty) ? row.specialty[0] : row.specialty;
+      const profile = Array.isArray(row.profile) ? row.profile[0] : row.profile;
 
       return {
         specialty_slug: specialty?.slug ?? null,
         sacs_verified: row.sacs_verified ?? false,
+        sacs_verified_at: profile?.sacs_verified_at ?? null,
         postgrados_raw: extractPostgrados(row.sacs_data),
         plan: defaultPlan,
         certs: row.certifications ?? [],

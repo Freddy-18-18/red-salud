@@ -26,6 +26,12 @@ import type {
 export interface DoctorProfileSlice {
   specialty_slug: string | null;
   sacs_verified: boolean;
+  /**
+   * ISO timestamp of the most recent SACS verification, or `null` when the
+   * doctor has never been verified. Used to compute `attention.sacsExpired`
+   * (renewal cycle: 1 year). Added by medico-shell-supabase-style Phase 2.
+   */
+  sacs_verified_at?: string | null;
   postgrados_raw: string[];
   plan: PlanTier;
   certs: string[];
@@ -49,9 +55,25 @@ const DEGRADED_RESULT: ResolverResult = {
   navGroups: [],
   pinnedModules: [],
   verificationPending: true,
+  attention: { verificationPending: true, sacsExpired: false },
   capabilities: { specialty: null, postgrados: [], certs: [], plan: 'starter' },
   resolvedAt: '',
 };
+
+/** Renewal cycle for SACS verification — 1 year. */
+const SACS_RENEWAL_WINDOW_MS = 1000 * 60 * 60 * 24 * 365;
+
+/**
+ * Computes whether a SACS verification timestamp is past the renewal window.
+ * Returns false when the timestamp is null/undefined (never verified — surfaced
+ * by `verificationPending` instead).
+ */
+function computeSacsExpired(sacsVerifiedAt: string | null | undefined): boolean {
+  if (!sacsVerifiedAt) return false;
+  const verifiedAt = Date.parse(sacsVerifiedAt);
+  if (Number.isNaN(verifiedAt)) return false;
+  return Date.now() - verifiedAt > SACS_RENEWAL_WINDOW_MS;
+}
 
 const PLACEHOLDER_BADGE = 'Próximamente';
 const LAZY_MODULE_ROUTE_PREFIX = '/dashboard/modulos/';
@@ -129,10 +151,14 @@ export async function resolveDoctorModules(
   const pinnedModules = finalModules.filter((m) => m.pinned);
   const navGroups = groupAndSort(finalModules);
 
+  const verificationPending = !profile.sacs_verified;
+  const sacsExpired = computeSacsExpired(profile.sacs_verified_at ?? null);
+
   return {
     navGroups,
     pinnedModules,
-    verificationPending: !profile.sacs_verified,
+    verificationPending,
+    attention: { verificationPending, sacsExpired },
     capabilities: {
       specialty: profile.specialty_slug,
       postgrados: normalizedPostgrados.map((p) => p.slug),

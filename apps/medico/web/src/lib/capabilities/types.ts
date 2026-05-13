@@ -154,13 +154,42 @@ export const DISPLAY_GROUP_ORDER: readonly DisplayGroup[] = [
 ];
 
 /**
+ * Attention flags surfaced by the resolver to drive header/sidebar visual
+ * affordances (Advisor red-dot, NavLink attention dot). Mirrors the
+ * `doctor-capabilities` delta from medico-shell-supabase-style.
+ */
+export interface DoctorAttention {
+  /**
+   * True when `profile.sacs_verified === false` — doctor is in manual mode
+   * and needs to complete SACS verification. Mirrored at the top level as
+   * `ResolverResult.verificationPending` for backward compatibility.
+   */
+  verificationPending: boolean;
+  /**
+   * True when `profile.sacs_verified_at` is older than the renewal cycle
+   * (currently hardcoded to 1 year). False when null or within window.
+   */
+  sacsExpired: boolean;
+}
+
+/**
  * Final shape returned by `resolveDoctorModules()`. Threaded as props from
  * `app/dashboard/layout.tsx` to `<DashboardShell>`.
  */
 export interface ResolverResult {
   navGroups: ResolvedNavGroup[];
   pinnedModules: MedicoModule[];
+  /**
+   * Backward-compatible alias of `attention.verificationPending`. Existing
+   * consumers (DashboardShell prop, dashboard banner) read this directly.
+   * Kept in sync inside the resolver.
+   */
   verificationPending: boolean;
+  /**
+   * Attention flags driving the new shell's Advisor red-dot and NavLink
+   * attention dots. Added by medico-shell-supabase-style Phase 2.
+   */
+  attention: DoctorAttention;
   capabilities: {
     specialty: string | null;
     postgrados: string[];

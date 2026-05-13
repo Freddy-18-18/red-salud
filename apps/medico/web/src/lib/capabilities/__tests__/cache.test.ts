@@ -12,6 +12,7 @@ function fixedResult(label: string): ResolverResult {
     navGroups: [],
     pinnedModules: [],
     verificationPending: false,
+    attention: { verificationPending: false, sacsExpired: false },
     capabilities: { specialty: label, postgrados: [], certs: [], plan: 'starter' },
     resolvedAt: '2026-05-13T00:00:00.000Z',
   };

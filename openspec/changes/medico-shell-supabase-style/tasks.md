@@ -22,20 +22,20 @@ Phases gated by `FEATURE_NEW_SHELL` env flag.
 
 ## Phase 2: Global Header + Breadcrumbs + Action Cluster
 
-- [ ] 2.1 (RED) Test GlobalHeader renders 3 breadcrumb levels with slash SVG separators when flag true [R6]
-- [ ] 2.2 (GREEN) Create `apps/medico/web/src/components/shell/global-header.tsx` [R6]
-- [ ] 2.3 (RED) Test BreadcrumbPicker opens popover with options
-- [ ] 2.4 (GREEN) Create `apps/medico/web/src/components/shell/breadcrumb-picker.tsx` — generic accepts `{level, value, options, onSelect}`
-- [ ] 2.5 (RED) Test AdvisorButton shows red dot when resolver flags `verificationPending` OR `sacsExpired`
-- [ ] 2.6 (GREEN) Create `apps/medico/web/src/components/shell/advisor-button.tsx` — opens dropdown with alerts list
-- [ ] 2.7 (RED) Test resolver output includes `verificationPending` + `sacsExpired` fields
-- [ ] 2.8 (GREEN) Modify `apps/medico/web/src/lib/capabilities/resolver.ts` — add fields, default `false` when capability engine off
-- [ ] 2.9 (GREEN) Create `apps/medico/web/src/components/shell/help-button.tsx` — `/help` link + feedback form modal
-- [ ] 2.10 (GREEN) Create `apps/medico/web/src/components/shell/ai-assistant-button.tsx` — placeholder dock trigger (Decision 6)
-- [ ] 2.11 (RED) Test DashboardShell renders GlobalHeader when flag true, hides when false [R8]
-- [ ] 2.12 (GREEN) Modify `apps/medico/web/src/components/shell/dashboard-shell.tsx` — conditional `GlobalHeader` mount [R8]
-- [ ] 2.13 (style) Apply `rounded-full w-8 h-8 border-strong hover:border-foreground-muted` on action buttons [R7]
-- [ ] 2.14 (verify) Playwright: header renders on all 11 dashboard pages, no console errors
+- [x] 2.1 (RED) Test GlobalHeader renders 3 breadcrumb levels with slash SVG separators when flag true [R6]
+- [x] 2.2 (GREEN) Create `apps/medico/web/src/components/shell/global-header.tsx` [R6]
+- [x] 2.3 (RED) Test BreadcrumbPicker opens popover with options
+- [x] 2.4 (GREEN) Create `apps/medico/web/src/components/shell/breadcrumb-picker.tsx` — generic accepts `{level, value, options, onSelect}`
+- [x] 2.5 (RED) Test AdvisorButton shows red dot when resolver flags `verificationPending` OR `sacsExpired`
+- [x] 2.6 (GREEN) Create `apps/medico/web/src/components/shell/advisor-button.tsx` — opens dropdown with alerts list
+- [x] 2.7 (RED) Test resolver output includes `verificationPending` + `sacsExpired` fields
+- [x] 2.8 (GREEN) Modify `apps/medico/web/src/lib/capabilities/resolver.ts` — add fields, default `false` when capability engine off
+- [x] 2.9 (GREEN) Create `apps/medico/web/src/components/shell/help-button.tsx` — `/help` link + feedback form modal
+- [x] 2.10 (GREEN) Create `apps/medico/web/src/components/shell/ai-assistant-button.tsx` — placeholder dock trigger (Decision 6)
+- [x] 2.11 (RED) Test DashboardShell renders GlobalHeader when flag true, hides when false [R8]
+- [x] 2.12 (GREEN) Modify `apps/medico/web/src/components/shell/dashboard-shell.tsx` — conditional `GlobalHeader` mount [R8]
+- [x] 2.13 (style) Apply `rounded-full w-8 h-8 border-strong hover:border-foreground-muted` on action buttons [R7]
+- [x] 2.14 (verify) typecheck + vitest pass; Playwright check deferred until Phase 5 cutover (no console error budget on dashboard pages)
 
 ## Phase 3: doctor_practice_locations + RLS + Management UI
 

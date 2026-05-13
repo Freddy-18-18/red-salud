@@ -1,7 +1,9 @@
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { DashboardShell } from '@/components/shell/dashboard-shell';
 import { buildSupabaseResolverDeps } from '@/lib/capabilities/supabase-deps';
+import { lookupModule } from '@/lib/capabilities/module-catalog';
 import { resolveDoctorModules } from '@/lib/capabilities/resolver';
 import type { ResolverResult } from '@/lib/capabilities/types';
 import { createClient } from '@/lib/supabase/server';
@@ -9,6 +11,38 @@ import { createClient } from '@/lib/supabase/server';
 const FEATURE_CAPABILITY_ENGINE =
   process.env.FEATURE_CAPABILITY_ENGINE === 'true' ||
   process.env.NEXT_PUBLIC_FEATURE_CAPABILITY_ENGINE === 'true';
+
+/**
+ * Maps the first pathname segment under `/dashboard/*` to a Spanish-language
+ * module label. Used by the GlobalHeader's third breadcrumb level. Falls back
+ * to "Inicio" when the path is exactly `/dashboard` and to the segment name
+ * (with a `Configuración` fallback for unknown deep routes) otherwise.
+ */
+const PATHNAME_MODULE_LABELS: Record<string, string> = {
+  '': 'Inicio',
+  agenda: 'Agenda',
+  pacientes: 'Pacientes',
+  consulta: 'Consulta',
+  recetas: 'Recetas',
+  mensajes: 'Mensajes',
+  estadisticas: 'Estadísticas',
+  verificacion: 'Verificación',
+  configuracion: 'Configuración',
+  sedes: 'Sedes',
+};
+
+function resolveModuleLabel(pathname: string | null): string {
+  if (!pathname) return 'Inicio';
+  // Strip `/dashboard` prefix and any trailing slash.
+  const stripped = pathname.replace(/^\/dashboard\/?/, '').replace(/\/$/, '');
+  if (!stripped) return 'Inicio';
+  const [first, second] = stripped.split('/');
+  if (first === 'modulos' && second) {
+    // Resolve module keys via the capability catalogue (rich label).
+    return lookupModule(second).label;
+  }
+  return PATHNAME_MODULE_LABELS[first] ?? 'Configuración';
+}
 
 export default async function DashboardLayout({
   children,
@@ -63,6 +97,18 @@ export default async function DashboardLayout({
     }
   }
 
+  // Resolve the current pathname server-side via headers (App Router doesn't
+  // expose `usePathname` in layouts). Next sets `x-invoke-path` (Pages router
+  // legacy) and `x-nextjs-url` / `next-url` in middleware; `next-url` is the
+  // safest cross-version source. Falls back to "/dashboard" when missing.
+  const requestHeaders = await headers();
+  const nextUrl =
+    requestHeaders.get('next-url') ??
+    requestHeaders.get('x-nextjs-url') ??
+    requestHeaders.get('x-invoke-path') ??
+    '/dashboard';
+  const moduleLabel = resolveModuleLabel(nextUrl);
+
   return (
     <DashboardShell
       doctorName={doctorName}
@@ -72,6 +118,8 @@ export default async function DashboardLayout({
       navGroups={resolverResult?.navGroups}
       pinnedModules={resolverResult?.pinnedModules}
       verificationPending={resolverResult?.verificationPending ?? false}
+      moduleLabel={moduleLabel}
+      attention={resolverResult?.attention}
     >
       {children}
     </DashboardShell>

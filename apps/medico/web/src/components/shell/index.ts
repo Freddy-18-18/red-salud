@@ -21,6 +21,14 @@ export { MobileBottomNav } from './mobile-bottom-nav';
 export { MobileSidebarSheet } from './mobile-sidebar-sheet';
 export { MobileTopBar } from './mobile-top-bar';
 
+// Supabase-style global header + action cluster (Phase 2 of
+// medico-shell-supabase-style). Mounted under `NEXT_PUBLIC_FEATURE_NEW_SHELL`.
+export { GlobalHeader } from './global-header';
+export { BreadcrumbPicker } from './breadcrumb-picker';
+export { AdvisorButton } from './advisor-button';
+export { HelpButton } from './help-button';
+export { AIAssistantButton } from './ai-assistant-button';
+
 // Per-page header (consumed by all 11 dashboard pages in Phase E).
 export { PageHeader } from './page-header';
 
@@ -39,6 +47,7 @@ export { BOTTOM_NAV_ITEMS, NAV_GROUPS } from './nav-data';
 export type {
   BottomNavItemData,
   DashboardShellProps,
+  GlobalHeaderProps,
   NavGroupData,
   NavLinkData,
   PageHeaderBreadcrumbItem,

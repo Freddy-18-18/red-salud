@@ -6,11 +6,18 @@ import { TooltipProvider } from '@red-salud/design-system';
 import { useSidebarCollapsed } from '../../hooks/use-sidebar-collapsed';
 
 import { DesktopSidebar } from './desktop-sidebar';
+import { GlobalHeader } from './global-header';
 import { MobileBottomNav } from './mobile-bottom-nav';
 import { MobileSidebarSheet } from './mobile-sidebar-sheet';
 import { MobileTopBar } from './mobile-top-bar';
 import { mergeWithStaticFallback } from './nav-mapper';
 import type { DashboardShellProps } from './types';
+
+function isNewShellEnabled(): boolean {
+  // Read at call time so vi.stubEnv works under jsdom; Next.js inlines
+  // NEXT_PUBLIC_* at build time at runtime in the browser bundle.
+  return process.env.NEXT_PUBLIC_FEATURE_NEW_SHELL === 'true';
+}
 
 /**
  * @file dashboard-shell.tsx
@@ -49,6 +56,9 @@ export function DashboardShell({
   navGroups,
   pinnedModules: _pinnedModules,
   verificationPending = false,
+  sedeName,
+  moduleLabel,
+  attention,
 }: DashboardShellProps): React.ReactElement {
   const { collapsed, toggle } = useSidebarCollapsed();
   const [sheetOpen, setSheetOpen] = useState<boolean>(false);
@@ -60,6 +70,11 @@ export function DashboardShell({
   // Padding swaps with the sidebar width. Animated to match the sidebar's
   // `transition-[width]` so the main column glides instead of jumping.
   const wrapperPaddingClass = collapsed ? 'lg:pl-16' : 'lg:pl-72';
+
+  // Gate the new Supabase-style GlobalHeader behind the env flag (R8).
+  // Legacy shell renders without it — fully reversible.
+  const newShellEnabled = isNewShellEnabled();
+  const effectiveModuleLabel = moduleLabel ?? specialtyName;
 
   return (
     <TooltipProvider delayDuration={250}>
@@ -81,6 +96,15 @@ export function DashboardShell({
             wrapperPaddingClass,
           ].join(' ')}
         >
+          {newShellEnabled && (
+            <GlobalHeader
+              doctorName={doctorName}
+              sedeName={sedeName}
+              moduleLabel={effectiveModuleLabel}
+              attention={attention}
+            />
+          )}
+
           <MobileTopBar onOpenSheet={() => setSheetOpen(true)} />
           <MobileSidebarSheet
             open={sheetOpen}

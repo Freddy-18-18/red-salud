@@ -60,6 +60,7 @@ describe('buildSupabaseResolverDeps', () => {
             },
             certifications: ['acls'],
             specialty: { slug: 'infectologia' },
+            profile: { sacs_verified_at: '2026-04-01T00:00:00.000Z' },
           },
         },
       });
@@ -68,6 +69,7 @@ describe('buildSupabaseResolverDeps', () => {
       expect(profile).toEqual({
         specialty_slug: 'infectologia',
         sacs_verified: true,
+        sacs_verified_at: '2026-04-01T00:00:00.000Z',
         postgrados_raw: ['INFECTOLOGÍA PEDIÁTRICA', 'PEDIATRÍA Y PUERICULTURA'],
         plan: 'starter',
         certs: ['acls'],
@@ -82,6 +84,7 @@ describe('buildSupabaseResolverDeps', () => {
             sacs_data: null,
             certifications: null,
             specialty: { slug: 'medicina-general' },
+            profile: null,
           },
         },
       });
@@ -90,6 +93,7 @@ describe('buildSupabaseResolverDeps', () => {
       expect(profile?.postgrados_raw).toEqual([]);
       expect(profile?.certs).toEqual([]);
       expect(profile?.sacs_verified).toBe(false);
+      expect(profile?.sacs_verified_at).toBeNull();
     });
 
     it('returns null when the doctor profile row is missing', async () => {
@@ -109,12 +113,14 @@ describe('buildSupabaseResolverDeps', () => {
             sacs_data: null,
             certifications: [],
             specialty: [{ slug: 'urologia' }],
+            profile: [{ sacs_verified_at: '2025-12-01T00:00:00.000Z' }],
           },
         },
       });
       const deps = buildSupabaseResolverDeps(client);
       const profile = await deps.fetchProfile('doc-5');
       expect(profile?.specialty_slug).toBe('urologia');
+      expect(profile?.sacs_verified_at).toBe('2025-12-01T00:00:00.000Z');
     });
   });
 
