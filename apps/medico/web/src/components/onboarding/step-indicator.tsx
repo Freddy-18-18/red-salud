@@ -15,7 +15,7 @@ interface StepIndicatorProps {
 export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
   return (
     <nav aria-label="Progreso del registro" className="w-full">
-      <ol className="flex items-center w-full">
+      <ol className="flex items-start w-full">
         {steps.map((step, index) => {
           const isCompleted = currentStep > step.id;
           const isCurrent = currentStep === step.id;
@@ -24,39 +24,37 @@ export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
           return (
             <li
               key={step.id}
-              className={`flex items-center ${isLast ? '' : 'flex-1'}`}
+              className={`flex items-start ${isLast ? '' : 'flex-1'}`}
             >
-              <div className="flex flex-col items-center gap-1.5">
+              <div className="flex flex-col items-center gap-2 shrink-0">
                 <div
-                  className={`
-                    flex items-center justify-center w-10 h-10 rounded-full
-                    text-sm font-semibold transition-all duration-300
-                    ${
-                      isCompleted
-                        ? 'bg-teal-500 text-white shadow-md shadow-teal-500/30'
-                        : isCurrent
-                          ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30 ring-4 ring-teal-500/20'
-                          : 'bg-white/5 text-zinc-500 border border-white/10'
-                    }
-                  `}
+                  aria-current={isCurrent ? 'step' : undefined}
+                  className={[
+                    'flex items-center justify-center w-9 h-9 rounded-full',
+                    'text-sm font-semibold transition-all duration-200',
+                    'motion-reduce:transition-none',
+                    isCompleted
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : isCurrent
+                        ? 'bg-primary text-primary-foreground shadow-md ring-4 ring-primary/15'
+                        : 'bg-muted text-muted-foreground border border-border',
+                  ].join(' ')}
                 >
                   {isCompleted ? (
-                    <Check className="w-5 h-5" />
+                    <Check className="w-4 h-4" aria-hidden="true" />
                   ) : (
                     step.id
                   )}
                 </div>
                 <span
-                  className={`
-                    text-xs font-medium text-center max-w-[80px] leading-tight
-                    ${
-                      isCurrent
-                        ? 'text-teal-400'
-                        : isCompleted
-                          ? 'text-teal-500'
-                          : 'text-zinc-500'
-                    }
-                  `}
+                  className={[
+                    'text-xs font-medium text-center leading-tight max-w-[88px]',
+                    isCurrent
+                      ? 'text-foreground'
+                      : isCompleted
+                        ? 'text-primary'
+                        : 'text-muted-foreground',
+                  ].join(' ')}
                 >
                   {step.label}
                 </span>
@@ -64,10 +62,12 @@ export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
 
               {!isLast && (
                 <div
-                  className={`
-                    flex-1 h-0.5 mx-3 mt-[-20px] transition-all duration-500
-                    ${isCompleted ? 'bg-teal-500' : 'bg-white/10'}
-                  `}
+                  aria-hidden="true"
+                  className={[
+                    'flex-1 h-px mx-3 mt-[18px] transition-colors duration-300',
+                    'motion-reduce:transition-none',
+                    isCompleted ? 'bg-primary' : 'bg-border',
+                  ].join(' ')}
                 />
               )}
             </li>

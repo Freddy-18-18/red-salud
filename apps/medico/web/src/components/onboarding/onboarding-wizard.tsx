@@ -11,7 +11,12 @@ import {
   Camera,
   Plus,
   Check,
+  Info,
+  Stethoscope,
+  CalendarClock,
+  MapPin,
 } from 'lucide-react';
+import { ThemeToggle } from '@red-salud/design-system';
 import { supabase } from '@/lib/supabase/client';
 import { StepIndicator } from './step-indicator';
 import { SpecialtySelector, type SpecialtyOption } from './specialty-selector';
@@ -22,7 +27,7 @@ import { LocationPicker, type LocationData } from './location-picker';
 // ============================================================================
 
 const STEPS = [
-  { id: 1, label: 'Verificacion' },
+  { id: 1, label: 'Verificación' },
   { id: 2, label: 'Consultorio' },
   { id: 3, label: 'Horarios' },
 ];
@@ -30,15 +35,15 @@ const STEPS = [
 const DAYS_OF_WEEK = [
   { key: 'lun', label: 'Lun' },
   { key: 'mar', label: 'Mar' },
-  { key: 'mie', label: 'Mie' },
+  { key: 'mie', label: 'Mié' },
   { key: 'jue', label: 'Jue' },
   { key: 'vie', label: 'Vie' },
-  { key: 'sab', label: 'Sab' },
+  { key: 'sab', label: 'Sáb' },
   { key: 'dom', label: 'Dom' },
 ];
 
 const TIME_BLOCKS = [
-  { key: 'morning', label: 'Manana', desc: '8:00 - 12:00' },
+  { key: 'morning', label: 'Mañana', desc: '8:00 - 12:00' },
   { key: 'afternoon', label: 'Tarde', desc: '13:00 - 17:00' },
   { key: 'evening', label: 'Noche', desc: '17:00 - 21:00' },
 ];
@@ -92,32 +97,40 @@ interface WizardState {
 }
 
 // ============================================================================
-// HELPERS
+// SHARED STYLING HELPERS — semantic tokens, theme-aware
 // ============================================================================
 
 const inputClass = (hasError = false) =>
-  `w-full bg-zinc-800/50 border ${hasError ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:outline-none transition-colors`;
+  [
+    'w-full rounded-lg px-3.5 py-2.5 text-sm',
+    'bg-background border',
+    hasError ? 'border-destructive/60' : 'border-border',
+    'text-foreground placeholder:text-muted-foreground',
+    'focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring',
+    'transition-colors motion-reduce:transition-none',
+  ].join(' ');
 
 const toggleBtnClass = (active: boolean) =>
   active
-    ? 'bg-teal-500/20 border-teal-500/50 text-teal-300'
-    : 'bg-zinc-800/50 border-white/10 text-zinc-400 hover:border-white/20';
+    ? 'bg-primary/10 border-primary/40 text-primary'
+    : 'bg-background border-border text-muted-foreground hover:text-foreground hover:border-border-strong';
+
+const sectionIconClass =
+  'w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0';
 
 function buildScheduleSummary(days: string[], blocks: string[]): string {
   if (days.length === 0 || blocks.length === 0) return '';
 
-  // Summarize consecutive days
   const dayLabels = DAYS_OF_WEEK.filter((d) => days.includes(d.key)).map((d) => d.label);
   const dayStr =
     dayLabels.length === 7
-      ? 'Todos los dias'
+      ? 'Todos los días'
       : dayLabels.length >= 2 &&
         DAYS_OF_WEEK.findIndex((d) => d.key === days[0]) + days.length - 1 ===
           DAYS_OF_WEEK.findIndex((d) => d.key === days[days.length - 1])
         ? `${dayLabels[0]}-${dayLabels[dayLabels.length - 1]}`
         : dayLabels.join(', ');
 
-  // Time range
   const timeMap: Record<string, [number, number]> = {
     morning: [8, 12],
     afternoon: [13, 17],
@@ -137,7 +150,7 @@ function buildScheduleSummary(days: string[], blocks: string[]): string {
 }
 
 // ============================================================================
-// COMPONENT
+// MAIN COMPONENT
 // ============================================================================
 
 export function OnboardingWizard() {
@@ -150,7 +163,6 @@ export function OnboardingWizard() {
   const [sacsError, setSacsError] = useState<string | null>(null);
 
   const [state, setState] = useState<WizardState>({
-    // Step 1
     docType: 'V',
     cedula: '',
     sacsVerifying: false,
@@ -161,11 +173,9 @@ export function OnboardingWizard() {
     manualProfession: '',
     manualSpecialtyId: '',
     manualSpecialtyOption: null,
-    // Step 2
     practiceName: '',
     location: null,
     addressOverride: '',
-    // Step 3
     workingDays: ['lun', 'mar', 'mie', 'jue', 'vie'],
     timeBlocks: ['morning', 'afternoon'],
     consultationDuration: 30,
@@ -173,7 +183,6 @@ export function OnboardingWizard() {
     profilePhotoPreview: null,
   });
 
-  // Derived display values
   const displayName = state.sacsVerified
     ? state.sacsResult?.data?.nombre_completo ?? ''
     : state.manualName;
@@ -184,9 +193,19 @@ export function OnboardingWizard() {
       ''
     : state.manualSpecialtyOption?.name ?? '';
 
-  // ── Check auth and prefill data ──
+  // ── Auth + prefill ──────────────────────────────────────────────────
   useEffect(() => {
     async function init() {
+      // UI preview mode (no auth) — for visual QA. Submits still require a real user.
+      if (typeof window !== 'undefined' && window.location.search.includes('preview=1')) {
+        const params = new URLSearchParams(window.location.search);
+        const step = Number.parseInt(params.get('step') ?? '1', 10);
+        if (step >= 1 && step <= 3) setCurrentStep(step);
+        setUserId('preview-user');
+        setInitialLoading(false);
+        return;
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -198,7 +217,6 @@ export function OnboardingWizard() {
 
       setUserId(user.id);
 
-      // Check if profile already has onboarding completed
       const { data: profile } = await supabase
         .from('doctor_profiles')
         .select('specialty_id, dashboard_config')
@@ -219,16 +237,21 @@ export function OnboardingWizard() {
     init();
   }, []);
 
-  // ── Field updater ──
   const update = useCallback(<K extends keyof WizardState>(field: K, value: WizardState[K]) => {
     setState((prev) => ({ ...prev, [field]: value }));
   }, []);
 
-  // ── SACS Verification ──
+  // ── SACS verification ───────────────────────────────────────────────
   const handleVerifySacs = useCallback(async () => {
     if (!state.cedula.trim()) return;
 
-    setState((prev) => ({ ...prev, sacsVerifying: true, sacsResult: null, sacsVerified: false, manualMode: false }));
+    setState((prev) => ({
+      ...prev,
+      sacsVerifying: true,
+      sacsResult: null,
+      sacsVerified: false,
+      manualMode: false,
+    }));
     setSacsError(null);
 
     try {
@@ -261,29 +284,23 @@ export function OnboardingWizard() {
         }));
       }
     } catch {
-      setSacsError('Error de conexion. Intenta de nuevo.');
+      setSacsError('Error de conexión. Intentá de nuevo.');
       setState((prev) => ({ ...prev, sacsVerifying: false }));
     }
   }, [state.cedula, state.docType]);
 
-  // ── Enable manual mode after SACS fails ──
   const enableManualMode = useCallback(() => {
     setState((prev) => ({ ...prev, manualMode: true }));
   }, []);
 
-  // ── Location handler ──
-  const handleLocationChange = useCallback(
-    (data: LocationData) => {
-      setState((prev) => ({
-        ...prev,
-        location: data,
-        addressOverride: data.formatted,
-      }));
-    },
-    []
-  );
+  const handleLocationChange = useCallback((data: LocationData) => {
+    setState((prev) => ({
+      ...prev,
+      location: data,
+      addressOverride: data.formatted,
+    }));
+  }, []);
 
-  // ── Toggle helpers ──
   const toggleDay = useCallback((day: string) => {
     setState((prev) => ({
       ...prev,
@@ -302,12 +319,10 @@ export function OnboardingWizard() {
     }));
   }, []);
 
-  // ── Photo handler ──
   const handlePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Revoke old preview URL
     setState((prev) => {
       if (prev.profilePhotoPreview) URL.revokeObjectURL(prev.profilePhotoPreview);
       return {
@@ -318,11 +333,15 @@ export function OnboardingWizard() {
     });
   }, []);
 
-  // ── Step validation ──
   const canAdvance = useMemo(() => {
     if (currentStep === 1) {
       if (state.sacsVerified) return true;
-      if (state.manualMode && state.manualName.trim().length >= 3 && state.manualSpecialtyId) return true;
+      if (
+        state.manualMode &&
+        state.manualName.trim().length >= 3 &&
+        state.manualSpecialtyId
+      )
+        return true;
       return false;
     }
 
@@ -330,11 +349,9 @@ export function OnboardingWizard() {
       return state.practiceName.trim().length >= 2 && state.location !== null;
     }
 
-    // Step 3 always has defaults
     return state.workingDays.length > 0 && state.timeBlocks.length > 0;
   }, [currentStep, state]);
 
-  // ── Navigation ──
   const goNext = useCallback(() => {
     if (!canAdvance) return;
     setCurrentStep((prev) => Math.min(prev + 1, 3));
@@ -344,7 +361,7 @@ export function OnboardingWizard() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   }, []);
 
-  // ── Save and finish ──
+  // ── Save + finish ───────────────────────────────────────────────────
   const handleFinish = useCallback(async () => {
     if (!userId || !canAdvance) return;
 
@@ -356,21 +373,15 @@ export function OnboardingWizard() {
         ? state.sacsResult?.data?.nombre_completo ?? ''
         : state.manualName;
 
-      const specialtyId = state.sacsVerified
-        ? state.manualSpecialtyId || null
-        : state.manualSpecialtyId || null;
-
-      const specialtySlug = state.sacsVerified
-        ? state.manualSpecialtyOption?.slug ?? 'general'
-        : state.manualSpecialtyOption?.slug ?? 'general';
-
+      const specialtyId = state.manualSpecialtyId || null;
+      const specialtySlug = state.manualSpecialtyOption?.slug ?? 'general';
       const cedulaFormatted = `${state.docType}-${state.cedula}`;
 
-      const sacsSpecialty = state.sacsResult?.data?.especialidad_display
-        || state.sacsResult?.data?.postgrados?.[0]?.postgrado
-        || null;
+      const sacsSpecialty =
+        state.sacsResult?.data?.especialidad_display ||
+        state.sacsResult?.data?.postgrados?.[0]?.postgrado ||
+        null;
 
-      // 1. Update profiles table (personal data)
       const { error: profilesError } = await supabase
         .from('profiles')
         .update({
@@ -379,9 +390,9 @@ export function OnboardingWizard() {
           state: state.location?.state ?? '',
           city: state.location?.city ?? '',
           address: state.addressOverride || state.location?.formatted || '',
-          sacs_verificado: state.sacsVerified,
+          sacs_verified: state.sacsVerified,
           sacs_name: state.sacsVerified ? fullName : null,
-          sacs_matricula: state.sacsResult?.data?.matricula_principal || null,
+          sacs_license: state.sacsResult?.data?.matricula_principal || null,
           sacs_specialty: sacsSpecialty,
           sacs_verified_at: state.sacsVerified ? new Date().toISOString() : null,
           national_id_verified: state.sacsVerified,
@@ -390,12 +401,11 @@ export function OnboardingWizard() {
 
       if (profilesError) {
         console.error('Error updating profiles:', profilesError);
-        setGlobalError('Error al guardar tu perfil. Intenta de nuevo.');
+        setGlobalError('Error al guardar tu perfil. Intentá de nuevo.');
         setSaving(false);
         return;
       }
 
-      // 2. Upsert doctor_profiles table (professional data)
       const { error: doctorError } = await supabase.from('doctor_profiles').upsert(
         {
           profile_id: userId,
@@ -429,12 +439,11 @@ export function OnboardingWizard() {
 
       if (doctorError) {
         console.error('Error saving doctor details:', doctorError);
-        setGlobalError('Error al guardar los datos profesionales. Intenta de nuevo.');
+        setGlobalError('Error al guardar los datos profesionales. Intentá de nuevo.');
         setSaving(false);
         return;
       }
 
-      // 3. Update auth user metadata
       await supabase.auth.updateUser({
         data: {
           full_name: fullName,
@@ -447,84 +456,120 @@ export function OnboardingWizard() {
         window.location.href = '/dashboard';
       }, 2000);
     } catch {
-      setGlobalError('Error inesperado. Intenta de nuevo.');
+      setGlobalError('Error inesperado. Intentá de nuevo.');
       setSaving(false);
     }
   }, [userId, canAdvance, state]);
 
-  // ── Loading state ──
+  // ── Loading state ───────────────────────────────────────────────────
   if (initialLoading) {
     return (
-      <main className="h-screen flex items-center justify-center bg-zinc-950">
+      <main className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <Loader2 className="w-10 h-10 animate-spin text-teal-400 mx-auto" />
-          <p className="text-sm text-zinc-500">Cargando tu perfil...</p>
+          <Loader2
+            className="w-10 h-10 animate-spin motion-reduce:animate-none text-primary mx-auto"
+            aria-hidden="true"
+          />
+          <p className="text-sm text-muted-foreground">Cargando tu perfil…</p>
         </div>
       </main>
     );
   }
 
-  // ── Done state ──
+  // ── Done state ──────────────────────────────────────────────────────
   if (done) {
     return (
-      <main className="h-screen flex items-center justify-center bg-zinc-950 px-4">
-        <div className="max-w-md text-center space-y-6 p-8 animate-in fade-in zoom-in duration-500">
-          <div className="w-20 h-20 mx-auto rounded-full bg-teal-500/20 flex items-center justify-center">
-            <CheckCircle2 className="w-10 h-10 text-teal-400" />
+      <main className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="max-w-md text-center space-y-6 p-8 animate-in fade-in zoom-in duration-500 motion-reduce:animate-none">
+          <div className="w-20 h-20 mx-auto rounded-full bg-success/15 flex items-center justify-center">
+            <CheckCircle2 className="w-10 h-10 text-success" aria-hidden="true" />
           </div>
-          <h2 className="text-2xl font-bold text-white">Tu consultorio esta listo!</h2>
-          <p className="text-zinc-400">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-foreground">¡Tu consultorio está listo!</h2>
             {displayName && (
-              <span className="block text-white font-medium mb-1">{displayName}</span>
+              <p className="text-base font-medium text-foreground">{displayName}</p>
             )}
             {displaySpecialty && (
-              <span className="block text-teal-400 text-sm mb-3">{displaySpecialty}</span>
+              <p className="text-sm text-primary">{displaySpecialty}</p>
             )}
-          </p>
-          <div className="flex items-center justify-center gap-2 text-sm text-zinc-500">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Redirigiendo al dashboard...
+          </div>
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            Redirigiendo al dashboard…
           </div>
         </div>
       </main>
     );
   }
 
-  // ── Main wizard ──
+  // ── Main wizard ─────────────────────────────────────────────────────
   return (
-    <main className="h-[calc(100vh-2rem)] max-w-6xl mx-auto p-4 flex flex-col bg-zinc-950">
-      {/* Header: Branding + Step Indicator */}
-      <div className="flex items-center gap-6 mb-4">
-        <a href="/" className="inline-flex items-center gap-2 shrink-0 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/25">
-            <Plus className="w-4 h-4 text-white" strokeWidth={3} />
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* ═══════════════════════ Sticky Header ═══════════════════════ */}
+      <header
+        className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border"
+        role="banner"
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-4 py-3">
+            <a
+              href="/"
+              className="inline-flex items-center gap-2 shrink-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
+              aria-label="Volver a Red Salud"
+            >
+              <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
+                <Plus className="w-5 h-5" strokeWidth={2.5} aria-hidden="true" />
+              </div>
+              <span className="text-base font-semibold text-foreground hidden sm:inline">
+                Red Salud
+              </span>
+            </a>
+
+            <div className="flex-1 max-w-md hidden md:block">
+              <StepIndicator steps={STEPS} currentStep={currentStep} />
+            </div>
+
+            <ThemeToggle variant="single" />
           </div>
-          <span className="text-lg font-bold text-white group-hover:text-teal-400 transition-colors">
-            Red Salud
-          </span>
-        </a>
-        <div className="flex-1">
-          <StepIndicator steps={STEPS} currentStep={currentStep} />
+
+          {/* Mobile step indicator (visible < md) */}
+          <div className="md:hidden pb-3">
+            <StepIndicator steps={STEPS} currentStep={currentStep} />
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Global error */}
-      {globalError && (
-        <div className="flex items-start gap-3 p-3 rounded-xl border border-red-500/20 bg-red-500/10 mb-4">
-          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-400">{globalError}</p>
-        </div>
-      )}
+      {/* ═══════════════════════ Main Content ═══════════════════════ */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        {/* Global error */}
+        {globalError && (
+          <div
+            role="alert"
+            aria-live="polite"
+            className="flex items-start gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/5 mb-6"
+          >
+            <AlertCircle
+              aria-hidden="true"
+              className="w-5 h-5 text-destructive shrink-0 mt-0.5"
+            />
+            <p className="text-sm text-destructive">{globalError}</p>
+          </div>
+        )}
 
-      {/* Content area: flex-1 overflow-hidden */}
-      <div className="flex-1 overflow-hidden">
-        {/* ═══════════════════════ STEP 1: Verificacion ═══════════════════════ */}
-        {currentStep === 1 && <StepVerification state={state} update={update} sacsError={sacsError} onVerify={handleVerifySacs} onEnableManual={enableManualMode} />}
+        {currentStep === 1 && (
+          <StepVerification
+            state={state}
+            update={update}
+            sacsError={sacsError}
+            onVerify={handleVerifySacs}
+            onEnableManual={enableManualMode}
+          />
+        )}
 
-        {/* ═══════════════════════ STEP 2: Consultorio ═══════════════════════ */}
-        {currentStep === 2 && <StepPractice state={state} update={update} onLocationChange={handleLocationChange} />}
+        {currentStep === 2 && (
+          <StepPractice state={state} update={update} onLocationChange={handleLocationChange} />
+        )}
 
-        {/* ═══════════════════════ STEP 3: Horarios ═══════════════════════ */}
         {currentStep === 3 && (
           <StepSchedule
             state={state}
@@ -536,52 +581,86 @@ export function OnboardingWizard() {
             onPhotoChange={handlePhotoChange}
           />
         )}
-      </div>
+      </main>
 
-      {/* Footer navigation */}
-      <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-2">
-        <button
-          type="button"
-          onClick={goBack}
-          disabled={currentStep === 1}
-          className="px-5 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-white transition-colors disabled:opacity-0 disabled:pointer-events-none"
-        >
-          Atras
-        </button>
+      {/* ═══════════════════════ Sticky Footer ═══════════════════════ */}
+      <footer
+        className="sticky bottom-0 z-30 bg-background/85 backdrop-blur-md border-t border-border"
+        role="contentinfo"
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-4 py-4">
+            <button
+              type="button"
+              onClick={goBack}
+              disabled={currentStep === 1}
+              className={[
+                'px-5 py-2.5 rounded-lg text-sm font-medium',
+                'text-muted-foreground hover:text-foreground',
+                'transition-colors motion-reduce:transition-none',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'disabled:opacity-0 disabled:pointer-events-none',
+              ].join(' ')}
+            >
+              ← Atrás
+            </button>
 
-        {currentStep < 3 ? (
-          <button
-            type="button"
-            onClick={goNext}
-            disabled={!canAdvance}
-            className="px-8 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Siguiente
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleFinish}
-            disabled={!canAdvance || saving}
-            className="px-8 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Guardando...
-              </>
+            <div className="text-xs text-muted-foreground hidden sm:block">
+              Paso <span className="font-semibold text-foreground">{currentStep}</span> de{' '}
+              <span className="font-semibold text-foreground">{STEPS.length}</span>
+            </div>
+
+            {currentStep < 3 ? (
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={!canAdvance}
+                className={[
+                  'px-6 py-2.5 rounded-lg text-sm font-semibold',
+                  'bg-primary text-primary-foreground shadow-sm',
+                  'hover:bg-primary/90 transition-colors motion-reduce:transition-none',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                  'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary',
+                ].join(' ')}
+              >
+                Siguiente →
+              </button>
             ) : (
-              'Activar mi Consultorio'
+              <button
+                type="button"
+                onClick={handleFinish}
+                disabled={!canAdvance || saving}
+                className={[
+                  'px-6 py-3 rounded-lg text-sm font-semibold',
+                  'bg-primary text-primary-foreground shadow-sm',
+                  'hover:bg-primary/90 transition-colors motion-reduce:transition-none',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                  'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary',
+                  'inline-flex items-center gap-2',
+                ].join(' ')}
+              >
+                {saving ? (
+                  <>
+                    <Loader2
+                      className="w-4 h-4 animate-spin motion-reduce:animate-none"
+                      aria-hidden="true"
+                    />
+                    Guardando…
+                  </>
+                ) : (
+                  'Activar mi Consultorio'
+                )}
+              </button>
             )}
-          </button>
-        )}
-      </div>
-    </main>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
 
 // ============================================================================
-// STEP 1: Verificacion Profesional
+// STEP 1: Verificación Profesional
 // ============================================================================
 
 function StepVerification({
@@ -601,197 +680,348 @@ function StepVerification({
   const sacsNotFound = hasAttempted && !state.sacsVerified;
 
   return (
-    <div className="grid lg:grid-cols-2 gap-6 h-full">
-      {/* Left column */}
-      <div className="flex flex-col gap-5 overflow-y-auto">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5 text-teal-400" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Verifica tu identidad profesional</h2>
-              <p className="text-sm text-zinc-400">Ingresa tu cedula para validar tu registro en el SACS</p>
+    <div className="grid lg:grid-cols-5 gap-8 lg:gap-10">
+      {/* Left: Form (3/5 width on large screens) */}
+      <section className="lg:col-span-3 space-y-6">
+        <header className="flex items-start gap-3">
+          <div className={sectionIconClass}>
+            <ShieldCheck className="w-5 h-5" aria-hidden="true" />
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+              Verificá tu identidad profesional
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Validamos tu registro en el SACS para activar tu consultorio digital.
+            </p>
+          </div>
+        </header>
+
+        <div className="space-y-5">
+          {/* Document type + cedula row */}
+          <div className="space-y-2">
+            <label
+              htmlFor="cedula-input"
+              className="block text-sm font-medium text-foreground"
+            >
+              Cédula profesional
+            </label>
+            <div className="flex gap-2">
+              <div
+                role="radiogroup"
+                aria-label="Tipo de documento"
+                className="flex rounded-lg border border-border overflow-hidden shrink-0"
+              >
+                <button
+                  type="button"
+                  onClick={() => update('docType', 'V')}
+                  role="radio"
+                  aria-checked={state.docType === 'V'}
+                  className={[
+                    'px-4 py-2.5 text-sm font-semibold transition-colors',
+                    'motion-reduce:transition-none',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:z-10',
+                    state.docType === 'V'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-background text-muted-foreground hover:text-foreground hover:bg-muted',
+                  ].join(' ')}
+                >
+                  V
+                </button>
+                <button
+                  type="button"
+                  onClick={() => update('docType', 'E')}
+                  role="radio"
+                  aria-checked={state.docType === 'E'}
+                  className={[
+                    'px-4 py-2.5 text-sm font-semibold transition-colors',
+                    'motion-reduce:transition-none border-l border-border',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:z-10',
+                    state.docType === 'E'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-background text-muted-foreground hover:text-foreground hover:bg-muted',
+                  ].join(' ')}
+                >
+                  E
+                </button>
+              </div>
+              <input
+                id="cedula-input"
+                type="text"
+                inputMode="numeric"
+                value={state.cedula}
+                onChange={(e) => update('cedula', e.target.value.replace(/\D/g, ''))}
+                placeholder="12345678"
+                className={`${inputClass()} flex-1`}
+              />
             </div>
           </div>
-        </div>
 
-        {/* Document type + cedula row */}
-        <div className="flex gap-3">
-          <div className="flex rounded-xl border border-white/10 overflow-hidden shrink-0">
-            <button
-              type="button"
-              onClick={() => update('docType', 'V')}
-              className={`px-4 py-2.5 text-sm font-semibold transition-colors ${
-                state.docType === 'V'
-                  ? 'bg-teal-500/20 text-teal-300'
-                  : 'bg-zinc-800/50 text-zinc-400 hover:text-white'
-              }`}
-            >
-              V
-            </button>
-            <button
-              type="button"
-              onClick={() => update('docType', 'E')}
-              className={`px-4 py-2.5 text-sm font-semibold transition-colors ${
-                state.docType === 'E'
-                  ? 'bg-teal-500/20 text-teal-300'
-                  : 'bg-zinc-800/50 text-zinc-400 hover:text-white'
-              }`}
-            >
-              E
-            </button>
-          </div>
-          <input
-            type="text"
-            value={state.cedula}
-            onChange={(e) => update('cedula', e.target.value.replace(/\D/g, ''))}
-            placeholder="12345678"
-            className={`${inputClass()} flex-1`}
-          />
-        </div>
+          <button
+            type="button"
+            onClick={onVerify}
+            disabled={!state.cedula.trim() || state.sacsVerifying}
+            className={[
+              'w-full inline-flex items-center justify-center gap-2',
+              'px-5 py-3 rounded-lg text-sm font-semibold',
+              'bg-primary text-primary-foreground shadow-sm',
+              'hover:bg-primary/90 transition-colors motion-reduce:transition-none',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+              'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary',
+            ].join(' ')}
+          >
+            {state.sacsVerifying ? (
+              <>
+                <Loader2
+                  className="w-4 h-4 animate-spin motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
+                Consultando el SACS… puede tardar hasta 2 minutos
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="w-4 h-4" aria-hidden="true" />
+                Verificar con SACS
+              </>
+            )}
+          </button>
 
-        {/* Verify button */}
-        <button
-          type="button"
-          onClick={onVerify}
-          disabled={!state.cedula.trim() || state.sacsVerifying}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold
-            bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/25
-            hover:shadow-teal-500/40 transition-all
-            disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {state.sacsVerifying ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Consultando el SACS... esto puede tomar hasta 2 minutos
-            </>
-          ) : (
-            <>
-              <ShieldCheck className="w-4 h-4" />
-              Verificar con SACS
-            </>
+          {sacsError && (
+            <p
+              role="alert"
+              aria-live="polite"
+              className="text-sm text-destructive flex items-center gap-2"
+            >
+              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+              {sacsError}
+            </p>
           )}
-        </button>
 
-        {sacsError && <p className="text-xs text-red-400">{sacsError}</p>}
-
-        {/* SACS NOT FOUND section */}
-        {sacsNotFound && !state.manualMode && (
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
-            <p className="text-sm font-medium text-amber-300">
-              No encontramos tu registro en el SACS
-            </p>
-            <p className="text-xs text-zinc-400">
-              Podes continuar con verificacion manual. Tu cuenta sera revisada por nuestro equipo.
-            </p>
-            <button
-              type="button"
-              onClick={onEnableManual}
-              className="text-sm font-medium text-teal-400 hover:text-teal-300 transition-colors underline underline-offset-2"
-            >
-              Continuar con verificacion manual
-            </button>
-          </div>
-        )}
-
-        {/* Manual mode inputs */}
-        {state.manualMode && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-zinc-300 mb-1.5">Nombre completo *</label>
-              <input
-                type="text"
-                value={state.manualName}
-                onChange={(e) => update('manualName', e.target.value)}
-                placeholder="Dr. Juan Carlos Perez"
-                className={inputClass(!state.manualName.trim())}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-zinc-300 mb-1.5">Profesion</label>
-              <input
-                type="text"
-                value={state.manualProfession}
-                onChange={(e) => update('manualProfession', e.target.value)}
-                placeholder="Medico Cirujano"
-                className={inputClass()}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-zinc-300 mb-1.5">Especialidad *</label>
-              <SpecialtySelector
-                value={state.manualSpecialtyId || null}
-                onChange={(opt) => {
-                  update('manualSpecialtyId', opt?.id ?? '');
-                  update('manualSpecialtyOption', opt);
-                }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Right column: verification result card */}
-      <div className="flex items-start">
-        {hasAttempted && (
-          <div className="w-full">
-            {state.sacsVerified ? (
-              // SACS VERIFIED card
-              <div className="rounded-2xl border border-teal-500/30 bg-teal-500/5 p-6 space-y-4">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Verificado por SACS
-                </span>
-
-                <div className="space-y-3">
-                  <VerifiedField label="Nombre completo" value={state.sacsResult?.data?.nombre_completo} />
-                  <VerifiedField label="Profesion" value={state.sacsResult?.data?.profesion_principal} />
-                  <VerifiedField
-                    label="Especialidad"
-                    value={
-                      state.sacsResult?.data?.especialidad_display ??
-                      state.sacsResult?.data?.postgrados?.[0]?.postgrado
-                    }
-                  />
-                  <VerifiedField label="Matricula" value={state.sacsResult?.data?.matricula_principal} />
+          {/* SACS NOT FOUND */}
+          {sacsNotFound && !state.manualMode && (
+            <div className="rounded-xl border border-warning/30 bg-warning/5 p-4 space-y-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle
+                  className="w-5 h-5 text-warning shrink-0 mt-0.5"
+                  aria-hidden="true"
+                />
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    No encontramos tu registro en SACS
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Podés continuar con verificación manual. Tu cuenta será revisada por
+                    nuestro equipo en 24-48 horas.
+                  </p>
                 </div>
               </div>
-            ) : state.manualMode ? (
-              // MANUAL PENDING card
-              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 space-y-4">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold">
-                  <Clock className="w-3.5 h-3.5" />
-                  Verificacion pendiente
-                </span>
+              <button
+                type="button"
+                onClick={onEnableManual}
+                className={[
+                  'text-sm font-medium text-primary hover:text-primary/80',
+                  'transition-colors motion-reduce:transition-none',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded',
+                  'underline underline-offset-4',
+                ].join(' ')}
+              >
+                Continuar con verificación manual →
+              </button>
+            </div>
+          )}
 
-                <div className="space-y-3">
-                  <VerifiedField label="Nombre completo" value={state.manualName || undefined} />
-                  <VerifiedField label="Profesion" value={state.manualProfession || undefined} />
-                  <VerifiedField label="Especialidad" value={state.manualSpecialtyOption?.name ?? undefined} />
-                </div>
-
-                <p className="text-xs text-zinc-500">
-                  Sera revisada por nuestro equipo en 24-48 horas
-                </p>
-              </div>
-            ) : null}
-          </div>
-        )}
-
-        {!hasAttempted && (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="text-center space-y-3 opacity-40">
-              <ShieldCheck className="w-16 h-16 text-zinc-600 mx-auto" />
-              <p className="text-sm text-zinc-600">
-                Ingresa tu cedula y verifica tu identidad profesional
+          {/* Manual mode inputs */}
+          {state.manualMode && (
+            <div className="space-y-4 rounded-xl border border-border bg-card p-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Datos manuales
               </p>
+
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="manual-name"
+                  className="block text-sm font-medium text-foreground"
+                >
+                  Nombre completo <span className="text-destructive">*</span>
+                </label>
+                <input
+                  id="manual-name"
+                  type="text"
+                  value={state.manualName}
+                  onChange={(e) => update('manualName', e.target.value)}
+                  placeholder="Dr. Juan Carlos Pérez"
+                  className={inputClass(!state.manualName.trim())}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="manual-profession"
+                  className="block text-sm font-medium text-foreground"
+                >
+                  Profesión
+                </label>
+                <input
+                  id="manual-profession"
+                  type="text"
+                  value={state.manualProfession}
+                  onChange={(e) => update('manualProfession', e.target.value)}
+                  placeholder="Médico Cirujano"
+                  className={inputClass()}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-foreground">
+                  Especialidad <span className="text-destructive">*</span>
+                </label>
+                <SpecialtySelector
+                  value={state.manualSpecialtyId || null}
+                  onChange={(opt) => {
+                    update('manualSpecialtyId', opt?.id ?? '');
+                    update('manualSpecialtyOption', opt);
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      </section>
+
+      {/* Right: Result / Info card (2/5 width) */}
+      <aside className="lg:col-span-2">
+        <div className="lg:sticky lg:top-32">
+          {state.sacsVerified ? (
+            <VerifiedSacsCard data={state.sacsResult?.data} />
+          ) : state.manualMode ? (
+            <ManualPendingCard
+              name={state.manualName}
+              profession={state.manualProfession}
+              specialty={state.manualSpecialtyOption?.name}
+            />
+          ) : (
+            <InfoCard />
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+// ============================================================================
+// STEP 1 helpers
+// ============================================================================
+
+function InfoCard() {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <Info className="w-5 h-5" aria-hidden="true" />
+        </div>
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">¿Qué es SACS?</h2>
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+            El Sistema Autónomo de Contraloría Sanitaria valida el registro oficial de
+            profesionales de la salud en Venezuela.
+          </p>
+        </div>
       </div>
+
+      <div className="space-y-3 pt-1">
+        <InfoRow
+          icon={<ShieldCheck className="w-4 h-4 text-primary" aria-hidden="true" />}
+          title="Verificación instantánea"
+          text="Consultamos tu cédula directamente en SACS — sin papeles, sin trámites."
+        />
+        <InfoRow
+          icon={<Stethoscope className="w-4 h-4 text-primary" aria-hidden="true" />}
+          title="Especialidad automática"
+          text="Tu postgrado define los módulos clínicos disponibles en tu dashboard."
+        />
+        <InfoRow
+          icon={<Clock className="w-4 h-4 text-primary" aria-hidden="true" />}
+          title="Hasta 2 minutos"
+          text="El SACS puede demorar en responder. Si no aparecés, podés continuar manualmente."
+        />
+      </div>
+
+      <div className="pt-3 border-t border-border">
+        <p className="text-xs text-muted-foreground">
+          Tus datos están protegidos. Cumplimos con normativas de privacidad y seguridad
+          de datos clínicos.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <div className="mt-0.5 shrink-0">{icon}</div>
+      <div className="space-y-0.5">
+        <p className="text-xs font-semibold text-foreground">{title}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">{text}</p>
+      </div>
+    </div>
+  );
+}
+
+function VerifiedSacsCard({ data }: { data?: SacsResultData }) {
+  return (
+    <div className="rounded-2xl border border-success/30 bg-success/5 p-6 space-y-4">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
+        <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+        Verificado por SACS
+      </span>
+
+      <div className="space-y-3">
+        <VerifiedField label="Nombre completo" value={data?.nombre_completo} />
+        <VerifiedField label="Profesión" value={data?.profesion_principal} />
+        <VerifiedField
+          label="Especialidad"
+          value={data?.especialidad_display ?? data?.postgrados?.[0]?.postgrado}
+        />
+        <VerifiedField label="Matrícula" value={data?.matricula_principal} />
+      </div>
+    </div>
+  );
+}
+
+function ManualPendingCard({
+  name,
+  profession,
+  specialty,
+}: {
+  name?: string;
+  profession?: string;
+  specialty?: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-warning/30 bg-warning/5 p-6 space-y-4">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-warning/15 text-warning text-xs font-semibold">
+        <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+        Verificación pendiente
+      </span>
+
+      <div className="space-y-3">
+        <VerifiedField label="Nombre completo" value={name || undefined} />
+        <VerifiedField label="Profesión" value={profession || undefined} />
+        <VerifiedField label="Especialidad" value={specialty} />
+      </div>
+
+      <p className="text-xs text-muted-foreground pt-2 border-t border-border/60">
+        Será revisada por nuestro equipo en 24-48 horas.
+      </p>
     </div>
   );
 }
@@ -810,66 +1040,80 @@ function StepPractice({
   onLocationChange: (data: LocationData) => void;
 }) {
   return (
-    <div className="grid lg:grid-cols-2 gap-6 h-full">
-      {/* Left column */}
-      <div className="flex flex-col gap-5">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-teal-400" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Configura tu consultorio</h2>
-              <p className="text-sm text-zinc-400">Ubicacion y datos de tu espacio de trabajo</p>
-            </div>
+    <div className="grid lg:grid-cols-5 gap-8 lg:gap-10">
+      <section className="lg:col-span-2 space-y-6">
+        <header className="flex items-start gap-3">
+          <div className={sectionIconClass}>
+            <Building2 className="w-5 h-5" aria-hidden="true" />
           </div>
-        </div>
-
-        {/* Practice name */}
-        <div>
-          <label className="block text-sm text-zinc-300 mb-1.5">Nombre del consultorio *</label>
-          <input
-            type="text"
-            value={state.practiceName}
-            onChange={(e) => update('practiceName', e.target.value)}
-            placeholder="Ej: Consultorio Dr. Perez"
-            className={inputClass()}
-          />
-        </div>
-
-        {/* Address (auto-filled, editable) */}
-        <div>
-          <label className="block text-sm text-zinc-300 mb-1.5">Direccion</label>
-          <textarea
-            value={state.addressOverride}
-            onChange={(e) => update('addressOverride', e.target.value)}
-            placeholder="Se completa automaticamente al seleccionar ubicacion en el mapa"
-            rows={2}
-            className={`${inputClass()} resize-none`}
-          />
-        </div>
-
-        {/* State and city info */}
-        {state.location && (
-          <div className="flex items-center gap-3 flex-wrap">
-            {state.location.state && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-zinc-800/80 border border-white/10 text-xs text-zinc-300">
-                Estado: {state.location.state}
-              </span>
-            )}
-            {state.location.city && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-zinc-800/80 border border-white/10 text-xs text-zinc-300">
-                Ciudad: {state.location.city}
-              </span>
-            )}
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+              Configurá tu consultorio
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Ubicación y datos de tu espacio de trabajo.
+            </p>
           </div>
-        )}
-      </div>
+        </header>
 
-      {/* Right column: Location picker with map */}
-      <div className="flex flex-col h-full min-h-0">
-        <LocationPicker onLocationChange={onLocationChange} />
-      </div>
+        <div className="space-y-5">
+          <div className="space-y-1.5">
+            <label
+              htmlFor="practice-name"
+              className="block text-sm font-medium text-foreground"
+            >
+              Nombre del consultorio <span className="text-destructive">*</span>
+            </label>
+            <input
+              id="practice-name"
+              type="text"
+              value={state.practiceName}
+              onChange={(e) => update('practiceName', e.target.value)}
+              placeholder="Ej: Consultorio Dr. Pérez"
+              className={inputClass()}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="practice-address"
+              className="block text-sm font-medium text-foreground"
+            >
+              Dirección
+            </label>
+            <textarea
+              id="practice-address"
+              value={state.addressOverride}
+              onChange={(e) => update('addressOverride', e.target.value)}
+              placeholder="Se completa al seleccionar ubicación en el mapa"
+              rows={2}
+              className={`${inputClass()} resize-none`}
+            />
+          </div>
+
+          {state.location && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {state.location.state && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted border border-border text-xs text-foreground">
+                  <MapPin className="w-3 h-3 text-muted-foreground" aria-hidden="true" />
+                  {state.location.state}
+                </span>
+              )}
+              {state.location.city && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted border border-border text-xs text-foreground">
+                  {state.location.city}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <aside className="lg:col-span-3">
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <LocationPicker onLocationChange={onLocationChange} />
+        </div>
+      </aside>
     </div>
   );
 }
@@ -898,179 +1142,230 @@ function StepSchedule({
   const scheduleSummary = buildScheduleSummary(state.workingDays, state.timeBlocks);
 
   return (
-    <div className="grid lg:grid-cols-2 gap-6 h-full">
-      {/* Left column */}
-      <div className="flex flex-col gap-5 overflow-y-auto">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-teal-400" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Configura tu disponibilidad</h2>
-              <p className="text-sm text-zinc-400">Horarios y preferencias de consulta</p>
-            </div>
+    <div className="grid lg:grid-cols-5 gap-8 lg:gap-10">
+      <section className="lg:col-span-3 space-y-6">
+        <header className="flex items-start gap-3">
+          <div className={sectionIconClass}>
+            <CalendarClock className="w-5 h-5" aria-hidden="true" />
           </div>
-        </div>
-
-        {/* Working days */}
-        <div>
-          <label className="block text-sm text-zinc-300 mb-2">Dias de trabajo</label>
-          <div className="flex gap-2 flex-wrap">
-            {DAYS_OF_WEEK.map((day) => (
-              <button
-                key={day.key}
-                type="button"
-                onClick={() => toggleDay(day.key)}
-                className={`px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${toggleBtnClass(
-                  state.workingDays.includes(day.key)
-                )}`}
-              >
-                {day.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Time blocks */}
-        <div>
-          <label className="block text-sm text-zinc-300 mb-2">Bloques horarios</label>
-          <div className="flex gap-2 flex-wrap">
-            {TIME_BLOCKS.map((block) => (
-              <button
-                key={block.key}
-                type="button"
-                onClick={() => toggleTimeBlock(block.key)}
-                className={`px-4 py-2 rounded-xl border text-xs font-semibold transition-all flex flex-col items-center gap-0.5 ${toggleBtnClass(
-                  state.timeBlocks.includes(block.key)
-                )}`}
-              >
-                <span>{block.label}</span>
-                <span className="text-[10px] opacity-60">{block.desc}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Consultation duration */}
-        <div>
-          <label className="block text-sm text-zinc-300 mb-2">Duracion de consulta</label>
-          <div className="flex gap-2 flex-wrap">
-            {CONSULTATION_DURATIONS.map((dur) => (
-              <button
-                key={dur}
-                type="button"
-                onClick={() => update('consultationDuration', dur)}
-                className={`px-4 py-2 rounded-xl border text-xs font-semibold transition-all ${toggleBtnClass(
-                  state.consultationDuration === dur
-                )}`}
-              >
-                {dur} min
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Right column: photo + preview */}
-      <div className="flex flex-col gap-5">
-        {/* Profile photo upload */}
-        <div>
-          <label className="block text-sm text-zinc-300 mb-2">Foto de perfil (opcional)</label>
-          <div className="flex items-center gap-4">
-            <label
-              htmlFor="profile-photo"
-              className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 bg-zinc-800/50 flex items-center justify-center cursor-pointer hover:border-teal-500/30 transition-colors overflow-hidden shrink-0"
-            >
-              {state.profilePhotoPreview ? (
-                <img
-                  src={state.profilePhotoPreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Camera className="w-6 h-6 text-zinc-600" />
-              )}
-              <input
-                id="profile-photo"
-                type="file"
-                accept="image/*"
-                onChange={onPhotoChange}
-                className="hidden"
-              />
-            </label>
-            <p className="text-xs text-zinc-500">
-              Podes agregarla despues en Configuracion
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+              Configurá tu disponibilidad
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Horarios y preferencias de consulta.
             </p>
           </div>
-        </div>
+        </header>
 
-        {/* Preview card */}
-        <div className="rounded-2xl bg-zinc-900/80 border border-white/10 p-6 space-y-4">
-          <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Vista previa</p>
+        <div className="space-y-6">
+          {/* Working days */}
+          <div role="group" aria-labelledby="onboarding-working-days-label">
+            <label
+              id="onboarding-working-days-label"
+              className="block text-sm font-medium text-foreground mb-2.5"
+            >
+              Días de trabajo
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              {DAYS_OF_WEEK.map((day) => {
+                const isActive = state.workingDays.includes(day.key);
+                return (
+                  <button
+                    key={day.key}
+                    type="button"
+                    onClick={() => toggleDay(day.key)}
+                    aria-pressed={isActive}
+                    className={[
+                      'px-3.5 py-2 rounded-lg border text-xs font-semibold min-w-[52px]',
+                      'transition-colors motion-reduce:transition-none',
+                      'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      toggleBtnClass(isActive),
+                    ].join(' ')}
+                  >
+                    {day.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
-              {state.profilePhotoPreview ? (
-                <img
-                  src={state.profilePhotoPreview}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
+          {/* Time blocks */}
+          <div role="group" aria-labelledby="onboarding-time-blocks-label">
+            <label
+              id="onboarding-time-blocks-label"
+              className="block text-sm font-medium text-foreground mb-2.5"
+            >
+              Bloques horarios
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {TIME_BLOCKS.map((block) => {
+                const isActive = state.timeBlocks.includes(block.key);
+                return (
+                  <button
+                    key={block.key}
+                    type="button"
+                    onClick={() => toggleTimeBlock(block.key)}
+                    aria-pressed={isActive}
+                    className={[
+                      'px-3 py-2.5 rounded-lg border text-xs font-semibold',
+                      'transition-colors motion-reduce:transition-none',
+                      'flex flex-col items-center gap-0.5',
+                      'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      toggleBtnClass(isActive),
+                    ].join(' ')}
+                  >
+                    <span>{block.label}</span>
+                    <span className="text-[10px] opacity-70 font-normal">{block.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Consultation duration */}
+          <div role="group" aria-labelledby="onboarding-duration-label">
+            <label
+              id="onboarding-duration-label"
+              className="block text-sm font-medium text-foreground mb-2.5"
+            >
+              Duración de consulta
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              {CONSULTATION_DURATIONS.map((dur) => {
+                const isActive = state.consultationDuration === dur;
+                return (
+                  <button
+                    key={dur}
+                    type="button"
+                    onClick={() => update('consultationDuration', dur)}
+                    aria-pressed={isActive}
+                    className={[
+                      'px-4 py-2 rounded-lg border text-xs font-semibold',
+                      'transition-colors motion-reduce:transition-none',
+                      'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      toggleBtnClass(isActive),
+                    ].join(' ')}
+                  >
+                    {dur} min
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Profile photo */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2.5">
+              Foto de perfil <span className="text-muted-foreground font-normal">(opcional)</span>
+            </label>
+            <div className="flex items-center gap-4">
+              <label
+                htmlFor="profile-photo"
+                className={[
+                  'w-20 h-20 rounded-xl border-2 border-dashed shrink-0',
+                  'flex items-center justify-center cursor-pointer overflow-hidden',
+                  'border-border hover:border-primary/50 hover:bg-muted',
+                  'transition-colors motion-reduce:transition-none',
+                  'focus-within:ring-2 focus-within:ring-ring',
+                ].join(' ')}
+              >
+                {state.profilePhotoPreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={state.profilePhotoPreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Camera className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+                )}
+                <input
+                  id="profile-photo"
+                  type="file"
+                  accept="image/*"
+                  onChange={onPhotoChange}
+                  className="sr-only"
                 />
-              ) : (
-                <span className="text-xl font-bold text-zinc-600">
-                  {displayName ? displayName.charAt(0).toUpperCase() : '?'}
-                </span>
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
-                {displayName || 'Nombre del doctor'}
+              </label>
+              <p className="text-xs text-muted-foreground">
+                Podés agregarla después en{' '}
+                <span className="font-medium text-foreground">Configuración</span>.
               </p>
-              {displaySpecialty && (
-                <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-xs font-medium truncate max-w-full">
-                  {displaySpecialty}
-                </span>
-              )}
             </div>
-          </div>
-
-          {/* Location */}
-          {state.location && (
-            <div className="text-xs text-zinc-400 flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">
-                {state.practiceName}
-                {state.location.city && ` - ${state.location.city}`}
-                {state.location.state && `, ${state.location.state}`}
-              </span>
-            </div>
-          )}
-
-          {/* Schedule summary */}
-          {scheduleSummary && (
-            <div className="text-xs text-zinc-400 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 shrink-0" />
-              <span>{scheduleSummary}</span>
-            </div>
-          )}
-
-          {/* Verification badge */}
-          <div className="pt-2 border-t border-white/5">
-            {state.sacsVerified ? (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-400">
-                <Check className="w-3.5 h-3.5" />
-                Verificado por SACS
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-400">
-                <Clock className="w-3.5 h-3.5" />
-                Verificacion pendiente
-              </span>
-            )}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Preview card */}
+      <aside className="lg:col-span-2">
+        <div className="lg:sticky lg:top-32">
+          <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Vista previa
+            </p>
+
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center shrink-0 overflow-hidden border border-border">
+                {state.profilePhotoPreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={state.profilePhotoPreview}
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xl font-bold text-muted-foreground">
+                    {displayName ? displayName.charAt(0).toUpperCase() : '?'}
+                  </span>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {displayName || 'Nombre del doctor'}
+                </p>
+                {displaySpecialty && (
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium truncate max-w-full">
+                    {displaySpecialty}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {state.location && (
+              <div className="text-xs text-muted-foreground flex items-start gap-2">
+                <Building2 className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
+                <span className="leading-relaxed">
+                  {state.practiceName}
+                  {state.location.city && ` • ${state.location.city}`}
+                  {state.location.state && `, ${state.location.state}`}
+                </span>
+              </div>
+            )}
+
+            {scheduleSummary && (
+              <div className="text-xs text-muted-foreground flex items-start gap-2">
+                <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
+                <span className="leading-relaxed">{scheduleSummary}</span>
+              </div>
+            )}
+
+            <div className="pt-3 border-t border-border">
+              {state.sacsVerified ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
+                  <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                  Verificado por SACS
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-warning">
+                  <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+                  Verificación pendiente
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
@@ -1083,9 +1378,9 @@ function VerifiedField({ label, value }: { label: string; value?: string | null 
   if (!value) return null;
 
   return (
-    <div>
-      <p className="text-xs text-zinc-500 mb-0.5">{label}</p>
-      <p className="text-sm text-zinc-200 bg-zinc-800/30 rounded-lg px-3 py-2 border border-white/5">
+    <div className="space-y-1">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="text-sm text-foreground bg-background border border-border rounded-md px-3 py-2">
         {value}
       </p>
     </div>

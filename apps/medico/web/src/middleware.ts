@@ -17,10 +17,19 @@ const publicPaths = [
 ];
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
 
   // Let the callback route handler do the PKCE exchange without interference
   if (pathname === '/auth/callback') {
+    return NextResponse.next();
+  }
+
+  // Dev-only UI preview bypass for onboarding wizard (visual QA, no real submits).
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    pathname.startsWith('/onboarding') &&
+    searchParams.get('preview') === '1'
+  ) {
     return NextResponse.next();
   }
 
@@ -52,6 +61,31 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/login';
     return NextResponse.redirect(url);
+  }
+
+  // Onboarding gate: doctors must complete the wizard before accessing /dashboard.
+  // Conversely, doctors who already onboarded should not see /onboarding again.
+  if (user && (pathname.startsWith('/dashboard') || pathname.startsWith('/onboarding'))) {
+    const { data: doctorProfile } = await supabase
+      .from('doctor_profiles')
+      .select('specialty_id, dashboard_config')
+      .eq('profile_id', user.id)
+      .maybeSingle();
+
+    const config = doctorProfile?.dashboard_config as { onboarding_completed?: boolean } | null;
+    const isOnboarded = !!doctorProfile?.specialty_id && config?.onboarding_completed === true;
+
+    if (!isOnboarded && pathname.startsWith('/dashboard')) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/onboarding/complete-profile';
+      return NextResponse.redirect(url);
+    }
+
+    if (isOnboarded && pathname.startsWith('/onboarding')) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;
