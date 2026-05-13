@@ -96,6 +96,21 @@ const MODULE_REGISTRY: Record<string, ComponentType<ModuleComponentProps>> = {
 
   // ── Chronic disease management (Med General Fase B Change) ───
   'chronic-mgmt': lazy(() => import('./chronic-mgmt/chronic-mgmt-module')),
+
+  // ── Clinical calculators (Med General) ───────────────────────
+  'clinical-calculators': lazy(() => import('./clinical-calculators/clinical-calculators-module')),
+
+  // ── Family history (Med General) ─────────────────────────────
+  'family-history': lazy(() => import('./family-history/family-history-module')),
+
+  // ── Referrals (Med General) ──────────────────────────────────
+  'referrals': lazy(() => import('./referrals/referrals-module')),
+
+  // ── Vaccinations (Med General — adult schedule) ──────────────
+  'vaccinations': lazy(() => import('./vaccinations/vaccinations-module')),
+
+  // ── Preventive screening (Med General — USPSTF guide) ────────
+  'preventive-screening': lazy(() => import('./preventive-screening/preventive-screening-module')),
 };
 
 /**
