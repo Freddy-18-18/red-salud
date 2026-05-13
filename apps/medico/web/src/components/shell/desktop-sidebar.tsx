@@ -4,6 +4,7 @@ import { PanelLeftClose, PanelLeftOpen, Stethoscope } from 'lucide-react';
 
 import { NAV_GROUPS } from './nav-data';
 import { NavGroup } from './nav-group';
+import type { NavGroupData } from './types';
 import { UserMenuDropdown } from './user-menu-dropdown';
 
 /**
@@ -38,6 +39,12 @@ export interface DesktopSidebarProps {
   collapsed: boolean;
   /** Callback fired when the user clicks the header collapse/expand button. */
   onToggleCollapse: () => void;
+  /**
+   * Dynamic nav groups (Phase 2 capability engine). When omitted, falls back
+   * to the static `NAV_GROUPS`. The shell composes this via
+   * `mergeWithStaticFallback(resolverResult.navGroups)`.
+   */
+  groups?: NavGroupData[];
 }
 
 export function DesktopSidebar({
@@ -47,7 +54,10 @@ export function DesktopSidebar({
   specialtyName: _specialtyName,
   collapsed,
   onToggleCollapse,
+  groups,
 }: DesktopSidebarProps): React.ReactElement {
+  const resolvedGroups = groups ?? NAV_GROUPS;
+
   // Width transition is animated; `overflow-hidden` keeps wordmark/labels from
   // bleeding past the rail during the collapse animation.
   const widthClass = collapsed ? 'lg:w-16' : 'lg:w-72';
@@ -90,7 +100,7 @@ export function DesktopSidebar({
       {/* Body: scrollable nav groups + footer */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex-1 space-y-4 overflow-y-auto px-3 py-3">
-          {NAV_GROUPS.map((group) => (
+          {resolvedGroups.map((group) => (
             <NavGroup key={group.key} group={group} collapsed={collapsed} />
           ))}
         </div>

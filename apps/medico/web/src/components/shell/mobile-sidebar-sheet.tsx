@@ -5,6 +5,7 @@ import { Stethoscope } from 'lucide-react';
 
 import { NAV_GROUPS } from './nav-data';
 import { NavGroup } from './nav-group';
+import type { NavGroupData } from './types';
 import { UserMenuDropdown } from './user-menu-dropdown';
 
 /**
@@ -38,6 +39,8 @@ export interface MobileSidebarSheetProps {
   email: string;
   /** Forwarded to the user menu in the footer. */
   avatarUrl: string | null;
+  /** Dynamic nav groups (Phase 2 capability engine). Falls back to NAV_GROUPS when omitted. */
+  groups?: NavGroupData[];
 }
 
 export function MobileSidebarSheet({
@@ -46,7 +49,10 @@ export function MobileSidebarSheet({
   doctorName,
   email,
   avatarUrl,
+  groups,
 }: MobileSidebarSheetProps): React.ReactElement {
+  const resolvedGroups = groups ?? NAV_GROUPS;
+
   return (
     <Sheet
       open={open}
@@ -78,7 +84,7 @@ export function MobileSidebarSheet({
         {/* Body: scrollable nav groups + footer */}
         <div className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 space-y-4 overflow-y-auto px-3 py-3">
-            {NAV_GROUPS.map((group) => (
+            {resolvedGroups.map((group) => (
               <NavGroup
                 key={group.key}
                 group={group}

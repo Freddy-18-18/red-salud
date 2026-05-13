@@ -22,6 +22,10 @@ import { StepIndicator } from './step-indicator';
 import { SpecialtySelector, type SpecialtyOption } from './specialty-selector';
 import { ModuleConfigurator } from './module-configurator';
 import { getSpecialtyTheme } from '@/lib/specialty-theme';
+import {
+  buildModulePreferenceRows,
+  MODULE_PREFS_CONFLICT_KEY,
+} from './build-module-preferences';
 
 // ============================================================================
 // SCHEMAS
@@ -346,19 +350,13 @@ export function RegistrationSteps() {
         // Non-blocking — the profile can be completed later
       }
 
-      // 3. Save module preferences
+      // 3. Save module preferences (Phase 7 fix: one row per module, real
+      // schema with composite unique on (doctor_id, module_id)).
       if (formData.selectedModules.length > 0) {
+        const rows = buildModulePreferenceRows(userId, formData.selectedModules);
         const { error: modulesError } = await supabase
           .from('doctor_module_preferences')
-          .upsert(
-            {
-              doctor_id: userId,
-              specialty_id: formData.specialtyId,
-              enabled_modules: formData.selectedModules,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'doctor_id' }
-          );
+          .upsert(rows, { onConflict: MODULE_PREFS_CONFLICT_KEY });
 
         if (modulesError) {
           console.error('Error saving module preferences:', modulesError);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useSidebarCollapsed } from '../../hooks/use-sidebar-collapsed';
 
@@ -8,6 +8,7 @@ import { DesktopSidebar } from './desktop-sidebar';
 import { MobileBottomNav } from './mobile-bottom-nav';
 import { MobileSidebarSheet } from './mobile-sidebar-sheet';
 import { MobileTopBar } from './mobile-top-bar';
+import { mergeWithStaticFallback } from './nav-mapper';
 import type { DashboardShellProps } from './types';
 
 /**
@@ -44,9 +45,16 @@ export function DashboardShell({
   avatarUrl,
   specialtyName,
   children,
+  navGroups,
+  pinnedModules: _pinnedModules,
+  verificationPending = false,
 }: DashboardShellProps): React.ReactElement {
   const { collapsed, toggle } = useSidebarCollapsed();
   const [sheetOpen, setSheetOpen] = useState<boolean>(false);
+  const resolvedGroups = useMemo(
+    () => mergeWithStaticFallback(navGroups),
+    [navGroups],
+  );
 
   // Padding swaps with the sidebar width. Animated to match the sidebar's
   // `transition-[width]` so the main column glides instead of jumping.
@@ -61,6 +69,7 @@ export function DashboardShell({
         specialtyName={specialtyName}
         collapsed={collapsed}
         onToggleCollapse={toggle}
+        groups={resolvedGroups}
       />
 
       <div
@@ -77,6 +86,7 @@ export function DashboardShell({
           doctorName={doctorName}
           email={email}
           avatarUrl={avatarUrl}
+          groups={resolvedGroups}
         />
 
         <main
@@ -88,6 +98,15 @@ export function DashboardShell({
             'sm:px-6 lg:py-8 md:gap-8',
           ].join(' ')}
         >
+          {verificationPending && (
+            <div
+              role="status"
+              data-testid="verification-pending-banner"
+              className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+            >
+              Tu verificación SACS está pendiente. Algunos módulos pueden estar limitados hasta completarla.
+            </div>
+          )}
           {children}
         </main>
       </div>

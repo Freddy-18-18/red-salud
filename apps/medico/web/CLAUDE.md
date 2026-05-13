@@ -54,3 +54,14 @@ pnpm typecheck    # TypeScript check
 - ICD-11 codes for diagnoses, ICD-10 as fallback
 - All medical data is PHI — never log patient identifiable information
 - Prescriptions require digital signature before printing
+
+## Capability Engine (Fase 2)
+
+The sidebar nav can run in two modes, gated by an env flag:
+
+- `FEATURE_CAPABILITY_ENGINE=false` (default) — `<DashboardShell>` consumes the static `STATIC_NAV_GROUPS` from `components/shell/nav-data.ts`. Same chrome for every doctor.
+- `FEATURE_CAPABILITY_ENGINE=true` — `app/dashboard/layout.tsx` calls `resolveDoctorModules()` server-side, threads `navGroups` + `pinnedModules` + `verificationPending` as props to the shell. Sidebar is derived from `capability_modules` + `sacs_postgrado_mapping` tables + per-doctor `doctor_module_preferences`.
+
+Resolver lives at `src/lib/capabilities/` (types, normalize-postgrado, build-sources, apply-preferences, group-and-sort, resolver, cache, supabase-deps, module-catalog). Pure, deps-injected, fully unit-tested. Production wiring at `app/dashboard/layout.tsx` builds `ResolverDeps` from the Supabase client via `buildSupabaseResolverDeps()`.
+
+When the resolver fails (DB issue, deleted profile), the shell silently falls back to `STATIC_NAV_GROUPS` — no error to the user.

@@ -63,10 +63,11 @@ export interface PageHeaderBreadcrumbItem {
  * Props consumed by the `<DashboardShell>` orchestrator. The server layout
  * fetches doctor data and forwards it; the shell does NOT call Supabase.
  *
- * Phase 1 deliberately drops `userId`, `specialtySlug`, and `sacsEspecialidad`
- * — the new shell is specialty-agnostic per FR-9 and the validation checklist
- * (themeColor const removed, no per-specialty branching at the chrome layer).
- * Any per-specialty UX returns in Fase 2 via the capability engine.
+ * Phase 2 additions: when the capability engine is enabled,
+ * `app/dashboard/layout.tsx` calls `resolveDoctorModules()` server-side and
+ * forwards `navGroups` (ResolvedNavGroup, icons as strings) + `pinnedModules`.
+ * When the flag is off OR the resolver degrades, both props are `undefined`
+ * and the shell falls back to the static `NAV_GROUPS`.
  */
 export interface DashboardShellProps {
   /** Doctor display name. Falls back to email upstream. */
@@ -79,4 +80,14 @@ export interface DashboardShellProps {
   specialtyName: string;
   /** Page tree rendered inside the shell's `<main>`. */
   children: ReactNode;
+  /**
+   * Dynamic nav groups from the capability resolver (Phase 2). Icons are
+   * STRINGS at this boundary — the shell maps to LucideIcon via `nav-mapper.ts`.
+   * Omit to fall back to static `NAV_GROUPS`.
+   */
+  navGroups?: import('@/lib/capabilities/types').ResolvedNavGroup[];
+  /** Pinned-to-dashboard modules (Phase 2). Reserved for the dashboard page. */
+  pinnedModules?: import('@/lib/capabilities/types').MedicoModule[];
+  /** When true, render a banner pointing the doctor to complete SACS verification. */
+  verificationPending?: boolean;
 }

@@ -43,6 +43,7 @@ vi.mock('@/components/shell/desktop-sidebar', () => ({
     specialtyName: string;
     collapsed: boolean;
     onToggleCollapse: () => void;
+    groups?: Array<{ key: string; label: string; items: Array<{ key: string }> }>;
   }) => (
     <div
       data-testid="desktop-sidebar"
@@ -51,6 +52,10 @@ vi.mock('@/components/shell/desktop-sidebar', () => ({
       data-email={props.email}
       data-avatar-url={props.avatarUrl ?? ''}
       data-specialty-name={props.specialtyName}
+      data-group-keys={(props.groups ?? []).map((g) => g.key).join(',')}
+      data-first-item-keys={(props.groups ?? [])
+        .map((g) => g.items[0]?.key ?? '')
+        .join(',')}
     >
       <button
         type="button"
@@ -82,6 +87,7 @@ vi.mock('@/components/shell/mobile-sidebar-sheet', () => ({
     doctorName: string;
     email: string;
     avatarUrl: string | null;
+    groups?: Array<{ key: string; label: string; items: Array<{ key: string }> }>;
   }) => (
     <div
       data-testid="mobile-sidebar-sheet"
@@ -89,6 +95,7 @@ vi.mock('@/components/shell/mobile-sidebar-sheet', () => ({
       data-doctor-name={props.doctorName}
       data-email={props.email}
       data-avatar-url={props.avatarUrl ?? ''}
+      data-group-keys={(props.groups ?? []).map((g) => g.key).join(',')}
     >
       <button
         type="button"
@@ -296,5 +303,79 @@ describe('<DashboardShell />', () => {
 
     fireEvent.click(screen.getByTestId('desktop-sidebar-toggle'));
     expect(toggle).toHaveBeenCalledTimes(1);
+  });
+
+  describe('Phase 2: capability-driven nav', () => {
+    it('passes the static NAV_GROUPS to the sidebars when navGroups prop is omitted', () => {
+      render(
+        <DashboardShell {...baseProps}>
+          <span />
+        </DashboardShell>,
+      );
+      const sidebar = screen.getByTestId('desktop-sidebar');
+      const groupKeys = sidebar.getAttribute('data-group-keys') ?? '';
+      // STATIC_NAV_GROUPS has keys 'principal' and 'configuracion'
+      expect(groupKeys).toContain('principal');
+      expect(groupKeys).toContain('configuracion');
+    });
+
+    it('passes resolved dynamic groups to BOTH sidebars when navGroups prop is provided', () => {
+      const navGroups = [
+        {
+          key: 'clinica' as const,
+          label: 'Clínica',
+          items: [
+            { key: 'chronic-mgmt', label: 'Crónicos', href: '/dashboard/modulos/chronic-mgmt', icon: 'Activity' },
+          ],
+        },
+        {
+          key: 'analisis' as const,
+          label: 'Análisis',
+          items: [
+            { key: 'lab-orders', label: 'Lab', href: '/dashboard/modulos/lab-orders', icon: 'FlaskConical' },
+          ],
+        },
+      ];
+      render(
+        <DashboardShell {...baseProps} navGroups={navGroups}>
+          <span />
+        </DashboardShell>,
+      );
+      const desktop = screen.getByTestId('desktop-sidebar');
+      expect(desktop.getAttribute('data-group-keys')).toBe('clinica,analisis');
+      expect(desktop.getAttribute('data-first-item-keys')).toBe('chronic-mgmt,lab-orders');
+
+      const mobile = screen.getByTestId('mobile-sidebar-sheet');
+      expect(mobile.getAttribute('data-group-keys')).toBe('clinica,analisis');
+    });
+
+    it('falls back to static when navGroups is an empty array (degraded resolver)', () => {
+      render(
+        <DashboardShell {...baseProps} navGroups={[]}>
+          <span />
+        </DashboardShell>,
+      );
+      const sidebar = screen.getByTestId('desktop-sidebar');
+      const groupKeys = sidebar.getAttribute('data-group-keys') ?? '';
+      expect(groupKeys).toContain('principal');
+    });
+
+    it('renders the verification-pending banner when verificationPending=true', () => {
+      render(
+        <DashboardShell {...baseProps} verificationPending>
+          <span />
+        </DashboardShell>,
+      );
+      expect(screen.getByTestId('verification-pending-banner')).toBeInTheDocument();
+    });
+
+    it('does NOT render the verification banner when verificationPending is omitted', () => {
+      render(
+        <DashboardShell {...baseProps}>
+          <span />
+        </DashboardShell>,
+      );
+      expect(screen.queryByTestId('verification-pending-banner')).toBeNull();
+    });
   });
 });

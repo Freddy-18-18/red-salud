@@ -35,6 +35,11 @@ import type { BottomNavItemData, NavGroupData } from './types';
  *
  * Order matters: it determines visual stacking. `Verificación` carries the
  * `Próximamente` badge per FR-7 — link is still navigable, badge is informative.
+ *
+ * NOTE (Phase 2 — capability engine): when `FEATURE_CAPABILITY_ENGINE=true`,
+ * the dashboard layout passes a dynamic resolved groups array instead; this
+ * static set becomes the fallback for unverified doctors or degraded
+ * resolution. Re-exported as `STATIC_NAV_GROUPS` for explicit naming.
  */
 export const NAV_GROUPS: NavGroupData[] = [
   {
@@ -105,6 +110,13 @@ export const NAV_GROUPS: NavGroupData[] = [
     ],
   },
 ];
+
+/**
+ * Explicit alias for the static nav source. Use this name in callers that mix
+ * static + dynamic (e.g. `mergeWithStaticFallback`) to make the fallback
+ * intent obvious. Same reference — not a copy.
+ */
+export const STATIC_NAV_GROUPS = NAV_GROUPS;
 
 /**
  * Mobile bottom nav (5 items, fixed). Stays in `lg:hidden` territory; the

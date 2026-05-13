@@ -1,7 +1,14 @@
 import { redirect } from 'next/navigation';
 
 import { DashboardShell } from '@/components/shell/dashboard-shell';
+import { buildSupabaseResolverDeps } from '@/lib/capabilities/supabase-deps';
+import { resolveDoctorModules } from '@/lib/capabilities/resolver';
+import type { ResolverResult } from '@/lib/capabilities/types';
 import { createClient } from '@/lib/supabase/server';
+
+const FEATURE_CAPABILITY_ENGINE =
+  process.env.FEATURE_CAPABILITY_ENGINE === 'true' ||
+  process.env.NEXT_PUBLIC_FEATURE_CAPABILITY_ENGINE === 'true';
 
 export default async function DashboardLayout({
   children,
@@ -17,9 +24,7 @@ export default async function DashboardLayout({
     redirect('/auth/login');
   }
 
-  // Fetch doctor profile for the sidebar (specialty is informational only —
-  // Phase 1 chrome is specialty-agnostic per FR-9; the new shell does not
-  // compute themeColor or branch on slug).
+  // Identity fetch (used by the user-menu & header — always required).
   const { data: doctorDetails } = await supabase
     .from('doctor_profiles')
     .select(`
@@ -45,12 +50,28 @@ export default async function DashboardLayout({
   const specialtyName = specialty?.name ?? 'Medicina General';
   const avatarUrl = profileData?.avatar_url ?? null;
 
+  // Capability resolution (Phase 2 — behind feature flag).
+  let resolverResult: ResolverResult | null = null;
+  if (FEATURE_CAPABILITY_ENGINE) {
+    try {
+      const deps = buildSupabaseResolverDeps(supabase);
+      resolverResult = await resolveDoctorModules(deps, user.id);
+    } catch (err) {
+      // Resolver failure is non-fatal — shell falls back to STATIC_NAV_GROUPS.
+      // eslint-disable-next-line no-console
+      console.error('[capability-engine] resolver failed:', err);
+    }
+  }
+
   return (
     <DashboardShell
       doctorName={doctorName}
       email={user.email ?? ''}
       avatarUrl={avatarUrl}
       specialtyName={specialtyName}
+      navGroups={resolverResult?.navGroups}
+      pinnedModules={resolverResult?.pinnedModules}
+      verificationPending={resolverResult?.verificationPending ?? false}
     >
       {children}
     </DashboardShell>
