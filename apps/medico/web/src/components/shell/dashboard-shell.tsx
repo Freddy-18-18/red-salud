@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { TooltipProvider } from '@red-salud/design-system';
 
 import { useSidebarCollapsed } from '../../hooks/use-sidebar-collapsed';
 
@@ -61,57 +62,59 @@ export function DashboardShell({
   const wrapperPaddingClass = collapsed ? 'lg:pl-16' : 'lg:pl-72';
 
   return (
-    <div className="flex min-h-screen w-full min-w-0 flex-col overflow-x-hidden bg-muted/40">
-      <DesktopSidebar
-        doctorName={doctorName}
-        email={email}
-        avatarUrl={avatarUrl}
-        specialtyName={specialtyName}
-        collapsed={collapsed}
-        onToggleCollapse={toggle}
-        groups={resolvedGroups}
-      />
-
-      <div
-        className={[
-          'flex min-w-0 w-full flex-col',
-          'transition-[padding] duration-300 ease-in-out',
-          wrapperPaddingClass,
-        ].join(' ')}
-      >
-        <MobileTopBar onOpenSheet={() => setSheetOpen(true)} />
-        <MobileSidebarSheet
-          open={sheetOpen}
-          onClose={() => setSheetOpen(false)}
+    <TooltipProvider delayDuration={250}>
+      <div className="flex min-h-screen w-full min-w-0 flex-col overflow-x-hidden bg-muted/40">
+        <DesktopSidebar
           doctorName={doctorName}
           email={email}
           avatarUrl={avatarUrl}
+          specialtyName={specialtyName}
+          collapsed={collapsed}
+          onToggleCollapse={toggle}
           groups={resolvedGroups}
         />
 
-        <main
+        <div
           className={[
-            'min-w-0 flex-1 items-start gap-4 p-4',
-            // Reserve room for the fixed bottom nav on mobile, with safe-area
-            // inset for notched devices. Desktop drops the bottom buffer.
-            'pb-[calc(5.25rem+env(safe-area-inset-bottom))] lg:pb-8',
-            'sm:px-6 lg:py-8 md:gap-8',
+            'flex min-w-0 w-full flex-col',
+            'transition-[padding] duration-300 ease-in-out',
+            wrapperPaddingClass,
           ].join(' ')}
         >
-          {verificationPending && (
-            <div
-              role="status"
-              data-testid="verification-pending-banner"
-              className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-            >
-              Tu verificación SACS está pendiente. Algunos módulos pueden estar limitados hasta completarla.
-            </div>
-          )}
-          {children}
-        </main>
-      </div>
+          <MobileTopBar onOpenSheet={() => setSheetOpen(true)} />
+          <MobileSidebarSheet
+            open={sheetOpen}
+            onClose={() => setSheetOpen(false)}
+            doctorName={doctorName}
+            email={email}
+            avatarUrl={avatarUrl}
+            groups={resolvedGroups}
+          />
 
-      <MobileBottomNav />
-    </div>
+          <main
+            className={[
+              'min-w-0 flex-1 items-start gap-4 p-4',
+              // Reserve room for the fixed bottom nav on mobile, with safe-area
+              // inset for notched devices. Desktop drops the bottom buffer.
+              'pb-[calc(5.25rem+env(safe-area-inset-bottom))] lg:pb-8',
+              'sm:px-6 lg:py-8 md:gap-8',
+            ].join(' ')}
+          >
+            {verificationPending && (
+              <div
+                role="status"
+                data-testid="verification-pending-banner"
+                className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+              >
+                Tu verificación SACS está pendiente. Algunos módulos pueden estar limitados hasta completarla.
+              </div>
+            )}
+            {children}
+          </main>
+        </div>
+
+        <MobileBottomNav />
+      </div>
+    </TooltipProvider>
   );
 }

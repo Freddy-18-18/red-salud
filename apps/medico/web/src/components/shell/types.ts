@@ -29,6 +29,12 @@ export interface NavLinkData {
   badge?: string;
   /** When true, the link renders disabled (still navigable per FR-7 unless caller short-circuits). */
   disabled?: boolean;
+  /**
+   * When true, render an attention dot (R5 medico-shell-supabase-style spec).
+   * Used by capability resolver to flag verificacion pending, SACS expired,
+   * or other module-level signals. Defaults to false.
+   */
+  attention?: boolean;
 }
 
 /**

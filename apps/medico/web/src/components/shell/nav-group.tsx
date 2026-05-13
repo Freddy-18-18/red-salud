@@ -15,6 +15,12 @@ import type { NavGroupData } from './types';
  * `NAV_GROUPS` data and group component.
  *
  * Individual doctor practice ONLY — no clinic/multi-org concepts.
+ *
+ * ## medico-shell-supabase-style (Phase 1, R4)
+ * Each group emits a 1px decorative divider after its content. Stacked groups
+ * therefore separate visually without needing manual spacing tweaks at the
+ * parent. The divider has `role="separator"` so assistive tech treats it as a
+ * structural break, not as content.
  */
 
 export interface NavGroupProps {
@@ -42,6 +48,15 @@ export function NavGroup({ group, collapsed = false, onItemClick }: NavGroupProp
           <NavLink key={item.key} item={item} collapsed={collapsed} onClick={onItemClick} />
         ))}
       </nav>
+      {/*
+        R4 divider — purely decorative, sits inside the group container so the
+        parent sidebar doesn't need to know about inter-group spacing rules.
+      */}
+      <div
+        role="separator"
+        aria-orientation="horizontal"
+        className="mt-3 mx-auto h-px w-[calc(100%-1rem)] bg-border-muted"
+      />
     </div>
   );
 }

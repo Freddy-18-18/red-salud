@@ -16,9 +16,19 @@
 
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { TooltipProvider } from '@red-salud/design-system';
 
 import { DesktopSidebar } from './desktop-sidebar';
 import { NAV_GROUPS } from './nav-data';
+
+/**
+ * Collapsed NavLinks now mount a Radix Tooltip (medico-shell-supabase-style R2)
+ * which needs a `<TooltipProvider>` in scope. Wrap every render in this helper
+ * so jsdom doesn't crash with "Tooltip must be used within TooltipProvider".
+ */
+function renderWithTooltipProvider(ui: React.ReactElement): ReturnType<typeof render> {
+  return render(<TooltipProvider delayDuration={0}>{ui}</TooltipProvider>);
+}
 
 beforeEach(() => {
   // jsdom doesn't implement these — Radix calls them defensively.
@@ -79,7 +89,7 @@ afterEach(() => {
 
 describe('<DesktopSidebar />', () => {
   it('renders every NAV_GROUPS item label when expanded', () => {
-    render(<DesktopSidebar {...baseProps} />);
+    renderWithTooltipProvider(<DesktopSidebar {...baseProps} />);
     for (const group of NAV_GROUPS) {
       for (const item of group.items) {
         // `Configuración` collides with the group heading of the same name —
@@ -91,40 +101,40 @@ describe('<DesktopSidebar />', () => {
   });
 
   it('renders the brand text "Red Salud" when expanded', () => {
-    render(<DesktopSidebar {...baseProps} />);
+    renderWithTooltipProvider(<DesktopSidebar {...baseProps} />);
     expect(screen.getByText('Red Salud')).toBeInTheDocument();
   });
 
   it('hides the brand text when collapsed', () => {
-    render(<DesktopSidebar {...baseProps} collapsed />);
+    renderWithTooltipProvider(<DesktopSidebar {...baseProps} collapsed />);
     expect(screen.queryByText('Red Salud')).not.toBeInTheDocument();
   });
 
   it('fires onToggleCollapse when the collapse button is clicked', () => {
     const onToggleCollapse = vi.fn();
-    render(<DesktopSidebar {...baseProps} onToggleCollapse={onToggleCollapse} />);
+    renderWithTooltipProvider(<DesktopSidebar {...baseProps} onToggleCollapse={onToggleCollapse} />);
     fireEvent.click(screen.getByRole('button', { name: /colapsar menú/i }));
     expect(onToggleCollapse).toHaveBeenCalledTimes(1);
   });
 
   it('shows aria-label "Colapsar menú" when expanded', () => {
-    render(<DesktopSidebar {...baseProps} collapsed={false} />);
+    renderWithTooltipProvider(<DesktopSidebar {...baseProps} collapsed={false} />);
     expect(screen.getByRole('button', { name: /colapsar menú/i })).toBeInTheDocument();
   });
 
   it('shows aria-label "Expandir menú" when collapsed', () => {
-    render(<DesktopSidebar {...baseProps} collapsed />);
+    renderWithTooltipProvider(<DesktopSidebar {...baseProps} collapsed />);
     expect(screen.getByRole('button', { name: /expandir menú/i })).toBeInTheDocument();
   });
 
   it('renders the UserMenuDropdown in the footer (avatar initials visible)', () => {
-    render(<DesktopSidebar {...baseProps} />);
+    renderWithTooltipProvider(<DesktopSidebar {...baseProps} />);
     // "Marianella Suarez" → "MS"
     expect(screen.getByText('MS')).toBeInTheDocument();
   });
 
   it('applies fixed positioning classes to the <aside>', () => {
-    const { container } = render(<DesktopSidebar {...baseProps} />);
+    const { container } = renderWithTooltipProvider(<DesktopSidebar {...baseProps} />);
     const aside = container.querySelector('aside');
     expect(aside).not.toBeNull();
     expect(aside!.className).toContain('fixed');
@@ -135,12 +145,15 @@ describe('<DesktopSidebar />', () => {
   });
 
   it('switches between w-72 and w-16 based on collapsed prop', () => {
-    const { container, rerender } = render(<DesktopSidebar {...baseProps} collapsed={false} />);
+    const { container, rerender } = renderWithTooltipProvider(
+      <DesktopSidebar {...baseProps} collapsed={false} />,
+    );
     let aside = container.querySelector('aside');
     expect(aside!.className).toContain('lg:w-72');
 
-    rerender(<DesktopSidebar {...baseProps} collapsed />);
+    rerender(<TooltipProvider delayDuration={0}><DesktopSidebar {...baseProps} collapsed /></TooltipProvider>);
     aside = container.querySelector('aside');
+    // FEATURE_NEW_SHELL is OFF in this test (no vi.stubEnv) so legacy lg:w-16 stands.
     expect(aside!.className).toContain('lg:w-16');
   });
 });

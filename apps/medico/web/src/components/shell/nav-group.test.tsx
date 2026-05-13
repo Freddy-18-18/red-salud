@@ -12,9 +12,19 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Calendar, Home } from 'lucide-react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { TooltipProvider } from '@red-salud/design-system';
 
 import { NavGroup } from './nav-group';
 import type { NavGroupData } from './types';
+
+/**
+ * In collapsed mode the inner `<NavLink>` mounts a Radix Tooltip
+ * (medico-shell-supabase-style R2), which requires a `<TooltipProvider>`
+ * upstream. Tests that exercise collapsed mode wrap in this helper.
+ */
+function renderWithTooltipProvider(ui: React.ReactElement): ReturnType<typeof render> {
+  return render(<TooltipProvider delayDuration={0}>{ui}</TooltipProvider>);
+}
 
 // usePathname is consumed transitively by <NavLink>.
 const usePathnameMock = vi.fn<() => string>();
@@ -61,7 +71,7 @@ describe('<NavGroup />', () => {
 
   it('hides the heading when collapsed', () => {
     usePathnameMock.mockReturnValue('/dashboard');
-    render(<NavGroup group={principal} collapsed />);
+    renderWithTooltipProvider(<NavGroup group={principal} collapsed />);
     expect(screen.queryByText('Principal')).not.toBeInTheDocument();
     // Items still render (icons-only).
     expect(screen.getAllByTestId('nav-link')).toHaveLength(2);

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@red-salud/design-system';
 
 import type { NavLinkData } from './types';
 
@@ -18,6 +19,15 @@ import type { NavLinkData } from './types';
  * Used by both the desktop sidebar (`<NavGroup>`) and the mobile sheet.
  *
  * Individual doctor practice ONLY — no clinic/multi-org concepts.
+ *
+ * ## medico-shell-supabase-style (Phase 1)
+ * - R2: When collapsed, the icon is wrapped in a Radix `Tooltip` so the label
+ *   remains discoverable on hover/focus. When expanded, no tooltip mounts.
+ * - R5: When `attention === true`, an aria-hidden destructive-colored dot is
+ *   rendered at the top-right corner, driven by the capability resolver.
+ *
+ * A `<TooltipProvider>` must be mounted upstream (typically in `dashboard-shell.tsx`)
+ * for the tooltip rendering to function.
  */
 
 /**
@@ -34,9 +44,9 @@ function isActive(pathname: string | null, href: string): boolean {
 }
 
 export interface NavLinkProps {
-  /** Navigation data (label, href, icon, optional badge). */
+  /** Navigation data (label, href, icon, optional badge, optional attention). */
   item: NavLinkData;
-  /** When true, hides the label and badge — icon only with title tooltip. */
+  /** When true, hides the label and badge — icon only with Radix tooltip. */
   collapsed?: boolean;
   /** Optional click handler (used by mobile sheet to close after navigation). */
   onClick?: () => void;
@@ -58,14 +68,15 @@ export function NavLink({ item, collapsed = false, onClick }: NavLinkProps): Rea
 
   const className = [baseClass, stateClass, collapsedClass].filter(Boolean).join(' ');
 
-  return (
+  const linkBody = (
     <Link
       href={item.href}
       onClick={onClick}
       className={className}
-      // Tooltip is only useful when label is hidden (collapsed mode). Always
-      // attached when collapsed so keyboard focus shows native tooltip too.
-      title={collapsed ? item.label : undefined}
+      // Keep the native `title` only in expanded mode (tooltip handles
+      // collapsed accessibility). Avoids a duplicate Radix-tooltip + browser-
+      // tooltip popping at the same time when collapsed.
+      title={collapsed ? undefined : item.label}
       aria-current={active ? 'page' : undefined}
     >
       <Icon
@@ -82,6 +93,26 @@ export function NavLink({ item, collapsed = false, onClick }: NavLinkProps): Rea
           )}
         </>
       )}
+      {item.attention && (
+        <span
+          data-testid="nav-link-attention-dot"
+          aria-hidden="true"
+          className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-destructive"
+        />
+      )}
     </Link>
   );
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{linkBody}</TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8}>
+          {item.label}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return linkBody;
 }

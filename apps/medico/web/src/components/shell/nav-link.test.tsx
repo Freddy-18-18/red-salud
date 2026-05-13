@@ -15,9 +15,20 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Calendar, Home, ShieldCheck } from 'lucide-react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { TooltipProvider } from '@red-salud/design-system';
 
 import { NavLink } from './nav-link';
 import type { NavLinkData } from './types';
+
+/**
+ * Helper: when the link is rendered in collapsed mode it now wraps itself in a
+ * Radix Tooltip (medico-shell-supabase-style R2). Tests that mount with
+ * `collapsed=true` therefore need a TooltipProvider in scope; for ergonomics
+ * we wrap renders that hit collapsed paths in this helper.
+ */
+function renderWithTooltipProvider(ui: React.ReactElement): ReturnType<typeof render> {
+  return render(<TooltipProvider delayDuration={0}>{ui}</TooltipProvider>);
+}
 
 // Mock next/navigation usePathname() — overridden per test.
 const usePathnameMock = vi.fn<() => string>();
@@ -108,16 +119,19 @@ describe('<NavLink />', () => {
 
   it('hides the badge when collapsed', () => {
     usePathnameMock.mockReturnValue('/dashboard');
-    render(<NavLink item={verificacionItem} collapsed />);
+    renderWithTooltipProvider(<NavLink item={verificacionItem} collapsed />);
     expect(screen.queryByText('Próximamente')).not.toBeInTheDocument();
   });
 
-  it('hides the label when collapsed and exposes title attribute as tooltip', () => {
+  it('hides the inline label when collapsed (Radix tooltip handles discoverability)', () => {
     usePathnameMock.mockReturnValue('/dashboard');
-    render(<NavLink item={agendaItem} collapsed />);
-    expect(screen.queryByText('Agenda')).not.toBeInTheDocument();
+    renderWithTooltipProvider(<NavLink item={agendaItem} collapsed />);
+    // The inline `<span>Agenda</span>` is not rendered inside the link.
     const link = screen.getByTestId('nav-link');
-    expect(link).toHaveAttribute('title', 'Agenda');
+    expect(link.querySelector('span:not([data-testid="nav-link-attention-dot"])')).toBeNull();
+    // Native `title` is now intentionally absent — Radix Tooltip supersedes it
+    // so the two don't fight under hover/focus. See medico-shell-supabase-style R2.
+    expect(link).not.toHaveAttribute('title');
   });
 
   it('fires onClick when the user clicks the link', () => {

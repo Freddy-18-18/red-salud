@@ -1,0 +1,413 @@
+/* =============================================================================
+   Red Salud — Caribbean Trust Token System
+   Single source of truth for all 9 Red Salud apps.
+   Spec: engram observation #152 (decision: redsalud/brand-system-2026-05-07)
+   IA review: engram observation #153 (decision: redsalud/ux-audit-2026-05-07)
+
+   Usage (Tailwind 4):
+     @import 'tailwindcss';
+     @import '@red-salud/design-system/tokens.css';
+
+   Naming convention: shadcn-compatible HSL triplets — `hsl(var(--token))`.
+   All Tailwind utilities (bg-primary, text-foreground, border, ring, etc.)
+   resolve through these variables.
+
+   DO NOT hardcode colors in components. Use semantic Tailwind classes
+   (bg-card, text-muted-foreground, ring-ring) — those map to these tokens.
+   ============================================================================= */
+
+@layer base {
+  /* ---------------------------------------------------------------------------
+     :root — Light mode (default)
+     Caribbean Trust palette: Atlantic Deep navy + Tile Coral + cool neutrals.
+     --------------------------------------------------------------------------- */
+  :root {
+    /* ========== Surfaces — calm healthcare neutrals (NOT generic SaaS) ========== */
+    --background: 200 25% 99%;          /* near-white with cool undertone */
+    --foreground: 215 28% 12%;          /* deep slate, never pure black */
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 12%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 14% 42%;
+
+    --surface-elevated: 0 0% 100%;
+    --surface-sunken: 210 20% 97%;
+
+    /* ========== Brand — Caribbean Trust ========== */
+    /* Primary: Atlantic Deep navy-blue. WCAG AAA on white (8.4:1). */
+    --primary: 205 78% 32%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 205 70% 96%;        /* hover/selected backgrounds */
+    --primary-muted: 205 40% 88%;       /* disabled/inactive states */
+
+    /* Secondary: Tile Coral — Venezuelan coastal warmth, distinct from medical red. */
+    --secondary: 14 78% 58%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-soft: 14 80% 96%;
+    --secondary-muted: 14 50% 90%;
+
+    /* Accent: subtle interactive surface — used by hover, dropdown highlight, etc. */
+    --accent: 205 60% 94%;
+    --accent-foreground: 205 78% 28%;
+
+    /* ========== Borders, Inputs, Rings ========== */
+    --border: 215 18% 88%;
+    --input: 215 18% 90%;
+    --ring: 205 78% 42%;                /* focus ring — primary at slightly higher L */
+
+    /* ========== Supabase-position tokens (medico-shell-supabase-style) ==========
+       Position-named structural tokens aliased to Caribbean Trust hues. Adopted
+       by the medico shell refactor (Phase 1) for the new Supabase-style
+       chrome — sidebar surface, sub-foreground tier, structural borders, and
+       a subtle surface between background and muted.
+       NOTE: per `--sidebar-foreground` choice (~16% L) WCAG AA on `--sidebar`
+       (96% L) ≈ 11.8:1. `--foreground-lighter` (~32% L) on `--background`
+       (99% L) ≈ 6.5:1. `--border-muted`/`--border-strong` are decorative; not
+       text contrast critical. Verified light + dark in 1.2.                   */
+    --sidebar: 210 22% 96%;             /* between --muted (96% L) and --background — calmer rail */
+    --sidebar-accent: 205 60% 90%;      /* hover/active highlight — pulls from --accent (94% L) deeper */
+    --sidebar-foreground: 215 24% 16%;  /* slightly softer than --foreground (12% L) for rail body */
+    --sidebar-ring: var(--ring);
+    --foreground-lighter: 215 16% 32%;  /* between --muted-foreground (42% L) and --foreground (12% L) */
+    --border-strong: 215 18% 78%;       /* stronger than --border (88% L) for hover/emphasis */
+    --border-muted: 215 18% 92%;        /* lighter than --border for sidebar dividers */
+    --surface-75: 210 22% 98%;          /* between --background (99% L) and --muted (96% L) */
+
+    /* ========== Semantic colors ========== */
+    --success: 152 56% 36%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 152 55% 94%;
+
+    --warning: 36 92% 48%;
+    --warning-foreground: 30 100% 12%;  /* dark text on warm yellow for AA */
+    --warning-soft: 36 90% 95%;
+
+    --destructive: 356 72% 46%;         /* medical red, NOT political flag red */
+    --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 356 70% 96%;
+
+    --error: 356 72% 46%;
+    --error-foreground: 0 0% 100%;
+    --error-soft: 356 70% 96%;
+
+    --info: 205 78% 42%;
+    --info-foreground: 0 0% 100%;
+    --info-soft: 205 70% 95%;
+
+    /* AI / Gemini features — dedicated violet, never confused with semantic states. */
+    --ai-suggestion: 268 64% 56%;
+    --ai-suggestion-foreground: 0 0% 100%;
+    --ai-suggestion-soft: 268 60% 96%;
+
+    /* ========== Healthcare-specific: vitals ========== */
+    --vital-low: 205 70% 50%;           /* hypothermia / low BP */
+    --vital-normal: 152 56% 38%;        /* in-range — same hue as success */
+    --vital-high: 14 78% 52%;           /* fever / hypertension */
+    --vital-critical: 356 78% 48%;      /* emergency */
+
+    /* ========== Healthcare-specific: severity ========== */
+    --severity-mild: 152 50% 42%;
+    --severity-moderate: 36 92% 48%;
+    --severity-severe: 14 78% 50%;
+    --severity-critical: 356 78% 46%;
+
+    /* ========== Per-domain accents ==========
+       Primary stays unified across all 9 apps. Per-domain accent only tints
+       nav icons, badges, section heads. CTAs always use --primary. */
+    --domain-paciente: 14 78% 58%;       /* coral — patient warmth */
+    --domain-medico: 195 76% 38%;        /* clinical teal */
+    --domain-farmacia: 148 56% 40%;      /* apothecary green */
+    --domain-clinica: 230 38% 42%;       /* slate indigo */
+    --domain-laboratorio: 268 64% 52%;   /* violet */
+    --domain-secretaria: 38 72% 52%;     /* sand gold */
+    --domain-seguro: 215 60% 32%;        /* navy */
+    --domain-ambulancia: 0 78% 50%;      /* emergency red */
+    --domain-academia: 32 88% 52%;       /* scholar amber */
+
+    /* ========== Charts — distinct hues for data viz, derived from palette ========== */
+    --chart-1: 205 78% 42%;
+    --chart-2: 14 78% 58%;
+    --chart-3: 152 56% 42%;
+    --chart-4: 268 64% 56%;
+    --chart-5: 36 92% 52%;
+
+    /* ========== Map tokens (paciente keeps these) ========== */
+    --map-border: 215 18% 78%;
+    --map-state-fill: 210 20% 94%;
+
+    /* ========== Radius scale ========== */
+    --radius-sm: 0.375rem;     /*  6px */
+    --radius-md: 0.625rem;     /* 10px */
+    --radius-lg: 0.875rem;     /* 14px */
+    --radius-xl: 1.25rem;      /* 20px */
+    --radius-full: 9999px;
+    --radius: var(--radius-md); /* shadcn default reference */
+
+    /* ========== Spacing — 4px grid ========== */
+    --space-0: 0;
+    --space-1: 0.25rem;        /*  4px */
+    --space-2: 0.5rem;         /*  8px */
+    --space-3: 0.75rem;        /* 12px */
+    --space-4: 1rem;           /* 16px */
+    --space-5: 1.25rem;        /* 20px */
+    --space-6: 1.5rem;         /* 24px */
+    --space-8: 2rem;           /* 32px */
+    --space-10: 2.5rem;        /* 40px */
+    --space-12: 3rem;          /* 48px */
+    --space-16: 4rem;          /* 64px */
+    --space-20: 5rem;          /* 80px */
+    --space-24: 6rem;          /* 96px */
+
+    /* ========== Typography scale ========== */
+    --text-xs: 0.75rem;        /* 12px — captions, badges */
+    --text-sm: 0.875rem;       /* 14px — body small, labels */
+    --text-base: 1rem;         /* 16px — body (min for elderly users) */
+    --text-lg: 1.125rem;       /* 18px — lead */
+    --text-xl: 1.25rem;        /* 20px — subheading */
+    --text-2xl: 1.5rem;        /* 24px — h3 */
+    --text-3xl: 1.875rem;      /* 30px — h2 */
+    --text-4xl: 2.25rem;       /* 36px — h1 */
+
+    --leading-tight: 1.2;      /* headings */
+    --leading-normal: 1.5;     /* body */
+    --leading-relaxed: 1.6;    /* long-form prose */
+
+    /* Font families — apps load Inter via next/font; Plus Jakarta optional. */
+    --font-sans: var(--font-inter), 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Plus Jakarta Sans', var(--font-inter), ui-sans-serif, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+    /* ========== Shadows — low elevation, never harsh ========== */
+    --shadow-xs: 0 1px 2px 0 hsl(215 28% 12% / 0.04);
+    --shadow-sm: 0 1px 3px 0 hsl(215 28% 12% / 0.06), 0 1px 2px -1px hsl(215 28% 12% / 0.04);
+    --shadow-md: 0 4px 6px -1px hsl(215 28% 12% / 0.07), 0 2px 4px -2px hsl(215 28% 12% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(215 28% 12% / 0.08), 0 4px 6px -4px hsl(215 28% 12% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(215 28% 12% / 0.10), 0 8px 10px -6px hsl(215 28% 12% / 0.06);
+    --shadow-focus: 0 0 0 3px hsl(205 78% 42% / 0.35);  /* brand-primary focus ring */
+
+    /* ========== Motion ========== */
+    --duration-fast: 120ms;
+    --duration-normal: 200ms;
+    --duration-slow: 320ms;
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --ease-entrance: cubic-bezier(0, 0, 0.2, 1);
+    --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  /* ---------------------------------------------------------------------------
+     .dark — Dark mode
+     Inverted L, lower S to avoid neon. Calmer than typical SaaS dark themes.
+     --------------------------------------------------------------------------- */
+  .dark {
+    /* Surfaces */
+    --background: 215 30% 7%;
+    --foreground: 210 18% 92%;
+
+    --card: 215 28% 11%;
+    --card-foreground: 210 18% 92%;
+
+    --popover: 215 28% 11%;
+    --popover-foreground: 210 18% 92%;
+
+    --muted: 215 22% 16%;
+    --muted-foreground: 215 14% 62%;
+
+    --surface-elevated: 215 28% 13%;
+    --surface-sunken: 215 30% 6%;
+
+    /* Brand */
+    --primary: 205 70% 56%;             /* lifted L for legibility on dark */
+    --primary-foreground: 215 30% 8%;
+    --primary-soft: 205 50% 18%;
+    --primary-muted: 205 35% 22%;
+
+    --secondary: 14 72% 62%;
+    --secondary-foreground: 215 30% 8%;
+    --secondary-soft: 14 40% 20%;
+    --secondary-muted: 14 28% 24%;
+
+    --accent: 215 30% 18%;
+    --accent-foreground: 205 70% 70%;
+
+    /* Borders, inputs, rings */
+    --border: 215 22% 22%;
+    --input: 215 22% 20%;
+    --ring: 205 70% 56%;
+
+    /* ========== Supabase-position tokens (dark parity) ==========
+       Dark surfaces are 7-22% L; structural tokens follow the same scaffold but
+       inverted. Contrast verified: --sidebar-foreground (~88% L) on --sidebar
+       (~10% L) ≈ 12.7:1, AA-large + AA-normal. --foreground-lighter (~70% L)
+       on --background (7% L) ≈ 7.8:1.                                         */
+    --sidebar: 215 28% 10%;             /* slightly lifted from --background (7% L) — readable rail */
+    --sidebar-accent: 215 30% 18%;      /* hover/active = same as --accent */
+    --sidebar-foreground: 210 18% 88%;  /* close to --foreground (92% L), a hair softer */
+    --sidebar-ring: var(--ring);
+    --foreground-lighter: 215 16% 70%;  /* between --muted-foreground (62% L) and --foreground (92% L) */
+    --border-strong: 215 22% 32%;       /* stronger than --border (22% L) */
+    --border-muted: 215 22% 16%;        /* lighter than --border for subtle dividers */
+    --surface-75: 215 28% 9%;           /* between --background (7% L) and --muted (16% L) */
+
+    /* Semantic */
+    --success: 152 50% 48%;
+    --success-foreground: 215 30% 8%;
+    --success-soft: 152 40% 18%;
+
+    --warning: 36 80% 56%;
+    --warning-foreground: 30 50% 8%;
+    --warning-soft: 36 50% 18%;
+
+    --destructive: 356 64% 56%;
+    --destructive-foreground: 215 30% 8%;
+    --destructive-soft: 356 40% 22%;
+
+    --error: 356 64% 56%;
+    --error-foreground: 215 30% 8%;
+    --error-soft: 356 40% 22%;
+
+    --info: 205 70% 58%;
+    --info-foreground: 215 30% 8%;
+    --info-soft: 205 50% 18%;
+
+    --ai-suggestion: 268 60% 66%;
+    --ai-suggestion-foreground: 215 30% 8%;
+    --ai-suggestion-soft: 268 40% 22%;
+
+    /* Vitals */
+    --vital-low: 205 60% 60%;
+    --vital-normal: 152 50% 50%;
+    --vital-high: 14 72% 60%;
+    --vital-critical: 356 70% 58%;
+
+    /* Severity */
+    --severity-mild: 152 50% 52%;
+    --severity-moderate: 36 80% 56%;
+    --severity-severe: 14 72% 60%;
+    --severity-critical: 356 70% 58%;
+
+    /* Per-domain accents — adjusted for dark surfaces */
+    --domain-paciente: 14 72% 64%;
+    --domain-medico: 195 70% 56%;
+    --domain-farmacia: 148 50% 52%;
+    --domain-clinica: 230 36% 60%;
+    --domain-laboratorio: 268 60% 64%;
+    --domain-secretaria: 38 70% 60%;
+    --domain-seguro: 215 56% 56%;
+    --domain-ambulancia: 0 70% 60%;
+    --domain-academia: 32 80% 60%;
+
+    /* Charts */
+    --chart-1: 205 70% 56%;
+    --chart-2: 14 72% 62%;
+    --chart-3: 152 50% 52%;
+    --chart-4: 268 60% 64%;
+    --chart-5: 36 80% 58%;
+
+    /* Maps */
+    --map-border: 215 22% 30%;
+    --map-state-fill: 215 28% 14%;
+
+    /* Shadows on dark — slightly stronger to read against dark surfaces */
+    --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.30);
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.35), 0 1px 2px -1px hsl(0 0% 0% / 0.30);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.40), 0 2px 4px -2px hsl(0 0% 0% / 0.32);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.45), 0 4px 6px -4px hsl(0 0% 0% / 0.32);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.50), 0 8px 10px -6px hsl(0 0% 0% / 0.36);
+    --shadow-focus: 0 0 0 3px hsl(205 70% 56% / 0.45);
+  }
+
+  /* ---------------------------------------------------------------------------
+     System dark-mode (when no explicit .dark class is applied AND the user
+     hasn't opted into a forced theme). Keeps parity with the .dark block above.
+     Only applies to elements descending from [data-theme="system"] to avoid
+     stomping users who explicitly chose light mode.
+     --------------------------------------------------------------------------- */
+  @media (prefers-color-scheme: dark) {
+    [data-theme='system']:root {
+      color-scheme: dark;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     prefers-reduced-motion — WCAG 2.3.3 (Animation from Interactions)
+     Healthcare audience includes vestibular-disorder patients who get nauseated
+     by spinning loaders, animated skeletons, hover scale transforms, and smooth
+     scroll. This override neutralizes ALL animations + transitions globally
+     when the user has expressed a system preference for reduced motion.
+     Components that need motion for FUNCTIONAL feedback (e.g. loading state)
+     should pair `animate-spin` with `motion-reduce:animate-none` so the
+     element is still visible but static.
+     --------------------------------------------------------------------------- */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* =============================================================================
+   @theme — Tailwind 4 utility mapping
+   Exposes our HSL tokens as Tailwind utilities (bg-primary, text-foreground...).
+   Each app's globals.css can extend this with app-specific overrides.
+   ============================================================================= */
+@theme inline {
+  /* Color utilities */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-ai: hsl(var(--ai-suggestion));
+  --color-ai-foreground: hsl(var(--ai-suggestion-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* Supabase-position tokens (medico shell) */
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+  --color-foreground-lighter: hsl(var(--foreground-lighter));
+  --color-border-strong: hsl(var(--border-strong));
+  --color-border-muted: hsl(var(--border-muted));
+  --color-surface-75: hsl(var(--surface-75));
+
+  /* Radii */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  /* Fonts */
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+}

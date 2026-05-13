@@ -24,7 +24,21 @@ import { UserMenuDropdown } from './user-menu-dropdown';
  * readers always know what the next click will do.
  *
  * Individual doctor practice ONLY — no clinic/multi-org concepts.
+ *
+ * ## medico-shell-supabase-style (Phase 1)
+ * When `NEXT_PUBLIC_FEATURE_NEW_SHELL === 'true'`, the collapsed rail SHALL
+ * shrink to `w-12` (48px) — Supabase-style icon rail. With the flag off or
+ * missing, the legacy `w-16` (64px) collapsed width is preserved. See spec
+ * `app-shell-medico` R1 + R8.
  */
+const NEW_SHELL_COLLAPSED_WIDTH = 'lg:w-12';
+const LEGACY_COLLAPSED_WIDTH = 'lg:w-16';
+
+function isNewShellEnabled(): boolean {
+  // Read at call time so vi.stubEnv works under jsdom; Next.js inlines
+  // NEXT_PUBLIC_* at build time at runtime in the browser bundle.
+  return process.env.NEXT_PUBLIC_FEATURE_NEW_SHELL === 'true';
+}
 
 export interface DesktopSidebarProps {
   /** Doctor display name (forwarded to the user menu). */
@@ -60,7 +74,10 @@ export function DesktopSidebar({
 
   // Width transition is animated; `overflow-hidden` keeps wordmark/labels from
   // bleeding past the rail during the collapse animation.
-  const widthClass = collapsed ? 'lg:w-16' : 'lg:w-72';
+  const collapsedWidthClass = isNewShellEnabled()
+    ? NEW_SHELL_COLLAPSED_WIDTH
+    : LEGACY_COLLAPSED_WIDTH;
+  const widthClass = collapsed ? collapsedWidthClass : 'lg:w-72';
 
   const toggleAriaLabel = collapsed ? 'Expandir menú' : 'Colapsar menú';
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
