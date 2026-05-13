@@ -93,6 +93,9 @@ const MODULE_REGISTRY: Record<string, ComponentType<ModuleComponentProps>> = {
 
   // ── Oncology staging ───────────────────────────────────────
   'oncology-staging': lazy(() => import('./oncology/oncology-module')),
+
+  // ── Chronic disease management (Med General Fase B Change) ───
+  'chronic-mgmt': lazy(() => import('./chronic-mgmt/chronic-mgmt-module')),
 };
 
 /**

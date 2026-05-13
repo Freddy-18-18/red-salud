@@ -54,6 +54,16 @@ const DEGRADED_RESULT: ResolverResult = {
 };
 
 const PLACEHOLDER_BADGE = 'Próximamente';
+const LAZY_MODULE_ROUTE_PREFIX = '/dashboard/modulos/';
+
+/**
+ * Only lazy-loaded modules (route under `/dashboard/modulos/[key]`) can be
+ * "unregistered" — always-on items like Inicio/Agenda/Pacientes have their
+ * own dedicated pages in `/dashboard/*` and never live in `module-registry.ts`.
+ */
+function shouldBadgeWhenUnregistered(route: string): boolean {
+  return route.startsWith(LAZY_MODULE_ROUTE_PREFIX);
+}
 
 function rowsToModules(
   rows: CapabilityModuleRow[],
@@ -66,7 +76,11 @@ function rowsToModules(
     seenKeys.add(r.module_key);
 
     const meta = lookupModule(r.module_key);
-    const unregistered = isModuleRegistered ? !isModuleRegistered(r.module_key) : false;
+    const isLazyRoute = shouldBadgeWhenUnregistered(meta.route);
+    const unregistered =
+      isLazyRoute && isModuleRegistered
+        ? !isModuleRegistered(r.module_key)
+        : false;
     out.push({
       key: r.module_key,
       label: meta.label,

@@ -198,26 +198,53 @@ describe('resolveDoctorModules (end-to-end, specs R1+R2+R3+R5)', () => {
   });
 
   describe('Spec R8: auto-badge for unregistered modules', () => {
-    it('sets badge="Próximamente" on items whose module_key is not registered', async () => {
+    it('sets badge="Próximamente" ONLY on /dashboard/modulos/* routes whose module_key is not registered', async () => {
       const deps = makeDeps({
         fetchCapabilityModules: async () => [
-          row('always-on', '*', 'inicio', 'clinica', 10),
           row('specialty', 'medicina-general', 'chronic-mgmt', 'clinica', 100),
         ],
-        isModuleRegistered: (key) => key === 'inicio',
+        isModuleRegistered: () => false,
       });
       const result = await resolveDoctorModules(deps, 'doc-1');
       const allItems = result.navGroups.flatMap((g) => g.items);
-      const inicio = allItems.find((i) => i.key === 'inicio');
       const chronic = allItems.find((i) => i.key === 'chronic-mgmt');
-      expect(inicio?.badge).toBeUndefined();
       expect(chronic?.badge).toBe('Próximamente');
+    });
+
+    it('does NOT badge always-on items with their own dedicated routes (Inicio, Agenda, etc.)', async () => {
+      const deps = makeDeps({
+        fetchCapabilityModules: async () => [
+          row('always-on', '*', 'inicio', 'clinica', 10),
+          row('always-on', '*', 'agenda', 'clinica', 20),
+          row('always-on', '*', 'pacientes', 'clinica', 30),
+          row('always-on', '*', 'recetas', 'clinica', 50),
+        ],
+        // Even when nothing is registered, dedicated-route items must NOT show badge.
+        isModuleRegistered: () => false,
+      });
+      const result = await resolveDoctorModules(deps, 'doc-1');
+      const allItems = result.navGroups.flatMap((g) => g.items);
+      for (const item of allItems) {
+        expect(item.badge, `${item.key} should not be badged`).toBeUndefined();
+      }
+    });
+
+    it('badge is skipped for /dashboard/modulos/* items that ARE registered', async () => {
+      const deps = makeDeps({
+        fetchCapabilityModules: async () => [
+          row('specialty', 'medicina-general', 'lab-orders', 'analisis', 100),
+        ],
+        isModuleRegistered: (key) => key === 'lab-orders',
+      });
+      const result = await resolveDoctorModules(deps, 'doc-1');
+      const allItems = result.navGroups.flatMap((g) => g.items);
+      expect(allItems[0]?.badge).toBeUndefined();
     });
 
     it('omits the badge when isModuleRegistered is not provided (degraded mode)', async () => {
       const deps = makeDeps({
         fetchCapabilityModules: async () => [
-          row('always-on', '*', 'inicio', 'clinica', 10),
+          row('specialty', 'medicina-general', 'chronic-mgmt', 'clinica', 100),
         ],
         isModuleRegistered: undefined,
       });
