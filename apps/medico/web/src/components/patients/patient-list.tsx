@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
+import { EmptyState } from '@red-salud/design-system';
 import {
   Search,
   ChevronRight,
@@ -10,35 +11,18 @@ import {
   SortAsc,
   SortDesc,
 } from 'lucide-react';
+import type { PatientSummary } from '@red-salud/types';
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
-export interface PatientSummary {
-  id: string;
-  nombre_completo: string;
-  cedula: string | null;
-  telefono: string | null;
-  fecha_nacimiento: string | null;
-  avatar_url: string | null;
-  ultima_visita: string | null;
-  proxima_cita: string | null;
-  total_consultas: number;
-}
+// Re-export for legacy callers — removed in T-2-36 (Batch P2 cleanup).
+export type { PatientSummary } from '@red-salud/types';
 
 interface PatientListProps {
   patients: PatientSummary[];
   isLoading?: boolean;
   onSelect: (patientId: string) => void;
-  themeColor?: string;
 }
 
-type SortField = 'nombre_completo' | 'ultima_visita' | 'total_consultas';
-
-// ============================================================================
-// HELPERS
-// ============================================================================
+type SortField = 'full_name' | 'last_visit_at' | 'total_visits';
 
 function calculateAge(dob: string | null): string {
   if (!dob) return '--';
@@ -58,76 +42,76 @@ function formatDate(dateStr: string | null): string {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
+    timeZone: 'America/Caracas',
   });
 }
 
-// ============================================================================
-// LOADING SKELETON
-// ============================================================================
-
 function PatientRowSkeleton() {
   return (
-    <div className="flex items-center gap-4 p-4 border-b border-gray-100 animate-pulse">
-      <div className="h-10 w-10 bg-gray-200 rounded-full" />
+    <div
+      data-testid="patient-row-skeleton"
+      className="flex items-center gap-4 p-4 border-b border-border/50 animate-pulse"
+    >
+      <div className="h-10 w-10 bg-muted rounded-full" />
       <div className="flex-1">
-        <div className="h-4 w-40 bg-gray-200 rounded" />
-        <div className="h-3 w-24 bg-gray-100 rounded mt-2" />
+        <div className="h-4 w-40 bg-muted rounded" />
+        <div className="h-3 w-24 bg-muted rounded mt-2" />
       </div>
-      <div className="h-3 w-20 bg-gray-100 rounded" />
-      <div className="h-3 w-20 bg-gray-100 rounded" />
+      <div className="h-3 w-20 bg-muted rounded" />
+      <div className="h-3 w-20 bg-muted rounded" />
     </div>
   );
 }
-
-// ============================================================================
-// COMPONENT
-// ============================================================================
 
 export function PatientList({
   patients,
   isLoading = false,
   onSelect,
-  themeColor = '#3B82F6',
 }: PatientListProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortField, setSortField] = useState<SortField>('nombre_completo');
+  const [sortField, setSortField] = useState<SortField>('full_name');
   const [sortAsc, setSortAsc] = useState(true);
 
-  const toggleSort = useCallback((field: SortField) => {
-    if (sortField === field) {
-      setSortAsc((prev) => !prev);
-    } else {
-      setSortField(field);
-      setSortAsc(true);
-    }
-  }, [sortField]);
+  const toggleSort = useCallback(
+    (field: SortField) => {
+      if (sortField === field) {
+        setSortAsc((prev) => !prev);
+      } else {
+        setSortField(field);
+        setSortAsc(true);
+      }
+    },
+    [sortField],
+  );
 
   const filteredPatients = useMemo(() => {
     let result = [...patients];
 
-    // Filter by search query
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+      const norm = (s: string) =>
+        s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+      const q = norm(searchQuery);
       result = result.filter(
         (p) =>
-          p.nombre_completo.toLowerCase().includes(q) ||
-          (p.cedula && p.cedula.includes(q)) ||
-          (p.telefono && p.telefono.includes(q)),
+          norm(p.full_name).includes(q) ||
+          (p.national_id && norm(p.national_id).includes(q)) ||
+          (p.phone && p.phone.includes(q)),
       );
     }
 
-    // Sort
     result.sort((a, b) => {
       let comparison = 0;
       switch (sortField) {
-        case 'nombre_completo':
-          comparison = a.nombre_completo.localeCompare(b.nombre_completo);
+        case 'full_name':
+          comparison = a.full_name.localeCompare(b.full_name);
           break;
-        case 'ultima_visita':
-          comparison = (a.ultima_visita ?? '').localeCompare(b.ultima_visita ?? '');
+        case 'last_visit_at':
+          comparison = (a.last_visit_at ?? '').localeCompare(
+            b.last_visit_at ?? '',
+          );
           break;
-        case 'total_consultas':
-          comparison = a.total_consultas - b.total_consultas;
+        case 'total_visits':
+          comparison = a.total_visits - b.total_visits;
           break;
       }
       return sortAsc ? comparison : -comparison;
@@ -139,50 +123,49 @@ export function PatientList({
   const SortIcon = sortAsc ? SortAsc : SortDesc;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      {/* Search bar */}
-      <div className="p-4 border-b border-gray-200">
+    <div className="bg-card rounded-xl border border-border overflow-hidden">
+      <div className="p-4 border-b border-border">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nombre, cédula o teléfono..."
-            className="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:border-transparent placeholder:text-gray-300"
-            style={{ '--tw-ring-color': `${themeColor}40` } as React.CSSProperties}
+            className="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-muted-foreground/70"
           />
         </div>
       </div>
 
-      {/* Table header */}
-      <div className="hidden md:flex items-center gap-4 px-4 py-2.5 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200">
-        <div className="w-10" /> {/* Avatar space */}
+      <div className="hidden md:flex items-center gap-4 px-4 py-2.5 bg-muted text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+        <div className="w-10" />
         <button
-          onClick={() => toggleSort('nombre_completo')}
-          className="flex-1 flex items-center gap-1 hover:text-gray-700 transition-colors"
+          onClick={() => toggleSort('full_name')}
+          className="flex-1 flex items-center gap-1 hover:text-foreground transition-colors"
         >
-          Paciente {sortField === 'nombre_completo' && <SortIcon className="h-3 w-3" />}
+          Paciente{' '}
+          {sortField === 'full_name' && <SortIcon className="h-3 w-3" />}
         </button>
         <div className="w-24">Edad</div>
         <button
-          onClick={() => toggleSort('ultima_visita')}
-          className="w-28 flex items-center gap-1 hover:text-gray-700 transition-colors"
+          onClick={() => toggleSort('last_visit_at')}
+          className="w-28 flex items-center gap-1 hover:text-foreground transition-colors"
         >
-          Última visita {sortField === 'ultima_visita' && <SortIcon className="h-3 w-3" />}
+          Última visita{' '}
+          {sortField === 'last_visit_at' && <SortIcon className="h-3 w-3" />}
         </button>
         <div className="w-28">Próxima cita</div>
         <button
-          onClick={() => toggleSort('total_consultas')}
-          className="w-20 flex items-center gap-1 hover:text-gray-700 transition-colors text-right"
+          onClick={() => toggleSort('total_visits')}
+          className="w-20 flex items-center gap-1 hover:text-foreground transition-colors text-right"
         >
-          Consultas {sortField === 'total_consultas' && <SortIcon className="h-3 w-3" />}
+          Consultas{' '}
+          {sortField === 'total_visits' && <SortIcon className="h-3 w-3" />}
         </button>
-        <div className="w-8" /> {/* Arrow space */}
+        <div className="w-8" />
       </div>
 
-      {/* Patient rows */}
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-border/50">
         {isLoading ? (
           <>
             <PatientRowSkeleton />
@@ -192,89 +175,86 @@ export function PatientList({
             <PatientRowSkeleton />
           </>
         ) : filteredPatients.length === 0 ? (
-          <div className="p-8 text-center">
-            <User className="h-12 w-12 mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500 font-medium">
-              {searchQuery ? 'Sin resultados' : 'Sin pacientes registrados'}
-            </p>
-            <p className="text-sm text-gray-400 mt-1">
-              {searchQuery
-                ? `No se encontraron pacientes para "${searchQuery}"`
-                : 'Los pacientes aparecerán aquí después de su primera cita'}
-            </p>
-          </div>
+          <EmptyState
+            icon={User}
+            title={searchQuery ? 'Sin resultados' : 'Aún no tenés pacientes'}
+            description={
+              searchQuery
+                ? `No encontramos pacientes para "${searchQuery}". Probá con otro término.`
+                : 'Cuando un paciente reserve su primera cita, vas a verlo acá.'
+            }
+            size="compact"
+            className="border-0 rounded-none"
+          />
         ) : (
           filteredPatients.map((patient) => (
             <button
               key={patient.id}
               onClick={() => onSelect(patient.id)}
-              className="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+              className="w-full flex items-center gap-4 px-4 py-3 hover:bg-muted/50 transition-colors text-left"
             >
-              {/* Avatar */}
-              <div
-                className="h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                style={{ backgroundColor: themeColor }}
-              >
+              <div className="h-10 w-10 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-sm font-bold flex-shrink-0">
                 {patient.avatar_url ? (
                   <img
                     src={patient.avatar_url}
-                    alt={patient.nombre_completo}
+                    alt={patient.full_name}
                     className="h-10 w-10 rounded-full object-cover"
                   />
                 ) : (
-                  patient.nombre_completo.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                  patient.full_name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .slice(0, 2)
+                    .toUpperCase()
                 )}
               </div>
 
-              {/* Name + contact */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
-                  {patient.nombre_completo}
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {patient.full_name}
                 </p>
                 <div className="flex items-center gap-3 mt-0.5">
-                  {patient.cedula && (
-                    <span className="text-xs text-gray-400">CI: {patient.cedula}</span>
+                  {patient.national_id && (
+                    <span className="text-xs text-muted-foreground/70">
+                      CI: {patient.national_id}
+                    </span>
                   )}
-                  {patient.telefono && (
-                    <span className="hidden md:flex items-center gap-1 text-xs text-gray-400">
-                      <Phone className="h-3 w-3" /> {patient.telefono}
+                  {patient.phone && (
+                    <span className="hidden md:flex items-center gap-1 text-xs text-muted-foreground/70">
+                      <Phone className="h-3 w-3" /> {patient.phone}
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Age */}
-              <div className="hidden md:block w-24 text-sm text-gray-600">
-                {calculateAge(patient.fecha_nacimiento)}
+              <div className="hidden md:block w-24 text-sm text-muted-foreground">
+                {calculateAge(patient.date_of_birth)}
               </div>
 
-              {/* Last visit */}
-              <div className="hidden md:flex items-center gap-1 w-28 text-xs text-gray-500">
+              <div className="hidden md:flex items-center gap-1 w-28 text-xs text-muted-foreground">
                 <Calendar className="h-3 w-3" />
-                {formatDate(patient.ultima_visita)}
+                {formatDate(patient.last_visit_at)}
               </div>
 
-              {/* Next appointment */}
-              <div className="hidden md:block w-28 text-xs text-gray-500">
-                {formatDate(patient.proxima_cita)}
+              <div className="hidden md:block w-28 text-xs text-muted-foreground">
+                {formatDate(patient.next_appointment_at)}
               </div>
 
-              {/* Total consultations */}
-              <div className="hidden md:block w-20 text-sm font-medium text-gray-700 text-right">
-                {patient.total_consultas}
+              <div className="hidden md:block w-20 text-sm font-medium text-foreground text-right">
+                {patient.total_visits}
               </div>
 
-              {/* Arrow */}
-              <ChevronRight className="h-4 w-4 text-gray-300 flex-shrink-0" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />
             </button>
           ))
         )}
       </div>
 
-      {/* Footer: Count */}
       {!isLoading && filteredPatients.length > 0 && (
-        <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-200 text-xs text-gray-500">
-          {filteredPatients.length} paciente{filteredPatients.length !== 1 ? 's' : ''}
+        <div className="px-4 py-2.5 bg-muted border-t border-border text-xs text-muted-foreground">
+          {filteredPatients.length} paciente
+          {filteredPatients.length !== 1 ? 's' : ''}
           {searchQuery && ` (filtrados de ${patients.length})`}
         </div>
       )}

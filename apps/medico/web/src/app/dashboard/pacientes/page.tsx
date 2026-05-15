@@ -3,10 +3,11 @@
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useDoctorAppointments } from '@red-salud/core';
-import { PatientList, type PatientSummary } from '@/components/patients/patient-list';
+import { PatientList } from '@/components/patients/patient-list';
+import type { PatientSummary } from '@red-salud/types';
 import { PatientDetail } from '@/components/patients/patient-detail';
 import { PageHeader } from '@/components/shell';
-import { Users, Plus } from 'lucide-react';
+import { useActiveSede } from '@/hooks/use-active-sede';
 
 // ============================================================================
 // COMPONENT
@@ -23,14 +24,21 @@ export default function PacientesPage() {
     });
   }, []);
 
+  // Active sede scopes the patient list: a patient appears here only if they
+  // have at least one cita in this sede (or one legacy cita with no sede
+  // assigned). Switching sedes triggers a refetch via the hook's deps.
+  const { activeSedeId } = useActiveSede();
+
   // Fetch all appointments for this doctor via core hook
   const {
     appointments: rawAppointments,
     loading,
     error,
-  } = useDoctorAppointments(supabase, userId);
+  } = useDoctorAppointments(supabase, userId, { locationId: activeSedeId });
 
-  // Derive unique patients from appointments
+  // Derive unique patients from appointments. `useDoctorAppointments` returns
+  // patient shape with legacy Spanish aliases (cedula/telefono/fecha_nacimiento)
+  // — map them to the canonical @red-salud/types `PatientSummary` field names.
   const patients = useMemo<PatientSummary[]>(() => {
     const patientMap = new Map<string, PatientSummary>();
     const now = new Date().toISOString();
@@ -42,33 +50,35 @@ export default function PacientesPage() {
       const existing = patientMap.get(apt.patient_id);
 
       if (existing) {
-        existing.total_consultas++;
-        // Update last visit
-        if (!existing.ultima_visita || apt.scheduled_at > existing.ultima_visita) {
-          if (apt.status === 'completed') {
-            existing.ultima_visita = apt.scheduled_at;
-          }
+        existing.total_visits++;
+        if (
+          apt.status === 'completed' &&
+          (!existing.last_visit_at || apt.scheduled_at > existing.last_visit_at)
+        ) {
+          existing.last_visit_at = apt.scheduled_at;
         }
-        // Update next appointment
         if (apt.scheduled_at > now && apt.status !== 'cancelled') {
-          if (!existing.proxima_cita || apt.scheduled_at < existing.proxima_cita) {
-            existing.proxima_cita = apt.scheduled_at;
+          if (
+            !existing.next_appointment_at ||
+            apt.scheduled_at < existing.next_appointment_at
+          ) {
+            existing.next_appointment_at = apt.scheduled_at;
           }
         }
       } else {
         patientMap.set(apt.patient_id, {
           id: profile.id,
-          nombre_completo: profile.full_name ?? 'Sin nombre',
-          cedula: profile.cedula ?? null,
-          telefono: profile.telefono ?? null,
-          fecha_nacimiento: profile.fecha_nacimiento ?? null,
+          full_name: profile.full_name ?? 'Sin nombre',
+          national_id: profile.cedula ?? null,
+          phone: profile.telefono ?? null,
+          date_of_birth: profile.fecha_nacimiento ?? null,
           avatar_url: profile.avatar_url ?? null,
-          ultima_visita: apt.status === 'completed' ? apt.scheduled_at : null,
-          proxima_cita:
+          last_visit_at: apt.status === 'completed' ? apt.scheduled_at : null,
+          next_appointment_at:
             apt.scheduled_at > now && apt.status !== 'cancelled'
               ? apt.scheduled_at
               : null,
-          total_consultas: 1,
+          total_visits: 1,
         });
       }
     }
