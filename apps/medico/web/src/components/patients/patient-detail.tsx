@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { usePatientAppointments } from '@red-salud/core';
+import { EmptyState as DSEmptyState } from '@red-salud/design-system';
 import {
   ArrowLeft,
   Phone,
@@ -14,16 +16,11 @@ import {
   Activity,
   User,
   Clock,
+  AlertCircle,
 } from 'lucide-react';
-
-// ============================================================================
-// TYPES
-// ============================================================================
 
 interface PatientDetailProps {
   patientId: string;
-  onBack: () => void;
-  themeColor?: string;
   specialtyCategory?: string;
 }
 
@@ -31,13 +28,13 @@ interface PatientFull {
   id: string;
   full_name: string;
   email: string | null;
-  telefono: string | null;
-  fecha_nacimiento: string | null;
-  cedula: string | null;
-  ciudad: string | null;
-  estado: string | null;
+  phone: string | null;
+  date_of_birth: string | null;
+  national_id: string | null;
+  city: string | null;
+  state: string | null;
   avatar_url: string | null;
-  genero: string | null;
+  gender: string | null;
 }
 
 interface ConsultationRecord {
@@ -61,10 +58,6 @@ interface AppointmentRecord {
   status: string;
 }
 
-// ============================================================================
-// TABS DEFINITION
-// ============================================================================
-
 type TabId = 'info' | 'history' | 'appointments' | 'prescriptions';
 
 const TABS: Array<{ id: TabId; label: string; icon: typeof User }> = [
@@ -74,28 +67,26 @@ const TABS: Array<{ id: TabId; label: string; icon: typeof User }> = [
   { id: 'prescriptions', label: 'Recetas', icon: Pill },
 ];
 
-// ============================================================================
-// COMPONENT
-// ============================================================================
+export function PatientDetail({ patientId }: PatientDetailProps) {
+  const router = useRouter();
 
-export function PatientDetail({
-  patientId,
-  onBack,
-  themeColor = '#3B82F6',
-}: PatientDetailProps) {
   const [patient, setPatient] = useState<PatientFull | null>(null);
   const [consultations, setConsultations] = useState<ConsultationRecord[]>([]);
+  const [consultationsError, setConsultationsError] = useState<string | null>(
+    null,
+  );
   const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>([]);
+  const [prescriptionsError, setPrescriptionsError] = useState<string | null>(
+    null,
+  );
   const [activeTab, setActiveTab] = useState<TabId>('info');
   const [loading, setLoading] = useState(true);
 
-  // Load appointments via core hook
   const {
     appointments: rawPatientAppointments,
     loading: appointmentsLoading,
   } = usePatientAppointments(supabase, patientId);
 
-  // Map to local AppointmentRecord shape
   const appointments = useMemo<AppointmentRecord[]>(
     () =>
       rawPatientAppointments.slice(0, 20).map((apt) => ({
@@ -107,62 +98,85 @@ export function PatientDetail({
     [rawPatientAppointments],
   );
 
-  // Load patient profile, consultations, and prescriptions (no core hooks for these)
   useEffect(() => {
+    let cancelled = false;
+
     async function loadPatientData() {
       setLoading(true);
+      setConsultationsError(null);
+      setPrescriptionsError(null);
 
-      // Load patient profile
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', patientId)
         .single();
 
-      if (profileData) {
-        setPatient(profileData as unknown as PatientFull);
+      if (cancelled) return;
+      setPatient(profileData ? (profileData as unknown as PatientFull) : null);
+
+      const consultResult = await supabase
+        .from('medical_records')
+        .select('id, created_at, diagnosis, observations')
+        .eq('patient_id', patientId)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (cancelled) return;
+      if (consultResult.error) {
+        setConsultations([]);
+        setConsultationsError(
+          'No pudimos cargar las consultas. Reintentá en unos segundos.',
+        );
+      } else {
+        setConsultations(
+          (consultResult.data as unknown as ConsultationRecord[]) ?? [],
+        );
       }
 
-      // Load consultations
-      try {
-        const { data: consultData } = await supabase
-          .from('medical_records')
-          .select('id, created_at, diagnosis, observations')
-          .eq('patient_id', patientId)
-          .order('created_at', { ascending: false })
-          .limit(20);
+      const rxResult = await supabase
+        .from('prescriptions')
+        .select('id, prescribed_at, diagnosis, status')
+        .eq('patient_id', patientId)
+        .order('prescribed_at', { ascending: false })
+        .limit(20);
 
-        setConsultations((consultData as unknown as ConsultationRecord[]) ?? []);
-      } catch {
-        // Table might not exist
-      }
-
-      // Load prescriptions
-      try {
-        const { data: rxData } = await supabase
-          .from('prescriptions')
-          .select('id, prescribed_at, diagnosis, status')
-          .eq('patient_id', patientId)
-          .order('prescribed_at', { ascending: false })
-          .limit(20);
-
-        setPrescriptions((rxData as unknown as PrescriptionRecord[]) ?? []);
-      } catch {
-        // Table might not exist
+      if (cancelled) return;
+      if (rxResult.error) {
+        setPrescriptions([]);
+        setPrescriptionsError(
+          'No pudimos cargar las recetas. Reintentá en unos segundos.',
+        );
+      } else {
+        setPrescriptions(
+          (rxResult.data as unknown as PrescriptionRecord[]) ?? [],
+        );
       }
 
       setLoading(false);
     }
 
     loadPatientData();
+    return () => {
+      cancelled = true;
+    };
   }, [patientId]);
 
   if (loading || appointmentsLoading) {
     return (
       <div className="space-y-4 animate-pulse">
-        <div className="h-8 w-48 bg-gray-200 rounded" />
-        <div className="h-24 bg-gray-100 rounded-xl" />
-        <div className="h-64 bg-gray-100 rounded-xl" />
+        <div
+          data-testid="patient-detail-skeleton"
+          className="h-8 w-48 bg-muted rounded"
+        />
+        <div
+          data-testid="patient-detail-skeleton"
+          className="h-24 bg-muted rounded-xl"
+        />
+        <div
+          data-testid="patient-detail-skeleton"
+          className="h-64 bg-muted rounded-xl"
+        />
       </div>
     );
   }
@@ -170,8 +184,11 @@ export function PatientDetail({
   if (!patient) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Paciente no encontrado</p>
-        <button onClick={onBack} className="mt-3 text-sm text-blue-600 hover:underline">
+        <p className="text-muted-foreground">Paciente no encontrado</p>
+        <button
+          onClick={() => router.back()}
+          className="mt-3 text-sm text-primary hover:underline"
+        >
           Volver a la lista
         </button>
       </div>
@@ -190,59 +207,70 @@ export function PatientDetail({
 
   return (
     <div className="space-y-4">
-      {/* Back button */}
       <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        onClick={() => router.back()}
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Volver a pacientes
       </button>
 
-      {/* Patient header */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="bg-card rounded-xl border border-border p-5">
         <div className="flex items-start gap-4">
-          <div
-            className="h-16 w-16 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
-            style={{ backgroundColor: themeColor }}
-          >
+          <div className="h-16 w-16 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xl font-bold flex-shrink-0">
             {patient.avatar_url ? (
-              <img src={patient.avatar_url} alt={patient.full_name} className="h-16 w-16 rounded-full object-cover" />
+              <img
+                src={patient.avatar_url}
+                alt={patient.full_name}
+                className="h-16 w-16 rounded-full object-cover"
+              />
             ) : (
-              patient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+              patient.full_name
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()
             )}
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-900">{patient.full_name}</h2>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
-              {patient.cedula && <span>CI: {patient.cedula}</span>}
-              <span>{calculateAge(patient.fecha_nacimiento)}</span>
-              {patient.genero && <span className="capitalize">{patient.genero}</span>}
+            <h2 className="text-xl font-bold text-foreground">
+              {patient.full_name}
+            </h2>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
+              {patient.national_id && <span>CI: {patient.national_id}</span>}
+              <span>{calculateAge(patient.date_of_birth)}</span>
+              {patient.gender && (
+                <span className="capitalize">{patient.gender}</span>
+              )}
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm text-gray-400">
-              {patient.telefono && (
-                <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {patient.telefono}</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm text-muted-foreground/70">
+              {patient.phone && (
+                <span className="flex items-center gap-1">
+                  <Phone className="h-3.5 w-3.5" /> {patient.phone}
+                </span>
               )}
               {patient.email && (
-                <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {patient.email}</span>
+                <span className="flex items-center gap-1">
+                  <Mail className="h-3.5 w-3.5" /> {patient.email}
+                </span>
               )}
-              {(patient.ciudad || patient.estado) && (
+              {(patient.city || patient.state) && (
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
-                  {[patient.ciudad, patient.estado].filter(Boolean).join(', ')}
+                  {[patient.city, patient.state].filter(Boolean).join(', ')}
                 </span>
               )}
             </div>
           </div>
-          <div className="text-right text-sm text-gray-400">
+          <div className="text-right text-sm text-muted-foreground/70">
             <p>{consultations.length} consultas</p>
             <p>{appointments.length} citas</p>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 border-b border-border">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -250,14 +278,11 @@ export function PatientDetail({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`
-                flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                ${isActive
-                  ? 'border-current text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }
-              `}
-              style={isActive ? { color: themeColor } : undefined}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                isActive
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+              }`}
             >
               <Icon className="h-4 w-4" />
               {tab.label}
@@ -266,34 +291,64 @@ export function PatientDetail({
         })}
       </div>
 
-      {/* Tab content */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="bg-card rounded-xl border border-border p-5">
         {activeTab === 'info' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InfoField label="Nombre completo" value={patient.full_name} />
-            <InfoField label="Cédula" value={patient.cedula} />
-            <InfoField label="Fecha de nacimiento" value={patient.fecha_nacimiento ? new Date(patient.fecha_nacimiento).toLocaleDateString('es-VE') : null} />
-            <InfoField label="Edad" value={calculateAge(patient.fecha_nacimiento)} />
-            <InfoField label="Teléfono" value={patient.telefono} />
+            <InfoField label="Cédula" value={patient.national_id} />
+            <InfoField
+              label="Fecha de nacimiento"
+              value={
+                patient.date_of_birth
+                  ? new Date(patient.date_of_birth).toLocaleDateString(
+                      'es-VE',
+                      { timeZone: 'America/Caracas' },
+                    )
+                  : null
+              }
+            />
+            <InfoField
+              label="Edad"
+              value={calculateAge(patient.date_of_birth)}
+            />
+            <InfoField label="Teléfono" value={patient.phone} />
             <InfoField label="Email" value={patient.email} />
-            <InfoField label="Ciudad" value={patient.ciudad} />
-            <InfoField label="Estado" value={patient.estado} />
+            <InfoField label="Ciudad" value={patient.city} />
+            <InfoField label="Estado" value={patient.state} />
           </div>
         )}
 
         {activeTab === 'history' && (
           <div className="space-y-3">
-            {consultations.length === 0 ? (
+            {consultationsError ? (
+              <InlineError message={consultationsError} />
+            ) : consultations.length === 0 ? (
               <EmptyState message="Sin registros de consultas" />
             ) : (
               consultations.map((c) => (
-                <div key={c.id} className="p-3 border border-gray-100 rounded-lg">
-                  <div className="flex items-center gap-2 text-xs text-gray-400 mb-1.5">
+                <div
+                  key={c.id}
+                  className="p-3 border border-border/50 rounded-lg"
+                >
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground/70 mb-1.5">
                     <Clock className="h-3 w-3" />
-                    {new Date(c.created_at).toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {new Date(c.created_at).toLocaleDateString('es-VE', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                      timeZone: 'America/Caracas',
+                    })}
                   </div>
-                  {c.diagnosis && <p className="text-sm font-medium text-gray-800">{c.diagnosis}</p>}
-                  {c.observations && <p className="text-sm text-gray-500 mt-1">{c.observations}</p>}
+                  {c.diagnosis && (
+                    <p className="text-sm font-medium text-foreground">
+                      {c.diagnosis}
+                    </p>
+                  )}
+                  {c.observations && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {c.observations}
+                    </p>
+                  )}
                 </div>
               ))
             )}
@@ -306,17 +361,30 @@ export function PatientDetail({
               <EmptyState message="Sin citas registradas" />
             ) : (
               appointments.map((a) => (
-                <div key={a.id} className="flex items-center gap-4 p-3 border border-gray-100 rounded-lg">
+                <div
+                  key={a.id}
+                  className="flex items-center gap-4 p-3 border border-border/50 rounded-lg"
+                >
                   <div className="text-center min-w-[60px]">
-                    <p className="text-sm font-bold text-gray-900">
-                      {new Date(a.scheduled_at).toLocaleDateString('es-VE', { day: '2-digit', month: 'short' })}
+                    <p className="text-sm font-bold text-foreground">
+                      {new Date(a.scheduled_at).toLocaleDateString('es-VE', {
+                        day: '2-digit',
+                        month: 'short',
+                        timeZone: 'America/Caracas',
+                      })}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(a.scheduled_at).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}
+                    <p className="text-xs text-muted-foreground/70">
+                      {new Date(a.scheduled_at).toLocaleTimeString('es-VE', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: 'America/Caracas',
+                      })}
                     </p>
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-gray-700">{a.reason ?? 'Sin motivo especificado'}</p>
+                    <p className="text-sm text-foreground/90">
+                      {a.reason ?? 'Sin motivo especificado'}
+                    </p>
                   </div>
                   <StatusBadge status={a.status} />
                 </div>
@@ -327,18 +395,28 @@ export function PatientDetail({
 
         {activeTab === 'prescriptions' && (
           <div className="space-y-3">
-            {prescriptions.length === 0 ? (
+            {prescriptionsError ? (
+              <InlineError message={prescriptionsError} />
+            ) : prescriptions.length === 0 ? (
               <EmptyState message="Sin recetas registradas" />
             ) : (
               prescriptions.map((rx) => (
-                <div key={rx.id} className="flex items-center gap-4 p-3 border border-gray-100 rounded-lg">
-                  <Pill className="h-5 w-5 text-gray-400" />
+                <div
+                  key={rx.id}
+                  className="flex items-center gap-4 p-3 border border-border/50 rounded-lg"
+                >
+                  <Pill className="h-5 w-5 text-muted-foreground/70" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-800">
+                    <p className="text-sm font-medium text-foreground">
                       {rx.diagnosis ?? 'Receta sin diagnóstico'}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(rx.prescribed_at).toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    <p className="text-xs text-muted-foreground/70">
+                      {new Date(rx.prescribed_at).toLocaleDateString('es-VE', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        timeZone: 'America/Caracas',
+                      })}
                     </p>
                   </div>
                   <StatusBadge status={rx.status} />
@@ -352,37 +430,48 @@ export function PatientDetail({
   );
 }
 
-// ============================================================================
-// SUB-COMPONENTS
-// ============================================================================
-
 function InfoField({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
-      <p className="text-xs font-medium text-gray-400 mb-0.5">{label}</p>
-      <p className="text-sm text-gray-800">{value ?? '--'}</p>
+      <p className="text-xs font-medium text-muted-foreground/70 mb-0.5">
+        {label}
+      </p>
+      <p className="text-sm text-foreground">{value ?? '--'}</p>
     </div>
   );
 }
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="py-8 text-center">
-      <Activity className="h-10 w-10 mx-auto text-gray-300 mb-2" />
-      <p className="text-sm text-gray-400">{message}</p>
+    <DSEmptyState
+      icon={Activity}
+      title={message}
+      size="compact"
+      className="border-0 bg-transparent"
+    />
+  );
+}
+
+function InlineError({ message }: { message: string }) {
+  return (
+    <div className="flex items-start gap-3 p-4 rounded-lg border border-destructive/30 bg-destructive/10">
+      <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+      <div className="flex-1 text-sm">
+        <p className="font-medium text-destructive">{message}</p>
+      </div>
     </div>
   );
 }
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    completed: 'bg-emerald-100 text-emerald-700',
-    confirmed: 'bg-blue-100 text-blue-700',
-    scheduled: 'bg-blue-100 text-blue-700',
-    pending: 'bg-amber-100 text-amber-700',
-    active: 'bg-emerald-100 text-emerald-700',
-    cancelled: 'bg-red-100 text-red-600',
-    expired: 'bg-gray-100 text-gray-500',
+    completed: 'bg-success/10 text-success',
+    confirmed: 'bg-info/10 text-info',
+    scheduled: 'bg-info/10 text-info',
+    pending: 'bg-warning/10 text-warning',
+    active: 'bg-success/10 text-success',
+    cancelled: 'bg-destructive/10 text-destructive',
+    expired: 'bg-muted text-muted-foreground',
   };
 
   const labels: Record<string, string> = {
@@ -396,7 +485,11 @@ function StatusBadge({ status }: { status: string }) {
   };
 
   return (
-    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${styles[status] ?? 'bg-gray-100 text-gray-500'}`}>
+    <span
+      className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+        styles[status] ?? 'bg-muted text-muted-foreground'
+      }`}
+    >
       {labels[status] ?? status}
     </span>
   );

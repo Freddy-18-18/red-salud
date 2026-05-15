@@ -1,44 +1,32 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { useDoctorAppointments } from '@red-salud/core';
 import { PatientList } from '@/components/patients/patient-list';
 import type { PatientSummary } from '@red-salud/types';
-import { PatientDetail } from '@/components/patients/patient-detail';
 import { PageHeader } from '@/components/shell';
 import { useActiveSede } from '@/hooks/use-active-sede';
 
-// ============================================================================
-// COMPONENT
-// ============================================================================
-
 export default function PacientesPage() {
+  const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  // Load user
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setUserId(user.id);
     });
   }, []);
 
-  // Active sede scopes the patient list: a patient appears here only if they
-  // have at least one cita in this sede (or one legacy cita with no sede
-  // assigned). Switching sedes triggers a refetch via the hook's deps.
   const { activeSedeId } = useActiveSede();
 
-  // Fetch all appointments for this doctor via core hook
   const {
     appointments: rawAppointments,
     loading,
     error,
   } = useDoctorAppointments(supabase, userId, { locationId: activeSedeId });
 
-  // Derive unique patients from appointments. `useDoctorAppointments` returns
-  // patient shape with legacy Spanish aliases (cedula/telefono/fecha_nacimiento)
-  // — map them to the canonical @red-salud/types `PatientSummary` field names.
   const patients = useMemo<PatientSummary[]>(() => {
     const patientMap = new Map<string, PatientSummary>();
     const now = new Date().toISOString();
@@ -86,16 +74,6 @@ export default function PacientesPage() {
     return Array.from(patientMap.values());
   }, [rawAppointments]);
 
-  // Render detail view
-  if (selectedPatientId) {
-    return (
-      <PatientDetail
-        patientId={selectedPatientId}
-        onBack={() => setSelectedPatientId(null)}
-      />
-    );
-  }
-
   return (
     <div className="space-y-4">
       <PageHeader>
@@ -105,23 +83,19 @@ export default function PacientesPage() {
         </PageHeader.Meta>
       </PageHeader>
 
-      {/* Inline notice — only when an actual data fetch failed AND we had something to show.
-          For brand-new doctors with zero appointments, an empty list is the expected state,
-          not an error worth surfacing as a red banner. */}
       {error && patients.length > 0 && (
-        <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-700">
+        <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg text-sm text-warning">
           <p className="font-medium">No pudimos actualizar la lista</p>
-          <p className="mt-0.5 text-xs text-amber-600">
+          <p className="mt-0.5 text-xs text-warning/80">
             Mostramos la última versión disponible. Reintentá en unos segundos.
           </p>
         </div>
       )}
 
-      {/* Patient list */}
       <PatientList
         patients={patients}
         isLoading={loading}
-        onSelect={setSelectedPatientId}
+        onSelect={(id) => router.push(`/dashboard/pacientes/${id}`)}
       />
     </div>
   );
