@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { usePatientAppointments } from '@red-salud/core';
 import { EmptyState as DSEmptyState } from '@red-salud/design-system';
+import type { PatientFull } from '@red-salud/types';
 import {
   ArrowLeft,
   Phone,
@@ -22,19 +23,6 @@ import {
 interface PatientDetailProps {
   patientId: string;
   specialtyCategory?: string;
-}
-
-interface PatientFull {
-  id: string;
-  full_name: string;
-  email: string | null;
-  phone: string | null;
-  date_of_birth: string | null;
-  national_id: string | null;
-  city: string | null;
-  state: string | null;
-  avatar_url: string | null;
-  gender: string | null;
 }
 
 interface ConsultationRecord {
