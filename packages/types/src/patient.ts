@@ -535,3 +535,203 @@ export interface PatientLabResultRow {
   /** Derived: true ⇔ at least one value has es_anormal = true */
   has_abnormal: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Phase 3: doctor-side patient creation, roster filters, KPIs, export.
+// ---------------------------------------------------------------------------
+//
+// Two creation flows backed by Phase 3 RPCs:
+//   - Offline: `create_offline_patient(payload jsonb) RETURNS uuid` — generates
+//     a placeholder email server-side; no auth.users row. The doctor captures
+//     a patient without making them sign up. Reconciled later via cedula match.
+//   - Invited: `create_invited_patient(payload jsonb) RETURNS jsonb` — accepts
+//     a real email, generates a `patient_invitations.invite_token`, returns
+//     `{ patient_id, invite_token }`. UI surfaces a copyable invitation link.
+//
+// `RosterFilters` powers the redesigned roster page (T-3-08): chip-style
+// filtering with optimistic URL persistence. `RosterKPIs` is the header strip
+// (T-3-09). `PatientExportRow` feeds the CSV / per-patient PDF exporter
+// (T-3-10) — the file MUST carry a PHI-marked filename.
+
+/**
+ * Payload accepted by `create_offline_patient` RPC. Mirrors the JSON keys the
+ * Postgres function parses (`payload->>'full_name'`, `payload->>'national_id'`,
+ * etc.). All clinical fields are optional and persist directly into
+ * `patient_details` server-side.
+ *
+ * Notes:
+ * - `nationality` defaults to `'V'` (Venezuelan) on the server when omitted.
+ *   Keep `null`/`undefined` to use the default; pass `'E'` for extranjeros.
+ * - `date_of_birth` is an ISO date (`YYYY-MM-DD`) — NOT a full timestamp.
+ * - Chronic-condition entries SHOULD be canonical-tag slugs from
+ *   `apps/medico/web/src/lib/chronic/canonical-tags.ts` (HTA, DM2, etc.). The
+ *   UI typeahead enforces this; the server accepts any string for legacy values.
+ * - Numeric fields (`peso_kg`, `altura_cm`) accept fractional values; the RPC
+ *   casts to `numeric`. Send `null` when not measured.
+ */
+export interface OfflinePatientCreateInput {
+  /** profiles.full_name — required by RPC */
+  full_name: string;
+  /** profiles.national_id (Venezuelan cedula format `\d{6,9}` without prefix) */
+  national_id?: string | null;
+  /** profiles.phone (E.164 or local Venezuelan) */
+  phone?: string | null;
+  /** ISO date `YYYY-MM-DD` */
+  date_of_birth?: string | null;
+  /** profiles.gender; design-system enum values ('M' | 'F' | 'O') */
+  gender?: string | null;
+  /** profiles.city (real DB column — NOT `ciudad`) */
+  city?: string | null;
+  /** profiles.state (real DB column — NOT `estado`) */
+  state?: string | null;
+  /** profiles.nationality; server default `'V'` when omitted */
+  nationality?: string | null;
+  /** patient_details.grupo_sanguineo (ABO/Rh free-text) */
+  grupo_sanguineo?: string | null;
+  /** patient_details.alergias — free-text array */
+  alergias?: string[];
+  /** patient_details.enfermedades_cronicas — canonical-tag slugs preferred */
+  enfermedades_cronicas?: string[];
+  /** patient_details.medicamentos_actuales — free-text array */
+  medicamentos_actuales?: string[];
+  /** patient_details.peso_kg (kg) */
+  peso_kg?: number | null;
+  /** patient_details.altura_cm (cm) */
+  altura_cm?: number | null;
+  /** patient_details.notas_medicas (private doctor notes) */
+  notas_medicas?: string | null;
+}
+
+/**
+ * Payload accepted by `create_invited_patient` RPC. Extends the offline shape
+ * with a required `email` field. The server validates the email format
+ * (`23514` violation when malformed) and rejects duplicates (`23505`).
+ */
+export interface InvitedPatientCreateInput extends OfflinePatientCreateInput {
+  /** Required: lowercase email used to send the invitation link */
+  email: string;
+}
+
+/**
+ * Decoded result from `create_invited_patient`. The RPC returns a single
+ * `jsonb` row `{ patient_id, invite_token }` — Supabase's `.rpc()` wrapper
+ * surfaces it as-is, so the service just casts.
+ *
+ * `invite_token` is a URL-safe base64 string (24 random bytes, `+`/`/`/`=`
+ * replaced) — safe to embed in invite URLs without further encoding.
+ */
+export interface InvitedPatientCreateResult {
+  patient_id: string;
+  invite_token: string;
+}
+
+/**
+ * Time-window bucket for the roster's "Última visita" filter chip. Values are
+ * intentionally coarse (no arbitrary date pickers) so the UI stays a single
+ * select. Mapping to SQL ranges happens in `listPatientsPaginated()`:
+ *
+ * - `lt_7d`   → `last_consultation_date >= now() - interval '7 days'`
+ * - `lt_30d`  → `last_consultation_date >= now() - interval '30 days'`
+ * - `lt_90d`  → `last_consultation_date >= now() - interval '90 days'`
+ * - `lt_1y`   → `last_consultation_date >= now() - interval '1 year'`
+ * - `gte_1y`  → `last_consultation_date < now() - interval '1 year'`
+ * - `never`   → `last_consultation_date IS NULL`
+ */
+export type LastVisitWindow = 'lt_7d' | 'lt_30d' | 'lt_90d' | 'lt_1y' | 'gte_1y' | 'never';
+
+/**
+ * Roster filter state for the redesigned roster page. Held in
+ * `use-patient-filters` and serialized to/from URL searchParams so a doctor
+ * can deep-link a filtered view.
+ *
+ * Filters compose with AND semantics. `has_followup` and `alerts_only` are
+ * computed-derived flags — see Phase 3 TODO in `listPatientsPaginated()`.
+ */
+export interface RosterFilters {
+  /** Free-text query — server-side ilike on full_name AND national_id */
+  search: string;
+  /** Canonical-tag slugs from canonical-tags.ts; array overlap match */
+  chronic_tags: string[];
+  /** Inclusive lower bound (years). null ⇒ no minimum */
+  age_min: number | null;
+  /** Inclusive upper bound (years). null ⇒ no maximum */
+  age_max: number | null;
+  /** One of the LastVisitWindow buckets, or null for no restriction */
+  last_visit_window: LastVisitWindow | null;
+  /** Restrict to patients seen at this clinic location; null ⇒ all sedes */
+  sede_id: string | null;
+  /** Show only patients with at least one scheduled future follow-up */
+  has_followup: boolean;
+  /** Show only patients with at least one computed alert (vital/Rx/lab) */
+  alerts_only: boolean;
+}
+
+/**
+ * Canonical empty-state for `RosterFilters`. Compare via shallow equality
+ * (`isDirty = filters !== DEFAULT_ROSTER_FILTERS`-style check inside the
+ * hook) to render the "Limpiar filtros" CTA.
+ */
+export const DEFAULT_ROSTER_FILTERS: RosterFilters = {
+  search: '',
+  chronic_tags: [],
+  age_min: null,
+  age_max: null,
+  last_visit_window: null,
+  sede_id: null,
+  has_followup: false,
+  alerts_only: false,
+};
+
+/**
+ * Strip backing the header of the redesigned roster page. Computed by
+ * `getRosterKPIs()` via 6 parallel count queries. Failures degrade
+ * individually to `0` — the strip is informative, not authoritative.
+ *
+ * Field meanings:
+ * - `total_active`: doctor_patients where status='active'
+ * - `new_this_month`: doctor_patients with first_consultation_date in the
+ *   current calendar month (America/Caracas wall-clock)
+ * - `chronic_count`: doctor_patients whose patient_details.enfermedades_cronicas
+ *   array is non-empty
+ * - `followups_overdue`: appointments scheduled in the past where status is
+ *   still 'scheduled' (the doctor missed marking them complete/no-show)
+ * - `expired_rx_count`: prescriptions with expires_at < now() AND status='activa'
+ *   AND deleted_at IS NULL
+ * - `abnormal_labs_pending`: lab_results values with es_anormal=true that
+ *   the patient has NOT been notified about (patient_notified=false), filtered
+ *   to lab_orders belonging to this doctor
+ */
+export interface RosterKPIs {
+  total_active: number;
+  new_this_month: number;
+  chronic_count: number;
+  followups_overdue: number;
+  expired_rx_count: number;
+  abnormal_labs_pending: number;
+}
+
+/**
+ * Flattened row used by the CSV exporter. The hook (`use-patient-export`)
+ * runs over `PatientSummary[]` to produce this shape — drops the avatar URL
+ * and per-row metadata that the CSV doesn't need, and adds two derived
+ * counts the doctor finds useful in spreadsheets.
+ *
+ * Columns are intentionally limited to non-PHI-sensitive demographic fields
+ * — diagnoses, allergies, medications stay OUT to keep the export safe for
+ * doctor-side analytics. If a future requirement needs clinical detail, that
+ * MUST be a separate, opt-in export with a dedicated PHI warning.
+ */
+export interface PatientExportRow {
+  full_name: string;
+  national_id: string | null;
+  phone: string | null;
+  date_of_birth: string | null;
+  /** Sede name (joined from clinic_locations); null when patient never had a sede-tagged appointment */
+  sede: string | null;
+  /** ISO timestamp of the most recent completed appointment, or null */
+  last_visit_date: string | null;
+  /** Count of canonical chronic-condition tags */
+  chronic_tag_count: number;
+  /** Count of computed alerts (vitals out-of-range + Rx + lab) */
+  alert_count: number;
+}
