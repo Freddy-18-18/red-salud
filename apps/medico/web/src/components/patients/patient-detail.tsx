@@ -309,7 +309,10 @@ export function PatientDetail({ patientId }: PatientDetailProps) {
         {activeTab === 'history' && (
           <div className="space-y-3">
             {consultationsError ? (
-              <InlineError message={consultationsError} />
+              <InlineError
+                message={consultationsError}
+                onRetry={() => router.refresh()}
+              />
             ) : consultations.length === 0 ? (
               <EmptyState message="Sin registros de consultas" />
             ) : (
@@ -384,7 +387,10 @@ export function PatientDetail({ patientId }: PatientDetailProps) {
         {activeTab === 'prescriptions' && (
           <div className="space-y-3">
             {prescriptionsError ? (
-              <InlineError message={prescriptionsError} />
+              <InlineError
+                message={prescriptionsError}
+                onRetry={() => router.refresh()}
+              />
             ) : prescriptions.length === 0 ? (
               <EmptyState message="Sin recetas registradas" />
             ) : (
@@ -440,12 +446,27 @@ function EmptyState({ message }: { message: string }) {
   );
 }
 
-function InlineError({ message }: { message: string }) {
+function InlineError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry?: () => void;
+}) {
   return (
     <div className="flex items-start gap-3 p-4 rounded-lg border border-destructive/30 bg-destructive/10">
       <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
       <div className="flex-1 text-sm">
         <p className="font-medium text-destructive">{message}</p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-2 inline-flex items-center text-xs font-medium text-destructive underline-offset-2 hover:underline focus-visible:outline-none focus-visible:underline"
+          >
+            Reintentar
+          </button>
+        )}
       </div>
     </div>
   );
