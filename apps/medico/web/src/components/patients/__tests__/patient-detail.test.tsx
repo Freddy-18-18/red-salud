@@ -1,125 +1,168 @@
 /**
  * @file __tests__/patient-detail.test.tsx
- * @description Behavior tests for the tokenized + route-split `<PatientDetail>`
- * component (T-1-14 / REQ-1.3, REQ-1.6, REQ-1.7).
+ * @description Behavior tests for the Phase 2 `<PatientDetail>` (T-2 verify).
  *
- * Contract under test:
- * - Loading state renders skeleton rows (data-testid).
- * - Patient not found renders "Paciente no encontrado" + Volver button which
- *   calls `router.back()`.
- * - Tab switching activates each of the 4 tab panels in turn.
- * - When the Historia (medical_records) fetch fails, the Historia tab shows
- *   a visible inline error notice (no silent swallow — REQ-1.3 / SC-1.3).
- * - REQ-1.2: no `themeColor` prop accepted; no `onBack` callback either —
- *   navigation is via router.
+ * Phase 2 changes the surface dramatically:
+ * - 8 tabs (Resumen, Vitales, Consultas, Recetas, Labs, Vacunas, Familia, Info)
+ *   instead of the old 4-tab layout.
+ * - Data fetching is via hooks (`usePatientFull` + `usePatientClinicalOverview`),
+ *   not direct supabase chained queries.
+ * - Each tab is a child panel with its own data lifecycle.
+ *
+ * Strategy for these tests:
+ * - Mock `next/navigation` for router stubs.
+ * - Mock the two top-level hooks (`usePatientFull`, `usePatientClinicalOverview`).
+ * - Mock every child panel as a `data-testid` placeholder. This shrinks blast
+ *   radius — a regression in (e.g.) `<LabResultsPanel>` should fail its own
+ *   test, not ours.
  */
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { act, fireEvent, render, screen } from '@testing-library/react';
-import type { Mock } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import type { PatientFull } from '@red-salud/types';
 
-// next/navigation router mock — capture push/back per test.
+// Supabase client is imported transitively by hooks (e.g. usePatientVitalsTrend).
+// Stub it out so the module graph doesn't reach createBrowserClient (which needs
+// NEXT_PUBLIC_SUPABASE_URL at module load).
+vi.mock('@/lib/supabase/client', () => ({
+  supabase: {} as object,
+}));
+
+// next/navigation router mock — capture push/back/refresh.
 const back = vi.fn();
 const push = vi.fn();
+const refresh = vi.fn();
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ back, push }),
+  useRouter: () => ({ back, push, refresh }),
 }));
 
-// Mock the core hook usePatientAppointments. We swap its return value per
-// test via the exposed mutable holder below.
-const usePatientAppointmentsState: {
-  appointments: Array<{
-    id: string;
-    scheduled_at: string;
-    reason: string | null;
-    status: string;
-  }>;
-  loading: boolean;
-} = { appointments: [], loading: false };
-vi.mock('@red-salud/core', () => ({
-  usePatientAppointments: () => usePatientAppointmentsState,
-}));
-
-// Mock the supabase client surface. Each test pre-arms `fromMock` with a
-// table-keyed response. Chained calls (.select.eq.single / .select.eq.order.limit)
-// resolve from the same dispatch.
-type ProfileResponse = {
-  data: Record<string, unknown> | null;
-  error: { message: string } | null;
-};
-type ListResponse = {
-  data: Array<Record<string, unknown>> | null;
-  error: { message: string } | null;
-};
-const supabaseResponses: {
-  profiles: ProfileResponse;
-  medical_records: ListResponse;
-  prescriptions: ListResponse;
+// usePatientFull mock — mutable state per test.
+const patientFullState: {
+  patient: PatientFull | null;
+  isLoading: boolean;
+  error: { code: string; message: string } | null;
+  refetch: ReturnType<typeof vi.fn>;
 } = {
-  profiles: { data: null, error: null },
-  medical_records: { data: [], error: null },
-  prescriptions: { data: [], error: null },
+  patient: null,
+  isLoading: false,
+  error: null,
+  refetch: vi.fn(),
 };
+vi.mock('@/hooks/use-patient-full', () => ({
+  usePatientFull: () => patientFullState,
+}));
 
-vi.mock('@/lib/supabase/client', () => {
-  const buildSingleChain = (response: ProfileResponse) => ({
-    eq: () => ({
-      single: () => Promise.resolve(response),
-    }),
-  });
-  const buildListChain = (response: ListResponse) => ({
-    eq: () => ({
-      order: () => ({
-        limit: () => Promise.resolve(response),
-      }),
-    }),
-  });
+// usePatientClinicalOverview mock — keep simple, banner is also mocked below.
+const overviewState: {
+  overview: { next_appointment_at: string | null } | null;
+  isLoading: boolean;
+  error: { code: string; message: string } | null;
+  refetch: ReturnType<typeof vi.fn>;
+} = {
+  overview: null,
+  isLoading: false,
+  error: null,
+  refetch: vi.fn(),
+};
+vi.mock('@/hooks/use-patient-clinical-overview', () => ({
+  usePatientClinicalOverview: () => overviewState,
+}));
 
-  return {
-    supabase: {
-      from: (table: string) => {
-        if (table === 'profiles') {
-          return { select: () => buildSingleChain(supabaseResponses.profiles) };
-        }
-        if (table === 'medical_records') {
-          return {
-            select: () => buildListChain(supabaseResponses.medical_records),
-          };
-        }
-        if (table === 'prescriptions') {
-          return {
-            select: () => buildListChain(supabaseResponses.prescriptions),
-          };
-        }
-        return { select: () => ({}) };
-      },
-    },
-  };
-});
+// usePatientVitalsTrend is used inline by the Vitales tab's <VitalsHistoryTab>.
+// Mock it to keep the parent independent of TanStack Query plumbing in tests.
+const vitalsTrendState: {
+  vitals: unknown[];
+  isLoading: boolean;
+  error: { code: string; message: string } | null;
+  refetch: ReturnType<typeof vi.fn>;
+} = {
+  vitals: [],
+  isLoading: false,
+  error: null,
+  refetch: vi.fn(),
+};
+vi.mock('@/hooks/use-patient-vitals-trend', () => ({
+  usePatientVitalsTrend: () => vitalsTrendState,
+}));
+
+// Child panel mocks — each gets a stable testid so we can assert visibility.
+vi.mock('../clinical-safety-banner', () => ({
+  ClinicalSafetyBanner: () => <div data-testid="banner-mock" />,
+}));
+vi.mock('../active-medications-card', () => ({
+  ActiveMedicationsCard: () => <div data-testid="active-meds-mock" />,
+}));
+vi.mock('../active-prescriptions-panel', () => ({
+  ActivePrescriptionsPanel: () => <div data-testid="active-rx-mock" />,
+}));
+vi.mock('../computed-alerts-panel', () => ({
+  ComputedAlertsPanel: () => <div data-testid="alerts-mock" />,
+}));
+vi.mock('../edit-clinical-fields-dialog', () => ({
+  EditClinicalFieldsDialog: () => <div data-testid="edit-dialog-mock" />,
+}));
+vi.mock('../family-history-panel', () => ({
+  FamilyHistoryPanel: () => <div data-testid="family-mock" />,
+}));
+vi.mock('../info-panel', () => ({
+  InfoPanel: () => <div data-testid="info-mock" />,
+}));
+vi.mock('../lab-results-panel', () => ({
+  LabResultsPanel: () => <div data-testid="labs-mock" />,
+}));
+vi.mock('../vaccinations-panel', () => ({
+  VaccinationsPanel: () => <div data-testid="vaccines-mock" />,
+}));
+vi.mock('../visit-timeline', () => ({
+  VisitTimeline: () => <div data-testid="visits-mock" />,
+}));
+vi.mock('../vitals-trend-card', () => ({
+  VitalsTrendCard: () => <div data-testid="vitals-card-mock" />,
+}));
 
 import { PatientDetail } from '../patient-detail';
-
-async function flush() {
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  });
-}
 
 function resetAll() {
   back.mockReset();
   push.mockReset();
-  usePatientAppointmentsState.appointments = [];
-  usePatientAppointmentsState.loading = false;
-  supabaseResponses.profiles = { data: null, error: null };
-  supabaseResponses.medical_records = { data: [], error: null };
-  supabaseResponses.prescriptions = { data: [], error: null };
+  refresh.mockReset();
+  patientFullState.patient = null;
+  patientFullState.isLoading = false;
+  patientFullState.error = null;
+  patientFullState.refetch = vi.fn();
+  overviewState.overview = null;
+  overviewState.isLoading = false;
+  overviewState.error = null;
+  overviewState.refetch = vi.fn();
+  vitalsTrendState.vitals = [];
+  vitalsTrendState.isLoading = false;
+  vitalsTrendState.error = null;
+  vitalsTrendState.refetch = vi.fn();
 }
 
-describe('<PatientDetail>', () => {
+function makePatient(overrides: Partial<PatientFull> = {}): PatientFull {
+  return {
+    id: '00000000-0000-0000-0000-000000000001',
+    full_name: 'María Pérez',
+    email: null,
+    national_id: 'V-12345678',
+    phone: null,
+    date_of_birth: '1985-03-15',
+    gender: null,
+    city: null,
+    state: null,
+    nationality: null,
+    avatar_url: null,
+    patient_details: null,
+    ...overrides,
+  };
+}
+
+describe('<PatientDetail> (Phase 2)', () => {
   beforeEach(resetAll);
 
-  it('renders skeleton when loading', () => {
-    usePatientAppointmentsState.loading = true;
+  it('renders header skeleton when usePatientFull.isLoading=true', () => {
+    patientFullState.isLoading = true;
     const { container } = render(<PatientDetail patientId="p-1" />);
     const skeletons = container.querySelectorAll(
       '[data-testid="patient-detail-skeleton"]',
@@ -127,112 +170,70 @@ describe('<PatientDetail>', () => {
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
-  it('renders "Paciente no encontrado" and Volver button calls router.back()', async () => {
-    supabaseResponses.profiles = { data: null, error: null };
+  it('renders inline error with retry when usePatientFull.error is set', () => {
+    patientFullState.error = {
+      code: 'rls_violation',
+      message: 'No tenés permiso.',
+    };
+    const refetchSpy = vi.fn();
+    patientFullState.refetch = refetchSpy;
+    render(<PatientDetail patientId="p-1" />);
+
+    expect(screen.getByText(/No tenés permiso\./i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Reintentá/i }));
+    expect(refetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders "Paciente no encontrado" when patient null + not loading', () => {
+    patientFullState.patient = null;
+    patientFullState.isLoading = false;
+    patientFullState.error = null;
     render(<PatientDetail patientId="missing-id" />);
-    await flush();
-    await flush();
 
     expect(screen.getByText(/Paciente no encontrado/i)).toBeInTheDocument();
-    const back_button = screen.getByRole('button', { name: /Volver/i });
-    fireEvent.click(back_button);
-    expect(back).toHaveBeenCalledTimes(1);
   });
 
-  it('switches between the 4 tabs without crashing', async () => {
-    supabaseResponses.profiles = {
-      data: {
-        id: 'p-1',
-        full_name: 'María Pérez',
-        email: null,
-        national_id: 'V-12345678',
-        phone: null,
-        date_of_birth: '1985-03-15',
-        gender: null,
-        city: null,
-        state: null,
-        avatar_url: null,
-      },
-      error: null,
-    };
+  it('renders header + banner + tab nav + Resumen panel by default', () => {
+    patientFullState.patient = makePatient({ full_name: 'María Pérez' });
     render(<PatientDetail patientId="p-1" />);
-    await flush();
-    await flush();
 
-    // Info tab is the default — full_name should be visible in the Info grid.
-    expect(screen.getAllByText('María Pérez').length).toBeGreaterThan(0);
-
-    const historiaTab = screen.getByRole('button', { name: /Historia/i });
-    fireEvent.click(historiaTab);
-    expect(screen.getByText(/Sin registros de consultas/i)).toBeInTheDocument();
-
-    const citasTab = screen.getByRole('button', { name: /Citas/i });
-    fireEvent.click(citasTab);
-    expect(screen.getByText(/Sin citas registradas/i)).toBeInTheDocument();
-
-    const recetasTab = screen.getByRole('button', { name: /Recetas/i });
-    fireEvent.click(recetasTab);
-    expect(screen.getByText(/Sin recetas registradas/i)).toBeInTheDocument();
-  });
-
-  it('shows inline error in Historia tab when medical_records query fails (no silent swallow)', async () => {
-    supabaseResponses.profiles = {
-      data: {
-        id: 'p-1',
-        full_name: 'María Pérez',
-        email: null,
-        national_id: 'V-12345678',
-        phone: null,
-        date_of_birth: '1985-03-15',
-        gender: null,
-        city: null,
-        state: null,
-        avatar_url: null,
-      },
-      error: null,
-    };
-    supabaseResponses.medical_records = {
-      data: null,
-      error: { message: 'permission denied for table medical_records' },
-    };
-
-    render(<PatientDetail patientId="p-1" />);
-    await flush();
-    await flush();
-
-    fireEvent.click(screen.getByRole('button', { name: /Historia/i }));
+    // Header.
+    expect(screen.getByText('María Pérez')).toBeInTheDocument();
+    // Banner (mocked).
+    expect(screen.getByTestId('banner-mock')).toBeInTheDocument();
+    // Default tab = Resumen → ComputedAlertsPanel + VitalsTrendCard + ActiveMedicationsCard.
+    expect(screen.getByTestId('alerts-mock')).toBeInTheDocument();
+    expect(screen.getByTestId('vitals-card-mock')).toBeInTheDocument();
+    expect(screen.getByTestId('active-meds-mock')).toBeInTheDocument();
+    // Tab nav exists with all 8 tabs.
+    expect(screen.getByRole('button', { name: /Resumen/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Vitales/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Consultas/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Recetas/i })).toBeInTheDocument();
     expect(
-      screen.getByText(/No pudimos cargar las consultas/i),
+      screen.getByRole('button', { name: /Laboratorios/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Vacunas/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Familia/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Información/i }),
     ).toBeInTheDocument();
   });
 
-  it('back-to-list affordance from the header calls router.back()', async () => {
-    supabaseResponses.profiles = {
-      data: {
-        id: 'p-1',
-        full_name: 'María Pérez',
-        email: null,
-        national_id: 'V-12345678',
-        phone: null,
-        date_of_birth: '1985-03-15',
-        gender: null,
-        city: null,
-        state: null,
-        avatar_url: null,
-      },
-      error: null,
-    };
+  it('switches active panel when a tab is clicked (Vitales -> VitalsHistoryTab)', () => {
+    patientFullState.patient = makePatient();
     render(<PatientDetail patientId="p-1" />);
-    await flush();
-    await flush();
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Volver a pacientes/i }),
-    );
-    expect(back).toHaveBeenCalled();
+    // Click "Vitales" tab — the panel renders the window selector (30/90/365)
+    // around a mocked VitalsTrendCard. The selector buttons (e.g. "1 año")
+    // are unique to that tab.
+    fireEvent.click(screen.getByRole('button', { name: /Vitales/i }));
+
+    expect(
+      screen.getByRole('button', { name: /^1 año$/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Histórico de mediciones/i),
+    ).toBeInTheDocument();
   });
 });
-
-// Surface mock type so TS doesn't complain about unused imports.
-void (back as Mock);
-void (push as Mock);
