@@ -55,9 +55,18 @@ const STEP_ORDER: BookingStep[] = [
 
 // --- Hook ---
 
-export function useBooking() {
+export interface UseBookingOptions {
+  /** Pre-load specialty (from URL query string, deep link, referral, etc). */
+  preselectedSpecialtyId?: string | null;
+  /** When set, the wizard knows it is consuming a medical referral.
+   *  On confirm, the API is told to mark the referral as `used`. */
+  referralId?: string | null;
+}
+
+export function useBooking(options: UseBookingOptions = {}) {
   const [state, setState] = useState<BookingState>(INITIAL_STATE);
   const userIdRef = useRef<string | null>(null);
+  const referralIdRef = useRef<string | null>(options.referralId ?? null);
 
   // Filters for doctor step (local UI state)
   const [doctorFilters, setDoctorFilters] = useState<DoctorFilters>({});
@@ -91,6 +100,21 @@ export function useBooking() {
       return (data || []) as Specialty[];
     },
   });
+
+  // When the wizard is launched with a specialty preselect (e.g. coming from
+  // a medical referral), fast-forward to the doctor step as soon as we have
+  // the specialty record.
+  useEffect(() => {
+    const preId = options.preselectedSpecialtyId;
+    if (!preId || state.specialty) return;
+    const sp = specialtiesQuery.data?.find((s) => s.id === preId);
+    if (!sp) return;
+    setState((prev) => ({
+      ...prev,
+      specialty: { id: sp.id, name: sp.name },
+      step: prev.step === "specialty" ? "doctor" : prev.step,
+    }));
+  }, [options.preselectedSpecialtyId, specialtiesQuery.data, state.specialty]);
 
   const doctorsQuery = useQuery({
     queryKey: ["booking-doctors", state.specialty?.id, doctorFilters],
@@ -260,6 +284,28 @@ export function useBooking() {
 
       setCreatedAppointment(result);
       setState((prev) => ({ ...prev, step: "success" }));
+
+      // If this booking consumed a medical referral, mark it as used so
+      // it disappears from the patient's "active" inbox and the chosen
+      // specialist receives the clinical context attached to it.
+      const referralId = referralIdRef.current;
+      if (referralId && result?.id) {
+        try {
+          await fetch(`/api/referrals/${referralId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              action: "mark_used",
+              used_appointment_id: result.id,
+            }),
+          });
+        } catch {
+          // Non-fatal — appointment is already created. Worst case: the
+          // referral stays "active" until next cron / refresh.
+        }
+      }
+
       return true;
     } catch (err) {
       setError(

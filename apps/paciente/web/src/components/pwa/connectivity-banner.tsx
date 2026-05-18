@@ -6,12 +6,16 @@ import { useState, useEffect, useRef } from "react";
 import { onStatusChange, isOnline, flushQueue } from "@/lib/offline/offline-manager";
 
 export function ConnectivityBanner() {
-  const [online, setOnline] = useState(() => isOnline());
+  const [mounted, setMounted] = useState(false);
+  const [online, setOnline] = useState(true);
   const [showRestored, setShowRestored] = useState(false);
   const wasOfflineRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
+    setMounted(true);
+    setOnline(isOnline());
+
     const unsub = onStatusChange((nowOnline) => {
       setOnline(nowOnline);
 
@@ -35,6 +39,9 @@ export function ConnectivityBanner() {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
+
+  // Avoid hydration mismatch — navigator.onLine is unavailable on server.
+  if (!mounted) return null;
 
   // Offline banner
   if (!online) {

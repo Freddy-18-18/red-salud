@@ -49,14 +49,14 @@ export default function EmergenciaPerfilPage() {
     return (
       <div className="space-y-6">
         <PageHeader />
-        <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-red-800">
-              Error al cargar el perfil de emergencia
+        <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800">
+              No pudimos cargar tu perfil de emergencia
             </p>
-            <p className="text-xs text-red-600 mt-1">
-              {error.message || "Intenta recargar la pagina."}
+            <p className="text-xs text-amber-700 mt-1">
+              Probá recargar la página en unos segundos.
             </p>
           </div>
         </div>

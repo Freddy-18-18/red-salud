@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
         id,
         scheduled_at,
         doctor:doctor_profiles!appointments_doctor_id_fkey (
-          profile:profiles!doctor_profiles_profile_id_fkey (
+          profile:profiles!doctor_details_profile_id_fkey (
             full_name
           )
         )

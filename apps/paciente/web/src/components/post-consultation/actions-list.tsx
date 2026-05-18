@@ -17,9 +17,9 @@ interface ActionsListProps {
   onMarkCompleted: (actionId: string) => void;
 }
 
-function formatConsultationDate(date: string, time: string): string {
+function formatConsultationDate(scheduledAt: string): string {
   try {
-    const dt = new Date(`${date}T${time}`);
+    const dt = new Date(scheduledAt);
     const now = new Date();
     const diffMs = now.getTime() - dt.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -36,15 +36,19 @@ function formatConsultationDate(date: string, time: string): string {
       day: "numeric",
     });
   } catch {
-    return date;
+    return scheduledAt;
   }
 }
 
-function formatTime(time: string): string {
+function formatTime(scheduledAt: string): string {
   try {
-    return time.slice(0, 5);
+    return new Date(scheduledAt).toLocaleTimeString("es-VE", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
   } catch {
-    return time;
+    return "";
   }
 }
 
@@ -133,8 +137,8 @@ export function ActionsList({
                   <span className="text-gray-300">|</span>
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {formatConsultationDate(summary.date, summary.time)}{" "}
-                    {formatTime(summary.time)}
+                    {formatConsultationDate(summary.scheduled_at)}{" "}
+                    {formatTime(summary.scheduled_at)}
                   </div>
                 </div>
 

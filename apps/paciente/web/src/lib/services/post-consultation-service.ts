@@ -76,8 +76,7 @@ export interface PostConsultationAction {
     avatar_url?: string;
   };
   appointment?: {
-    appointment_date: string;
-    appointment_time: string;
+    scheduled_at: string;
     specialty?: string;
   };
 }
@@ -86,8 +85,7 @@ export interface PostConsultationSummary {
   appointment_id: string;
   doctor_name: string;
   specialty: string;
-  date: string;
-  time: string;
+  scheduled_at: string;
   actions: PostConsultationAction[];
 }
 
@@ -105,7 +103,7 @@ export async function getPostConsultationActions(
           full_name, avatar_url
         ),
         appointment:appointments!post_consultation_actions_appointment_id_fkey(
-          appointment_date, appointment_time, specialty
+          scheduled_at
         )
       `)
       .eq("patient_id", patientId)
@@ -133,7 +131,7 @@ export async function getActionsByAppointment(
           full_name, avatar_url
         ),
         appointment:appointments!post_consultation_actions_appointment_id_fkey(
-          appointment_date, appointment_time, specialty
+          scheduled_at
         )
       `)
       .eq("appointment_id", appointmentId)
@@ -170,16 +168,15 @@ export async function getPostConsultationSummaries(
         appointment_id: appointmentId,
         doctor_name: first.doctor?.full_name || "Medico",
         specialty: first.appointment?.specialty || "",
-        date: first.appointment?.appointment_date || "",
-        time: first.appointment?.appointment_time || "",
+        scheduled_at: first.appointment?.scheduled_at || "",
         actions,
       });
     }
 
     // Sort by most recent first
     summaries.sort((a, b) => {
-      const dateA = new Date(`${a.date}T${a.time}`);
-      const dateB = new Date(`${b.date}T${b.time}`);
+      const dateA = new Date(a.scheduled_at);
+      const dateB = new Date(b.scheduled_at);
       return dateB.getTime() - dateA.getTime();
     });
 

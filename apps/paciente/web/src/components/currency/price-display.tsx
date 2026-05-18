@@ -8,6 +8,10 @@ interface PriceDisplayProps {
   currency?: "USD" | "EUR" | "BS";
   showBs?: boolean;
   showUsd?: boolean;
+  /**
+   * @deprecated Patient app always uses BCV. Prop kept for type-compat with shared callers
+   * but is intentionally ignored — paralelo is never displayed in the patient experience.
+   */
   useParallel?: boolean;
   className?: string;
 }
@@ -17,12 +21,9 @@ export function PriceDisplay({
   currency = "USD",
   showBs = false,
   showUsd = false,
-  useParallel = false,
   className = "",
 }: PriceDisplayProps) {
-  const { rate, loading } = useDollarRate(
-    useParallel ? "paralelo" : "oficial"
-  );
+  const { rate, loading } = useDollarRate("oficial");
 
   const needsConversion =
     (currency === "USD" && showBs) || (currency === "BS" && showUsd);

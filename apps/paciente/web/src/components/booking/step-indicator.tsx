@@ -34,7 +34,8 @@ export function StepIndicator({
 
   return (
     <div className="w-full">
-      {/* Desktop step indicator */}
+      {/* Desktop step indicator — compact, sits in the viewport-locked
+          header band so the wizard never needs page scroll. */}
       <div className="hidden sm:flex items-center justify-between">
         {STEPS.map((step, index) => {
           const isComplete = index < currentStepIndex;
@@ -47,32 +48,32 @@ export function StepIndicator({
                 type="button"
                 onClick={() => isClickable && onStepClick(step.key)}
                 disabled={!isClickable}
-                className={`flex items-center gap-2 ${
+                className={`flex items-center gap-1.5 ${
                   isClickable ? "cursor-pointer" : "cursor-default"
                 }`}
               >
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold transition-all ${
                     isComplete
                       ? "bg-emerald-600 text-white"
                       : isCurrent
-                        ? "bg-emerald-600 text-white ring-4 ring-emerald-100"
+                        ? "bg-emerald-600 text-white ring-2 ring-emerald-100"
                         : "bg-gray-100 text-gray-400"
                   }`}
                 >
                   {isComplete ? (
-                    <Check className="h-4 w-4" />
+                    <Check className="h-3 w-3" />
                   ) : (
                     index + 1
                   )}
                 </div>
                 <span
-                  className={`text-sm font-medium ${
+                  className={`text-[11px] font-medium ${
                     isCurrent
                       ? "text-emerald-700"
                       : isComplete
-                        ? "text-gray-700"
-                        : "text-gray-400"
+                        ? "text-[hsl(var(--foreground))]"
+                        : "text-[hsl(var(--muted-foreground))]"
                   }`}
                 >
                   {step.label}
@@ -81,7 +82,7 @@ export function StepIndicator({
 
               {index < STEPS.length - 1 && (
                 <div
-                  className={`flex-1 h-0.5 mx-3 rounded ${
+                  className={`flex-1 h-px mx-2 rounded ${
                     index < currentStepIndex
                       ? "bg-emerald-500"
                       : "bg-gray-200"

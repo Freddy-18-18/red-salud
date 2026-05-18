@@ -74,24 +74,21 @@ export function BookingSummary({
       .join(", ") || null;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
+    <div className="flex flex-col gap-3 flex-1 min-h-0">
+      {/* Header — compact */}
+      <div className="shrink-0">
         <button
           type="button"
           onClick={onBack}
           disabled={loading}
-          className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors disabled:opacity-50"
+          className="mb-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors disabled:opacity-50"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
+          <ArrowLeft className="h-3 w-3" />
           Modificar detalles
         </button>
-        <h2 className="text-xl font-bold text-[hsl(var(--foreground))]">
+        <h2 className="text-base font-bold text-[hsl(var(--foreground))]">
           Confirma tu cita
         </h2>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">
-          Revisa los detalles. Una vez confirmada, el doctor recibirá tu solicitud.
-        </p>
       </div>
 
       {error && (
@@ -101,46 +98,36 @@ export function BookingSummary({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_280px] flex-1 min-h-0">
         {/* Main column — appointment details */}
-        <div className="space-y-4">
-          {/* Doctor banner card */}
-          <div className="overflow-hidden rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm">
-            <div className="relative h-20 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600">
-              <div
-                aria-hidden
-                className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_50%,white_0,transparent_40%),radial-gradient(circle_at_80%_30%,white_0,transparent_40%)]"
+        <div className="space-y-2.5 overflow-y-auto scrollbar-hide pr-1 -mr-1">
+          {/* Doctor compact card — avatar + name + specialty in one row */}
+          <div className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-50 to-white p-3 shadow-sm dark:border-emerald-900/40 dark:from-emerald-950/30 dark:to-[hsl(var(--card))]">
+            {state.doctor?.profile.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={state.doctor.profile.avatar_url}
+                alt={fullName}
+                className="h-12 w-12 shrink-0 rounded-xl object-cover ring-2 ring-white shadow-sm"
               />
-            </div>
-            <div className="px-6 pb-5">
-              <div className="-mt-12 flex items-end gap-4">
-                {state.doctor?.profile.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={state.doctor.profile.avatar_url}
-                    alt={fullName}
-                    className="h-24 w-24 rounded-2xl object-cover ring-4 ring-[hsl(var(--card))] shadow-md"
-                  />
-                ) : (
-                  <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-emerald-600 text-2xl font-bold text-white ring-4 ring-[hsl(var(--card))] shadow-md">
-                    {initials}
-                  </div>
-                )}
-                <div className="pb-2">
-                  <h3 className="text-lg font-bold text-[hsl(var(--foreground))]">
-                    {title} {fullName}
-                  </h3>
-                  <div className="mt-0.5 flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                    <Stethoscope className="h-3 w-3" />
-                    {state.specialty?.name}
-                  </div>
-                </div>
+            ) : (
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-base font-bold text-white shadow-sm">
+                {initials}
+              </div>
+            )}
+            <div className="min-w-0">
+              <h3 className="truncate text-sm font-bold text-[hsl(var(--foreground))]">
+                {title} {fullName}
+              </h3>
+              <div className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                <Stethoscope className="h-2.5 w-2.5" />
+                <span className="truncate">{state.specialty?.name}</span>
               </div>
             </div>
           </div>
 
           {/* Detail rows */}
-          <div className="space-y-3 rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm">
+          <div className="space-y-2 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-sm">
             <DetailRow
               icon={Calendar}
               accent="emerald"
@@ -201,24 +188,40 @@ export function BookingSummary({
             />
           </div>
 
-          {/* Pending notice */}
-          <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-900/40 dark:bg-amber-950/30">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white">
-              <Info className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-[hsl(var(--foreground))]">
-                Tu cita queda <span className="text-amber-700 dark:text-amber-400">pendiente</span>
-              </p>
-              <p className="text-xs text-amber-800/80 dark:text-amber-200/80">
-                {title} {fullName.split(" ")[0]} la revisará y te avisamos por notificación cuando la confirme.
-              </p>
+          {/* Mobile-only price summary — duplicates aside content for <md
+              where the aside is hidden. Critical: user must see the cost
+              before confirming. */}
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2.5 dark:border-emerald-900/40 dark:bg-emerald-950/30 md:hidden">
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-600 text-white">
+                <CreditCard className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                  Costo
+                </p>
+                <p className="text-lg font-extrabold text-emerald-700 dark:text-emerald-400 tabular-nums leading-none">
+                  {fee !== null && fee !== undefined ? `$${fee.toFixed(2)}` : "Sin precio"}
+                </p>
+              </div>
             </div>
+            <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 max-w-[180px] text-right">
+              Pago directo con el doctor al confirmar la cita.
+            </p>
+          </div>
+
+          {/* Pending notice — compact */}
+          <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50/60 p-2.5 dark:border-amber-900/40 dark:bg-amber-950/30">
+            <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <p className="text-[11px] text-amber-800 dark:text-amber-200">
+              Tu cita queda <strong>pendiente</strong> hasta que {title} {fullName.split(" ")[0]} la revise. Te avisamos por notificación.
+            </p>
           </div>
         </div>
 
-        {/* Aside — billing + security */}
-        <aside className="flex flex-col gap-4">
+        {/* Aside — billing + security. Hidden on mobile to keep page in viewport;
+             critical info (price + pending notice) lives in main column. */}
+        <aside className="hidden md:flex flex-col gap-2 overflow-y-auto scrollbar-hide">
           <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-sm dark:border-emerald-900/40 dark:from-emerald-950/40 dark:via-[hsl(var(--card))] dark:to-[hsl(var(--card))]">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/20">
@@ -266,7 +269,7 @@ export function BookingSummary({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-3 pt-2">
+      <div className="flex items-center gap-3 shrink-0">
         <button
           type="button"
           onClick={onBack}

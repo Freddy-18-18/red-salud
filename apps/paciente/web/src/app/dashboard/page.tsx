@@ -29,8 +29,8 @@ import { supabase } from "@/lib/supabase/client";
 type DashboardAppointment = {
   id: string;
   status: string;
-  appointment_date: string;
-  appointment_time: string;
+  scheduled_at: string;
+  duration_minutes?: number;
   doctor?: {
     full_name?: string;
     specialty?: string;
@@ -132,7 +132,7 @@ export default function PatientDashboard() {
   const now = new Date();
   const list = (appointments ?? []) as unknown as DashboardAppointment[];
   const upcomingAppointments = list
-    .filter((a: DashboardAppointment) => a.status !== "cancelled" && new Date(`${a.appointment_date}T${a.appointment_time}`) >= now)
+    .filter((a: DashboardAppointment) => a.status !== "cancelled" && new Date(a.scheduled_at) >= now)
     .slice(0, 3);
 
   const completedCount = list.filter((a: DashboardAppointment) => a.status === "completed").length;
@@ -280,7 +280,7 @@ export default function PatientDashboard() {
                       <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {new Date(apt.appointment_date + "T00:00:00").toLocaleDateString("es-VE", {
+                          {new Date(apt.scheduled_at).toLocaleDateString("es-VE", {
                             weekday: "short",
                             month: "short",
                             day: "numeric",
@@ -288,7 +288,11 @@ export default function PatientDashboard() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {apt.appointment_time?.slice(0, 5)}
+                          {new Date(apt.scheduled_at).toLocaleTimeString("es-VE", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
                         </div>
                       </div>
                     </div>

@@ -9,13 +9,12 @@ import { checkRateLimit } from '@/lib/utils/rate-limit';
 // Public endpoint — no authentication required.
 // -------------------------------------------------------------------
 //
-// Schema notes (post Phase A5.5):
-// - Table is `doctor_profiles` (FK constraint name kept as the legacy
-//   `doctor_details_profile_id_fkey` because it was renamed by ALTER TABLE).
-// - Specialty FK constraint is `fk_doctor_specialty` and points at
-//   `specialties` (NOT `medical_specialties`).
-// - Doctor's clinic location lives in `clinic_address` (text); the patient
-//   profile's city/state come from `profiles` via the embedded join.
+// Security note (2026-05-08):
+// - Public surface reads from `public_doctor_directory` view (safe projection).
+//   The previous direct `from('doctor_profiles')...select('*, profile:profiles!fkey(...)')`
+//   pattern leaked email/phone via the policy `public_read_verified_doctor_profiles`,
+//   which has been removed. The view exposes ONLY non-PII columns.
+// - Specialty join still uses the `specialties` table directly (safe).
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,12 +32,15 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * pageSize;
 
+    // Fetch from the safe public view (no PII columns). doctor_profile_id is the
+    // doctor_profiles.id (FK target for favorites/comparator/booking).
     let query = supabase
-      .from('doctor_profiles')
+      .from('public_doctor_directory')
       .select(
         `
+        doctor_profile_id,
         id,
-        profile_id,
+        sacs_verified,
         verified,
         consultation_fee,
         consultation_price,
@@ -46,32 +48,26 @@ export async function GET(request: NextRequest) {
         accepts_insurance,
         accepts_telemedicine,
         accepts_new_patients,
+        accepted_insurances,
         clinic_address,
         years_experience,
         biography,
         slug,
         average_rating,
         total_reviews,
+        total_consultations,
         languages,
-        profile:profiles!doctor_details_profile_id_fkey (
-          id,
-          first_name,
-          last_name,
-          full_name,
-          avatar_url,
-          phone,
-          city,
-          state
-        ),
-        specialty:specialties!fk_doctor_specialty (
-          id,
-          name,
-          icon
-        )
+        subspecialties,
+        conditions_treated,
+        is_featured,
+        full_name,
+        avatar_url,
+        city,
+        state,
+        specialty_id
         `,
         { count: 'exact' },
-      )
-      .eq('verified', true);
+      );
 
     // doctor_reviews has FK to profiles(id), not doctor_profiles, so we can't
     // embed it through PostgREST. The denormalized average_rating /
@@ -95,7 +91,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (sortBy === 'name') {
-      query = query.order('profile_id', { ascending: true });
+      query = query.order('full_name', { ascending: true });
     } else if (sortBy === 'price') {
       query = query.order('consultation_fee', { ascending: true });
     }
@@ -112,8 +108,70 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch specialty data for the results in a single round-trip and stitch.
+    // The view exposes specialty_id; the catalog row is needed for the UI badge.
+    const specialtyIds = Array.from(
+      new Set(
+        (doctors ?? [])
+          .map((d) => d.specialty_id)
+          .filter((id): id is string => typeof id === 'string'),
+      ),
+    );
+    const specialtyMap = new Map<
+      string,
+      { id: string; name: string; icon: string | null; slug: string | null }
+    >();
+    if (specialtyIds.length > 0) {
+      const { data: specs } = await supabase
+        .from('specialties')
+        .select('id, name, icon, slug')
+        .in('id', specialtyIds);
+      for (const s of specs ?? []) {
+        specialtyMap.set(s.id, {
+          id: s.id,
+          name: s.name,
+          icon: s.icon ?? null,
+          slug: s.slug ?? null,
+        });
+      }
+    }
+
+    // Reshape into the legacy { profile, specialty } envelope that callers expect,
+    // so UI components don't need to change.
     const results = (doctors ?? []).map((doctor) => ({
-      ...doctor,
+      // Map doctor_profile_id back to the legacy `id` key for compat
+      id: doctor.doctor_profile_id,
+      profile_id: doctor.id,
+      verified: doctor.verified,
+      sacs_verified: doctor.sacs_verified,
+      consultation_fee: doctor.consultation_fee,
+      consultation_price: doctor.consultation_price,
+      consultation_duration: doctor.consultation_duration,
+      accepts_insurance: doctor.accepts_insurance,
+      accepts_telemedicine: doctor.accepts_telemedicine,
+      accepts_new_patients: doctor.accepts_new_patients,
+      accepted_insurances: doctor.accepted_insurances,
+      clinic_address: doctor.clinic_address,
+      years_experience: doctor.years_experience,
+      biography: doctor.biography,
+      slug: doctor.slug,
+      average_rating: doctor.average_rating,
+      total_reviews: doctor.total_reviews,
+      total_consultations: doctor.total_consultations,
+      languages: doctor.languages,
+      subspecialties: doctor.subspecialties,
+      conditions_treated: doctor.conditions_treated,
+      is_featured: doctor.is_featured,
+      profile: {
+        id: doctor.id,
+        full_name: doctor.full_name,
+        avatar_url: doctor.avatar_url,
+        city: doctor.city,
+        state: doctor.state,
+      },
+      specialty: doctor.specialty_id
+        ? specialtyMap.get(doctor.specialty_id) ?? null
+        : null,
       avg_rating: doctor.average_rating ?? null,
       review_count: doctor.total_reviews ?? 0,
     }));

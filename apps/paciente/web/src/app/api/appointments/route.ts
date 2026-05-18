@@ -96,7 +96,9 @@ export async function GET(request: NextRequest) {
           first_name,
           last_name,
           full_name,
-          avatar_url
+          avatar_url,
+          city,
+          state
         )
         `,
         { count: 'exact' },

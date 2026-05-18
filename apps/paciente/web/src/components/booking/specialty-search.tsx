@@ -9,9 +9,13 @@ import {
   Clock4,
   Eye,
   Heart,
+  Lightbulb,
   Loader2,
+  MessageCircleQuestion,
   Search,
   SearchX,
+  ShieldCheck,
+  Sparkles,
   Stethoscope,
   UserPlus,
   Users,
@@ -238,16 +242,16 @@ export function SpecialtySearch({
   // ─── Loading shell ─────────────────────────────────────────────────────
   if (loading || !mounted) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <div>
-          <h2 className="text-xl font-bold text-[hsl(var(--foreground))] mb-1">
-            Que especialidad necesitas?
+          <h2 className="text-base font-bold text-[hsl(var(--foreground))]">
+            ¿Qué especialidad necesitas?
           </h2>
-          <p className="text-[hsl(var(--muted-foreground))] text-sm">
-            Buscaremos los doctores disponibles segun tu eleccion
+          <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+            Buscaremos los doctores disponibles según tu elección
           </p>
         </div>
-        <div className="flex items-center gap-3 px-4 py-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
           <Loader2 className="h-5 w-5 animate-spin text-emerald-500" />
           <span className="text-sm text-[hsl(var(--muted-foreground))]">
             Cargando especialidades...
@@ -260,21 +264,25 @@ export function SpecialtySearch({
   const SelectedIcon = selected ? getSpecialtyIcon(selected.name) : null;
 
   return (
-    <div className="space-y-6">
-      {/* Heading */}
-      <div>
-        <h2 className="text-xl font-bold text-[hsl(var(--foreground))] mb-1">
-          Que especialidad necesitas?
+    <div className="flex flex-col gap-4 flex-1 min-h-0">
+      {/* Heading — compact */}
+      <div className="shrink-0">
+        <h2 className="text-base font-bold text-[hsl(var(--foreground))] lg:text-xl">
+          ¿Qué especialidad necesitas?
         </h2>
-        <p className="text-[hsl(var(--muted-foreground))] text-sm">
+        <p className="text-[11px] text-[hsl(var(--muted-foreground))] lg:text-sm">
           Escribe y elige entre las coincidencias, o toca un atajo
         </p>
       </div>
 
+      {/* Two-column on lg+: form on the left, helper aside on the right.
+          Mobile/tablet stays single column. */}
+      <div className="grid grid-cols-1 gap-4 flex-1 min-h-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,360px)] lg:gap-6">
+        <div className="flex flex-col gap-4 min-h-0 overflow-y-auto scrollbar-hide pr-1 -mr-1">
       {/* Combobox */}
-      <div ref={containerRef} className="relative">
+      <div ref={containerRef} className="relative shrink-0">
         <div
-          className={`group flex items-center gap-2 rounded-2xl border bg-[hsl(var(--card))] px-4 py-3.5 shadow-sm transition-all ${
+          className={`group flex items-center gap-2 rounded-2xl border bg-[hsl(var(--card))] px-4 py-3 shadow-sm transition-all ${
             open
               ? "border-emerald-500 ring-2 ring-emerald-500/20"
               : "border-[hsl(var(--border))] hover:border-emerald-200"
@@ -557,11 +565,97 @@ export function SpecialtySearch({
         </div>
       )}
 
+        </div>
+
+        {/* Helper aside — desktop only. Surfaces tips so the wide layout
+            does not feel empty next to the search box. */}
+        <aside className="hidden lg:flex min-h-0 flex-col gap-3 overflow-y-auto scrollbar-hide">
+          <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-sm dark:border-emerald-900/40 dark:from-emerald-950/40 dark:via-[hsl(var(--card))] dark:to-[hsl(var(--card))]">
+            <div className="flex items-start gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/20">
+                <Lightbulb className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                  Tip rápido
+                </p>
+                <p className="text-sm font-semibold text-[hsl(var(--foreground))]">
+                  ¿No sabés cuál elegir?
+                </p>
+                <p className="mt-1 text-xs text-emerald-800/80 dark:text-emerald-200/80">
+                  Si no estás seguro, <strong>Medicina General</strong> es el primer paso. El doctor te orienta y te deriva si hace falta.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5">
+            <div className="flex items-start gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
+                <Sparkles className="h-3.5 w-3.5" />
+              </span>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  ¿Qué incluye agendar?
+                </p>
+                <ul className="mt-2 space-y-1.5 text-xs text-[hsl(var(--muted-foreground))]">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                    Doctores con cédula verificada por SACS.
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                    Consulta presencial o por videollamada.
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                    Confirmación del doctor en menos de 24h.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5">
+            <div className="flex items-start gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
+                <ShieldCheck className="h-3.5 w-3.5" />
+              </span>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  Seguro y privado
+                </p>
+                <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                  Tus datos están cifrados. Sólo el doctor que elijas verá tu motivo de consulta.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5">
+            <div className="flex items-start gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
+                <MessageCircleQuestion className="h-3.5 w-3.5" />
+              </span>
+              <div>
+                <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                  ¿Tu especialidad no aparece?{" "}
+                  <Link
+                    href="/soporte"
+                    className="font-semibold text-emerald-700 hover:underline dark:text-emerald-400"
+                  >
+                    Contactanos
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
       {/* Continue. Disabled when nothing is selected OR when the selected
-          specialty has no doctors yet — in that case the in-page card above
-          is already telling the user what to do, so the bottom CTA stays
-          hidden behind opacity to avoid a contradictory "Continuar" call. */}
-      <div className="flex justify-end pt-2">
+          specialty has no doctors yet. */}
+      <div className="flex justify-end pt-2 shrink-0">
         <button
           type="button"
           onClick={onContinue}

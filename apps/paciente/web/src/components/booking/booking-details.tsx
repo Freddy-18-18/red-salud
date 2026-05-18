@@ -60,45 +60,39 @@ export function BookingDetails({
   const reasonOver = reason.length > REASON_MAX;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
+    <div className="flex flex-col gap-3 flex-1 min-h-0">
+      {/* Header — compact */}
+      <div className="shrink-0">
         <button
           type="button"
           onClick={onBack}
-          className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+          className="mb-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
+          <ArrowLeft className="h-3 w-3" />
           Cambiar horario
         </button>
-        <h2 className="text-xl font-bold text-[hsl(var(--foreground))]">
+        <h2 className="text-base font-bold text-[hsl(var(--foreground))]">
           Detalles de la consulta
         </h2>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">
-          Completa la información para que el doctor llegue preparado
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_280px] flex-1 min-h-0">
         {/* Main column */}
-        <div className="space-y-5">
+        <div className="space-y-2.5 overflow-y-auto scrollbar-hide pr-1 -mr-1">
           {/* Appointment type */}
-          <section className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm">
-            <header className="mb-3">
+          <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-sm">
+            <header className="mb-2">
               <h3 className="text-sm font-bold text-[hsl(var(--foreground))]">
                 Tipo de consulta
               </h3>
-              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                ¿Cómo querés tener tu consulta?
-              </p>
             </header>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <TypeOption
                 active={appointmentType === "presencial"}
                 onClick={() => onTypeChange("presencial")}
                 icon={MapPin}
                 title="Presencial"
-                description="Visita el consultorio del doctor"
+                description="Visita el consultorio"
                 accent="emerald"
               />
               <TypeOption
@@ -106,14 +100,14 @@ export function BookingDetails({
                 onClick={() => onTypeChange("telemedicina")}
                 icon={Video}
                 title="Telemedicina"
-                description="Consulta por videollamada"
+                description="Por videollamada"
                 accent="sky"
               />
             </div>
           </section>
 
           {/* Reason */}
-          <section className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm">
+          <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-sm">
             <header className="mb-3 flex items-end justify-between gap-3">
               <div>
                 <h3 className="text-sm font-bold text-[hsl(var(--foreground))]">
@@ -140,7 +134,7 @@ export function BookingDetails({
               id="reason"
               value={reason}
               onChange={(e) => onReasonChange(e.target.value)}
-              rows={3}
+              rows={2}
               placeholder="Ej: Dolor en el pecho recurrente desde hace 3 días."
               maxLength={REASON_MAX + 30}
               className={`w-full resize-none rounded-2xl border bg-[hsl(var(--background))] px-4 py-3 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
@@ -181,8 +175,8 @@ export function BookingDetails({
             </div>
           </section>
 
-          {/* Notes */}
-          <section className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm">
+          {/* Notes — hidden on mobile (optional field, surfaces ≥sm) */}
+          <section className="hidden sm:block rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-sm">
             <header className="mb-3">
               <h3 className="text-sm font-bold text-[hsl(var(--foreground))]">
                 Notas adicionales{" "}
@@ -198,15 +192,15 @@ export function BookingDetails({
               id="notes"
               value={notes}
               onChange={(e) => onNotesChange(e.target.value)}
-              rows={3}
+              rows={2}
               placeholder="Información que ayude al doctor a prepararse mejor."
               className="w-full resize-none rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-4 py-3 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
             />
           </section>
         </div>
 
-        {/* Aside */}
-        <aside className="flex flex-col gap-4">
+        {/* Aside — hidden on mobile to keep page within viewport */}
+        <aside className="hidden md:flex flex-col gap-2 overflow-y-auto scrollbar-hide">
           <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-sm dark:border-emerald-900/40 dark:from-emerald-950/40 dark:via-[hsl(var(--card))] dark:to-[hsl(var(--card))]">
             <div className="flex items-start gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/20">
@@ -266,7 +260,7 @@ export function BookingDetails({
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center gap-3 pt-2">
+      <div className="flex items-center gap-3 shrink-0">
         <button
           type="button"
           onClick={onBack}
@@ -329,13 +323,15 @@ function TypeOption({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`group relative flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${accentClasses}`}
+      className={`group relative flex items-center gap-2.5 rounded-xl border p-2.5 text-left transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 sm:flex-col sm:items-center sm:gap-2 sm:p-4 sm:text-center ${accentClasses}`}
     >
-      <span className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-colors ${iconBg}`}>
-        <Icon className="h-5 w-5" />
+      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors sm:h-12 sm:w-12 sm:rounded-2xl ${iconBg}`}>
+        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
       </span>
-      <span className="text-sm font-semibold text-[hsl(var(--foreground))]">{title}</span>
-      <span className="text-[11px] text-[hsl(var(--muted-foreground))]">{description}</span>
+      <span className="flex flex-col min-w-0 sm:items-center">
+        <span className="text-sm font-semibold text-[hsl(var(--foreground))] truncate">{title}</span>
+        <span className="text-[11px] text-[hsl(var(--muted-foreground))] truncate">{description}</span>
+      </span>
     </button>
   );
 }

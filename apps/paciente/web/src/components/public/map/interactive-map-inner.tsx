@@ -57,37 +57,37 @@ function getFillPaint(isDark: boolean): FillLayerSpecification['paint'] {
     'fill-color': [
       'case',
       ['boolean', ['feature-state', 'hover'], false],
-      isDark ? 'rgba(52, 211, 153, 0.4)' : 'rgba(16, 185, 129, 0.45)',
-      isDark ? 'rgba(52, 211, 153, 0.15)' : 'rgba(16, 185, 129, 0.2)',
+      isDark ? 'rgba(52, 211, 153, 0.35)' : 'rgba(16, 185, 129, 0.35)',
+      isDark ? 'rgba(52, 211, 153, 0.1)' : 'rgba(16, 185, 129, 0.12)',
     ],
     'fill-outline-color': isDark
-      ? 'rgba(52, 211, 153, 0.7)'
-      : 'rgba(16, 185, 129, 0.8)',
+      ? 'rgba(120, 140, 130, 0.4)'
+      : 'rgba(140, 160, 150, 0.55)',
   }
 }
 
 function getLinePaint(isDark: boolean): LineLayerSpecification['paint'] {
   return {
     'line-color': isDark
-      ? 'rgba(52, 211, 153, 0.5)'
-      : 'rgba(16, 185, 129, 0.6)',
+      ? 'rgba(120, 140, 130, 0.45)'
+      : 'rgba(140, 160, 150, 0.55)',
     'line-width': [
       'case',
       ['boolean', ['feature-state', 'hover'], false],
-      2.5,
-      1,
+      1.5,
+      0.75,
     ],
   }
 }
 
 const SELECTED_FILL_PAINT: FillLayerSpecification['paint'] = {
-  'fill-color': 'rgba(16, 185, 129, 0.35)',
-  'fill-outline-color': '#10B981',
+  'fill-color': 'rgba(16, 185, 129, 0.25)',
+  'fill-outline-color': 'rgba(16, 185, 129, 0.6)',
 }
 
 const SELECTED_LINE_PAINT: LineLayerSpecification['paint'] = {
-  'line-color': '#10B981',
-  'line-width': 3,
+  'line-color': 'rgba(16, 185, 129, 0.7)',
+  'line-width': 1.5,
 }
 
 // ---------------------------------------------------------------------------

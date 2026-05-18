@@ -121,8 +121,9 @@ export function NewConversationDialog({
                     .toUpperCase()
                     .slice(0, 2);
 
+                  const optionValue = doctor.profile?.id ?? doctor.id;
                   return (
-                    <SelectItem key={doctor.id} value={doctor.id}>
+                    <SelectItem key={doctor.id} value={optionValue}>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={doctor.profile?.avatar_url} />
@@ -132,7 +133,7 @@ export function NewConversationDialog({
                         </Avatar>
                         <div>
                           <p className="font-medium">
-                            {doctor.profile?.full_name}
+                            {doctor.profile?.full_name ?? "Doctor"}
                           </p>
                           {doctor.specialty && (
                             <p className="text-xs text-muted-foreground">

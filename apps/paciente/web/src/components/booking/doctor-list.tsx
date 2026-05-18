@@ -226,27 +226,29 @@ export function DoctorList({
 
   // ─── Populated list ────────────────────────────────────────────────────
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div>
-        <button
-          type="button"
-          onClick={onBack}
-          className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Cambiar especialidad
-        </button>
-        <h2 className="text-xl font-bold text-[hsl(var(--foreground))]">
-          Selecciona tu doctor
-        </h2>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">
-          {doctors.length} {doctors.length === 1 ? "especialista disponible" : "especialistas disponibles"} en {specialtyName}
+    <div className="flex flex-col gap-3 flex-1 min-h-0">
+      {/* Header — compact, breadcrumb + title in one line */}
+      <div className="shrink-0 flex items-baseline justify-between gap-3">
+        <div>
+          <button
+            type="button"
+            onClick={onBack}
+            className="mb-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Cambiar especialidad
+          </button>
+          <h2 className="text-base font-bold text-[hsl(var(--foreground))]">
+            Selecciona tu doctor
+          </h2>
+        </div>
+        <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+          {doctors.length} {doctors.length === 1 ? "disponible" : "disponibles"} en {specialtyName}
         </p>
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 shrink-0">
         <button
           type="button"
           onClick={() => setShowFilters((v) => !v)}
@@ -346,22 +348,25 @@ export function DoctorList({
         </div>
       )}
 
-      {/* List — single column on phones, two columns from md up so wide
-          screens actually use the available space instead of one
-          stretched card per row. */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {doctors.map((doctor) => (
-          <DoctorCard
-            key={doctor.id}
-            doctor={doctor}
-            isSelected={selected?.id === doctor.id}
-            onSelect={() => onSelect(doctor)}
-          />
-        ))}
+      {/* List — 2 columns on md, scrollable inside its own box if there's
+          more doctors than fit. The list lives inside a flex-1 region so
+          it claims whatever vertical space is left after header + toolbar
+          + footer. */}
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pr-1 -mr-1">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+          {doctors.map((doctor) => (
+            <DoctorCard
+              key={doctor.id}
+              doctor={doctor}
+              isSelected={selected?.id === doctor.id}
+              onSelect={() => onSelect(doctor)}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Sticky-ish nav. Clean two-button row matching the rest of the wizard. */}
-      <div className="flex items-center gap-3 pt-2">
+      {/* Footer always visible thanks to mt-auto + shrink-0 */}
+      <div className="flex items-center gap-3 shrink-0">
         <button
           type="button"
           onClick={onBack}

@@ -21,7 +21,7 @@ describe('GET /api/specialties', () => {
     mock.reset();
   });
 
-  it('returns all specialties sorted by name', async () => {
+  it('returns all specialties sorted by name with doctor_count enrichment', async () => {
     const specialties = [
       { id: '1', name: 'Cardiologia', icon: 'heart', description: 'Corazon' },
       { id: '2', name: 'Pediatria', icon: 'baby', description: 'Ninos' },
@@ -31,10 +31,17 @@ describe('GET /api/specialties', () => {
 
     const request = createRequest('/api/specialties');
     const response = await GET(request);
-    const { status, body } = await parseResponse<{ data: typeof specialties }>(response);
+    const { status, body } = await parseResponse<{
+      data: Array<typeof specialties[number] & { doctor_count: number }>;
+    }>(response);
 
     expect(status).toBe(200);
-    expect(body.data).toEqual(specialties);
+    // The route enriches each specialty with `doctor_count` (verified doctors
+    // per specialty). The shared mock resolves both Promise.all queries with
+    // the same data, so no specialty IDs match in the count map → all zero.
+    expect(body.data).toEqual(
+      specialties.map((s) => ({ ...s, doctor_count: 0 })),
+    );
     expect(mock.client.from).toHaveBeenCalledWith('specialties');
   });
 

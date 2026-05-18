@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, type MouseEvent } from 'react';
 
 import { VENEZUELA_SVG_PATHS, VENEZUELA_VIEWBOX } from '@/lib/data/venezuela-svg-paths';
 import type { StateMapData } from '@/lib/types/public';
+import { getDensityColor, getStrokeStyle } from './venezuela-map-svg-helpers';
 
 interface VenezuelaMapSVGProps {
   stateData: StateMapData[];
@@ -17,24 +18,6 @@ interface TooltipState {
   y: number;
   stateName: string;
   doctorCount: number;
-}
-
-/**
- * Compute a fill color based on doctor count relative to the max.
- * Gradient from muted gray (0 doctors) to emerald-500 (max doctors).
- */
-function getDensityColor(count: number, maxCount: number): string {
-  if (maxCount === 0 || count === 0) {
-    return 'hsl(var(--muted))';
-  }
-
-  const ratio = count / maxCount;
-
-  if (ratio < 0.1) return 'hsl(var(--muted))';
-  if (ratio < 0.25) return 'hsl(160, 30%, 75%)';
-  if (ratio < 0.5) return 'hsl(160, 50%, 60%)';
-  if (ratio < 0.75) return 'hsl(160, 70%, 48%)';
-  return 'hsl(160, 84%, 39%)';
 }
 
 export function VenezuelaMapSVG({ stateData, selectedState, onStateClick }: VenezuelaMapSVGProps) {
@@ -130,8 +113,6 @@ export function VenezuelaMapSVG({ stateData, selectedState, onStateClick }: Vene
           const isSelected = selectedState === stateName;
           const fillColor = getDensityColor(count, maxCount);
 
-          // Selected state: bright emerald fill
-          // Hovered state: slightly brighter than density color
           let currentFill = fillColor;
           if (isSelected) {
             currentFill = 'hsl(160, 84%, 45%)';
@@ -139,15 +120,10 @@ export function VenezuelaMapSVG({ stateData, selectedState, onStateClick }: Vene
             currentFill = count > 0 ? 'hsl(160, 80%, 50%)' : 'hsl(160, 30%, 80%)';
           }
 
-          let strokeColor = 'hsl(var(--border))';
-          let strokeWidth = 1;
-          if (isSelected) {
-            strokeColor = 'hsl(160, 84%, 30%)';
-            strokeWidth = 3;
-          } else if (isHovered) {
-            strokeColor = 'hsl(160, 84%, 39%)';
-            strokeWidth = 2;
-          }
+          const { stroke: strokeColor, strokeWidth } = getStrokeStyle({
+            isSelected,
+            isHovered,
+          });
 
           return (
             <path
@@ -157,9 +133,6 @@ export function VenezuelaMapSVG({ stateData, selectedState, onStateClick }: Vene
               stroke={strokeColor}
               strokeWidth={strokeWidth}
               className="cursor-pointer transition-all duration-200"
-              style={{
-                paintOrder: isSelected ? 'stroke' : undefined,
-              }}
               onMouseEnter={() => handleMouseEnter(stateName)}
               onMouseMove={(e) => handleMouseMove(e, stateName)}
               onMouseLeave={handleMouseLeave}

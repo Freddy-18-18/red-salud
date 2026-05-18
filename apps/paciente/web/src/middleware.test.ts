@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * Middleware tests — covers role gating and cookie scoping for the paciente app.
  *
  * The middleware is an Edge runtime entry point that:
@@ -11,6 +13,13 @@
  *
  * Anything else redirects to `/auth/login` with a specific error code so the UI
  * can explain WHY the user was bounced.
+ *
+ * Why `node` environment: Next 15's `NextResponse.next({ request })` checks
+ * `request.headers instanceof Headers`. In jsdom the global `Headers` is the
+ * jsdom impl, and Next 15 routes created via `NextRequest` produce headers
+ * that fail this `instanceof` check, throwing
+ * "request.headers must be an instance of Headers". Node's global Headers
+ * (Node ≥ 18) matches what Next expects, so the check passes.
  */
 
 import { vi, describe, it, expect, beforeEach } from 'vitest';

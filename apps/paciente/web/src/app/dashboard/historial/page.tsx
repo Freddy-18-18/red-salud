@@ -94,6 +94,43 @@ function formatPrescriptionDate(dateStr: string): string {
   }
 }
 
+function formatTimestampLong(isoTimestamp: string): string {
+  try {
+    return new Date(isoTimestamp).toLocaleDateString("es-VE", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return isoTimestamp;
+  }
+}
+
+function formatTimestampShort(isoTimestamp: string): string {
+  try {
+    return new Date(isoTimestamp).toLocaleDateString("es-VE", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return isoTimestamp;
+  }
+}
+
+function formatTimestampTime(isoTimestamp: string): string {
+  try {
+    return new Date(isoTimestamp).toLocaleTimeString("es-VE", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch {
+    return "";
+  }
+}
+
 export default function HistorialMedicoPage() {
   const [userId, setUserId] = useState<string | undefined>();
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
@@ -164,12 +201,12 @@ export default function HistorialMedicoPage() {
 
   const completedAppointments = appointments
     .filter((a) => a.status === "completed")
-    .sort((a, b) => new Date(b.appointment_date).getTime() - new Date(a.appointment_date).getTime());
+    .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
 
   const uniqueDoctors = new Set(completedAppointments.map((a) => a.doctor_id)).size;
 
   const lastConsultDate = completedAppointments.length > 0
-    ? formatShortDate(completedAppointments[0].appointment_date)
+    ? formatTimestampShort(completedAppointments[0].scheduled_at)
     : "Sin consultas";
 
   const filters: { label: string; value: FilterType }[] = [
@@ -476,7 +513,7 @@ export default function HistorialMedicoPage() {
                           Dr. {appointment.doctor?.full_name || "Medico"}
                         </h3>
                         <span className="text-xs text-gray-500 whitespace-nowrap">
-                          {formatShortDate(appointment.appointment_date)}
+                          {formatTimestampShort(appointment.scheduled_at)}
                         </span>
                       </div>
                       {appointment.reason && (
@@ -501,18 +538,18 @@ export default function HistorialMedicoPage() {
                         <div>
                           <p className="text-xs text-gray-500">Fecha</p>
                           <p className="font-medium text-gray-900 capitalize">
-                            {formatDate(appointment.appointment_date)}
+                            {formatTimestampLong(appointment.scheduled_at)}
                           </p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Hora</p>
                           <p className="font-medium text-gray-900">
-                            {appointment.appointment_time?.slice(0, 5)}
+                            {formatTimestampTime(appointment.scheduled_at)}
                           </p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Duracion</p>
-                          <p className="font-medium text-gray-900">{appointment.duration} minutos</p>
+                          <p className="font-medium text-gray-900">{appointment.duration_minutes} minutos</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Estado</p>

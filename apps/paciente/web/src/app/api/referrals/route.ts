@@ -3,10 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/utils/rate-limit";
 
 // -------------------------------------------------------------------
-// Medical Referrals — BFF API Route
+// Medical Referrals — patient inbox
 // -------------------------------------------------------------------
-// GET: List the authenticated patient's medical referrals (doctor → specialist).
-// Supports filtering by status: pending, scheduled, completed, expired.
+// On every read, runtime-expire any `active` referral whose `expires_at`
+// is in the past (cheaper than a cron, eventually-consistent within a
+// single user session). Also detects duplicates per specialty so the UI
+// can warn the patient.
 // -------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
@@ -15,21 +17,23 @@ export async function GET(request: NextRequest) {
     if (limited) return limited;
 
     const supabase = await createClient();
-
     const {
       data: { user },
-      error: authError,
     } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: "No autenticado. Inicia sesion para continuar." },
-        { status: 401 },
-      );
+    if (!user) {
+      return NextResponse.json({ error: "No autenticado." }, { status: 401 });
     }
 
+    // Cheap auto-expire pass — only this patient's rows.
+    await supabase
+      .from("medical_referrals")
+      .update({ status: "expired" })
+      .eq("patient_id", user.id)
+      .eq("status", "active")
+      .lt("expires_at", new Date().toISOString());
+
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status"); // pending, scheduled, completed, expired
+    const status = searchParams.get("status");
 
     let query = supabase
       .from("medical_referrals")
@@ -38,48 +42,38 @@ export async function GET(request: NextRequest) {
         id,
         patient_id,
         referring_doctor_id,
-        specialist_doctor_id,
         specialty_id,
-        urgency,
-        status,
         reason,
         diagnosis,
         clinical_notes,
+        exams_recommended,
+        attached_documents,
+        urgency,
+        status,
+        patient_consent_given,
+        patient_consent_at,
+        share_referrer_identity,
+        used_appointment_id,
+        used_at,
         expires_at,
-        scheduled_appointment_id,
         created_at,
         updated_at,
         referring_doctor:doctor_profiles!medical_referrals_referring_doctor_id_fkey (
           id,
-          consultation_fee,
+          slug,
           profile:profiles!doctor_details_profile_id_fkey (
-            first_name,
-            last_name,
+            full_name,
             avatar_url
           ),
           specialty:specialties!fk_doctor_specialty (
             id,
-            name,
-            icon
-          )
-        ),
-        specialist:doctor_profiles!medical_referrals_specialist_doctor_id_fkey (
-          id,
-          consultation_fee,
-          profile:profiles!doctor_details_profile_id_fkey (
-            first_name,
-            last_name,
-            avatar_url
-          ),
-          specialty:specialties!fk_doctor_specialty (
-            id,
-            name,
-            icon
+            name
           )
         ),
         target_specialty:specialties!medical_referrals_specialty_id_fkey (
           id,
           name,
+          slug,
           icon
         )
         `,
@@ -87,25 +81,40 @@ export async function GET(request: NextRequest) {
       .eq("patient_id", user.id)
       .order("created_at", { ascending: false });
 
-    if (status) {
-      query = query.eq("status", status);
-    }
+    if (status) query = query.eq("status", status);
 
-    const { data: referrals, error } = await query;
-
+    const { data, error } = await query;
     if (error) {
-      console.error("[Medical Referrals GET] Supabase error:", error);
+      console.error("[Referrals GET]", error);
       return NextResponse.json(
-        { error: "Error al obtener referencias medicas." },
+        { error: "Error al obtener referencias." },
         { status: 500 },
       );
     }
 
-    return NextResponse.json({ data: referrals ?? [] });
-  } catch (error) {
-    console.error("[Medical Referrals GET] Unexpected error:", error);
+    // Duplicate detection: count active+pending referrals per specialty
+    // and tag rows whose specialty has more than one active/pending instance.
+    const liveByspec = new Map<string, number>();
+    for (const r of data ?? []) {
+      if (r.status === "active" || r.status === "pending_consent") {
+        liveByspec.set(
+          r.specialty_id,
+          (liveByspec.get(r.specialty_id) ?? 0) + 1,
+        );
+      }
+    }
+    const enriched = (data ?? []).map((r) => ({
+      ...r,
+      has_duplicate:
+        (r.status === "active" || r.status === "pending_consent") &&
+        (liveByspec.get(r.specialty_id) ?? 0) > 1,
+    }));
+
+    return NextResponse.json({ data: enriched });
+  } catch (e) {
+    console.error("[Referrals GET]", e);
     return NextResponse.json(
-      { error: "Error interno del servidor." },
+      { error: "Error interno." },
       { status: 500 },
     );
   }

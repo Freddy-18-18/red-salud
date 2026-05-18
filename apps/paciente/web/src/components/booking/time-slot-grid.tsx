@@ -174,32 +174,33 @@ export function TimeSlotGrid({
 
   // ─── Populated grid ────────────────────────────────────────────────────
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div>
-        <button
-          type="button"
-          onClick={onBack}
-          className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Cambiar fecha
-        </button>
-        <h2 className="text-xl font-bold text-[hsl(var(--foreground))]">
-          Selecciona la hora
-        </h2>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">
-          {availableSlots.length}{" "}
-          {availableSlots.length === 1 ? "horario disponible" : "horarios disponibles"} para{" "}
+    <div className="flex flex-col gap-3 flex-1 min-h-0">
+      {/* Header — compact */}
+      <div className="shrink-0 flex items-baseline justify-between gap-3">
+        <div>
+          <button
+            type="button"
+            onClick={onBack}
+            className="mb-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Cambiar fecha
+          </button>
+          <h2 className="text-base font-bold text-[hsl(var(--foreground))]">
+            Selecciona la hora
+          </h2>
+        </div>
+        <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+          {availableSlots.length} {availableSlots.length === 1 ? "horario" : "horarios"} para{" "}
           <span className="capitalize text-[hsl(var(--foreground))] font-medium">
             {dateLabel}
           </span>
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_280px] flex-1 min-h-0">
         {/* Slots column */}
-        <div className="space-y-4">
+        <div className="space-y-2 overflow-y-auto scrollbar-hide pr-1 -mr-1">
           {safeGroups.map((group) => {
             const available = group.slots.filter((s) => s.available);
             if (available.length === 0) return null;
@@ -209,33 +210,31 @@ export function TimeSlotGrid({
             return (
               <section
                 key={group.label}
-                className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-sm"
+                className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-sm"
               >
-                <header className="mb-4 flex items-center gap-3">
-                  <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${style.iconBg}`}>
-                    <Icon className={`h-4 w-4 ${style.iconColor}`} />
+                <header className="mb-2 flex items-center gap-2">
+                  <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${style.iconBg}`}>
+                    <Icon className={`h-3.5 w-3.5 ${style.iconColor}`} />
                   </span>
-                  <div>
-                    <h3 className="text-sm font-bold text-[hsl(var(--foreground))]">
+                  <div className="min-w-0">
+                    <h3 className="text-xs font-bold text-[hsl(var(--foreground))]">
                       {group.label}
                     </h3>
-                    <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                    <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
                       {available.length}{" "}
                       {available.length === 1 ? "cupo libre" : "cupos libres"}
                     </p>
                   </div>
                 </header>
 
-                {/* Slot pills. We render unavailable slots dimmed-but-present
-                    so users see the full schedule and intuit which times are
-                    booked vs simply outside the doctor's hours. */}
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {/* Slot pills. Unavailable slots stay visible but dimmed. */}
+                <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                   {group.slots.map((slot) => {
                     const isSelected =
                       selectedSlot?.start === slot.start &&
                       selectedSlot?.end === slot.end;
                     const baseClasses =
-                      "relative inline-flex items-center justify-center rounded-xl px-2 py-2.5 text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2";
+                      "relative inline-flex items-center justify-center rounded-lg px-2 py-1.5 text-xs font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2";
 
                     if (!slot.available) {
                       return (
@@ -272,7 +271,7 @@ export function TimeSlotGrid({
         </div>
 
         {/* Side panel */}
-        <aside className="flex flex-col gap-4">
+        <aside className="hidden md:flex flex-col gap-2 overflow-y-auto scrollbar-hide">
           {selectedSlot ? (
             <div className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-sm dark:border-emerald-900/40 dark:from-emerald-950/40 dark:via-[hsl(var(--card))] dark:to-[hsl(var(--card))]">
               <div className="flex items-center gap-3">
@@ -362,7 +361,7 @@ export function TimeSlotGrid({
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center gap-3 pt-2">
+      <div className="flex items-center gap-3 shrink-0">
         <button
           type="button"
           onClick={onBack}

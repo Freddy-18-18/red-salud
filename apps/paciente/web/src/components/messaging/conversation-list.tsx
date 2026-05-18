@@ -3,6 +3,7 @@
 import { cn } from "@red-salud/core/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/design-system";
 import { Badge } from "@red-salud/design-system";
+import { EmptyState } from "@red-salud/design-system";
 import { ScrollArea } from "@red-salud/design-system";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -54,14 +55,21 @@ export function ConversationList({
 
   if (filteredConversations.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-        <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-        <p className="text-muted-foreground">
-          {showArchived
-            ? "No hay conversaciones archivadas"
-            : "No hay conversaciones activas"}
-        </p>
-      </div>
+      <EmptyState
+        icon={MessageSquare}
+        title={
+          showArchived
+            ? "Sin conversaciones archivadas"
+            : "Aún no tenés conversaciones"
+        }
+        description={
+          showArchived
+            ? "Las conversaciones que archives van a aparecer acá."
+            : "Iniciá una conversación con tu doctor desde una cita."
+        }
+        size="compact"
+        className="border-0 bg-transparent h-full"
+      />
     );
   }
 

@@ -10,9 +10,6 @@ import {
 const REFERRALS_KEY = "medical-referrals";
 const REFERRAL_DETAIL_KEY = "medical-referral-detail";
 
-/**
- * List all medical referrals with optional status filter.
- */
 export function useMedicalReferrals(status?: ReferralStatus) {
   return useQuery<MedicalReferral[]>({
     queryKey: [REFERRALS_KEY, status ?? "all"],
@@ -20,9 +17,6 @@ export function useMedicalReferrals(status?: ReferralStatus) {
   });
 }
 
-/**
- * Get full detail for a single medical referral.
- */
 export function useMedicalReferralDetail(id: string | null) {
   return useQuery<MedicalReferralDetail>({
     queryKey: [REFERRAL_DETAIL_KEY, id],
@@ -32,27 +26,19 @@ export function useMedicalReferralDetail(id: string | null) {
 }
 
 /**
- * Mutation to update referral status (scheduled / completed).
- * Invalidates the list and detail caches on success.
+ * Patient consents a pending referral. Optionally chooses to share the
+ * referring doctor's identity with the next specialist.
  */
-export function useUpdateReferralStatus() {
+export function useConsentReferral() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({
       id,
-      status,
-      scheduledAppointmentId,
+      shareReferrerIdentity,
     }: {
       id: string;
-      status: "scheduled" | "completed";
-      scheduledAppointmentId?: string;
-    }) =>
-      medicalReferralService.updateReferralStatus(
-        id,
-        status,
-        scheduledAppointmentId,
-      ),
+      shareReferrerIdentity: boolean;
+    }) => medicalReferralService.consent(id, shareReferrerIdentity),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [REFERRALS_KEY] });
       queryClient.invalidateQueries({ queryKey: [REFERRAL_DETAIL_KEY] });
@@ -60,15 +46,23 @@ export function useUpdateReferralStatus() {
   });
 }
 
+export function useDeclineReferral() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => medicalReferralService.decline(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [REFERRALS_KEY] });
+    },
+  });
+}
+
 /**
- * Returns the count of pending referrals (for sidebar badge).
+ * Sidebar/header badge — number of referrals pending the patient's review.
  */
 export function useReferralCount() {
   const { data: referrals } = useMedicalReferrals();
-
   const pending =
-    referrals?.filter((r) => r.status === "pending").length ?? 0;
+    referrals?.filter((r) => r.status === "pending_consent").length ?? 0;
   const total = referrals?.length ?? 0;
-
   return { pending, total };
 }

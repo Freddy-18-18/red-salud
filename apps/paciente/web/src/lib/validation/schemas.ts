@@ -27,6 +27,19 @@ export const cancelAppointmentSchema = z.object({
   reason: shortText.optional(),
 });
 
+export const rescheduleAppointmentSchema = z.object({
+  scheduled_at: z.string().datetime({ offset: true }),
+  duration_minutes: z.number().int().positive().max(480).optional(),
+}).superRefine((d, ctx) => {
+  if (new Date(d.scheduled_at) <= new Date()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "cannot reschedule to the past",
+      path: ["scheduled_at"],
+    });
+  }
+});
+
 // Ratings
 export const submitRatingSchema = z.object({
   appointment_id: uuid,

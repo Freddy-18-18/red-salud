@@ -246,29 +246,31 @@ export function CalendarPicker({
   const selectedSlots = selectedDate ? dateCountMap.get(selectedDate) ?? 0 : 0;
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div>
-        <button
-          type="button"
-          onClick={onBack}
-          className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Cambiar doctor
-        </button>
-        <h2 className="text-xl font-bold text-[hsl(var(--foreground))]">
-          Selecciona la fecha
-        </h2>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">
-          Disponibilidad de Dr. {doctorName} en los próximos 30 días
+    <div className="flex flex-col gap-3 flex-1 min-h-0">
+      {/* Header — compact */}
+      <div className="shrink-0 flex items-baseline justify-between gap-3">
+        <div>
+          <button
+            type="button"
+            onClick={onBack}
+            className="mb-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Cambiar doctor
+          </button>
+          <h2 className="text-base font-bold text-[hsl(var(--foreground))]">
+            Selecciona la fecha
+          </h2>
+        </div>
+        <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+          Disponibilidad de Dr. {doctorName} · próximos 30 días
         </p>
       </div>
 
       {/* Layout: calendar + side panel on desktop, stacked on mobile */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_280px] flex-1 min-h-0">
         {/* Calendar */}
-        <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 sm:p-6 shadow-sm">
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 shadow-sm">
           {/* Month nav */}
           <div className="mb-4 flex items-center justify-between">
             <button
@@ -299,23 +301,23 @@ export function CalendarPicker({
             </button>
           </div>
 
-          {/* Day headers */}
-          <div className="mb-2 grid grid-cols-7 gap-1.5">
+          {/* Day headers — tight */}
+          <div className="mb-1 grid grid-cols-7 gap-1">
             {DAYS_SHORT.map((d) => (
               <div
                 key={d}
-                className="py-1 text-center text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]"
+                className="py-0.5 text-center text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]"
               >
                 {d}
               </div>
             ))}
           </div>
 
-          {/* Day grid */}
-          <div className="grid grid-cols-7 gap-1.5">
+          {/* Day grid — tighter */}
+          <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((day, idx) => {
               if (day === null) {
-                return <div key={`blank-${idx}`} className="aspect-square" />;
+                return <div key={`blank-${idx}`} className="h-9" />;
               }
               const dStr = dateKey(viewYear, viewMonth, day);
               const isPast = dStr < todayStr;
@@ -334,7 +336,7 @@ export function CalendarPicker({
                   aria-label={`${day} de ${MONTHS[viewMonth]}${
                     isAvailable ? `, ${slotCount} horarios disponibles` : ", sin horarios"
                   }`}
-                  className={`group relative aspect-square rounded-xl text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
+                  className={`group relative h-9 rounded-lg text-xs font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
                     isSelected
                       ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30 scale-[1.02]"
                       : disabled
@@ -359,7 +361,7 @@ export function CalendarPicker({
           </div>
 
           {/* Legend */}
-          <div className="mt-4 flex items-center justify-center gap-5 border-t border-[hsl(var(--border))] pt-4 text-[11px] text-[hsl(var(--muted-foreground))]">
+          <div className="mt-2 flex items-center justify-center gap-4 border-t border-[hsl(var(--border))] pt-2 text-[10px] text-[hsl(var(--muted-foreground))]">
             <div className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               Disponible
@@ -376,7 +378,7 @@ export function CalendarPicker({
         </div>
 
         {/* Side panel: selection summary or hint */}
-        <aside className="flex flex-col gap-4">
+        <aside className="hidden md:flex flex-col gap-2 overflow-y-auto scrollbar-hide">
           {selectedDate ? (
             <div className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-sm dark:border-emerald-900/40 dark:from-emerald-950/40 dark:via-[hsl(var(--card))] dark:to-[hsl(var(--card))]">
               <div className="flex items-center gap-3">
@@ -453,7 +455,7 @@ export function CalendarPicker({
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center gap-3 pt-2">
+      <div className="flex items-center gap-3 shrink-0">
         <button
           type="button"
           onClick={onBack}

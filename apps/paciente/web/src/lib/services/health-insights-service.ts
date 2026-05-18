@@ -66,7 +66,7 @@ async function checkAppointmentGaps(
       };
     }
 
-    const lastDate = (appointments[0].start_time as string) ?? (appointments[0].appointment_date as string);
+    const lastDate = (appointments[0].start_time as string) ?? (appointments[0].scheduled_at as string);
     if (!lastDate) return null;
 
     const months = monthsSince(lastDate);
@@ -443,7 +443,7 @@ async function checkUpcomingAppointments(
 
     const nearestUpcoming = upcoming
       .map((apt) => {
-        const startTime = (apt.start_time as string) ?? (apt.appointment_date as string);
+        const startTime = (apt.start_time as string) ?? (apt.scheduled_at as string);
         return { ...apt, _dateStr: startTime };
       })
       .filter((apt) => {

@@ -68,10 +68,12 @@ export function PublicNavbar({ activeFeatures }: PublicNavbarProps) {
     }
   }, [mobileMenuOpen])
 
+  const opaque = scrolled || mobileMenuOpen
+
   return (
     <header
       className={`sticky top-0 z-50 border-b transition-colors duration-200 ${
-        scrolled
+        opaque
           ? 'bg-[hsl(var(--background))] border-[hsl(var(--border))] shadow-sm'
           : 'bg-[hsl(var(--background)/0.8)] backdrop-blur-md border-transparent'
       }`}
@@ -136,8 +138,8 @@ export function PublicNavbar({ activeFeatures }: PublicNavbarProps) {
 
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 top-[57px] z-50 bg-[hsl(var(--background))] md:hidden">
-          <div className="flex h-full flex-col px-4 py-6">
+        <div className="absolute left-0 right-0 top-full z-50 h-[calc(100vh-100%)] bg-[hsl(var(--background))] md:hidden">
+          <div className="flex h-full flex-col px-4 py-6 overflow-y-auto">
             {/* Nav links */}
             <ul className="flex flex-col gap-1">
               {navLinks.map(({ href, label }) => (

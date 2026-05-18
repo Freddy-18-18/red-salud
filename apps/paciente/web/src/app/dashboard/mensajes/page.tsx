@@ -154,10 +154,14 @@ export default function MensajesPage() {
       return doctors.map((d: Record<string, unknown>) => {
         const profile = d.profile as Record<string, unknown> | null;
         const specialty = d.specialty as Record<string, unknown> | null;
+        const profileUserId = (profile?.id as string | undefined) ?? (d.profile_id as string | undefined);
+        const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || (profile?.full_name as string | undefined) || "";
         return {
           id: d.id as string,
+          profile_id: profileUserId,
           profile: {
-            full_name: [profile?.first_name, profile?.last_name].filter(Boolean).join(" "),
+            id: profileUserId,
+            full_name: fullName,
             avatar_url: profile?.avatar_url ?? null,
           },
           specialty: { name: (specialty?.name as string) ?? "" },
@@ -221,11 +225,11 @@ export default function MensajesPage() {
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center p-6">
-                <div className="text-center">
-                  <MessageSquare className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500">No tienes conversaciones</p>
-                  <p className="text-xs text-gray-400 mt-1">Inicia una nueva con un doctor</p>
-                </div>
+                <EmptyState
+                  icon={MessageSquare}
+                  title="Aún no tenés mensajes"
+                  description="Iniciá una conversación con tu doctor desde una cita o el directorio."
+                />
               </div>
             )}
           </div>

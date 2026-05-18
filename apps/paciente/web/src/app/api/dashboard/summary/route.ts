@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
           doctor:doctor_profiles!appointments_doctor_id_fkey (
             id,
             specialty_id,
-            profile:profiles!doctor_profiles_profile_id_fkey (
+            profile:profiles!doctor_details_profile_id_fkey (
               full_name,
               avatar_url
             )

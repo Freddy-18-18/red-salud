@@ -1,15 +1,10 @@
 "use client";
 
-import {
-  ArrowLeft,
-  Loader2,
-  Heart,
-  AlertCircle,
-  Mail,
-  Check,
-} from "lucide-react";
+import { Loader2, AlertCircle, Mail, Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+
+import { AuthShell } from "@red-salud/design-system";
 
 import { supabase } from "@/lib/supabase/client";
 import {
@@ -17,6 +12,10 @@ import {
   type ForgotPasswordFormData,
 } from "@/lib/validations/auth";
 
+// =============================================================================
+// /auth/forgot-password — Paciente.
+// Logic untouched. Chrome moved to <AuthShell role="paciente" compact>.
+// =============================================================================
 
 export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
@@ -66,7 +65,7 @@ export default function ForgotPasswordPage() {
       if (resetError) {
         if (resetError.message.includes("Too many requests")) {
           setError(
-            "Demasiados intentos. Espera unos minutos antes de intentar de nuevo."
+            "Demasiados intentos. Esperá unos minutos antes de probar de nuevo."
           );
         } else {
           setError(resetError.message);
@@ -76,7 +75,7 @@ export default function ForgotPasswordPage() {
 
       setSuccess(true);
     } catch {
-      setError("Ocurrio un error inesperado. Intenta de nuevo.");
+      setError("Ocurrió un error inesperado. Intentá de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -84,20 +83,28 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <main className="flex min-h-screen items-center justify-center p-6 bg-[hsl(var(--background))]">
-        <div className="w-full max-w-md bg-[hsl(var(--card))] rounded-2xl shadow-sm border border-[hsl(var(--border))] p-8 text-center">
-          <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Mail className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+      <AuthShell
+        role="paciente"
+        compact
+        title="Revisá tu correo"
+        subtitle="Te mandamos las instrucciones para restablecer tu contraseña."
+      >
+        <div className="text-center">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
+            style={{
+              backgroundColor: "hsl(var(--accent-domain) / 0.12)",
+              color: "hsl(var(--accent-domain))",
+            }}
+          >
+            <Mail className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-bold text-[hsl(var(--foreground))] mb-2">
-            Revisa tu email
-          </h1>
-          <p className="text-[hsl(var(--muted-foreground))] mb-6">
-            Si tu email esta registrado, recibiras un enlace para restablecer
-            tu contrasena en los proximos minutos.
+          <p className="text-muted-foreground mb-4">
+            Si tu email está registrado, vas a recibir un enlace para
+            restablecer tu contraseña en los próximos minutos.
           </p>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] mb-6">
-            No lo ves? Revisa tu carpeta de spam.
+          <p className="text-sm text-muted-foreground mb-6">
+            ¿No lo ves? Mirá tu carpeta de spam.
           </p>
           <div className="space-y-3">
             <button
@@ -105,104 +112,96 @@ export default function ForgotPasswordPage() {
                 setSuccess(false);
                 setFormData({ email: "" });
               }}
-              className="w-full py-3 px-4 border border-[hsl(var(--border))] text-[hsl(var(--foreground))] font-medium rounded-xl hover:bg-[hsl(var(--muted))] transition"
+              className="w-full py-3 px-4 border border-border text-foreground font-medium rounded-xl hover:bg-muted transition"
             >
               Enviar a otro email
             </button>
             <Link
               href="/auth/login"
-              className="block w-full py-3 px-4 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition text-center"
+              className="block w-full py-3 px-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition text-center"
             >
-              Volver a Iniciar Sesion
+              Volver a iniciar sesión
             </Link>
           </div>
         </div>
-      </main>
+      </AuthShell>
     );
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6 bg-[hsl(var(--background))]">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <Heart className="h-8 w-8 text-emerald-600 fill-emerald-600" />
-          <span className="text-2xl font-bold text-[hsl(var(--foreground))]">Red-Salud</span>
-        </div>
-
-        <div className="bg-[hsl(var(--card))] rounded-2xl shadow-sm border border-[hsl(var(--border))] p-8">
+    <AuthShell
+      role="paciente"
+      compact
+      title="Recuperá tu contraseña"
+      subtitle="Ingresá tu email y te mandamos un enlace para restablecerla."
+      footer={
+        <>
+          ¿Te acordaste?{" "}
           <Link
             href="/auth/login"
-            className="inline-flex items-center gap-1.5 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition mb-6"
+            className="font-semibold text-foreground hover:text-[hsl(var(--accent-domain))] transition"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al login
+            Volvé a iniciar sesión
           </Link>
-
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]">
-              Recuperar contrasena
-            </h1>
-            <p className="text-[hsl(var(--muted-foreground))] mt-1">
-              Ingresa tu email y te enviaremos un enlace para restablecer tu
-              contrasena.
-            </p>
-          </div>
-
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-[hsl(var(--foreground))] mb-1.5"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={(e) => updateField("email", e.target.value)}
-                className={`w-full px-4 py-3 border rounded-xl bg-[hsl(var(--background))] text-[hsl(var(--foreground))] placeholder-[hsl(var(--muted-foreground))] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition ${
-                  fieldErrors.email ? "border-red-400 dark:border-red-500" : "border-[hsl(var(--border))]"
-                }`}
-                placeholder="tu@email.com"
-              />
-              {fieldErrors.email && (
-                <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
-                  {fieldErrors.email}
-                </p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Check className="h-5 w-5" />
-                  Enviar enlace de recuperacion
-                </>
-              )}
-            </button>
-          </form>
+        </>
+      }
+    >
+      {error && (
+        <div
+          role="alert"
+          aria-live="polite"
+          className="mb-5 p-4 bg-destructive-soft border border-destructive/20 rounded-xl flex items-start gap-3"
+        >
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+          <p className="text-sm text-destructive">{error}</p>
         </div>
-      </div>
-    </main>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-foreground mb-1.5"
+          >
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={formData.email}
+            onChange={(e) => updateField("email", e.target.value)}
+            className={`w-full px-4 py-3 border rounded-xl bg-background text-foreground placeholder-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition ${
+              fieldErrors.email ? "border-destructive" : "border-border"
+            }`}
+            placeholder="tu@email.com"
+          />
+          {fieldErrors.email && (
+            <p className="mt-1.5 text-sm text-destructive">
+              {fieldErrors.email}
+            </p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-3 px-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none" />
+              Enviando…
+            </>
+          ) : (
+            <>
+              <Check className="h-5 w-5" />
+              Enviar enlace de recuperación
+            </>
+          )}
+        </button>
+      </form>
+    </AuthShell>
   );
 }

@@ -6,7 +6,7 @@ import type {
   DoctorFilters,
   AvailableDate,
   TimeSlotGroup,
-  BookingCreateAppointmentData,
+  CreateAppointmentData,
   AppointmentResult,
 } from "@/lib/services/appointments/appointments.types";
 
@@ -16,12 +16,12 @@ export type {
   DoctorFilters,
   AvailableDate,
   TimeSlotGroup,
+  CreateAppointmentData,
   AppointmentResult,
 } from "@/lib/services/appointments/appointments.types";
 
 export type { BookingDoctorProfile as DoctorProfile } from "@/lib/services/appointments/appointments.types";
 export type { BookingTimeSlot as TimeSlot } from "@/lib/services/appointments/appointments.types";
-export type { BookingCreateAppointmentData as CreateAppointmentData } from "@/lib/services/appointments/appointments.types";
 
 // --- Service ---
 
@@ -142,7 +142,7 @@ export const bookingService = {
    */
   async createAppointment(
     _patientId: string,
-    data: BookingCreateAppointmentData
+    data: CreateAppointmentData
   ): Promise<AppointmentResult> {
     const a = await postJson<{
       id: string;

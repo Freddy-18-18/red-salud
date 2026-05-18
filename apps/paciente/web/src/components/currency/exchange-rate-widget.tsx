@@ -109,17 +109,18 @@ function RateRow({
 // ─── Compact Variant ─────────────────────────────────────────────────
 
 export function ExchangeRateCompact() {
-  const { officialDollar, parallelDollar, loading, isOffline } =
-    useCurrencyRates();
+  const { officialDollar, loading, isOffline } = useCurrencyRates();
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-xs text-gray-400 animate-pulse">
+      <div className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))] animate-pulse">
         <DollarSign className="h-3 w-3" />
         <span>Cargando tasas...</span>
       </div>
     );
   }
+
+  if (!officialDollar) return null;
 
   return (
     <div className="flex items-center gap-3 text-xs">
@@ -128,25 +129,12 @@ export function ExchangeRateCompact() {
           <WifiOff className="h-3 w-3 text-amber-500" aria-label="Datos en cache" />
         </span>
       )}
-      {officialDollar && (
-        <span className="text-gray-600">
-          <span className="font-medium text-gray-500">BCV:</span>{" "}
-          <span className="font-semibold text-gray-800">
-            {formatBs(officialDollar.rate)}
-          </span>
+      <span className="text-[hsl(var(--muted-foreground))]">
+        <span className="font-medium">BCV:</span>{" "}
+        <span className="font-semibold text-[hsl(var(--foreground))]">
+          {formatBs(officialDollar.rate)}
         </span>
-      )}
-      {parallelDollar && (
-        <>
-          <span className="text-gray-300">|</span>
-          <span className="text-gray-600">
-            <span className="font-medium text-gray-500">Paralelo:</span>{" "}
-            <span className="font-semibold text-gray-800">
-              {formatBs(parallelDollar.rate)}
-            </span>
-          </span>
-        </>
-      )}
+      </span>
     </div>
   );
 }
@@ -161,7 +149,6 @@ export function ExchangeRateWidget({
   const {
     rates,
     officialDollar,
-    parallelDollar,
     history,
     loading,
     error,
@@ -174,14 +161,6 @@ export function ExchangeRateWidget({
       (r) =>
         r.currency === "EUR" &&
         (r.source === "BCV" || r.name.toLowerCase().includes("oficial"))
-    ) ?? null;
-
-  const parallelEuro =
-    rates.find(
-      (r) =>
-        r.currency === "EUR" &&
-        r.source !== "BCV" &&
-        !r.name.toLowerCase().includes("oficial")
     ) ?? null;
 
   // Determine trend from history
@@ -241,8 +220,8 @@ export function ExchangeRateWidget({
         <p className="text-xs text-red-500 mb-2">{error}</p>
       )}
 
-      {/* Dollar rates */}
-      <div className="divide-y divide-gray-50">
+      {/* BCV rates only — paralelo intentionally hidden in patient app */}
+      <div className="divide-y divide-[hsl(var(--border))]">
         <RateRow
           label="Dolar Oficial (BCV)"
           rate={officialDollar}
@@ -250,18 +229,8 @@ export function ExchangeRateWidget({
           trend={trend}
         />
         <RateRow
-          label="Dolar Paralelo"
-          rate={parallelDollar}
-          icon={DollarSign}
-        />
-        <RateRow
           label="Euro Oficial (BCV)"
           rate={officialEuro}
-          icon={Euro}
-        />
-        <RateRow
-          label="Euro Paralelo"
-          rate={parallelEuro}
           icon={Euro}
         />
       </div>

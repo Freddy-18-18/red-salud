@@ -140,6 +140,66 @@ export function useCreateAppointment() {
   };
 }
 
+// ── useRescheduleAppointment ─────────────────────────────────────────
+
+export function useRescheduleAppointment() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({
+      appointmentId,
+      scheduledAt,
+      durationMinutes,
+    }: {
+      appointmentId: string;
+      scheduledAt: string;
+      durationMinutes?: number;
+    }) => {
+      return postJson<Appointment>(
+        `/api/appointments/${appointmentId}/reschedule`,
+        durationMinutes
+          ? { scheduled_at: scheduledAt, duration_minutes: durationMinutes }
+          : { scheduled_at: scheduledAt },
+        "PATCH",
+      );
+    },
+    onSuccess: () => {
+      // The patient list shows new scheduled_at, the doctor's availability
+      // freed the old slot AND consumed the new one. Invalidate broadly so
+      // any picker showing those slots refetches.
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["timeSlots"] });
+    },
+  });
+
+  const reschedule = async (
+    appointmentId: string,
+    scheduledAt: string,
+    durationMinutes?: number,
+  ) => {
+    try {
+      const data = await mutation.mutateAsync({
+        appointmentId,
+        scheduledAt,
+        durationMinutes,
+      });
+      return { success: true as const, data, error: null };
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "No se pudo reagendar la cita. Intenta de nuevo.";
+      return { success: false as const, data: null, error: message };
+    }
+  };
+
+  return {
+    reschedule,
+    loading: mutation.isPending,
+    error: mutation.error?.message ?? null,
+  };
+}
+
 // ── useCancelAppointment ─────────────────────────────────────────────
 
 export function useCancelAppointment() {
@@ -174,9 +234,13 @@ export function useCancelAppointment() {
   ) => {
     try {
       await mutation.mutateAsync({ appointmentId, userId, reason });
-      return { success: true as const, data: null };
+      return { success: true as const, error: null };
     } catch (err) {
-      return { success: false as const, error: err, data: null };
+      const message =
+        err instanceof Error
+          ? err.message
+          : "No se pudo cancelar la cita. Intenta de nuevo.";
+      return { success: false as const, error: message };
     }
   };
 

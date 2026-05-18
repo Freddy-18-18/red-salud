@@ -1,6 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
+
+import { createClient } from '@/lib/supabase/server';
 
 /**
  * Server-side auth confirmation handler.
@@ -12,6 +12,11 @@ import { NextResponse, type NextRequest } from 'next/server';
  *
  * Without this server-side code exchange, the `?code=` parameter is never
  * processed and the user remains unauthenticated.
+ *
+ * MUST use the shared `createClient()` so the cookie name (and therefore the
+ * PKCE `code_verifier` cookie) matches the one written by the browser client.
+ * Using `createServerClient` directly without `cookieOptions.name` would read
+ * from the default Supabase cookie and the verifier lookup would silently fail.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -32,34 +37,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (code) {
-    const cookieStore = await cookies();
-
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(
-            cookiesToSet: {
-              name: string;
-              value: string;
-              options?: Record<string, unknown>;
-            }[],
-          ) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options),
-              );
-            } catch {
-              // Can fail when called from a Server Component context
-            }
-          },
-        },
-      },
-    );
+    const supabase = await createClient();
 
     const { error: exchangeError } =
       await supabase.auth.exchangeCodeForSession(code);
@@ -79,14 +57,24 @@ export async function GET(request: NextRequest) {
       const forwardUrl = next.startsWith('/') ? next : '/dashboard';
       return NextResponse.redirect(new URL(forwardUrl, origin));
     }
+
+    // Code exchange failed — surface the actual error to the callback page
+    const callbackUrl = new URL('/auth/callback', origin);
+    callbackUrl.searchParams.set('error', 'auth_exchange_failed');
+    callbackUrl.searchParams.set(
+      'error_description',
+      exchangeError.message ||
+        'No se pudo completar la autenticacion. Intenta de nuevo.',
+    );
+    return NextResponse.redirect(callbackUrl);
   }
 
-  // No code or exchange failed — redirect to callback page with error
+  // No code provided
   const callbackUrl = new URL('/auth/callback', origin);
   callbackUrl.searchParams.set('error', 'auth_exchange_failed');
   callbackUrl.searchParams.set(
     'error_description',
-    'No se pudo completar la autenticacion. Intenta de nuevo.',
+    'No se recibio un codigo de autenticacion. Intenta de nuevo.',
   );
   return NextResponse.redirect(callbackUrl);
 }

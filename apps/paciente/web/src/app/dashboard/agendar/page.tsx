@@ -1,7 +1,9 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertCircle, FileText, ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 
 import { BookingDetails } from "@/components/booking/booking-details";
 import { BookingSuccess } from "@/components/booking/booking-success";
@@ -13,6 +15,16 @@ import { StepIndicator } from "@/components/booking/step-indicator";
 import { TimeSlotGrid } from "@/components/booking/time-slot-grid";
 import { useBooking } from "@/hooks/use-booking";
 import type { Specialty } from "@/lib/services/booking-service";
+
+interface ReferralSnapshot {
+  id: string;
+  specialty_id: string;
+  reason: string;
+  urgency: "electivo" | "prioritario" | "urgente";
+  status: string;
+  expires_at: string | null;
+  target_specialty: { id: string; name: string };
+}
 
 // Direct specialties query via API route
 function useDirectSpecialties() {
@@ -39,29 +51,82 @@ function formatDateLabel(dateStr: string): string {
 }
 
 export default function AgendarCitaPage() {
-  const booking = useBooking();
+  const searchParams = useSearchParams();
+  const preselectedSpecialtyId = searchParams.get("specialty");
+  const referralId = searchParams.get("referral");
+
+  const booking = useBooking({ preselectedSpecialtyId, referralId });
   const { state } = booking;
   const directSpecialties = useDirectSpecialties();
 
+  // Load referral snapshot to show contextual banner + auto-fill reason
+  const [referral, setReferral] = useState<ReferralSnapshot | null>(null);
+  useEffect(() => {
+    if (!referralId) return;
+    let cancelled = false;
+    fetch(`/api/referrals/${referralId}/snapshot`, {
+      credentials: "include",
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (cancelled || !j?.data) return;
+        setReferral(j.data);
+        // Auto-fill reason if the user hasn't typed anything yet.
+        if (!booking.state.reason && j.data.reason) {
+          booking.setReason(j.data.reason);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [referralId]);
+
+  // Lock body AND html scroll while on this route. The wizard owns the
+  // viewport — every step fits inside the inner scroll area, never on the
+  // page itself. Need both because some browsers scroll the html element
+  // and others the body.
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, []);
+
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12">
-      {/* Header */}
+    // Viewport-locked layout at ALL breakpoints. The dashboard layout owns:
+    //   - navbar (h-16 = 4rem)
+    //   - main padding: p-4 + pb-20 on mobile (6rem total) / p-6 on lg (3rem)
+    //   - mobile-tab-bar lives inside that pb-20 reserved space
+    // Use dvh to handle iOS mobile browser chrome collapsing.
+    // Each step's inner column owns its scroll — the page itself never scrolls.
+    <div className="max-w-5xl mx-auto flex flex-col gap-3 h-[calc(100dvh-10rem)] lg:h-[calc(100dvh-7rem)] overflow-hidden">
+      {/* Compact header: title row + inline step indicator share the same
+          slim band so they don't eat the viewport. */}
       {state.step !== "success" && (
-        <div className="space-y-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Agendar Cita
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Encuentra tu doctor y agenda tu consulta en minutos
-            </p>
+        <div className="flex flex-col gap-2 shrink-0">
+          <div className="flex items-baseline justify-between gap-3">
+            <div>
+              <h1 className="text-lg font-bold text-[hsl(var(--foreground))] sm:text-xl">
+                Agendar Cita
+              </h1>
+              <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                Encuentra tu doctor y agenda tu consulta en minutos
+              </p>
+            </div>
           </div>
 
           <StepIndicator
             currentStep={state.step}
             currentStepIndex={booking.currentStepIndex}
             onStepClick={(step) => {
-              // Only allow going back to completed steps
               const targetIdx = [
                 "specialty",
                 "doctor",
@@ -75,6 +140,28 @@ export default function AgendarCitaPage() {
               }
             }}
           />
+        </div>
+      )}
+
+      {/* Referral context banner — shown across every step except success */}
+      {referral && state.step !== "success" && (
+        <div className="shrink-0 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
+            <FileText className="h-3.5 w-3.5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-emerald-900 dark:text-emerald-200">
+              Agendando con tu referencia de {referral.target_specialty.name}
+            </p>
+            <p className="mt-0.5 text-[11px] text-emerald-900/85 dark:text-emerald-200/85">
+              Pre-seleccionamos la especialidad y el motivo. Cuando confirmes
+              la cita, el contexto clínico viajará al especialista que elijas.
+            </p>
+          </div>
+          <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-white/80 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
+            <ShieldCheck className="h-3 w-3" />
+            Referencia
+          </span>
         </div>
       )}
 
