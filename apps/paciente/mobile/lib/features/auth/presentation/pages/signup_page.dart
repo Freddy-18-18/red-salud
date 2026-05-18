@@ -4,21 +4,23 @@ import 'package:go_router/go_router.dart';
 
 import '../controllers/auth_controller.dart';
 
-class LoginPage extends ConsumerStatefulWidget {
-  const LoginPage({super.key});
+class SignupPage extends ConsumerStatefulWidget {
+  const SignupPage({super.key});
 
   @override
-  ConsumerState<LoginPage> createState() => _LoginPageState();
+  ConsumerState<SignupPage> createState() => _SignupPageState();
 }
 
-class _LoginPageState extends ConsumerState<LoginPage> {
+class _SignupPageState extends ConsumerState<SignupPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameCtl = TextEditingController();
   final _emailCtl = TextEditingController();
   final _passCtl = TextEditingController();
   bool _obscure = true;
 
   @override
   void dispose() {
+    _nameCtl.dispose();
     _emailCtl.dispose();
     _passCtl.dispose();
     super.dispose();
@@ -26,9 +28,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(authControllerProvider.notifier).signIn(
+    await ref.read(authControllerProvider.notifier).signUp(
           email: _emailCtl.text.trim(),
           password: _passCtl.text,
+          fullName: _nameCtl.text.trim(),
         );
     final state = ref.read(authControllerProvider);
     if (!mounted) return;
@@ -36,20 +39,33 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(state.error.toString()), behavior: SnackBarBehavior.floating),
       );
+      return;
     }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Cuenta creada. Revisa tu correo para confirmar.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authControllerProvider);
     final loading = auth.isLoading;
-    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => context.go('/login'),
+        ),
+        title: const Text('Crear cuenta'),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Form(
@@ -57,31 +73,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Container(
-                      height: 64,
-                      width: 64,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: scheme.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
+                    TextFormField(
+                      controller: _nameCtl,
+                      textCapitalization: TextCapitalization.words,
+                      autofillHints: const [AutofillHints.name],
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre completo',
+                        prefixIcon: Icon(Icons.person_outline_rounded),
                       ),
-                      child: Icon(Icons.health_and_safety, color: scheme.primary, size: 36),
+                      validator: (v) => (v == null || v.trim().length < 2) ? 'Ingresa tu nombre' : null,
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Bienvenido',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Inicia sesion para acceder a tu cuenta de Red Salud',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: scheme.onSurface.withValues(alpha: 0.7)),
-                    ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 14),
                     TextFormField(
                       controller: _emailCtl,
                       keyboardType: TextInputType.emailAddress,
-                      autofillHints: const [AutofillHints.email, AutofillHints.username],
+                      autofillHints: const [AutofillHints.email],
                       decoration: const InputDecoration(
                         labelText: 'Correo electronico',
                         prefixIcon: Icon(Icons.mail_outline_rounded),
@@ -96,28 +102,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     TextFormField(
                       controller: _passCtl,
                       obscureText: _obscure,
-                      autofillHints: const [AutofillHints.password],
+                      autofillHints: const [AutofillHints.newPassword],
                       decoration: InputDecoration(
-                        labelText: 'Contrasena',
+                        labelText: 'Contrasena (min. 8 caracteres)',
                         prefixIcon: const Icon(Icons.lock_outline_rounded),
                         suffixIcon: IconButton(
                           onPressed: () => setState(() => _obscure = !_obscure),
                           icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                         ),
                       ),
-                      validator: (v) => (v == null || v.length < 6) ? 'Minimo 6 caracteres' : null,
+                      validator: (v) => (v == null || v.length < 8) ? 'Minimo 8 caracteres' : null,
                     ),
                     const SizedBox(height: 24),
                     FilledButton(
                       onPressed: loading ? null : _submit,
                       child: loading
                           ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
-                          : const Text('Iniciar sesion'),
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton(
-                      onPressed: loading ? null : () => context.go('/signup'),
-                      child: const Text('Crear cuenta nueva'),
+                          : const Text('Crear cuenta'),
                     ),
                   ],
                 ),

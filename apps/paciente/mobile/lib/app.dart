@@ -1,36 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'features/auth/presentation/pages/login_page.dart';
-import 'features/home/presentation/pages/home_page.dart';
+import 'core/routing/app_router.dart';
+import 'core/theme/app_theme.dart';
 
-class RedSaludPacienteApp extends StatelessWidget {
+class RedSaludPacienteApp extends ConsumerWidget {
   const RedSaludPacienteApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
     return MaterialApp.router(
-      title: 'Red Salud - Portal del Paciente',
+      title: 'Red Salud — Portal del Paciente',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF10B981),
-        useMaterial3: true,
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: const Color(0xFF10B981),
-        useMaterial3: true,
-        brightness: Brightness.dark,
-      ),
-      routerConfig: _router,
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
+      routerConfig: router,
+      locale: const Locale('es', 'VE'),
+      supportedLocales: const [Locale('es', 'VE'), Locale('es'), Locale('en')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
-
-  static final _router = GoRouter(
-    initialLocation: '/',
-    routes: [
-      GoRoute(path: '/', builder: (_, __) => const HomePage()),
-      GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
-    ],
-  );
 }
