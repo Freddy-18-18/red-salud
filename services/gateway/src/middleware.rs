@@ -1,18 +1,19 @@
-//! Authentication middleware that decodes a Supabase-issued JWT.
+//! Authentication middleware that verifies Supabase Auth JWTs against the
+//! project's JWKS endpoint.
 //!
-//! Supabase signs user JWTs with HS256 using the project's JWT secret
-//! (`SUPABASE_JWT_SECRET` in Supabase terms). We accept `Authorization:
-//! Bearer <token>`, decode and verify, then attach the resulting claims
-//! to the request extensions so handlers can pull the user id without
-//! reparsing the header.
+//! Supabase signs user access tokens with the project's signing key. After
+//! migrating to "JWT Signing Keys" the public key is published as a JWK at
+//! `${SUPABASE_URL}/auth/v1/.well-known/jwks.json`. We resolve the key by the
+//! token's `kid`, verify the signature, and stash the claims in the request
+//! extensions for handlers to read.
 
 use axum::{
-    extract::{Request, State},
-    http::{header, StatusCode},
+    extract::{FromRequestParts, Request, State},
+    http::{header, request::Parts, StatusCode},
     middleware::Next,
     response::Response,
 };
-use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
+use jsonwebtoken::{decode, decode_header, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 
 use crate::state::AppState;
@@ -33,7 +34,9 @@ pub async fn require_auth(
     mut request: Request,
     next: Next,
 ) -> Result<Response, StatusCode> {
-    let claims = extract_claims(&state, &request).ok_or(StatusCode::UNAUTHORIZED)?;
+    let claims = extract_claims(&state, &request)
+        .await
+        .ok_or(StatusCode::UNAUTHORIZED)?;
     request.extensions_mut().insert(claims);
     Ok(next.run(request).await)
 }
@@ -46,25 +49,54 @@ pub async fn optional_auth(
     mut request: Request,
     next: Next,
 ) -> Response {
-    let claims = extract_claims(&state, &request);
+    let claims = extract_claims(&state, &request).await;
     request.extensions_mut().insert::<Option<Claims>>(claims);
     next.run(request).await
 }
 
-fn extract_claims(state: &AppState, request: &Request) -> Option<Claims> {
-    let header_value = request.headers().get(header::AUTHORIZATION)?.to_str().ok()?;
+async fn extract_claims(state: &AppState, request: &Request) -> Option<Claims> {
+    extract_claims_from_header(state, request.headers().get(header::AUTHORIZATION)).await
+}
+
+async fn extract_claims_from_header(
+    state: &AppState,
+    auth_header: Option<&axum::http::HeaderValue>,
+) -> Option<Claims> {
+    let header_value = auth_header?.to_str().ok()?;
     let token = header_value.strip_prefix("Bearer ").unwrap_or(header_value);
 
-    let mut validation = Validation::new(Algorithm::HS256);
+    let header = decode_header(token).ok()?;
+    let kid = header.kid?;
+
+    let jwk = state.inner.jwks.get(&kid).await.ok()?;
+    let key = DecodingKey::from_jwk(&jwk).ok()?;
+
+    let mut validation = Validation::new(header.alg);
     // Supabase tokens carry aud="authenticated"; don't fail if absent though.
     validation.set_audience(&["authenticated"]);
     validation.validate_aud = false;
 
-    decode::<Claims>(
-        token,
-        &DecodingKey::from_secret(state.inner.jwt_secret.as_bytes()),
-        &validation,
-    )
-    .ok()
-    .map(|data| data.claims)
+    decode::<Claims>(token, &key, &validation)
+        .ok()
+        .map(|data| data.claims)
+}
+
+/// Extractor that gates a handler on a valid Supabase Auth JWT. Use as the
+/// first parameter of any protected handler:
+///
+/// ```ignore
+/// async fn handler(AuthClaims(claims): AuthClaims, ...) -> ... { ... }
+/// ```
+pub struct AuthClaims(pub Claims);
+
+impl FromRequestParts<AppState> for AuthClaims {
+    type Rejection = StatusCode;
+
+    async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
+        let header = parts.headers.get(header::AUTHORIZATION);
+        match extract_claims_from_header(state, header).await {
+            Some(claims) => Ok(AuthClaims(claims)),
+            None => Err(StatusCode::UNAUTHORIZED),
+        }
+    }
 }

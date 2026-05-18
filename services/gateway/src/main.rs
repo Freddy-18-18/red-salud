@@ -10,13 +10,19 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 mod config;
 mod error;
 mod handlers;
+mod jwks;
 mod middleware;
 mod routes;
 mod state;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    dotenvy::dotenv().ok();
+    // Load `.env` relative to this crate so the binary works from any cwd
+    // (e.g. `cargo run -p red-salud-gateway` from the workspace root).
+    let crate_env = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(".env");
+    let _ = dotenvy::from_path(&crate_env);
+    // Fall back to cwd `.env` if the crate-local one was absent.
+    let _ = dotenvy::dotenv();
 
     tracing_subscriber::registry()
         .with(
@@ -48,7 +54,7 @@ async fn main() -> anyhow::Result<()> {
     let state = state::AppState::new(
         config.supabase_url.clone(),
         config.supabase_anon_key.clone(),
-        config.jwt_secret.clone(),
+        config.jwks_url.clone(),
     );
 
     let app = Router::new()
