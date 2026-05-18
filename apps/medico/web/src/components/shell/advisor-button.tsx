@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@red-salud/design-system';
-import { Lightbulb } from 'lucide-react';
+import { ListChecks } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import type { DoctorAttention } from '@/lib/capabilities/types';
@@ -80,11 +80,11 @@ export function AdvisorButton({ attention }: AdvisorButtonProps): React.ReactEle
         <button
           type="button"
           aria-label={
-            hasAttention ? `Alertas activas (${alerts.length})` : 'Alertas'
+            hasAttention ? `Pendientes (${alerts.length})` : 'Pendientes'
           }
           className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-strong text-foreground-lighter transition-colors hover:border-foreground-lighter hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
         >
-          <Lightbulb className="h-4 w-4" aria-hidden="true" />
+          <ListChecks className="h-4 w-4" aria-hidden="true" />
           {hasAttention && (
             <span
               data-testid="advisor-button-dot"
@@ -97,10 +97,10 @@ export function AdvisorButton({ attention }: AdvisorButtonProps): React.ReactEle
 
       <DropdownMenuContent align="end" className="w-72">
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Alertas</span>
+          <span>Pendientes</span>
           {hasAttention && (
             <span className="text-xs font-normal text-foreground-lighter">
-              {alerts.length} activa{alerts.length === 1 ? '' : 's'}
+              {alerts.length} {alerts.length === 1 ? 'tarea' : 'tareas'}
             </span>
           )}
         </DropdownMenuLabel>
@@ -108,7 +108,7 @@ export function AdvisorButton({ attention }: AdvisorButtonProps): React.ReactEle
 
         {alerts.length === 0 ? (
           <div className="px-2 py-4 text-center text-sm text-foreground-lighter">
-            Sin alertas activas
+            No tenés pendientes
           </div>
         ) : (
           alerts.map((alert) => (

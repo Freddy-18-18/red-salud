@@ -58,7 +58,8 @@ export interface TodayAppointmentSummary {
 
 export function useSpecialtyDashboard(
   doctorId: string | undefined,
-  config: SpecialtyConfig | undefined
+  config: SpecialtyConfig | undefined,
+  options?: { locationId?: string | null }
 ): SpecialtyDashboardData {
   // ---- Guards ----
   const enabled = Boolean(doctorId && config);
@@ -66,6 +67,10 @@ export function useSpecialtyDashboard(
     () => config?.prioritizedKpis ?? [],
     [config?.prioritizedKpis]
   );
+  // When the doctor switched to a specific sede, filter today's KPIs to it.
+  // Legacy rows with `location_id IS NULL` are NOT excluded — see the
+  // `useDoctorAppointments` docstring for the rationale.
+  const locationId = options?.locationId ?? null;
 
   // ---- KPI sub-hook ----
   const kpis = useSpecialtyKpis({
@@ -93,13 +98,22 @@ export function useSpecialtyDashboard(
     try {
       const today = new Date().toISOString().slice(0, 10);
 
-      const { data, error: queryError } = await supabase
+      let query = supabase
         .from("appointments")
         .select("id, scheduled_at, status")
         .eq("doctor_id", doctorId)
         .gte("scheduled_at", `${today}T00:00:00`)
-        .lte("scheduled_at", `${today}T23:59:59`)
-        .order("scheduled_at", { ascending: true });
+        .lte("scheduled_at", `${today}T23:59:59`);
+
+      if (locationId) {
+        // Legacy-friendly filter: include the active sede AND any rows with
+        // no sede assigned (so old citas don't vanish until migrated).
+        query = query.or(`location_id.eq.${locationId},location_id.is.null`);
+      }
+
+      const { data, error: queryError } = await query.order("scheduled_at", {
+        ascending: true,
+      });
 
       if (!mountedRef.current) return;
 
@@ -155,7 +169,7 @@ export function useSpecialtyDashboard(
     } finally {
       if (mountedRef.current) setTodayLoading(false);
     }
-  }, [doctorId, enabled]);
+  }, [doctorId, enabled, locationId]);
 
   // Fetch on mount
   useEffect(() => {

@@ -1,0 +1,51 @@
+{
+  "name": "Red Salud — Consultorio Médico",
+  "short_name": "Red Salud",
+  "description": "Plataforma clínica para profesionales de la salud en Venezuela.",
+  "id": "/dashboard",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#0a1628",
+  "theme_color": "#0a1628",
+  "orientation": "portrait-primary",
+  "lang": "es-VE",
+  "dir": "ltr",
+  "categories": ["medical", "productivity", "health"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nueva cita",
+      "short_name": "Cita",
+      "description": "Agendar una cita rápidamente",
+      "url": "/dashboard/agenda?action=new",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Nueva consulta",
+      "short_name": "Consulta",
+      "url": "/dashboard/consulta?action=new",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Crear receta",
+      "short_name": "Receta",
+      "url": "/dashboard/recetas?action=new",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    }
+  ]
+}

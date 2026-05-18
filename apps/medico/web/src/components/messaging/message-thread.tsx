@@ -2,10 +2,11 @@
 
 import { cn } from "@red-salud/core/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@red-salud/design-system";
+import { EmptyState } from "@red-salud/design-system";
 import { ScrollArea } from "@red-salud/design-system";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { FileText, Download } from "lucide-react";
+import { FileText, Download, MessageCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 // TODO: Import Message from shared types package once available
@@ -44,15 +45,25 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
 
   if (messages.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-muted-foreground">
-        No hay mensajes aún. Envía el primero para iniciar la conversación.
-      </div>
+      <EmptyState
+        icon={MessageCircle}
+        title="Aún no hay mensajes"
+        description="Enviá el primer mensaje para iniciar la conversación con tu paciente."
+        size="compact"
+        className="border-0 bg-transparent h-full"
+      />
     );
   }
 
   return (
     <ScrollArea className="h-full p-4" ref={scrollRef}>
-      <div className="space-y-4">
+      <div
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions"
+        aria-label="Mensajes de la conversación"
+        className="space-y-4"
+      >
         {messages.map((message, index) => {
           const isOwn = message.sender_id === currentUserId;
           const showAvatar =
@@ -115,11 +126,11 @@ export function MessageThread({ messages, currentUserId }: MessageThreadProps) {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-xs hover:underline"
                       >
-                        <FileText className="h-4 w-4" />
+                        <FileText aria-hidden="true" className="h-4 w-4" />
                         <span className="truncate">
                           {message.attachment_name || "Archivo adjunto"}
                         </span>
-                        <Download className="h-3 w-3" />
+                        <Download aria-hidden="true" className="h-3 w-3" />
                       </a>
                     </div>
                   )}

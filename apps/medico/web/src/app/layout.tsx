@@ -1,7 +1,9 @@
 import { ThemeProvider } from '@red-salud/design-system';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
+
+import { ServiceWorkerRegistrar } from '@/lib/offline/service-worker-registrar';
 
 import './globals.css';
 
@@ -11,9 +13,23 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Red Salud — Consultorio Médico Digital',
+  title: 'Red-Salud — Consultorio Médico Digital',
   description:
     'La primera plataforma clínica que se adapta a tu especialidad. Agenda, consultas, recetas, historia clínica e inteligencia artificial para médicos venezolanos.',
+  manifest: '/manifest.webmanifest',
+  applicationName: 'Red Salud',
+  appleWebApp: {
+    capable: true,
+    title: 'Red Salud',
+    statusBarStyle: 'black-translucent',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0a1628',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -35,6 +51,13 @@ export default function RootLayout({
             mobile.
           */}
           <Toaster richColors closeButton position="top-right" />
+          {/*
+            PWA service worker registrar. Mounted at root so the SW is
+            available across every page, not just /dashboard. Skips
+            registration in dev unless NEXT_PUBLIC_FORCE_SW=1 so HMR
+            keeps working cleanly.
+          */}
+          <ServiceWorkerRegistrar />
         </ThemeProvider>
       </body>
     </html>

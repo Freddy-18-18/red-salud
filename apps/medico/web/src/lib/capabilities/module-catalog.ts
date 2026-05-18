@@ -21,7 +21,8 @@ export interface ModuleMetadata {
 
 export const MODULE_CATALOG: Record<string, ModuleMetadata> = {
   // ── Always-on (every verified doctor) ──────────────────────────────
-  'inicio':          { label: 'Inicio',         icon: 'Home',          route: '/dashboard' },
+  // NOTE: 'inicio' was removed — the sidebar's brand logo now navigates to
+  // /dashboard. This avoids a redundant "Inicio" row on the rail.
   'agenda':          { label: 'Agenda',         icon: 'Calendar',      route: '/dashboard/agenda' },
   'pacientes':       { label: 'Pacientes',      icon: 'Users',         route: '/dashboard/pacientes' },
   'consulta-soap':   { label: 'Consulta',       icon: 'Stethoscope',   route: '/dashboard/consulta' },

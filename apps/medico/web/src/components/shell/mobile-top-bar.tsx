@@ -1,16 +1,28 @@
 'use client';
 
-import { Menu, Stethoscope } from 'lucide-react';
+import { Menu, Search, Stethoscope } from 'lucide-react';
+
+import { useCommandPalette } from './command-palette/command-palette-context';
+import { ConnectionIndicator } from './connection-indicator';
+import { NotificationsBell } from './notifications-bell';
 
 /**
  * @file mobile-top-bar.tsx
- * @description Mobile sticky top bar (T-009).
+ * @description Mobile sticky top bar.
  *
- * Visible only below `lg` (≥1024px). Contains the hamburger button that opens
- * the mobile nav `Sheet`, plus the brand mark + "Red Salud" wordmark. Uses
- * `backdrop-blur` so content scrolling underneath stays legible.
+ * Visible only below `lg` (≥1024px). Carries the doctor's essentials in a
+ * compact strip:
+ *   - Hamburger → opens the nav Sheet
+ *   - Brand mark + "Red Salud" wordmark
+ *   - (right) Search trigger → opens the Cmd+K modal palette
+ *   - (right) NotificationsBell with badge
+ *   - (right) Connection indicator (online/offline dot)
  *
- * Individual doctor practice ONLY — no clinic/multi-org concepts.
+ * The desktop `GlobalHeader` is `hidden md:flex` so it doesn't render at
+ * this breakpoint. Mobile users get the equivalent affordances here.
+ *
+ * Quick-create lives in the mobile bottom nav as the centered "+" CTA so
+ * it stays thumb-friendly. The user menu is reachable from the nav Sheet.
  */
 
 export interface MobileTopBarProps {
@@ -19,8 +31,10 @@ export interface MobileTopBarProps {
 }
 
 export function MobileTopBar({ onOpenSheet }: MobileTopBarProps): React.ReactElement {
+  const { setOpen } = useCommandPalette();
+
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:hidden">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:hidden">
       <button
         type="button"
         onClick={onOpenSheet}
@@ -37,8 +51,20 @@ export function MobileTopBar({ onOpenSheet }: MobileTopBarProps): React.ReactEle
         <span className="text-base font-bold text-primary">Red Salud</span>
       </div>
 
-      {/* Spacer reserved for future right-aligned actions (notifications, quick search). */}
       <div className="flex-1" />
+
+      {/* Right-aligned actions: search trigger + bell + connection.
+          Each is a compact icon-only button to stay thumb-friendly. */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Buscar"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        <Search className="h-4 w-4" aria-hidden="true" />
+      </button>
+      <NotificationsBell />
+      <ConnectionIndicator />
     </header>
   );
 }

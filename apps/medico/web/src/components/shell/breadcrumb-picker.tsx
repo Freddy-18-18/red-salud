@@ -36,29 +36,51 @@ export interface BreadcrumbPickerProps {
   options?: BreadcrumbPickerOption[];
   /** Called with the selected option id. */
   onSelect?: (id: string) => void;
+  /**
+   * Visual weight inside the breadcrumb trail. Controls font weight + color
+   * so the eye anchors on the doctor name first, then sede, then module.
+   * Defaults to `secondary`.
+   */
+  emphasis?: 'primary' | 'secondary' | 'tertiary';
 }
+
+const EMPHASIS_CLASSES: Record<NonNullable<BreadcrumbPickerProps['emphasis']>, string> = {
+  primary: 'font-semibold text-foreground',
+  secondary: 'font-medium text-foreground',
+  tertiary: 'font-medium text-foreground-light',
+};
 
 export function BreadcrumbPicker({
   level,
   label,
   options,
   onSelect,
+  emphasis = 'secondary',
 }: BreadcrumbPickerProps): React.ReactElement {
   const hasOptions = Array.isArray(options) && options.length > 0;
+  const emphasisClass = EMPHASIS_CLASSES[emphasis];
 
   const trigger = (
     <button
       type="button"
       data-testid={`breadcrumb-picker-${level}`}
       data-level={level}
+      data-emphasis={emphasis}
       disabled={!hasOptions}
-      className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:cursor-default disabled:opacity-100 disabled:hover:bg-transparent"
+      className={[
+        'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm transition-colors',
+        emphasisClass,
+        'hover:bg-surface-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring',
+        'disabled:cursor-default disabled:opacity-100 disabled:hover:bg-transparent',
+      ].join(' ')}
     >
       <span className="max-w-[14rem] truncate">{label}</span>
-      <ChevronsUpDown
-        className="h-3 w-3 text-foreground-lighter"
-        aria-hidden="true"
-      />
+      {hasOptions && (
+        <ChevronsUpDown
+          className="h-3 w-3 text-foreground-lighter"
+          aria-hidden="true"
+        />
+      )}
     </button>
   );
 

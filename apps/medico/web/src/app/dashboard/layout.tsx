@@ -1,48 +1,20 @@
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { DashboardShell } from '@/components/shell/dashboard-shell';
+import { resolveModuleLabel } from '@/components/shell/resolve-module-label';
+import type { ShellSedeOption } from '@/components/shell/types';
 import { buildSupabaseResolverDeps } from '@/lib/capabilities/supabase-deps';
-import { lookupModule } from '@/lib/capabilities/module-catalog';
 import { resolveDoctorModules } from '@/lib/capabilities/resolver';
 import type { ResolverResult } from '@/lib/capabilities/types';
+import { firstNameOf, toTitleCaseName } from '@/lib/format/name';
+import { OfflineQueryProvider } from '@/lib/offline/offline-query-provider';
+import type { DoctorPracticeLocation } from '@/lib/sedes/types';
 import { createClient } from '@/lib/supabase/server';
 
 const FEATURE_CAPABILITY_ENGINE =
   process.env.FEATURE_CAPABILITY_ENGINE === 'true' ||
   process.env.NEXT_PUBLIC_FEATURE_CAPABILITY_ENGINE === 'true';
-
-/**
- * Maps the first pathname segment under `/dashboard/*` to a Spanish-language
- * module label. Used by the GlobalHeader's third breadcrumb level. Falls back
- * to "Inicio" when the path is exactly `/dashboard` and to the segment name
- * (with a `Configuración` fallback for unknown deep routes) otherwise.
- */
-const PATHNAME_MODULE_LABELS: Record<string, string> = {
-  '': 'Inicio',
-  agenda: 'Agenda',
-  pacientes: 'Pacientes',
-  consulta: 'Consulta',
-  recetas: 'Recetas',
-  mensajes: 'Mensajes',
-  estadisticas: 'Estadísticas',
-  verificacion: 'Verificación',
-  configuracion: 'Configuración',
-  sedes: 'Sedes',
-};
-
-function resolveModuleLabel(pathname: string | null): string {
-  if (!pathname) return 'Inicio';
-  // Strip `/dashboard` prefix and any trailing slash.
-  const stripped = pathname.replace(/^\/dashboard\/?/, '').replace(/\/$/, '');
-  if (!stripped) return 'Inicio';
-  const [first, second] = stripped.split('/');
-  if (first === 'modulos' && second) {
-    // Resolve module keys via the capability catalogue (rich label).
-    return lookupModule(second).label;
-  }
-  return PATHNAME_MODULE_LABELS[first] ?? 'Configuración';
-}
 
 export default async function DashboardLayout({
   children,
@@ -64,6 +36,8 @@ export default async function DashboardLayout({
     .select(`
       profile_id,
       specialty_id,
+      dashboard_config,
+      sacs_data,
       specialty:specialties(id, name, slug, icon),
       profile:profiles!doctor_details_profile_id_fkey(
         full_name,
@@ -80,9 +54,45 @@ export default async function DashboardLayout({
   const profileData = Array.isArray(doctorDetails?.profile)
     ? doctorDetails.profile[0]
     : doctorDetails?.profile;
-  const doctorName = profileData?.full_name ?? user.email ?? 'Doctor';
+  // SACS persists names in ALL CAPS. Normalize at the presentation boundary
+  // (we never mutate the source) so the breadcrumb, greeting, and user menu
+  // render "Marianella Suárez Crespo" instead of shouting at the doctor.
+  const rawDoctorName = profileData?.full_name ?? user.email ?? 'Doctor';
+  const doctorName = toTitleCaseName(rawDoctorName) || rawDoctorName;
+  // Extracted server-side so the GlobalHeader's greeting doesn't re-derive it
+  // on every render. Falls back to "Doctor" when the name is missing/garbled.
+  const doctorFirstName = firstNameOf(doctorName, 'Doctor');
   const specialtyName = specialty?.name ?? 'Medicina General';
   const avatarUrl = profileData?.avatar_url ?? null;
+
+  // Pull additional postgrados from `sacs_data.data.postgrados[*].postgrado`
+  // for the specialty chip. Empty / malformed payloads degrade to no extras —
+  // the chip renders as a single static pill. The capability resolver does the
+  // same extraction for module gating; this branch is only for the chip label.
+  const postgrados: string[] = (() => {
+    const sacsData = doctorDetails?.sacs_data as
+      | { data?: { postgrados?: Array<{ postgrado?: string }> } }
+      | null
+      | undefined;
+    const list = sacsData?.data?.postgrados;
+    if (!Array.isArray(list)) return [];
+    return list
+      .map((row) => (typeof row?.postgrado === 'string' ? row.postgrado.trim() : ''))
+      .filter((s) => s.length > 0);
+  })();
+
+  // Fallback name for the active sede when `doctor_practice_locations` is empty:
+  // the practice_name captured during onboarding lives at
+  // `dashboard_config.practice_name`. Used below when there are no sede rows yet.
+  const onboardingPracticeName = (() => {
+    const config = doctorDetails?.dashboard_config as
+      | { practice_name?: string }
+      | null
+      | undefined;
+    return typeof config?.practice_name === 'string' && config.practice_name.trim().length > 0
+      ? config.practice_name
+      : undefined;
+  })();
 
   // Capability resolution (Phase 2 — behind feature flag).
   let resolverResult: ResolverResult | null = null;
@@ -109,19 +119,75 @@ export default async function DashboardLayout({
     '/dashboard';
   const moduleLabel = resolveModuleLabel(nextUrl);
 
+  // Phase 3: fetch the doctor's active sedes for the global header
+  // breadcrumb. RLS pins doctor_id = auth.uid(), so the query returns only
+  // the caller's own rows. Active sede is resolved via the `active_sede_id`
+  // cookie with a fallback to the row marked `is_primary`. Failures degrade
+  // gracefully — the breadcrumb falls back to "Sin sede" + no options.
+  let sedeOptions: ShellSedeOption[] | undefined;
+  let activeSedeName: string | undefined;
+  let activeSedeId: string | null = null;
+  try {
+    const { data: sedeRows } = await supabase
+      .from('doctor_practice_locations')
+      .select('id,name,is_primary,active')
+      .eq('doctor_id', user.id)
+      .eq('active', true)
+      .order('is_primary', { ascending: false })
+      .order('created_at', { ascending: true });
+
+    const sedes = (sedeRows ?? []) as Array<
+      Pick<DoctorPracticeLocation, 'id' | 'name' | 'is_primary' | 'active'>
+    >;
+
+    if (sedes.length > 0) {
+      sedeOptions = sedes.map((s) => ({
+        id: s.id,
+        label: s.name,
+        isPrimary: s.is_primary,
+      }));
+      const cookieStore = await cookies();
+      const cookieActive = cookieStore.get('active_sede_id')?.value;
+      const matchByCookie = cookieActive
+        ? sedes.find((s) => s.id === cookieActive)
+        : undefined;
+      const matchByPrimary = sedes.find((s) => s.is_primary);
+      const resolved = matchByCookie ?? matchByPrimary ?? sedes[0];
+      activeSedeName = resolved?.name;
+      activeSedeId = resolved?.id ?? null;
+    } else if (onboardingPracticeName) {
+      // Bridge until Fase H (multi-sede CRUD) creates a real row in
+      // doctor_practice_locations for the onboarding practice.
+      activeSedeName = onboardingPracticeName;
+    }
+  } catch (err) {
+    // Non-fatal: the breadcrumb degrades gracefully when the table is missing
+    // or RLS rejects (which it shouldn't for the caller's own rows).
+    // eslint-disable-next-line no-console
+    console.error('[medico/dashboard/layout] sedes prefetch failed', err);
+  }
+
   return (
-    <DashboardShell
-      doctorName={doctorName}
-      email={user.email ?? ''}
-      avatarUrl={avatarUrl}
-      specialtyName={specialtyName}
-      navGroups={resolverResult?.navGroups}
-      pinnedModules={resolverResult?.pinnedModules}
-      verificationPending={resolverResult?.verificationPending ?? false}
-      moduleLabel={moduleLabel}
-      attention={resolverResult?.attention}
-    >
-      {children}
-    </DashboardShell>
+    <OfflineQueryProvider>
+      <DashboardShell
+        doctorId={user.id}
+        doctorName={doctorName}
+        doctorFirstName={doctorFirstName}
+        email={user.email ?? ''}
+        avatarUrl={avatarUrl}
+        specialtyName={specialtyName}
+        postgrados={postgrados}
+        navGroups={resolverResult?.navGroups}
+        pinnedModules={resolverResult?.pinnedModules}
+        verificationPending={resolverResult?.verificationPending ?? false}
+        sedeName={activeSedeName}
+        sedeOptions={sedeOptions}
+        activeSedeId={activeSedeId}
+        moduleLabel={moduleLabel}
+        attention={resolverResult?.attention}
+      >
+        {children}
+      </DashboardShell>
+    </OfflineQueryProvider>
   );
 }

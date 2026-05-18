@@ -46,12 +46,8 @@ export const NAV_GROUPS: NavGroupData[] = [
     key: 'principal',
     label: 'Principal',
     items: [
-      {
-        key: 'inicio',
-        label: 'Inicio',
-        href: '/dashboard',
-        icon: Home,
-      },
+      // NOTE: 'inicio' item removed — the sidebar's brand logo now navigates
+      // to /dashboard. Saves a row on the rail.
       {
         key: 'agenda',
         label: 'Agenda',

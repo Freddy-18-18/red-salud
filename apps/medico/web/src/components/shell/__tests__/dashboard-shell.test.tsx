@@ -19,6 +19,7 @@ import { DashboardShell } from '../dashboard-shell';
 vi.mock('next/navigation', () => ({
   usePathname: () => '/dashboard/pacientes',
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useSearchParams: () => ({ get: () => null }),
 }));
 
 vi.mock('next/link', () => ({
@@ -60,7 +61,9 @@ afterEach(() => {
 });
 
 const baseProps = {
+  doctorId: 'doctor-test-id',
   doctorName: 'Dr Test',
+  doctorFirstName: 'Test',
   email: 'doc@example.com',
   avatarUrl: null,
   specialtyName: 'Cardiología',

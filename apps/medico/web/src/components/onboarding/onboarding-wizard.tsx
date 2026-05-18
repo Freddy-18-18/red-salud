@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from '@red-salud/design-system';
 import { supabase } from '@/lib/supabase/client';
+import { CURRENT_TERMS_VERSION } from '@/lib/legal/terms';
 import { StepIndicator } from './step-indicator';
 import { SpecialtySelector, type SpecialtyOption } from './specialty-selector';
 import { LocationPicker, type LocationData } from './location-picker';
@@ -94,6 +95,8 @@ interface WizardState {
   consultationDuration: number;
   profilePhoto: File | null;
   profilePhotoPreview: string | null;
+  // Step 3 — legal
+  termsAccepted: boolean;
 }
 
 // ============================================================================
@@ -161,6 +164,9 @@ export function OnboardingWizard() {
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [sacsError, setSacsError] = useState<string | null>(null);
+  // If the user already accepted terms at registration (email/password flow),
+  // we skip the checkbox in Step 3. Set after profile load.
+  const [termsAlreadyAccepted, setTermsAlreadyAccepted] = useState(false);
 
   const [state, setState] = useState<WizardState>({
     docType: 'V',
@@ -181,6 +187,7 @@ export function OnboardingWizard() {
     consultationDuration: 30,
     profilePhoto: null,
     profilePhotoPreview: null,
+    termsAccepted: false,
   });
 
   const displayName = state.sacsVerified
@@ -201,6 +208,9 @@ export function OnboardingWizard() {
         const params = new URLSearchParams(window.location.search);
         const step = Number.parseInt(params.get('step') ?? '1', 10);
         if (step >= 1 && step <= 3) setCurrentStep(step);
+        // Preview: simulate Google OAuth user (no terms accepted yet) so the
+        // checkbox in Step 3 is visible during visual QA.
+        setTermsAlreadyAccepted(params.get('terms') === 'accepted');
         setUserId('preview-user');
         setInitialLoading(false);
         return;
@@ -216,6 +226,16 @@ export function OnboardingWizard() {
       }
 
       setUserId(user.id);
+
+      // Detect prior terms acceptance (registered with email/password) vs OAuth
+      // user that never saw the checkbox.
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('terms_accepted_at')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      setTermsAlreadyAccepted(!!userProfile?.terms_accepted_at);
 
       const { data: profile } = await supabase
         .from('doctor_profiles')
@@ -349,8 +369,12 @@ export function OnboardingWizard() {
       return state.practiceName.trim().length >= 2 && state.location !== null;
     }
 
-    return state.workingDays.length > 0 && state.timeBlocks.length > 0;
-  }, [currentStep, state]);
+    // Step 3: require schedule AND terms acceptance (either previously accepted
+    // at registration, or accepted inline via the Step 3 checkbox).
+    const hasSchedule = state.workingDays.length > 0 && state.timeBlocks.length > 0;
+    const hasTerms = termsAlreadyAccepted || state.termsAccepted;
+    return hasSchedule && hasTerms;
+  }, [currentStep, state, termsAlreadyAccepted]);
 
   const goNext = useCallback(() => {
     if (!canAdvance) return;
@@ -382,6 +406,16 @@ export function OnboardingWizard() {
         state.sacsResult?.data?.postgrados?.[0]?.postgrado ||
         null;
 
+      // If terms weren't accepted at registration (OAuth signup) and the
+      // medico just ticked the checkbox in Step 3, persist that now.
+      const shouldPersistTerms = !termsAlreadyAccepted && state.termsAccepted;
+      const termsFields = shouldPersistTerms
+        ? {
+            terms_accepted_at: new Date().toISOString(),
+            terms_version: CURRENT_TERMS_VERSION,
+          }
+        : {};
+
       const { error: profilesError } = await supabase
         .from('profiles')
         .update({
@@ -396,6 +430,7 @@ export function OnboardingWizard() {
           sacs_specialty: sacsSpecialty,
           sacs_verified_at: state.sacsVerified ? new Date().toISOString() : null,
           national_id_verified: state.sacsVerified,
+          ...termsFields,
         })
         .eq('id', userId);
 
@@ -459,7 +494,7 @@ export function OnboardingWizard() {
       setGlobalError('Error inesperado. Intentá de nuevo.');
       setSaving(false);
     }
-  }, [userId, canAdvance, state]);
+  }, [userId, canAdvance, state, termsAlreadyAccepted]);
 
   // ── Loading state ───────────────────────────────────────────────────
   if (initialLoading) {
@@ -512,18 +547,18 @@ export function OnboardingWizard() {
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4 py-3">
-            <a
-              href="/"
-              className="inline-flex items-center gap-2 shrink-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
-              aria-label="Volver a Red Salud"
+            <div
+              className="inline-flex items-center gap-2 shrink-0"
+              role="img"
+              aria-label="Red-Salud"
             >
               <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
                 <Plus className="w-5 h-5" strokeWidth={2.5} aria-hidden="true" />
               </div>
               <span className="text-base font-semibold text-foreground hidden sm:inline">
-                Red Salud
+                Red-Salud
               </span>
-            </a>
+            </div>
 
             <div className="flex-1 max-w-md hidden md:block">
               <StepIndicator steps={STEPS} currentStep={currentStep} />
@@ -579,6 +614,7 @@ export function OnboardingWizard() {
             toggleTimeBlock={toggleTimeBlock}
             update={update}
             onPhotoChange={handlePhotoChange}
+            termsAlreadyAccepted={termsAlreadyAccepted}
           />
         )}
       </main>
@@ -1130,6 +1166,7 @@ function StepSchedule({
   toggleTimeBlock,
   update,
   onPhotoChange,
+  termsAlreadyAccepted,
 }: {
   state: WizardState;
   displayName: string;
@@ -1138,6 +1175,7 @@ function StepSchedule({
   toggleTimeBlock: (block: string) => void;
   update: <K extends keyof WizardState>(field: K, value: WizardState[K]) => void;
   onPhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  termsAlreadyAccepted: boolean;
 }) {
   const scheduleSummary = buildScheduleSummary(state.workingDays, state.timeBlocks);
 
@@ -1364,6 +1402,49 @@ function StepSchedule({
               )}
             </div>
           </div>
+
+          {/* Terms acceptance — only shown if NOT already accepted at registration
+              (e.g. user signed up via Google OAuth and never saw the checkbox). */}
+          {!termsAlreadyAccepted && (
+            <div className="mt-4 rounded-2xl border border-border bg-card p-5">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={state.termsAccepted}
+                  onChange={(e) => update('termsAccepted', e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-border text-primary focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer shrink-0"
+                  aria-describedby="terms-helper-text"
+                />
+                <span className="text-xs text-muted-foreground leading-relaxed">
+                  Acepto los{' '}
+                  <a
+                    href="/legal/terminos"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-foreground font-medium underline-offset-2 hover:underline"
+                  >
+                    Términos de Servicio
+                  </a>{' '}
+                  y la{' '}
+                  <a
+                    href="/legal/privacidad"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-foreground font-medium underline-offset-2 hover:underline"
+                  >
+                    Política de Privacidad
+                  </a>{' '}
+                  de Red-Salud.
+                </span>
+              </label>
+              <p
+                id="terms-helper-text"
+                className="text-[11px] text-muted-foreground/80 mt-2 pl-7"
+              >
+                Necesario para activar tu consultorio.
+              </p>
+            </div>
+          )}
         </div>
       </aside>
     </div>

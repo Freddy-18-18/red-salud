@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
         // Obtener especialidad del médico
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('sacs_especialidad, specialty_id, specialties(name)')
+            .select('sacs_specialty, specialty_id, specialties(name)')
             .eq('id', user.id)
             .single();
 
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
         // Determinar la especialidad a usar
         const specialty =
-            profile?.sacs_especialidad ||
+            profile?.sacs_specialty ||
             (profile?.specialties as { name?: string } | null)?.name ||
             'Medicina Interna'; // Fallback
 

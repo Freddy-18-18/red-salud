@@ -14,13 +14,13 @@ export interface DoctorProfile {
   professional_email?: string;
   clinic_address?: string;
   consultation_duration?: number;
-  consultation_price?: number;
+  consultation_fee?: number;
   accepts_insurance?: boolean;
   bio?: string;
   languages?: string[] | string;
   avatar_url?: string;
-  sacs_especialidad?: string;
-  sacs_verificado?: boolean;
+  sacs_specialty?: string;
+  sacs_verified?: boolean;
   is_verified?: boolean;
   verified?: boolean;
   created_at?: string;
@@ -39,7 +39,7 @@ export type DoctorProfileFormData = Partial<
     | 'professional_email'
     | 'clinic_address'
     | 'consultation_duration'
-    | 'consultation_price'
+    | 'consultation_fee'
     | 'accepts_insurance'
     | 'bio'
     | 'languages'

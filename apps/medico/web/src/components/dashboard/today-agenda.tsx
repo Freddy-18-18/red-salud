@@ -3,6 +3,9 @@
 import { useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useDoctorAppointments } from '@red-salud/core';
+import { EmptyState } from '@red-salud/design-system';
+
+import { useActiveSede } from '@/hooks/use-active-sede';
 import {
   Clock,
   User,
@@ -80,8 +83,11 @@ function AgendaSkeleton() {
 
 export function TodayAgenda({ doctorId, themeColor = '#3B82F6' }: TodayAgendaProps) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const { activeSedeId } = useActiveSede();
 
-  // Fetch today's appointments via core hook
+  // Fetch today's appointments via core hook, scoped to the active sede when
+  // the doctor has one selected. Citas with `location_id IS NULL` (legacy)
+  // still appear so old data isn't lost.
   const {
     appointments: rawAppointments,
     loading,
@@ -89,6 +95,7 @@ export function TodayAgenda({ doctorId, themeColor = '#3B82F6' }: TodayAgendaPro
     refresh,
   } = useDoctorAppointments(supabase, doctorId, {
     dateRange: { start: today, end: today },
+    locationId: activeSedeId,
   });
 
   // Map core rows to local Appointment shape
@@ -134,21 +141,29 @@ export function TodayAgenda({ doctorId, themeColor = '#3B82F6' }: TodayAgendaPro
 
   if (loading) return <AgendaSkeleton />;
 
-  if (error) {
+  // Empty state — also shown when an upstream query returned an error but
+  // produced no rows. For brand-new doctors the dashboard often hits expected
+  // gaps (missing columns being migrated, no schedule yet, etc.); surfacing
+  // a scary red box would be hostile UX. Treat zero appointments as the
+  // friendly "you have nothing yet" state regardless of error.
+  if (appointments.length === 0) {
     return (
-      <div className="p-4 rounded-lg bg-red-50 text-red-600 text-sm">
-        <p className="font-medium">Error al cargar la agenda</p>
-        <p className="mt-1 text-red-500">{error}</p>
-      </div>
+      <EmptyState
+        icon={Clock}
+        title="Tu agenda está libre por hoy"
+        description="Cuando un paciente reserve una cita, vas a verla acá. ¡Disfrutá del descanso!"
+        size="compact"
+        className="border-0 bg-transparent"
+      />
     );
   }
 
-  if (appointments.length === 0) {
+  // Only surface a real error banner when we actually had data and lost it.
+  if (error) {
     return (
-      <div className="p-8 text-center">
-        <Clock className="h-12 w-12 mx-auto text-gray-300 mb-3" />
-        <p className="text-gray-500 font-medium">Sin citas programadas para hoy</p>
-        <p className="text-sm text-gray-400 mt-1">Tu agenda está libre</p>
+      <div className="p-4 rounded-lg bg-amber-50 text-amber-700 text-sm">
+        <p className="font-medium">No pudimos actualizar la agenda</p>
+        <p className="mt-1 text-amber-600">Mostrando la última versión disponible.</p>
       </div>
     );
   }

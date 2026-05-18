@@ -7,10 +7,12 @@ import {
   type SpecialtyConfig,
 } from '@/lib/specialties';
 import { useSpecialtyDashboard } from '@/hooks/dashboard/use-specialty-dashboard';
+import { useActiveSede } from '@/hooks/use-active-sede';
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { TodayAgenda } from '@/components/dashboard/today-agenda';
 import { SpecialtyWidgets } from '@/components/dashboard/specialty-widgets';
 import { ExchangeRateWidget } from '@/components/dashboard/exchange-rate-widget';
+import { ProfileCompletionBanner } from '@/components/dashboard/profile-completion-banner';
 import { PageHeader } from '@/components/shell';
 import {
   Users,
@@ -101,8 +103,16 @@ export default function DashboardPage() {
     init();
   }, []);
 
+  // Active sede drives per-location filtering. Legacy citas (location_id IS
+  // NULL) keep appearing across every sede until they're explicitly migrated.
+  const { activeSedeId } = useActiveSede();
+
   // Use the specialty dashboard hook for KPIs and today's appointments
-  const dashboard = useSpecialtyDashboard(userId ?? undefined, specialtyConfig ?? undefined);
+  const dashboard = useSpecialtyDashboard(
+    userId ?? undefined,
+    specialtyConfig ?? undefined,
+    { locationId: activeSedeId },
+  );
 
   const themeColor = specialtyConfig?.theme?.primaryColor ?? '#3B82F6';
 
@@ -138,20 +148,10 @@ export default function DashboardPage() {
     },
   ];
 
-  // Use only the first token of the full name. If the name is missing or
-  // accidentally contains an "@" (legacy data), fall back to a neutral label
-  // instead of leaking the email into the heading.
-  const firstName =
-    doctorName && !doctorName.includes('@')
-      ? (doctorName.split(' ')[0] ?? 'Doctor')
-      : 'Doctor';
-
   return (
     <div className="space-y-6">
       <PageHeader>
-        <PageHeader.Title>
-          {getGreeting()}, Dr. {firstName}
-        </PageHeader.Title>
+        <PageHeader.Title>Resumen del día</PageHeader.Title>
         <PageHeader.Meta>
           {specialtyConfig?.name ?? 'Medicina General'} &mdash; {formatToday()}
         </PageHeader.Meta>
@@ -166,6 +166,9 @@ export default function DashboardPage() {
           </button>
         </PageHeader.Actions>
       </PageHeader>
+
+      {/* Profile completion nudge — only renders while profile < 100% and not dismissed. */}
+      {userId && <ProfileCompletionBanner userId={userId} />}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -307,13 +310,6 @@ function DashboardSkeleton() {
 // ============================================================================
 // HELPERS
 // ============================================================================
-
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Buenos días';
-  if (hour < 18) return 'Buenas tardes';
-  return 'Buenas noches';
-}
 
 function formatToday(): string {
   return new Date().toLocaleDateString('es-VE', {

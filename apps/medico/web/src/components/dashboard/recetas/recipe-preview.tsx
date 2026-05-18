@@ -74,7 +74,7 @@ export function RecipePreview({
                     // First, get basic profile
                     const { data: profile, error: profileError } = await supabase
                         .from("profiles")
-                        .select("id, full_name, email, sacs_matricula, cedula, especialidad, sacs_especialidad") // Added especialidad fields
+                        .select("id, full_name, email, sacs_license, cedula, especialidad, sacs_specialty") // Added especialidad fields
                         .eq("id", user.id)
                         .single();
 
@@ -131,11 +131,11 @@ export function RecipePreview({
                         }
 
                         // Priority for Specialty: sacs_especialidad -> profile.especialidad -> relational specialty
-                        const displayedSpecialty = (profile as unknown as { sacs_especialidad?: string }).sacs_especialidad || profile.especialidad || specialtyName;
+                        const displayedSpecialty = (profile as unknown as { sacs_specialty?: string }).sacs_specialty || profile.especialidad || specialtyName;
 
                         // Priority: User requested 'cedula' (CI) explicitly. 
                         // Fallbacks: doctor_profiles.medical_license -> profiles.sacs_matricula
-                        const displayedId = profile.cedula || doctorData?.medical_license || profile.sacs_matricula || "";
+                        const displayedId = profile.cedula || doctorData?.medical_license || profile.sacs_license || "";
 
                         setDoctorProfile({
                             nombre: profile.full_name || "Nombre no disponible",

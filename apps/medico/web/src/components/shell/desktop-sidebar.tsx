@@ -1,135 +1,143 @@
 'use client';
 
-import { PanelLeftClose, PanelLeftOpen, Stethoscope } from 'lucide-react';
+import Link from 'next/link';
+import { Stethoscope } from 'lucide-react';
+
+import type { SidebarMode } from '../../hooks/use-sidebar-mode';
 
 import { NAV_GROUPS } from './nav-data';
 import { NavGroup } from './nav-group';
+import { SidebarModeSwitcher } from './sidebar-mode-switcher';
 import type { NavGroupData } from './types';
-import { UserMenuDropdown } from './user-menu-dropdown';
 
 /**
  * @file desktop-sidebar.tsx
- * @description Desktop sidebar shell (T-008).
+ * @description Desktop sidebar shell — Supabase-style three-mode rail.
  *
- * Fixed-position rail rendered only at `lg+` breakpoints. Collapses between
- * `w-72` (expanded) and `w-16` (icon-only). Composes:
+ * Three modes (see `useSidebarMode`):
+ *   - `collapsed` → narrow icon-only rail, never expands on hover.
+ *   - `expanded`  → wide panel always visible (icons + labels).
+ *   - `hover`     → narrow icon rail; on mouse enter the panel expands as a
+ *                   FLOATING OVERLAY (does not push the main content) with a
+ *                   soft elevation shadow. On mouse leave it collapses.
  *
- * - Header: brand mark + "Red Salud" wordmark + "Consultorio Médico" subtitle.
- *   The wordmark + subtitle hide when collapsed; only the mark remains visible.
- * - Body: scrollable list of `<NavGroup>` instances driven by `NAV_GROUPS`.
- * - Footer: `<UserMenuDropdown>` (always rendered; renders compact in collapsed mode).
+ * The mode switcher lives at the foot of the rail (in place of the legacy
+ * user-menu, which moved to the global header).
  *
- * The collapse button uses `PanelLeftClose` / `PanelLeftOpen` icons and rotates
- * its `aria-label` between "Colapsar menú" and "Expandir menú" so screen
- * readers always know what the next click will do.
- *
- * Individual doctor practice ONLY — no clinic/multi-org concepts.
- *
- * ## medico-shell-supabase-style (Phase 1)
- * When `NEXT_PUBLIC_FEATURE_NEW_SHELL === 'true'`, the collapsed rail SHALL
- * shrink to `w-12` (48px) — Supabase-style icon rail. With the flag off or
- * missing, the legacy `w-16` (64px) collapsed width is preserved. See spec
- * `app-shell-medico` R1 + R8.
+ * Mounted only on `lg+`. Mobile uses `MobileSidebarSheet`.
  */
-const NEW_SHELL_COLLAPSED_WIDTH = 'lg:w-12';
-const LEGACY_COLLAPSED_WIDTH = 'lg:w-16';
 
-function isNewShellEnabled(): boolean {
-  // Read at call time so vi.stubEnv works under jsdom; Next.js inlines
-  // NEXT_PUBLIC_* at build time at runtime in the browser bundle.
-  return process.env.NEXT_PUBLIC_FEATURE_NEW_SHELL === 'true';
-}
+const RAIL_WIDTH = 'w-14'; // 56px — Supabase-canonical icon-rail width.
+const PANEL_WIDTH = 'w-64'; // 256px — expanded panel width.
 
 export interface DesktopSidebarProps {
-  /** Doctor display name (forwarded to the user menu). */
-  doctorName: string;
-  /** Doctor email (forwarded to the user menu). */
-  email: string;
-  /** Avatar URL or `null` to render initials fallback. */
-  avatarUrl: string | null;
-  /** Specialty display name. Reserved for future header use; not rendered in Phase 1. */
-  specialtyName: string;
-  /** Current collapse state. */
-  collapsed: boolean;
-  /** Callback fired when the user clicks the header collapse/expand button. */
-  onToggleCollapse: () => void;
+  /** Specialty display name (kept for backwards-compat; rendered as subtitle). */
+  specialtyName?: string;
+  /** Current sidebar mode. */
+  mode: SidebarMode;
+  /** Updates the mode (persisted). */
+  onChangeMode: (next: SidebarMode) => void;
+  /** Whether the panel should currently render expanded (derived in the hook). */
+  isExpanded: boolean;
+  /** Whether the panel is in floating-overlay state (mode='hover' && hovering). */
+  isHoverExpanded: boolean;
+  /** Mouse-enter handler (drives hover-expand for mode='hover'). */
+  onMouseEnter: () => void;
+  /** Mouse-leave handler. */
+  onMouseLeave: () => void;
   /**
    * Dynamic nav groups (Phase 2 capability engine). When omitted, falls back
-   * to the static `NAV_GROUPS`. The shell composes this via
-   * `mergeWithStaticFallback(resolverResult.navGroups)`.
+   * to static `NAV_GROUPS`.
    */
   groups?: NavGroupData[];
 }
 
 export function DesktopSidebar({
-  doctorName,
-  email,
-  avatarUrl,
   specialtyName: _specialtyName,
-  collapsed,
-  onToggleCollapse,
+  mode,
+  onChangeMode,
+  isExpanded,
+  isHoverExpanded,
+  onMouseEnter,
+  onMouseLeave,
   groups,
 }: DesktopSidebarProps): React.ReactElement {
   const resolvedGroups = groups ?? NAV_GROUPS;
 
-  // Width transition is animated; `overflow-hidden` keeps wordmark/labels from
-  // bleeding past the rail during the collapse animation.
-  const collapsedWidthClass = isNewShellEnabled()
-    ? NEW_SHELL_COLLAPSED_WIDTH
-    : LEGACY_COLLAPSED_WIDTH;
-  const widthClass = collapsed ? collapsedWidthClass : 'lg:w-72';
+  // The rail always occupies w-14 in the layout (so the main content reflows
+  // ONLY when `mode='expanded'`). For `mode='hover'` and `mode='collapsed'`,
+  // the rail occupies w-14; the expanded panel in `mode='hover'` floats over
+  // the content with absolute positioning + shadow.
+  const isOverlay = isHoverExpanded;
 
-  const toggleAriaLabel = collapsed ? 'Expandir menú' : 'Colapsar menú';
-  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
+  // Resolved width applied to the rendered <aside>:
+  //   - mode='expanded'                 → w-64 (rail occupies full width)
+  //   - mode='hover' && hovering        → w-64 (floats over content)
+  //   - mode='hover' && !hovering       → w-14 (rail only)
+  //   - mode='collapsed'                → w-14 (rail only)
+  const widthClass = isExpanded ? PANEL_WIDTH : RAIL_WIDTH;
 
   return (
     <aside
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      aria-label="Navegación principal"
       className={[
-        'fixed inset-y-0 left-0 z-30 hidden lg:flex flex-col',
-        'border-r bg-background shadow-[1px_0_8px_0_rgba(0,0,0,0.04)]',
-        'transition-[width] duration-300 ease-in-out overflow-hidden',
+        // Starts BELOW the global header (h-14 = 56px = top-14).
+        'fixed top-14 bottom-0 left-0 hidden lg:flex flex-col',
+        'border-r border-border bg-card',
+        'transition-[width,box-shadow] duration-200 ease-out motion-reduce:transition-none',
         widthClass,
+        // z-index: en modo flotante (hover-expanded) sube a z-40 para tapar
+        // los sticky headers de página (ej: la fila de días del calendario
+        // en /dashboard/agenda usa z-30 y sin esto se solapaba con el panel).
+        // Modal/dialog usan z-50, así que el sidebar sigue quedando debajo.
+        isOverlay ? 'z-40' : 'z-30',
+        // Floating overlay for hover-expanded state: elevation shadow to make
+        // it read as a temporary panel, not a layout shift.
+        isOverlay ? 'shadow-xl shadow-foreground/10' : 'shadow-none',
       ].join(' ')}
     >
-      {/* Header: brand + collapse toggle */}
-      <div className="flex h-16 shrink-0 items-center gap-2 border-b bg-gradient-to-r from-primary/5 to-transparent px-3">
+      {/* Brand mark — clickable, navigates to /dashboard (replaces the
+          standalone "Inicio" nav item). */}
+      <Link
+        href="/dashboard"
+        aria-label="Inicio del dashboard"
+        className="flex h-14 shrink-0 items-center gap-2.5 border-b border-border px-3 transition-colors motion-reduce:transition-none hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+      >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
           <Stethoscope className="h-5 w-5" aria-hidden="true" />
         </div>
-        {!collapsed && (
-          <div className="flex min-w-0 flex-col">
-            <span className="truncate text-sm font-bold leading-tight text-primary">Red Salud</span>
+        {isExpanded && (
+          <div className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate text-sm font-semibold text-foreground">
+              Red-Salud
+            </span>
             <span className="truncate text-[11px] font-medium text-muted-foreground">
               Consultorio Médico
             </span>
           </div>
         )}
-        <button
-          type="button"
-          onClick={onToggleCollapse}
-          aria-label={toggleAriaLabel}
-          className="ml-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <ToggleIcon className="h-4 w-4" aria-hidden="true" />
-        </button>
-      </div>
+      </Link>
 
-      {/* Body: scrollable nav groups + footer */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex-1 space-y-4 overflow-y-auto px-3 py-3">
+      {/* Body: scrollable nav groups. Scrollbar hidden — overflow stays
+          functional via wheel/touch but the visual chrome is gone. */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide py-3">
+        <div className="space-y-3 px-2">
           {resolvedGroups.map((group) => (
-            <NavGroup key={group.key} group={group} collapsed={collapsed} />
+            <NavGroup key={group.key} group={group} collapsed={!isExpanded} />
           ))}
         </div>
+      </div>
 
-        <div className="border-t bg-muted/20 p-3">
-          <UserMenuDropdown
-            doctorName={doctorName}
-            email={email}
-            avatarUrl={avatarUrl}
-            collapsed={collapsed}
-          />
-        </div>
+      {/* Footer: sidebar mode switcher (replaces the legacy user-menu, which
+          moved to the global header). */}
+      <div className="border-t border-border p-2">
+        <SidebarModeSwitcher
+          expanded={isExpanded}
+          mode={mode}
+          onChange={onChangeMode}
+        />
       </div>
     </aside>
   );

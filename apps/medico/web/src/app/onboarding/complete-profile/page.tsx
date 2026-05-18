@@ -1,7 +1,7 @@
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
 
 export const metadata = {
-  title: 'Configura tu Consultorio | Red Salud',
+  title: 'Configura tu Consultorio | Red-Salud',
   description: 'Completa tu perfil medico y configura tu consultorio digital',
 };
 

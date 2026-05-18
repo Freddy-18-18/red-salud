@@ -76,14 +76,31 @@ export interface PageHeaderBreadcrumbItem {
  * and the shell falls back to the static `NAV_GROUPS`.
  */
 export interface DashboardShellProps {
+  /**
+   * Doctor profile id (== `auth.uid()`). Forwarded to the GlobalHeader so
+   * sede-creation mutations can pass it to the RLS-pinned insert.
+   */
+  doctorId: string;
   /** Doctor display name. Falls back to email upstream. */
   doctorName: string;
+  /**
+   * First name used by the GlobalHeader's time-of-day greeting. Pre-extracted
+   * server-side via `firstNameOf(doctorName)` so the header doesn't have to
+   * re-derive it on every render.
+   */
+  doctorFirstName: string;
   /** Doctor email; rendered in the user-menu trigger / dropdown. */
   email: string;
   /** Absolute URL to the avatar image. `null` → initials fallback. */
   avatarUrl: string | null;
   /** Specialty display name (e.g. "Cardiología"). */
   specialtyName: string;
+  /**
+   * Additional postgrados / credentials beyond the primary specialty. Raw
+   * SACS strings (UPPERCASE) — the SpecialtyChip applies Title Case at render
+   * time. Empty array → the chip renders as a single static pill.
+   */
+  postgrados?: string[];
   /** Page tree rendered inside the shell's `<main>`. */
   children: ReactNode;
   /**
@@ -102,6 +119,18 @@ export interface DashboardShellProps {
    */
   sedeName?: string;
   /**
+   * Available sedes for the breadcrumb picker (Phase 3). When provided and
+   * non-empty the sede breadcrumb opens a picker; selecting one writes the
+   * `active_sede_id` cookie + invalidates React Query's `['appointments']`.
+   */
+  sedeOptions?: ShellSedeOption[];
+  /**
+   * Id of the active sede (resolved via the `active_sede_id` cookie with a
+   * fallback to the primary row). Used by the SedeSwitcher to render the
+   * check on the selected row.
+   */
+  activeSedeId?: string | null;
+  /**
    * Current module label (e.g. "Pacientes", "Agenda") derived from the
    * pathname segment. Threaded into the GlobalHeader's third breadcrumb.
    */
@@ -115,20 +144,56 @@ export interface DashboardShellProps {
 }
 
 /**
+ * Picker option surfaced in the sede breadcrumb. Keeps the type local to the
+ * shell so consumers don't have to depend on the sedes module. `isPrimary` is
+ * optional so existing callers that only know the id+label keep compiling.
+ */
+export interface ShellSedeOption {
+  id: string;
+  label: string;
+  isPrimary?: boolean;
+}
+
+/**
  * Props for the new GlobalHeader (Phase 2 of medico-shell-supabase-style).
  * Mounted under `FEATURE_NEW_SHELL=true` only — legacy shell does not render
  * this header. See `app-shell-medico` R6 + R7.
  */
 export interface GlobalHeaderProps {
-  /** Doctor display name shown as the first breadcrumb level. */
+  /** Doctor profile id (RLS pin for sede mutations). */
+  doctorId: string;
+  /** Doctor display name — used by the user menu / avatar fallback initials. */
   doctorName: string;
+  /**
+   * First name used by the header's time-of-day greeting (first breadcrumb
+   * level: "Buenas noches, Dr. Marianella"). The greeting itself is computed
+   * client-side via `useGreeting(firstName)`.
+   */
+  doctorFirstName: string;
+  /** Primary specialty rendered as a pill next to the doctor breadcrumb. */
+  specialtyName: string;
+  /** Raw SACS postgrados — see DashboardShellProps.postgrados. */
+  postgrados?: string[];
   /**
    * Active sede label. When undefined, the breadcrumb shows "Sin sede" with
    * a disabled chevron — degrades gracefully until Phase 3 wires sedes data.
    */
   sedeName?: string;
-  /** Current module label shown as the terminal breadcrumb. */
-  moduleLabel: string;
+  /**
+   * Available sedes for the breadcrumb picker (Phase 3). When provided and
+   * non-empty the sede breadcrumb opens a Popover with the options; selecting
+   * one writes the `active_sede_id` cookie via `useActiveSede.setSede`.
+   * Omit to keep the breadcrumb as a static label.
+   */
+  sedeOptions?: ShellSedeOption[];
+  /** Id of the currently active sede — used to mark the row in the switcher. */
+  activeSedeId?: string | null;
+  /**
+   * Current module label shown as the terminal breadcrumb. Omit on the
+   * dashboard root so the breadcrumb collapses to `doctor / sede` instead of
+   * showing a redundant "Inicio" crumb.
+   */
+  moduleLabel?: string;
   /**
    * Resolver-derived attention flags. When either flag is true, the Advisor
    * button renders a destructive-colored red dot.

@@ -59,20 +59,20 @@ export async function getDoctorProfile(userId: string) {
       .select(`
         *,
         specialty:specialties(id, name, slug, icon, description),
-        profile:profiles!doctor_profiles_profile_id_fkey(
+        profile:profiles!doctor_details_profile_id_fkey(
           id,
           full_name,
           email,
           avatar_url,
-          telefono,
-          ciudad,
-          estado,
-          cedula,
-          cedula_verificada,
-          sacs_verificado,
-          sacs_nombre,
-          sacs_matricula,
-          sacs_especialidad
+          phone,
+          city,
+          state,
+          national_id,
+          national_id_verified,
+          sacs_verified,
+          sacs_name,
+          sacs_license,
+          sacs_specialty
         )
       `)
       .eq('profile_id', userId)
@@ -100,17 +100,17 @@ export async function getDoctorProfile(userId: string) {
       license_number: data.medical_license || null,
       license_country: 'VE',
       years_experience: data.years_experience || 0,
-      professional_phone: data.profile?.telefono || null,
+      professional_phone: data.profile?.phone || null,
       professional_email: data.profile?.email || null,
-      clinic_address: null,
-      consultation_duration: 30,
-      consultation_price: data.consultation_fee ? Number(data.consultation_fee) : null,
+      clinic_address: data.clinic_address || null,
+      consultation_duration: data.consultation_duration || 30,
+      consultation_fee: data.consultation_fee ? Number(data.consultation_fee) : null,
       accepts_insurance: data.accepts_insurance ?? false,
       bio: data.biography || null,
       languages: Array.isArray(data.languages) && data.languages.length > 0 ? data.languages : ['es'],
       is_verified: data.verified || false,
       is_active: true,
-      sacs_verified: data.sacs_verified ?? data.profile?.sacs_verificado ?? false,
+      sacs_verified: data.sacs_verified ?? data.profile?.sacs_verified ?? false,
       sacs_data: data.sacs_data || null,
       average_rating: 0,
       total_reviews: 0,
@@ -121,13 +121,12 @@ export async function getDoctorProfile(userId: string) {
       updated_at: data.updated_at,
       full_name: data.profile?.full_name || undefined,
       email: data.profile?.email || undefined,
-      telefono: data.profile?.telefono || undefined,
-      cedula: data.profile?.cedula || undefined,
-      cedula_verificada: data.profile?.cedula_verificada || undefined,
-      sacs_verificado: data.profile?.sacs_verificado || undefined,
-      sacs_nombre: data.profile?.sacs_nombre || undefined,
-      sacs_matricula: data.profile?.sacs_matricula || undefined,
-      sacs_especialidad: data.profile?.sacs_especialidad || undefined,
+      phone: data.profile?.phone || undefined,
+      national_id: data.profile?.national_id || undefined,
+      national_id_verified: data.profile?.national_id_verified || undefined,
+      sacs_name: data.profile?.sacs_name || undefined,
+      sacs_license: data.profile?.sacs_license || undefined,
+      sacs_specialty: data.profile?.sacs_specialty || undefined,
       subspecialties: Array.isArray(data.subspecialties) ? data.subspecialties : [],
       universidad: undefined,
     } as unknown as DoctorProfile;
@@ -183,15 +182,16 @@ export async function updateDoctorProfile(
 // BÚSQUEDA DE MÉDICOS
 // ============================================
 
+// Public doctor-search functions read from `public_doctor_directory` (a safe
+// view that excludes PII like email/phone/national_id). The previous direct
+// `profile:profiles(*)` embedded join leaked PII; the underlying broad RLS
+// policy `public_read_verified_doctor_profiles` was removed on 2026-05-08.
+// Note: `email` and `telefono` are no longer returned for public search —
+// they were never appropriate to expose to the doctor app's consumers anyway.
 export async function searchDoctors(filters: DoctorSearchFilters = {}) {
   let query = supabase
-    .from('doctor_profiles')
-    .select(`
-      *,
-      specialty:specialties(*),
-      profile:profiles(*)
-    `)
-    .eq('verified', true);
+    .from('public_doctor_directory')
+    .select('*');
 
   if (filters.specialty_id) {
     query = query.eq('specialty_id', filters.specialty_id);
@@ -216,18 +216,36 @@ export async function searchDoctors(filters: DoctorSearchFilters = {}) {
     return { success: false, error: error.message };
   }
 
-  const results = (data || []).map(d => ({
+  // Hydrate specialty catalog rows in one round-trip.
+  const specialtyIds = Array.from(
+    new Set(
+      (data ?? [])
+        .map((d) => d.specialty_id)
+        .filter((id: string | null | undefined): id is string => typeof id === 'string'),
+    ),
+  );
+  const specialtyMap = new Map<string, { id: string; name: string; icon: string | null; description: string | null }>();
+  if (specialtyIds.length > 0) {
+    const { data: specs } = await supabase
+      .from('specialties')
+      .select('id, name, icon, description')
+      .in('id', specialtyIds);
+    for (const s of specs ?? []) {
+      specialtyMap.set(s.id, {
+        id: s.id,
+        name: s.name,
+        icon: s.icon ?? null,
+        description: s.description ?? null,
+      });
+    }
+  }
+
+  const results = (data || []).map((d) => ({
     ...d,
-    specialty: d.specialty ? {
-      id: d.specialty.id,
-      name: d.specialty.name,
-      icon: d.specialty.icon,
-      description: d.specialty.description,
-    } : null,
-    full_name: d.profile?.full_name,
-    email: d.profile?.email,
-    telefono: d.profile?.telefono,
-    avatar_url: d.profile?.avatar_url,
+    id: d.doctor_profile_id, // legacy alias
+    specialty: d.specialty_id ? specialtyMap.get(d.specialty_id) ?? null : null,
+    full_name: d.full_name,
+    avatar_url: d.avatar_url,
   }));
 
   return { success: true, data: results };
@@ -235,13 +253,8 @@ export async function searchDoctors(filters: DoctorSearchFilters = {}) {
 
 export async function getFeaturedDoctors(limit: number = 10) {
   const { data, error } = await supabase
-    .from('doctor_profiles')
-    .select(`
-      *,
-      specialty:specialties(*),
-      profile:profiles!doctor_profiles_profile_id_fkey(*)
-    `)
-    .eq('verified', true)
+    .from('public_doctor_directory')
+    .select('*')
     .eq('sacs_verified', true)
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -251,24 +264,39 @@ export async function getFeaturedDoctors(limit: number = 10) {
     return { success: false, error: error.message };
   }
 
-  const results = (data || []).map(d => ({
-    profile_id: d.profile_id,
+  const specialtyIds = Array.from(
+    new Set(
+      (data ?? [])
+        .map((d) => d.specialty_id)
+        .filter((id: string | null | undefined): id is string => typeof id === 'string'),
+    ),
+  );
+  const specialtyMap = new Map<string, { id: string; name: string; icon: string | null; description: string | null }>();
+  if (specialtyIds.length > 0) {
+    const { data: specs } = await supabase
+      .from('specialties')
+      .select('id, name, icon, description')
+      .in('id', specialtyIds);
+    for (const s of specs ?? []) {
+      specialtyMap.set(s.id, {
+        id: s.id,
+        name: s.name,
+        icon: s.icon ?? null,
+        description: s.description ?? null,
+      });
+    }
+  }
+
+  const results = (data || []).map((d) => ({
+    profile_id: d.id,
     specialty_id: d.specialty_id,
-    specialty: d.specialty ? {
-      id: d.specialty.id,
-      name: d.specialty.name,
-      icon: d.specialty.icon,
-      description: d.specialty.description,
-    } : null,
-    license_number: d.medical_license,
+    specialty: d.specialty_id ? specialtyMap.get(d.specialty_id) ?? null : null,
     years_experience: d.years_experience,
-    consultation_price: d.consultation_fee ? Number(d.consultation_fee) : null,
+    consultation_fee: d.consultation_fee ? Number(d.consultation_fee) : null,
     bio: d.biography,
     is_verified: d.verified,
-    full_name: d.profile?.full_name,
-    email: d.profile?.email,
-    avatar_url: d.profile?.avatar_url,
-    telefono: d.profile?.telefono,
+    full_name: d.full_name,
+    avatar_url: d.avatar_url,
   }));
 
   return { success: true, data: results };

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const SACS_BACKEND_URL = 'https://sacs-verification-clean-20260215-production.up.railway.app';
+// Override via SACS_BACKEND_URL env. Defaults to the Railway-hosted prod
+// service. For local dev against a self-hosted instance, set
+// SACS_BACKEND_URL=http://127.0.0.1:3010 in apps/medico/web/.env.local.
+const SACS_BACKEND_URL =
+  process.env.SACS_BACKEND_URL ??
+  'https://sacs-verification-production.up.railway.app';
 
 export async function POST(request: NextRequest) {
   try {
