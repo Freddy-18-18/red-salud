@@ -113,7 +113,8 @@ function escapeCsv(value: string): string {
 
 function triggerDownload(content: string, filename: string, mimeType: string): void {
   // Prepend the UTF-8 BOM so Excel honors accent characters in es-VE.
-  const blob = new Blob([`﻿${content}`], { type: mimeType });
+  const UTF8_BOM = '\uFEFF';
+  const blob = new Blob([UTF8_BOM + content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;

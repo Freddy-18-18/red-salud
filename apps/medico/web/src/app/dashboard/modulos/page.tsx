@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { createElement, useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 import { EmptyState } from '@red-salud/design-system';
@@ -256,7 +256,7 @@ function ModuleCard({
   themeColor: string;
   isExplore?: boolean;
 }) {
-  const Icon = getIcon(mod.icon);
+  const iconType = getIcon(mod.icon);
   const groupLabel = GROUP_LABELS[mod.group] ?? mod.group;
 
   const cardContent = (
@@ -297,10 +297,10 @@ function ModuleCard({
             backgroundColor: isExplore ? '#f3f4f6' : `${themeColor}15`,
           }}
         >
-          <Icon
-            className="h-5 w-5"
-            style={{ color: isExplore ? '#9ca3af' : themeColor }}
-          />
+          {createElement(iconType, {
+            className: 'h-5 w-5',
+            style: { color: isExplore ? '#9ca3af' : themeColor },
+          })}
         </div>
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-gray-800 truncate">

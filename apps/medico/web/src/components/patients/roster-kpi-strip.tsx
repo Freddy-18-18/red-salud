@@ -116,7 +116,7 @@ export function RosterKpiStrip({ doctorId }: RosterKpiStripProps) {
 
 // ---------------------------------------------------------------------------
 
-interface KpiTileProps extends KpiTileConfig {}
+type KpiTileProps = KpiTileConfig;
 
 function KpiTile({ label, icon: Icon, value, attentionTone }: KpiTileProps) {
   const showBadge = attentionTone != null && value > 0;

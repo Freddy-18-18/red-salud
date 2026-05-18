@@ -352,12 +352,9 @@ export function usePrenatal(
 
   // ── Active pregnancy ─────────────────────────────────────────────────
 
-  const activePregnancy = useMemo(() => {
-    if (options?.pregnancyId) {
-      return pregnancies.find((p) => p.id === options.pregnancyId) ?? null;
-    }
-    return pregnancies.find((p) => p.status === 'active') ?? null;
-  }, [pregnancies, options?.pregnancyId]);
+  const activePregnancy = options?.pregnancyId
+    ? (pregnancies.find((p) => p.id === options.pregnancyId) ?? null)
+    : (pregnancies.find((p) => p.status === 'active') ?? null);
 
   // ── Current gestational age ──────────────────────────────────────────
 

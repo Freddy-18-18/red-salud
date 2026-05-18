@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, type FormEvent } from 'react';
+import { useState, useCallback, useEffect, useMemo, type FormEvent } from 'react';
 import { Save, X, AlertCircle } from 'lucide-react';
 import { Button, Input, Label } from '@red-salud/design-system';
 import { cn } from '@red-salud/core/utils';
@@ -128,7 +128,7 @@ export function PrenatalForm({
   );
 
   // Auto-fill gestational age when date changes
-  useMemo(() => {
+  useEffect(() => {
     if (gestationalAge && !initialData?.gestational_weeks) {
       setGestWeeks(gestationalAge.weeks.toString());
       setGestDays(gestationalAge.days.toString());

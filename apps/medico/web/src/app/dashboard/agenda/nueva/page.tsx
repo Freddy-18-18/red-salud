@@ -563,7 +563,9 @@ export default function NuevaCitaPage() {
       await navigator.clipboard.writeText(meetingUrl);
       setCopiedMeeting(true);
       setTimeout(() => setCopiedMeeting(false), 2000);
-    } catch {}
+    } catch {
+      // Silently ignore clipboard errors
+    }
   }, [meetingUrl]);
 
   // ---- Submit -------------------------------------------------------------

@@ -15,7 +15,7 @@ import {
 } from '../hotkeys';
 
 function ke(over: Partial<KeyboardEventInit> & { key: string }): KeyboardEvent {
-  return new KeyboardEvent('keydown', { key: over.key, ...over });
+  return new KeyboardEvent('keydown', over);
 }
 
 describe('shortcutFromEvent', () => {

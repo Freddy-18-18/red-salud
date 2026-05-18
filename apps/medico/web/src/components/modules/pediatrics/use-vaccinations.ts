@@ -231,7 +231,7 @@ export function useVaccinations(
 
   // ── Schedule status ─────────────────────────────────────────────────────
 
-  const scheduleStatus = useMemo<VaccineScheduleStatus[]>(() => {
+  const scheduleStatus: VaccineScheduleStatus[] = (() => {
     if (!options?.patientDob || !options?.patientSex) return [];
 
     const dob = new Date(options.patientDob);
@@ -239,7 +239,6 @@ export function useVaccinations(
     const applicableDoses = getApplicableDoses(sex);
 
     return applicableDoses.map(({ entry, dose }) => {
-      // Check if this dose has been administered
       const matchingRecord = records.find(
         (r) => r.vaccine_id === entry.id && r.dose_number === dose.doseNumber,
       );
@@ -260,7 +259,7 @@ export function useVaccinations(
         record: matchingRecord,
       };
     });
-  }, [records, options?.patientDob, options?.patientSex]);
+  })();
 
   // ── Stats ───────────────────────────────────────────────────────────────
 

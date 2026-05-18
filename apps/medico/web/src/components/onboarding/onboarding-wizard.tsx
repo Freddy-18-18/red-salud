@@ -1309,7 +1309,6 @@ function StepSchedule({
                 ].join(' ')}
               >
                 {state.profilePhotoPreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={state.profilePhotoPreview}
                     alt="Preview"
@@ -1346,7 +1345,6 @@ function StepSchedule({
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center shrink-0 overflow-hidden border border-border">
                 {state.profilePhotoPreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={state.profilePhotoPreview}
                     alt="Avatar"

@@ -74,7 +74,7 @@ const COMMAND_THEME_CLASSES = [
 export function CommandPaletteHero({
   doctorId,
   sedes,
-}: CommandPaletteHeroProps): React.ReactElement {
+}: CommandPaletteHeroProps): React.ReactElement | null {
   const { activeSedeId } = useActiveSede();
   const { triggerVisible, triggerHydrated } = useCommandPalette();
   const [query, setQuery] = useState('');

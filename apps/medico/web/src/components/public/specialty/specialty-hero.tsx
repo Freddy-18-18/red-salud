@@ -1,3 +1,4 @@
+import { createElement } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import type { PublicSpecialty } from '@/lib/data/specialties-public';
@@ -9,7 +10,7 @@ interface SpecialtyHeroProps {
 
 export function SpecialtyHero({ specialty }: SpecialtyHeroProps) {
   const colors = getColors(specialty.accentColor);
-  const Icon = getIcon(specialty.iconName);
+  const iconType = getIcon(specialty.iconName);
 
   return (
     <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
@@ -38,13 +39,13 @@ export function SpecialtyHero({ specialty }: SpecialtyHeroProps) {
       <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-32 pb-20 text-center">
         {/* Specialty badge */}
         <div className={`mb-8 inline-flex items-center gap-2 rounded-full ${colors.pill} border ${colors.border} px-4 py-1.5`}>
-          <Icon className="h-4 w-4" />
+          {createElement(iconType, { className: 'h-4 w-4' })}
           <span className="text-sm font-medium">{specialty.category}</span>
         </div>
 
         {/* Icon */}
         <div className={`mx-auto mb-8 inline-flex h-20 w-20 items-center justify-center rounded-2xl ${colors.bgLight} ring-1 ${colors.ring}`}>
-          <Icon className={`h-10 w-10 ${colors.text}`} />
+          {createElement(iconType, { className: `h-10 w-10 ${colors.text}` })}
         </div>
 
         {/* Title */}

@@ -117,7 +117,9 @@ vi.mock('@/components/shell/mobile-bottom-nav', () => ({
 import { DashboardShell } from './dashboard-shell';
 
 const baseProps = {
+  doctorId: 'doc-test-123',
   doctorName: 'Marianella Suarez',
+  doctorFirstName: 'Marianella',
   email: 'm.suarez@example.com',
   avatarUrl: null,
   specialtyName: 'Cardiología',

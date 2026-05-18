@@ -291,7 +291,6 @@ export default function DiagnosticImagingModule({
                 {/* Thumbnail area */}
                 <div className="aspect-square bg-gray-100 flex items-center justify-center relative">
                   {hasImage ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={study.image_urls[0]}
                       alt={typeLabel}

@@ -583,7 +583,6 @@ export function EcgViewer({
           {showImageMode && hasImage ? (
             /* ── Image mode ──────────────────────────────────── */
             <div className="flex items-center justify-center min-h-[400px] bg-gray-50 p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={record.image_url!}
                 alt="ECG"

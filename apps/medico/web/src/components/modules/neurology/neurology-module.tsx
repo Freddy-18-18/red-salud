@@ -21,6 +21,9 @@ import {
 } from './use-neurology-scales';
 import {
   NEUROLOGY_SCALES,
+  MMSE_ITEMS,
+  MMSE_MAX,
+  MMSE_DOMAINS,
   classifyGcs,
   classifyNihss,
   classifyMmse,
@@ -128,13 +131,7 @@ function MmseForm({
   readOnly: boolean;
   themeColor: string;
 }) {
-  // Inline import to avoid circular — items are from data file
-  const {
-    MMSE_ITEMS,
-    MMSE_MAX,
-    MMSE_DOMAINS,
-    classifyMmse: classify,
-  } = require('./neurology-scales-data');
+  const classify = classifyMmse;
 
   const total = useMemo(
     () => Object.values(scores).reduce((s: number, v) => s + (v as number), 0),

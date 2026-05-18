@@ -133,7 +133,6 @@ export function ImagingViewer({
         >
           {hasImages && currentImage ? (
             <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={currentImage}
                 alt={`Estudio ${study.study_type} - imagen ${currentImageIdx + 1}`}

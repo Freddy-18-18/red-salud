@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, createElement } from 'react';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { getModuleComponent, type ModuleComponentProps } from './module-registry';
 
@@ -112,9 +112,9 @@ export function ModuleRenderer({
   specialtySlug,
   themeColor = '#3B82F6',
 }: ModuleRendererProps) {
-  const ModuleComponent = getModuleComponent(moduleKey);
+  const moduleComponent = getModuleComponent(moduleKey);
 
-  if (!ModuleComponent) {
+  if (!moduleComponent) {
     return <ModuleNotFound moduleKey={moduleKey} />;
   }
 
@@ -129,7 +129,7 @@ export function ModuleRenderer({
   return (
     <ModuleErrorBoundary moduleKey={moduleKey}>
       <Suspense fallback={<ModuleLoadingFallback />}>
-        <ModuleComponent {...moduleProps} />
+        {createElement(moduleComponent, moduleProps)}
       </Suspense>
     </ModuleErrorBoundary>
   );
