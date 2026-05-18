@@ -39,21 +39,26 @@ red-salud/
     academia/          # Medical education domain
       web/             # Next.js web app (port 3009)
       mobile/          # React Native mobile app
-    landing/           # Public landing page
+    admin/web/         # Admin console (port 3010) — RBAC, audit, user management
     web/               # Legacy monolithic app (being decomposed)
   packages/
     types/             # @red-salud/types — Shared TypeScript interfaces and Zod schemas
-    ui/                # @red-salud/ui — Design system components (Radix UI + Tailwind CSS)
+    design-system/     # @red-salud/design-system — Radix UI + Tailwind components, design tokens
     core/              # @red-salud/core — Business logic, validations, constants
     contracts/         # @red-salud/contracts — API contracts between domains
     auth-sdk/          # @red-salud/auth-sdk — Authentication SDK (Supabase Auth wrapper)
     api-client/        # @red-salud/api-client — Typed HTTP client for backend services
   services/
-    api-gateway/       # API Gateway — routes cross-domain requests
-    auth/              # Auth service
-    notifications/     # Notification service (email, push, SMS)
-    payments/          # Payment processing service
-    ai/                # AI service (Gemini, ICD-11 suggestions)
+    gateway/           # Rust + Axum — cross-domain proxy, doctor search, JWKS (OPERATIONAL)
+    appointments/      # Rust + Axum + sqlx — schedule + slots + status (OPERATIONAL)
+    bcv-rate/          # Node + Express + Puppeteer — BCV exchange rate scraper (OPERATIONAL)
+    sacs-verification/ # Node + Express + Puppeteer — SACS doctor cedula verification (OPERATIONAL on Railway)
+    rif-verification/  # Node + Express + Puppeteer — Venezuelan RIF tax-id verification
+
+    # Future microservices (not yet implemented — frontend talks directly to Supabase RLS-protected tables):
+    #   auth, messaging, medical-records, laboratory, pharmacy, insurance,
+    #   billing, academy, emergency, verification — TBD when domain isolation
+    #   needs to enforce cross-app contracts. For now, RLS is the contract.
 ```
 
 ## Domain Applications (Web)
@@ -77,7 +82,7 @@ Each app has its own `CLAUDE.md` with domain-specific context. When working on a
 | Package | Location | Purpose |
 |---------|----------|---------|
 | `@red-salud/types` | `packages/types/` | Shared TypeScript interfaces and Zod schemas |
-| `@red-salud/ui` | `packages/ui/` | Dumb UI components (Radix UI + Tailwind CSS) — pure presentation, no business logic |
+| `@red-salud/design-system` | `packages/design-system/` | Radix UI + Tailwind components, design tokens (Caribbean Trust palette), themes — pure presentation |
 | `@red-salud/core` | `packages/core/` | Business logic, validations, utilities, constants |
 | `@red-salud/contracts` | `packages/contracts/` | API contracts defining cross-domain communication |
 | `@red-salud/auth-sdk` | `packages/auth-sdk/` | Authentication SDK wrapping Supabase Auth |
@@ -135,7 +140,7 @@ pnpm check                  # Run lint + typecheck + test
 4. **Component Props**: UI components receive data via props, not direct queries
 
 ### Component Architecture
-- **Dumb Components**: `@red-salud/ui` components are pure presentation (no business logic)
+- **Dumb Components**: `@red-salud/design-system` components are pure presentation (no business logic)
 - **Smart Components**: App-level components in `components/` handle data fetching via hooks
 - **Props Pattern**: UI components receive callbacks like `onUpload`, `onChange` rather than calling services
 
@@ -145,7 +150,7 @@ pnpm check                  # Run lint + typecheck + test
 |-------|-------------|
 | `@/` | App root (e.g., `apps/farmacia/web/src/`) |
 | `@red-salud/core` | `packages/core/src/` |
-| `@red-salud/ui` | `packages/ui/src/` |
+| `@red-salud/design-system` | `packages/design-system/src/` |
 | `@red-salud/types` | `packages/types/src/` |
 | `@red-salud/contracts` | `packages/contracts/src/` |
 | `@red-salud/auth-sdk` | `packages/auth-sdk/src/` |

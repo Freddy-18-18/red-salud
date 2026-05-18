@@ -12,6 +12,7 @@ packages:
   - 'apps/seguro/web'
   - 'apps/ambulancia/web'
   - 'apps/academia/web'
+  - 'apps/admin/web'
 
   # Desktop apps (Tauri frontend)
   - 'apps/farmacia/desktop'
