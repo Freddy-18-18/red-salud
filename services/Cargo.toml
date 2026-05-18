@@ -2,17 +2,7 @@
 resolver = "2"
 members = [
     "gateway",
-    "auth",
-    "pharmacy",
     "appointments",
-    "medical-records",
-    "laboratory",
-    "insurance",
-    "messaging",
-    "billing",
-    "emergency",
-    "verification",
-    "academy",
 ]
 
 [workspace.package]
