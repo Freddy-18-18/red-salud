@@ -45,6 +45,7 @@ import {
 import { cn } from "@red-salud/core/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { PharmacyProfile, UserProfile } from "@/lib/services/dashboard-service";
+import { useCanSeeSection } from "@/lib/rbac";
 
 // ---------- Navigation config ----------
 
@@ -53,6 +54,8 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: number;
+  /** Section key matching `useCanSeeSection`. Items without a section are always visible. */
+  section?: string;
 }
 
 interface NavGroup {
@@ -64,50 +67,121 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: "Principal",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { label: "Caja / POS", href: "/dashboard/caja", icon: ShoppingCart },
+      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, section: "dashboard" },
+      { label: "Caja / POS", href: "/dashboard/caja", icon: ShoppingCart, section: "caja" },
     ],
   },
   {
     title: "Inventario",
     items: [
-      { label: "Productos", href: "/dashboard/inventario", icon: Package },
-      { label: "Caducidades", href: "/dashboard/caducidades", icon: CalendarClock },
-      { label: "Alertas", href: "/dashboard/alertas", icon: Bell },
+      { label: "Productos", href: "/dashboard/inventario", icon: Package, section: "inventario" },
+      { label: "Caducidades", href: "/dashboard/caducidades", icon: CalendarClock, section: "caducidades" },
+      { label: "Alertas", href: "/dashboard/alertas", icon: Bell, section: "alertas" },
     ],
   },
   {
     title: "Ventas",
     items: [
-      { label: "Historial Ventas", href: "/dashboard/ventas", icon: Receipt },
-      { label: "Reportes", href: "/dashboard/reportes", icon: BarChart3 },
+      { label: "Historial Ventas", href: "/dashboard/ventas", icon: Receipt, section: "ventas" },
+      { label: "Reportes", href: "/dashboard/reportes", icon: BarChart3, section: "reportes" },
     ],
   },
   {
     title: "Compras",
     items: [
-      { label: "Proveedores", href: "/dashboard/proveedores", icon: Truck },
-      { label: "Pedidos", href: "/dashboard/pedidos", icon: ClipboardList },
+      { label: "Proveedores", href: "/dashboard/proveedores", icon: Truck, section: "proveedores" },
+      { label: "Pedidos", href: "/dashboard/pedidos", icon: ClipboardList, section: "pedidos" },
     ],
   },
   {
     title: "Clientes",
     items: [
-      { label: "Recetas", href: "/dashboard/recetas", icon: FileText },
-      { label: "Entregas", href: "/dashboard/entregas", icon: MapPin },
-      { label: "Fidelizacion", href: "/dashboard/fidelizacion", icon: Star },
+      { label: "Recetas", href: "/dashboard/recetas", icon: FileText, section: "recetas" },
+      { label: "Entregas", href: "/dashboard/entregas", icon: MapPin, section: "entregas" },
+      { label: "Fidelizacion", href: "/dashboard/fidelizacion", icon: Star, section: "fidelizacion" },
     ],
   },
   {
     title: "Administracion",
     items: [
-      { label: "Precios", href: "/dashboard/precios", icon: DollarSign },
-      { label: "Personal", href: "/dashboard/personal", icon: Users },
-      { label: "Seguros", href: "/dashboard/seguros", icon: Shield },
-      { label: "Configuracion", href: "/dashboard/configuracion", icon: Settings },
+      { label: "Precios", href: "/dashboard/precios", icon: DollarSign, section: "precios" },
+      { label: "Personal", href: "/dashboard/personal", icon: Users, section: "personal" },
+      { label: "Seguros", href: "/dashboard/seguros", icon: Shield, section: "seguros" },
+      { label: "Configuracion", href: "/dashboard/configuracion", icon: Settings, section: "configuracion" },
     ],
   },
 ];
+
+// Renders one nav item, hiding it if the user lacks permission for its section.
+function NavItemEntry({
+  item,
+  collapsed,
+  active,
+  badge,
+  onNavigate,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  active: boolean;
+  badge: number | undefined;
+  onNavigate?: () => void;
+}) {
+  // Hooks must be called unconditionally — pass empty section for items without one
+  const visible = useCanSeeSection(item.section ?? "__always__");
+  if (item.section && !visible) return null;
+
+  const Icon = item.icon;
+  const linkContent = (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      className={cn(
+        "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        active
+          ? "bg-blue-600/20 text-blue-400"
+          : "text-slate-300 hover:bg-slate-700/50 hover:text-white",
+        collapsed && "justify-center px-2",
+      )}
+    >
+      <Icon
+        className={cn(
+          "h-5 w-5 shrink-0",
+          active ? "text-blue-400" : "text-slate-400 group-hover:text-white",
+        )}
+      />
+      {!collapsed && (
+        <>
+          <span className="flex-1 truncate">{item.label}</span>
+          {badge != null && badge > 0 && (
+            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+              {badge > 99 ? "99+" : badge}
+            </span>
+          )}
+        </>
+      )}
+      {collapsed && badge != null && badge > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
+    </Link>
+  );
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="relative">{linkContent}</div>
+        </TooltipTrigger>
+        <TooltipContent side="right" className="font-medium">
+          {item.label}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return <div>{linkContent}</div>;
+}
 
 // ---------- Props ----------
 
@@ -192,62 +266,16 @@ function SidebarNav({
                 </p>
               )}
               {collapsed && <Separator className="my-1 bg-slate-700/50" />}
-              {group.items.map((item) => {
-                const active = isActive(item.href);
-                const badge = getItemBadge(item);
-                const Icon = item.icon;
-
-                const linkContent = (
-                  <Link
-                    href={item.href}
-                    onClick={onNavigate}
-                    className={cn(
-                      "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                      active
-                        ? "bg-blue-600/20 text-blue-400"
-                        : "text-slate-300 hover:bg-slate-700/50 hover:text-white",
-                      collapsed && "justify-center px-2",
-                    )}
-                  >
-                    <Icon
-                      className={cn(
-                        "h-5 w-5 shrink-0",
-                        active ? "text-blue-400" : "text-slate-400 group-hover:text-white",
-                      )}
-                    />
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1 truncate">{item.label}</span>
-                        {badge != null && badge > 0 && (
-                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                            {badge > 99 ? "99+" : badge}
-                          </span>
-                        )}
-                      </>
-                    )}
-                    {collapsed && badge != null && badge > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
-                        {badge > 99 ? "99+" : badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-
-                if (collapsed) {
-                  return (
-                    <Tooltip key={item.href}>
-                      <TooltipTrigger asChild>
-                        <div className="relative">{linkContent}</div>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="font-medium">
-                        {item.label}
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                }
-
-                return <div key={item.href}>{linkContent}</div>;
-              })}
+              {group.items.map((item) => (
+                <NavItemEntry
+                  key={item.href}
+                  item={item}
+                  collapsed={collapsed}
+                  active={isActive(item.href)}
+                  badge={getItemBadge(item)}
+                  onNavigate={onNavigate}
+                />
+              ))}
             </div>
           ))}
         </nav>

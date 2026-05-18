@@ -36,6 +36,32 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Multi-tenant onboarding gate: a logged-in user without a pharmacy_details row
+  // cannot enter /dashboard, and a user that already has one shouldn't see /onboarding.
+  if (user) {
+    const isDashboardPath = pathname.startsWith('/dashboard');
+    const isOnboardingPath = pathname === '/onboarding';
+
+    if (isDashboardPath || isOnboardingPath) {
+      const { data: pharmacy } = await supabase
+        .from('pharmacy_details')
+        .select('id')
+        .eq('profile_id', user.id)
+        .maybeSingle();
+
+      if (isDashboardPath && !pharmacy) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/onboarding';
+        return NextResponse.redirect(url);
+      }
+      if (isOnboardingPath && pharmacy) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/dashboard';
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   return supabaseResponse;
 }
 

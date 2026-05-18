@@ -292,12 +292,13 @@ export async function selectFEFOBatch(
 ): Promise<BatchInfo | null> {
   const supabase = createClient();
 
-  // Try the DB function first
+  // Try the DB function first.
+  // pharmacy_fefo_next_batch only takes (product_id, quantity) — products are
+  // already pharmacy-scoped via FK, so the function is implicitly tenant-safe.
   const { data: fefoResult, error: fefoError } = await supabase.rpc(
     "pharmacy_fefo_next_batch",
     {
       p_product_id: productId,
-      p_pharmacy_id: pharmacyId,
       p_quantity: quantity,
     }
   );

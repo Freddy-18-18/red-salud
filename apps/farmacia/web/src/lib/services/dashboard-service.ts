@@ -193,26 +193,29 @@ export async function getDashboardStats(
     };
   }
 
+  // pharmacy_dashboard_stats column names (verified against live view).
+  // Missing fields (totalBatches, inTransitDeliveries, salesMonthBs) are not
+  // exposed by the view — return 0 for now; extend the view if we need them.
   return {
-    salesTodayUsd: data.sales_today_usd ?? 0,
-    salesTodayBs: data.sales_today_bs ?? 0,
-    salesTodayCount: data.sales_today_count ?? 0,
-    salesMonthUsd: data.sales_month_usd ?? 0,
-    salesMonthBs: data.sales_month_bs ?? 0,
-    salesMonthCount: data.sales_month_count ?? 0,
-    totalProducts: data.total_products ?? 0,
-    activeProducts: data.active_products ?? 0,
+    salesTodayUsd: Number(data.today_sales_usd ?? 0),
+    salesTodayBs: Number(data.today_sales_bs ?? 0),
+    salesTodayCount: data.today_invoice_count ?? 0,
+    salesMonthUsd: Number(data.month_sales_usd ?? 0),
+    salesMonthBs: 0,
+    salesMonthCount: data.month_invoice_count ?? 0,
+    totalProducts: data.total_active_products ?? 0,
+    activeProducts: data.total_active_products ?? 0,
     lowStockProducts: data.low_stock_products ?? 0,
     outOfStockProducts: data.out_of_stock_products ?? 0,
-    totalBatches: data.total_batches ?? 0,
-    expiringSoonBatches: data.expiring_soon_batches ?? 0,
+    totalBatches: 0,
+    expiringSoonBatches: data.batches_expiring_30d ?? 0,
     expiredBatches: data.expired_batches ?? 0,
     unreadAlerts: data.unread_alerts ?? 0,
     criticalAlerts: data.critical_alerts ?? 0,
     pendingDeliveries: data.pending_deliveries ?? 0,
-    inTransitDeliveries: data.in_transit_deliveries ?? 0,
+    inTransitDeliveries: 0,
     activeStaffCount: data.active_staff_count ?? 0,
-    activeLoyaltyMembers: data.active_loyalty_members ?? 0,
+    activeLoyaltyMembers: data.total_loyalty_members ?? 0,
   };
 }
 

@@ -52,7 +52,7 @@ interface PharmacyFormData {
   officeHours: Record<string, { open: string; close: string; enabled: boolean }>;
   // Step 4 — Configuracion
   taxRate: number;
-  currencyDisplay: "USD" | "Bs" | "both";
+  currencyDisplay: "usd" | "bs" | "both";
   deliveryEnabled: boolean;
   loyaltyEnabled: boolean;
 }
@@ -90,8 +90,8 @@ const DAYS_OF_WEEK = [
 ] as const;
 
 const CURRENCY_OPTIONS = [
-  { value: "USD", label: "Dolares (USD)" },
-  { value: "Bs", label: "Bolivares (Bs)" },
+  { value: "usd", label: "Dolares (USD)" },
+  { value: "bs", label: "Bolivares (Bs)" },
   { value: "both", label: "Ambos (USD + Bs)" },
 ] as const;
 
@@ -745,7 +745,24 @@ export default function OnboardingPage() {
         throw new Error(settingsError.message);
       }
 
-      // 3. Redirect to dashboard
+      // 3. Insert pharmacy_staff owner row (RLS allows access via pharmacy_details too,
+      //    but a staff row keeps owner visible in staff-listing UIs).
+      const { error: staffError } = await supabase
+        .from("pharmacy_staff")
+        .insert({
+          pharmacy_id: pharmacyData.id,
+          profile_id: user.id,
+          role: "owner",
+          is_active: true,
+          hired_at: new Date().toISOString().slice(0, 10),
+        });
+
+      if (staffError) {
+        // Non-fatal — owner still has access via pharmacy_details.profile_id.
+        console.warn("Could not create owner staff row:", staffError.message);
+      }
+
+      // 4. Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Error al guardar los datos";

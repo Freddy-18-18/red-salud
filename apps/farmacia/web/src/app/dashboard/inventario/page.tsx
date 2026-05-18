@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Fragment, useEffect, useState, useCallback } from "react";
 import {
   Package,
   Search,
@@ -256,7 +256,7 @@ function ProductFormDialog({
           cost_usd: form.cost_usd ? parseFloat(form.cost_usd) : null,
           min_stock: parseInt(form.min_stock) || 0,
           max_stock: form.max_stock ? parseInt(form.max_stock) : null,
-          reorder_point: form.reorder_point ? parseInt(form.reorder_point) : null,
+          reorder_point: form.reorder_point ? parseInt(form.reorder_point) : 5,
           requires_prescription: form.requires_prescription,
           is_controlled: form.is_controlled,
           is_refrigerated: form.is_refrigerated,
@@ -281,10 +281,10 @@ function ProductFormDialog({
           cost_usd: form.cost_usd ? parseFloat(form.cost_usd) : null,
           cost_bs: form.cost_usd ? parseFloat(form.cost_usd) * exchangeRate : null,
           profit_margin: margin > 0 ? Math.round(margin * 100) / 100 : null,
-          tax_rate: null,
+          tax_rate: 16,
           min_stock: parseInt(form.min_stock) || 0,
           max_stock: form.max_stock ? parseInt(form.max_stock) : null,
-          reorder_point: form.reorder_point ? parseInt(form.reorder_point) : null,
+          reorder_point: form.reorder_point ? parseInt(form.reorder_point) : 5,
           requires_prescription: form.requires_prescription,
           is_controlled: form.is_controlled,
           controlled_type: null,
@@ -1124,9 +1124,8 @@ export default function InventarioPage() {
                         const isExpanded = expandedRows.has(product.id);
                         const badge = getStockStatusBadge(product.stock_status);
                         return (
-                          <>
+                          <Fragment key={product.id}>
                             <TableRow
-                              key={product.id}
                               className="cursor-pointer hover:bg-muted/50"
                               onClick={() => toggleRow(product.id)}
                             >
@@ -1216,9 +1215,9 @@ export default function InventarioPage() {
                               </TableCell>
                             </TableRow>
                             {isExpanded && product.batches.length > 0 && (
-                              <BatchRows key={`batches-${product.id}`} batches={product.batches} />
+                              <BatchRows batches={product.batches} />
                             )}
-                          </>
+                          </Fragment>
                         );
                       })}
                     </TableBody>

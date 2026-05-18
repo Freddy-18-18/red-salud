@@ -69,7 +69,22 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL('/auth/login', origin));
       }
 
-      // Email verification or default — go to dashboard
+      // Pharmacy users without a provisioned pharmacy must finish onboarding first.
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: pharmacy } = await supabase
+          .from('pharmacy_details')
+          .select('id')
+          .eq('profile_id', user.id)
+          .maybeSingle();
+
+        if (!pharmacy) {
+          return NextResponse.redirect(new URL('/onboarding', origin));
+        }
+      }
+
       const forwardUrl = next.startsWith('/') ? next : '/dashboard';
       return NextResponse.redirect(new URL(forwardUrl, origin));
     }
