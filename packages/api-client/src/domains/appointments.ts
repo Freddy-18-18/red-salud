@@ -1,151 +1,111 @@
 import type { ApiClient } from '../client';
-import type { ApiResponse, PaginatedResponse } from '../types';
-import type { Appointment, AppointmentStatus } from '@red-salud/contracts';
 
-// ── Request/Response interfaces ──────────────────────────────────────
+// ── Gateway response shapes ─────────────────────────────────────────
+// Snake_case to match the underlying Supabase columns. Adapters in each
+// web app translate to local view models if needed.
 
-export interface AppointmentFilters {
-  status?: AppointmentStatus;
-  medico_id?: string;
-  paciente_id?: string;
-  from?: string;
-  to?: string;
-  tipo_cita?: string;
+export interface GatewayAppointment {
+  id: string;
+  doctor_id: string;
+  patient_id: string | null;
+  scheduled_at: string;
+  duration_minutes: number;
+  reason: string;
+  notes: string | null;
+  status: string;
+  appointment_type: string | null;
+  price: number | null;
+  location_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GatewayAppointmentListResponse {
+  data: GatewayAppointment[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface GatewayAppointmentCreateResponse {
+  data: GatewayAppointment;
+}
+
+// ── Request shapes ──────────────────────────────────────────────────
+
+export interface ListAppointmentsParams {
+  status?: string;
+  from?: string; // ISO-8601 datetime
+  to?: string;   // ISO-8601 datetime
   page?: number;
   pageSize?: number;
 }
 
-export interface CreateAppointmentData {
-  paciente_id: string;
-  medico_id: string;
-  fecha_hora: string;
-  duracion_minutos: number;
-  tipo_cita: string;
-  motivo?: string;
-  notas_internas?: string;
+export interface CreateAppointmentInput {
+  doctor_id: string;
+  scheduled_at: string;            // ISO-8601 datetime
+  duration_minutes?: number;       // default 30
+  reason: string;
+  notes?: string;
+  appointment_type?: string;       // default 'in_person'
+  location_id?: string;
   price?: number;
-  metodo_pago?: string;
-  meeting_url?: string;
-  office_id?: string;
-  enviar_recordatorio?: boolean;
 }
 
-export interface UpdateAppointmentData {
-  fecha_hora?: string;
-  duracion_minutos?: number;
-  tipo_cita?: string;
-  motivo?: string;
-  notas_internas?: string;
-  status?: AppointmentStatus;
-  price?: number;
-  metodo_pago?: string;
-  meeting_url?: string;
-  office_id?: string;
-}
-
-export interface CancelAppointmentData {
-  motivo?: string;
-}
-
-export interface RescheduleAppointmentData {
-  fecha_hora: string;
-  motivo?: string;
-}
-
-export interface ScheduleFilters {
-  from?: string;
-  to?: string;
-}
-
+// Legacy aliases kept for backward compatibility with consumers that may
+// import these symbols by name. Prefer the gateway-aligned names above.
+export type AppointmentFilters = ListAppointmentsParams;
+export type CreateAppointmentData = CreateAppointmentInput;
+export type UpdateAppointmentData = Partial<CreateAppointmentInput>;
+export type CancelAppointmentData = { reason?: string };
+export type RescheduleAppointmentData = { scheduled_at: string; reason?: string };
+export type ScheduleFilters = { from?: string; to?: string };
 export interface TimeSlot {
   start: string;
   end: string;
   available: boolean;
 }
 
-// ── Helper: convert typed filters to Record<string, string> ──────────
+// ── Helpers ─────────────────────────────────────────────────────────
 
-function toParams(obj?: Record<string, unknown>): Record<string, string> | undefined {
-  if (!obj) return undefined;
-  const params: Record<string, string> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value !== undefined && value !== null) {
-      params[key] = String(value);
-    }
-  }
-  return Object.keys(params).length > 0 ? params : undefined;
+function toQueryParams(p?: ListAppointmentsParams): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!p) return out;
+  if (p.status) out.status = p.status;
+  if (p.from) out.from = p.from;
+  if (p.to) out.to = p.to;
+  if (p.page) out.page = String(p.page);
+  if (p.pageSize) out.page_size = String(p.pageSize);
+  return out;
 }
 
-// ── Domain client ────────────────────────────────────────────────────
+// ── Domain client ───────────────────────────────────────────────────
 
 export class AppointmentsApi {
   constructor(private client: ApiClient) {}
 
-  /** List appointments with optional filters */
-  getAppointments(params?: AppointmentFilters) {
-    return this.client.get<PaginatedResponse<Appointment>>(
+  /**
+   * List the current user's appointments. The gateway resolves the user from
+   * the bearer token, so no patient/doctor id is needed.
+   */
+  list(params?: ListAppointmentsParams): Promise<GatewayAppointmentListResponse> {
+    return this.client.get<GatewayAppointmentListResponse>(
       '/appointments',
-      toParams(params as Record<string, unknown>),
-    );
+      toQueryParams(params),
+    ) as unknown as Promise<GatewayAppointmentListResponse>;
   }
 
-  /** Create a new appointment */
-  createAppointment(data: CreateAppointmentData) {
-    return this.client.post<ApiResponse<Appointment>>('/appointments', data);
-  }
-
-  /** Update an existing appointment */
-  updateAppointment(id: string, data: UpdateAppointmentData) {
-    return this.client.put<ApiResponse<Appointment>>(`/appointments/${id}`, data);
-  }
-
-  /** Cancel an appointment with optional reason */
-  cancelAppointment(id: string, data?: CancelAppointmentData) {
-    return this.client.patch<ApiResponse<Appointment>>(
-      `/appointments/${id}/cancel`,
-      data,
-    );
-  }
-
-  /** Confirm a pending appointment */
-  confirmAppointment(id: string) {
-    return this.client.patch<ApiResponse<Appointment>>(
-      `/appointments/${id}/confirm`,
-    );
-  }
-
-  /** Reschedule an appointment to a new date/time */
-  rescheduleAppointment(id: string, data: RescheduleAppointmentData) {
-    return this.client.patch<ApiResponse<Appointment>>(
-      `/appointments/${id}/reschedule`,
-      data,
-    );
-  }
-
-  /** Get appointments for a specific patient */
-  getPatientAppointments(
-    patientId: string,
-    params?: { status?: AppointmentStatus; from?: string; to?: string },
-  ) {
-    return this.client.get<PaginatedResponse<Appointment>>(
-      `/appointments/patients/${patientId}`,
-      toParams(params as Record<string, unknown>),
-    );
-  }
-
-  /** Get a doctor's schedule (existing appointments) for a date range */
-  getDoctorSchedule(doctorId: string, params?: ScheduleFilters) {
-    return this.client.get<ApiResponse<Appointment[]>>(
-      `/appointments/doctors/${doctorId}/schedule`,
-      toParams(params as Record<string, unknown>),
-    );
-  }
-
-  /** Get available time slots for a doctor on a specific date */
-  getAvailableSlots(doctorId: string, date: string) {
-    return this.client.get<ApiResponse<TimeSlot[]>>(
-      `/appointments/doctors/${doctorId}/slots`,
-      { date },
-    );
+  /**
+   * Book a new appointment. The gateway validates slot availability via the
+   * `check_time_block_conflict` RPC and returns 409 on conflict.
+   */
+  create(input: CreateAppointmentInput): Promise<GatewayAppointmentCreateResponse> {
+    return this.client.post<GatewayAppointmentCreateResponse>(
+      '/appointments',
+      input,
+    ) as unknown as Promise<GatewayAppointmentCreateResponse>;
   }
 }

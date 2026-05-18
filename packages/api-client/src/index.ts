@@ -13,6 +13,11 @@ export type {
   RescheduleAppointmentData,
   ScheduleFilters,
   TimeSlot,
+  ListAppointmentsParams,
+  CreateAppointmentInput,
+  GatewayAppointment,
+  GatewayAppointmentListResponse,
+  GatewayAppointmentCreateResponse,
 } from './domains/appointments';
 export { DoctorsApi } from './domains/doctors';
 export { LaboratoryApi } from './domains/laboratory';
@@ -27,4 +32,10 @@ export type {
   DoctorAvailability,
   DoctorReview,
   NearbyDoctorParams,
+  GatewayDoctorSearchItem,
+  GatewayDoctorSearchResponse,
 } from './domains/doctors';
+
+// Analytics
+export { initAnalytics, track, ANALYTICS_EVENTS } from './analytics';
+export type { AnalyticsEventName } from './analytics';

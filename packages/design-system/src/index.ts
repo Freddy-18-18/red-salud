@@ -1,7 +1,17 @@
+// =============================================================================
+// Design tokens (Caribbean Trust palette) — import the CSS file directly:
+//   import '@red-salud/design-system/tokens.css';
+//   // or in a CSS file:
+//   @import '@red-salud/design-system/tokens.css';
+// CSS is shipped as a side-effect-only export and CANNOT be re-exported here.
+// =============================================================================
+
 export * from "./accordion";
 export * from "./app-switcher";
 export * from "./alert";
 export * from "./alert-dialog";
+export * from "./auth-shell";
+export * from "./auth-role-select";
 export * from "./autocomplete-textarea";
 export * from "./avatar";
 export * from "./avatar-upload";
@@ -20,6 +30,7 @@ export * from "./date-picker";
 export * from "./dialog";
 export * from "./dropdown-menu";
 export * from "./dynamic-icon";
+export * from "./empty-state";
 export * from "./file-upload";
 export * from "./form";
 export * from "./infinite-carousel";

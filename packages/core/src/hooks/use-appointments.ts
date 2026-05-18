@@ -188,6 +188,16 @@ type SB = SupabaseClient<any, any, any>;
 export interface UseDoctorAppointmentsOptions {
   dateRange?: { start: string; end: string };
   status?: string | string[];
+  /**
+   * Restrict results to a specific sede (location). When provided:
+   *   - rows with `location_id = locationId` are included
+   *   - rows with `location_id IS NULL` are ALSO included (legacy data was
+   *     created before sedes existed — we don't want to hide it from the
+   *     doctor until they explicitly assign each cita to a sede)
+   *
+   * Omit / pass `null` to return rows from every sede.
+   */
+  locationId?: string | null;
 }
 
 export function useDoctorAppointments(
@@ -202,6 +212,7 @@ export function useDoctorAppointments(
   const dateStart = options?.dateRange?.start;
   const dateEnd = options?.dateRange?.end;
   const statusFilter = options?.status;
+  const locationFilter = options?.locationId ?? null;
 
   const refresh = useCallback(async () => {
     if (!doctorId) {
@@ -214,18 +225,27 @@ export function useDoctorAppointments(
     setError(null);
 
     try {
+      // FK alias: the actual constraint on appointments.patient_id is
+      // appointments_paciente_id_fkey (Spanish 'paciente' — kept for
+      // historical compatibility with legacy migrations). Using the wrong
+      // alias produces a PostgREST 400 "could not find foreign key" error.
+      //
+      // Column names: profiles uses English columns (phone, date_of_birth,
+      // national_id) — the legacy Spanish names (telefono, fecha_nacimiento,
+      // cedula) were never present on this table. We re-alias them on the
+      // SELECT so consumer code can keep reading apt.patient.telefono etc.
       let query = supabase
         .from('appointments')
         .select(`
           *,
-          patient:profiles!appointments_patient_id_fkey(
+          patient:profiles!appointments_paciente_id_fkey(
             id,
             full_name,
             email,
             avatar_url,
-            telefono,
-            fecha_nacimiento,
-            cedula
+            telefono:phone,
+            fecha_nacimiento:date_of_birth,
+            cedula:national_id
           )
         `)
         .eq('doctor_id', doctorId);
@@ -242,6 +262,12 @@ export function useDoctorAppointments(
         } else {
           query = query.eq('status', statusFilter);
         }
+      }
+
+      if (locationFilter) {
+        // PostgREST `.or()` accepts a comma-separated list of leaf filters.
+        // Legacy rows with location_id = NULL stay visible across every sede.
+        query = query.or(`location_id.eq.${locationFilter},location_id.is.null`);
       }
 
       query = query.order('scheduled_at', { ascending: true });
@@ -263,7 +289,7 @@ export function useDoctorAppointments(
     } finally {
       setLoading(false);
     }
-  }, [supabase, doctorId, dateStart, dateEnd, statusFilter]);
+  }, [supabase, doctorId, dateStart, dateEnd, statusFilter, locationFilter]);
 
   useEffect(() => {
     refresh();
@@ -405,7 +431,7 @@ export function useDoctorProfile(
         .select(`
           *,
           specialty:specialties(id, name, slug, icon, description),
-          profile:profiles!doctor_profiles_profile_id_fkey(
+          profile:profiles!doctor_details_profile_id_fkey(
             id,
             full_name,
             email,
@@ -715,6 +741,60 @@ export function useUpdateAppointmentStatus(supabase: SB) {
   );
 
   return { updateStatus, loading, error };
+}
+
+// ============================================================================
+// RESCHEDULE APPOINTMENT (move scheduled_at to a new datetime)
+// ============================================================================
+
+export function useRescheduleAppointment(supabase: SB) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const reschedule = useCallback(
+    async (
+      appointmentId: string,
+      newScheduledAt: string | Date,
+      newDurationMinutes?: number,
+    ) => {
+      setLoading(true);
+      setError(null);
+
+      const iso =
+        newScheduledAt instanceof Date
+          ? newScheduledAt.toISOString()
+          : newScheduledAt;
+
+      const patch: { scheduled_at: string; duration_minutes?: number } = {
+        scheduled_at: iso,
+      };
+      if (typeof newDurationMinutes === 'number' && newDurationMinutes > 0) {
+        patch.duration_minutes = newDurationMinutes;
+      }
+
+      try {
+        const { data, error: updateError } = await supabase
+          .from('appointments')
+          .update(patch)
+          .eq('id', appointmentId)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+
+        return { success: true as const, data, error: null };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+        return { success: false as const, data: null, error: message };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [supabase],
+  );
+
+  return { reschedule, loading, error };
 }
 
 // ============================================================================
