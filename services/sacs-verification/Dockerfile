@@ -28,7 +28,6 @@ RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
 
 USER pptruser
 
-ENV PORT=3001
 EXPOSE 3001
 
 CMD ["npm", "start"]
