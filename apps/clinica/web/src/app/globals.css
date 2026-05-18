@@ -1,1 +1,54 @@
 @import 'tailwindcss';
+@source "../../../../../packages/design-system/src";
+
+/*
+ * Brand tokens: cada tenant inyecta sus propios valores via JS/SSR.
+ * Defaults razonables aca por si no hay branding cargado todavia.
+ */
+:root {
+  --brand-primary: 0 102 255;
+  --brand-secondary: 107 114 128;
+  --brand-accent: 16 185 129;
+  --brand-font: 'Inter', system-ui, sans-serif;
+}
+
+@theme inline {
+  --color-brand-primary: rgb(var(--brand-primary));
+  --color-brand-primary-50: rgb(var(--brand-primary) / 0.05);
+  --color-brand-primary-100: rgb(var(--brand-primary) / 0.1);
+  --color-brand-primary-200: rgb(var(--brand-primary) / 0.2);
+  --color-brand-primary-300: rgb(var(--brand-primary) / 0.3);
+  --color-brand-primary-500: rgb(var(--brand-primary));
+  --color-brand-primary-600: rgb(var(--brand-primary) / 0.9);
+  --color-brand-primary-700: rgb(var(--brand-primary) / 0.8);
+  --color-brand-secondary: rgb(var(--brand-secondary));
+  --color-brand-accent: rgb(var(--brand-accent));
+  --font-sans: var(--brand-font);
+}
+
+html, body {
+  font-family: var(--brand-font);
+  background: #fafafa;
+  color: #0f172a;
+}
+
+/* Density tokens — cambian padding/spacing segun la densidad del tenant. */
+[data-density='compact'] {
+  --rs-space-card: 0.75rem;
+  --rs-space-row: 0.5rem;
+  --rs-text-base: 0.875rem;
+}
+[data-density='comfortable'] {
+  --rs-space-card: 1.5rem;
+  --rs-space-row: 0.75rem;
+  --rs-text-base: 0.95rem;
+}
+[data-density='spacious'] {
+  --rs-space-card: 2rem;
+  --rs-space-row: 1rem;
+  --rs-text-base: 1rem;
+}
+
+body {
+  font-size: var(--rs-text-base, 0.95rem);
+}
