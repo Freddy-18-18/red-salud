@@ -52,6 +52,8 @@ Thumbs.db
 .kiro/
 .trae/
 .agent/
+.atl/
+.playwright-mcp/
 opencode.json
 tmpclaude-*
 
@@ -143,6 +145,11 @@ RED_SALUD_MOBILE_*.md
 # Temp result files
 resultados-*.json
 informe-*.json
+
+# Browser/page snapshot dumps (Playwright YAML)
+notif-*.yml
+perfil-*.yml
+*.tmp
 
 # Temp scripts
 scripts/fix-*.ps1
